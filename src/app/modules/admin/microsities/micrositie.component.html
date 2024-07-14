@@ -1,0 +1,181 @@
+<div class="bg-card flex min-w-0 flex-auto flex-col dark:bg-transparent sm:absolute sm:inset-0 sm:overflow-hidden">
+    <!-- Header -->
+    <div
+        class="relative flex flex-0 flex-col border-b px-6 py-8 sm:flex-row sm:items-center sm:justify-between md:px-8">
+        <!-- Loader -->
+        @if (isLoading) {
+        <div class="absolute inset-x-0 bottom-0">
+            <mat-progress-bar [mode]="'indeterminate'"></mat-progress-bar>
+        </div>
+        }
+        <!-- Title -->
+        <div class="text-4xl font-extrabold tracking-tight">Microsities</div>
+        <!-- Actions -->
+        <div class="mt-6 flex shrink-0 items-center sm:ml-4 sm:mt-0">
+            <!-- Search -->
+            <mat-form-field class="fuse-mat-dense fuse-mat-rounded min-w-64" [subscriptSizing]="'dynamic'">
+                <mat-icon class="icon-size-5" matPrefix [svgIcon]="'heroicons_solid:magnifying-glass'"></mat-icon>
+                <input matInput [formControl]="searchInputControl" [autocomplete]="'off'"
+                    [placeholder]="'Search microsities'" />
+            </mat-form-field>
+            <!-- Add product button -->
+            <button class="ml-4" mat-flat-button [color]="'primary'" (click)="createProduct()">
+                <mat-icon [svgIcon]="'heroicons_outline:plus'"></mat-icon>
+                <span class="ml-2 mr-1">Add</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Main -->
+    <div class="flex flex-auto overflow-hidden">
+        <!-- Products list -->
+        <div class="flex flex-auto flex-col overflow-hidden sm:mb-18 sm:overflow-y-auto">
+            @if (products$ | async; as products) {
+            @if (products.length > 0) {
+            <div class="grid">
+                <!-- Header -->
+                <div class="inventory-grid text-secondary sticky top-0 z-10 grid gap-4 bg-gray-50 px-6 py-4 text-md font-semibold shadow dark:bg-black dark:bg-opacity-5 md:px-8"
+                    matSort matSortDisableClear>
+                    <div></div>
+                    <div class="hidden md:block" [mat-sort-header]="'sku'">
+                        SKU
+                    </div>
+                    <div [mat-sort-header]="'name'">Name</div>
+                    <div class="hidden sm:block" [mat-sort-header]="'price'">
+                        Price
+                    </div>
+                    <div class="hidden lg:block" [mat-sort-header]="'stock'">
+                        Stock
+                    </div>
+                    <div class="hidden lg:block" [mat-sort-header]="'active'">
+                        Active
+                    </div>
+                    <div class="hidden sm:block">Details</div>
+                </div>
+                <!-- Rows -->
+                @if (products$ | async; as products) {
+                @for (
+                product of products;
+                track trackByFn($index, product)
+                ) {
+                <div class="inventory-grid grid items-center gap-4 border-b px-6 py-3 md:px-8">
+                    <!-- Image -->
+                    <div class="flex items-center">
+                        <div
+                            class="relative mr-6 flex h-12 w-12 flex-0 items-center justify-center overflow-hidden rounded border">
+                            @if (product.thumbnail) {
+                            <img class="w-8" [alt]="
+                                                        'Product thumbnail image'
+                                                    " [src]="product.thumbnail" />
+                            }
+                            @if (!product.thumbnail) {
+                            <div
+                                class="flex h-full w-full items-center justify-center text-center text-xs font-semibold uppercase leading-none">
+                                NO THUMB
+                            </div>
+                            }
+                        </div>
+                    </div>
+
+                    <!-- SKU -->
+                    <div class="hidden truncate md:block">
+                        {{ product.sku }}
+                    </div>
+
+                    <!-- Name -->
+                    <div class="truncate">
+                        {{ product.name }}
+                    </div>
+
+                    <!-- Price -->
+                    <div class="hidden sm:block">
+                        {{
+                        product.price
+                        | currency
+                        : 'USD'
+                        : 'symbol'
+                        : '1.2-2'
+                        }}
+                    </div>
+
+                    <!-- Stock -->
+                    <div class="hidden items-center lg:flex">
+                        <div class="min-w-4">
+                            {{ product.stock }}
+                        </div>
+                        <!-- Low stock -->
+                        @if (product.stock < 20) { <div
+                            class="ml-2 flex h-4 w-1 items-end overflow-hidden rounded bg-red-200">
+                            <div class="flex h-1/3 w-full bg-red-600"></div>
+                    </div>
+                    }
+                    <!-- Medium stock -->
+                    @if (
+                    product.stock >= 20 &&
+                    product.stock < 30 ) { <div
+                        class="ml-2 flex h-4 w-1 items-end overflow-hidden rounded bg-orange-200">
+                        <div class="flex h-2/4 w-full bg-orange-400"></div>
+                </div>
+                }
+                <!-- High stock -->
+                @if (product.stock >= 30) {
+                <div class="ml-2 flex h-4 w-1 items-end overflow-hidden rounded bg-green-100">
+                    <div class="flex h-full w-full bg-green-400"></div>
+                </div>
+                }
+            </div>
+
+            <!-- Active -->
+            <div class="hidden lg:block">
+                @if (product.active) {
+                <mat-icon class="text-green-400 icon-size-5" [svgIcon]="
+                                                    'heroicons_solid:check'
+                                                "></mat-icon>
+                }
+                @if (!product.active) {
+                <mat-icon class="text-gray-400 icon-size-5" [svgIcon]="
+                                                    'heroicons_solid:x-mark'
+                                                "></mat-icon>
+                }
+            </div>
+
+            <!-- Details button -->
+            <div>
+                <button class="h-7 min-h-7 min-w-10 px-2 leading-6" mat-stroked-button
+                    (click)="toggleDetails(product.id)">
+                    <mat-icon class="icon-size-5" [svgIcon]="
+                                                    selectedProduct?.id ===
+                                                    product.id
+                                                        ? 'heroicons_solid:chevron-up'
+                                                        : 'heroicons_solid:chevron-down'
+                                                "></mat-icon>
+                </button>
+            </div>
+        </div>
+        <div class="grid">
+            @if (selectedProduct?.id === product.id) {
+            <ng-container *ngTemplateOutlet="
+                                                rowDetailsTemplate;
+                                                context: { $implicit: product }
+                                            "></ng-container>
+            }
+        </div>
+        }
+        }
+    </div>
+
+    <mat-paginator
+        class="z-10 border-b bg-gray-50 dark:bg-transparent sm:absolute sm:inset-x-0 sm:bottom-0 sm:border-b-0 sm:border-t"
+        [ngClass]="{ 'pointer-events-none': isLoading }" [length]="pagination.length" [pageIndex]="pagination.page"
+        [pageSize]="pagination.size" [pageSizeOptions]="[5, 10, 25, 100]" [showFirstLastButtons]="true"></mat-paginator>
+    } @else {
+    <div class="border-t p-8 text-center text-4xl font-semibold tracking-tight sm:p-16">
+        There are no products!
+    </div>
+    }
+    }
+
+
+</div>
+</div>
+</div>
