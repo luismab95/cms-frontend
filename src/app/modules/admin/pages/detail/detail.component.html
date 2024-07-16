@@ -84,7 +84,8 @@
                     <pages-languages [micrositie]="micrositie" [page]="page"></pages-languages>
                     }
                     @case ('drawer') {
-                    <pages-drawer [micrositie]="micrositie" [page]="page"></pages-drawer>
+                    <pages-drawer (fullscreemToggle)="drawer.toggle()" [micrositie]="micrositie"
+                        [page]="page"></pages-drawer>
                     }
                     }
                 </div>

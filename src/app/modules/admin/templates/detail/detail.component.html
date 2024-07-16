@@ -80,7 +80,7 @@
                     <templates-information [template]="template"></templates-information>
                     }
                     @case ('drawer') {
-                    <templates-drawer [template]="template"></templates-drawer>
+                    <templates-drawer [template]="template" (fullscreemToggle)="drawer.toggle()"></templates-drawer>
                     }
                     }
                 </div>

@@ -64,11 +64,21 @@
         }
 
         <!-- Actions -->
-        <div class="flex items-center justify-end">
-            <button (click)="goToBack()" mat-stroked-button type="button">Cancelar</button>
-            <button class="ml-4" mat-flat-button type="button" [color]="'primary'">
-                Guardar
-            </button>
+        <div class="flex items-center justify-between">
+            <div class="flex items-center justify-start">
+                @if(page){
+                <button [color]="'primary'" mat-stroked-button type="button">
+                    <mat-icon svgIcon="heroicons_outline:link"></mat-icon>
+                    <span class="ml-2">Visitar</span>
+                </button>
+                }
+            </div>
+            <div class="flex items-center justify-end">
+                <button (click)="goToBack()" mat-stroked-button type="button">Cancelar</button>
+                <button class="ml-4" mat-flat-button type="button" [color]="'primary'">
+                    Guardar
+                </button>
+            </div>
         </div>
     </form>
 </div>
