@@ -3,6 +3,7 @@ import { NgClass } from '@angular/common';
 import {
     ChangeDetectionStrategy,
     Component,
+    Input,
     OnInit,
     ViewEncapsulation,
 } from '@angular/core';
@@ -19,8 +20,9 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
-import { FuseConfig, FuseConfigService, Scheme } from '@fuse/services/config';
-import { Subject, takeUntil } from 'rxjs';
+import { MatSlideToggleModule } from '@angular/material/slide-toggle';
+import { RouterLink } from '@angular/router';
+import { Subject } from 'rxjs';
 
 @Component({
     selector: 'microsities-information',
@@ -39,20 +41,19 @@ import { Subject, takeUntil } from 'rxjs';
         MatOptionModule,
         MatButtonModule,
         NgClass,
+        RouterLink,
+        MatSlideToggleModule,
     ],
 })
 export class MicrositiesInformationComponent implements OnInit {
-    accountForm: UntypedFormGroup;
-    config: FuseConfig;
+    @Input() micrositie: any;
+    micrositieForm: UntypedFormGroup;
     private _unsubscribeAll: Subject<any> = new Subject<any>();
 
     /**
      * Constructor
      */
-    constructor(
-        private _formBuilder: UntypedFormBuilder,
-        private _fuseConfigService: FuseConfigService
-    ) {}
+    constructor(private _formBuilder: UntypedFormBuilder) {}
 
     // -----------------------------------------------------------------------------------------------------
     // @ Lifecycle hooks
@@ -63,27 +64,16 @@ export class MicrositiesInformationComponent implements OnInit {
      */
     ngOnInit(): void {
         // Create the form
-        this.accountForm = this._formBuilder.group({
-            name: ['Brian Hughes'],
-            username: ['brianh'],
-            title: ['Senior Frontend Developer'],
-            company: ['YXZ Software'],
-            about: [
-                "Hey! This is Brian; husband, father and gamer. I'm mostly passionate about bleeding edge tech and chocolate! 🍫",
-            ],
-            email: ['hughes.brian@mail.com', Validators.email],
-            phone: ['121-490-33-12'],
-            country: ['usa'],
-            language: ['english'],
+        this.micrositieForm = this._formBuilder.group({
+            name: ['', Validators.required],
+            description: ['', Validators.required],
+            path: ['', Validators.required],
+            status: [true],
         });
 
-        // Subscribe to config changes
-        this._fuseConfigService.config$
-            .pipe(takeUntil(this._unsubscribeAll))
-            .subscribe((config: FuseConfig) => {
-                // Store the config
-                this.config = config;
-            });
+        if (this.micrositie) {
+            this.micrositieForm.patchValue(this.micrositie);
+        }
     }
 
     /**
@@ -93,14 +83,5 @@ export class MicrositiesInformationComponent implements OnInit {
         // Unsubscribe from all subscriptions
         this._unsubscribeAll.next(null);
         this._unsubscribeAll.complete();
-    }
-
-    /**
-     * Set the scheme on the config
-     *
-     * @param scheme
-     */
-    setScheme(scheme: Scheme): void {
-        this._fuseConfigService.config = { scheme };
     }
 }

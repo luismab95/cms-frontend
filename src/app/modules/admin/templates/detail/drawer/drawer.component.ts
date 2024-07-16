@@ -1,6 +1,7 @@
 import {
     ChangeDetectionStrategy,
     Component,
+    Input,
     OnInit,
     ViewEncapsulation,
 } from '@angular/core';
@@ -15,6 +16,7 @@ import { Subject } from 'rxjs';
     imports: [],
 })
 export class TemplatesDrawerComponent implements OnInit {
+    @Input() template: any;
     private _unsubscribeAll: Subject<any> = new Subject<any>();
 
     /**

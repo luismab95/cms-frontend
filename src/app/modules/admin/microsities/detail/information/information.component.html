@@ -1,56 +1,41 @@
 <div class="w-full max-w-3xl">
     <!-- Form -->
-    <form [formGroup]="accountForm">
+    <form [formGroup]="micrositieForm">
         <!-- Section -->
         <div class="w-full">
-            <div class="text-xl">Profile</div>
+            <div class="text-xl">General</div>
             <div class="text-secondary">
-                Following information is publicly displayed, be careful!
+                Información general de tu micrositio.
             </div>
         </div>
         <div class="mt-8 grid w-full gap-6 sm:grid-cols-4">
             <!-- Name -->
             <div class="sm:col-span-4">
                 <mat-form-field class="w-full" [subscriptSizing]="'dynamic'">
-                    <mat-label>Name</mat-label>
-                    <mat-icon class="icon-size-5" [svgIcon]="'heroicons_solid:user'" matPrefix></mat-icon>
+                    <mat-label>Nombre</mat-label>
+                    <mat-icon class="icon-size-5" [svgIcon]="'mat_outline:text_fields'" matPrefix></mat-icon>
                     <input [formControlName]="'name'" matInput />
                 </mat-form-field>
             </div>
-            <!-- Username -->
+
+            <!-- Path -->
             <div class="sm:col-span-4">
                 <mat-form-field class="fuse-mat-emphasized-affix w-full" [subscriptSizing]="'dynamic'">
-                    <mat-label>Username</mat-label>
+                    <mat-label>Ruta</mat-label>
                     <div class="text-secondary" matPrefix>fusetheme.com/</div>
-                    <input [formControlName]="'username'" matInput />
+                    <input [formControlName]="'path'" matInput />
                 </mat-form-field>
             </div>
-            <!-- Title -->
-            <div class="sm:col-span-2">
-                <mat-form-field class="w-full" [subscriptSizing]="'dynamic'">
-                    <mat-label>Title</mat-label>
-                    <mat-icon class="icon-size-5" [svgIcon]="'heroicons_solid:briefcase'" matPrefix></mat-icon>
-                    <input [formControlName]="'title'" matInput />
-                </mat-form-field>
-            </div>
-            <!-- Company -->
-            <div class="sm:col-span-2">
-                <mat-form-field class="w-full" [subscriptSizing]="'dynamic'">
-                    <mat-label>Company</mat-label>
-                    <mat-icon class="icon-size-5" [svgIcon]="'heroicons_solid:building-office-2'" matPrefix></mat-icon>
-                    <input [formControlName]="'company'" matInput />
-                </mat-form-field>
-            </div>
-            <!-- About -->
+
+            <!-- Description -->
             <div class="sm:col-span-4">
                 <mat-form-field class="w-full" [subscriptSizing]="'dynamic'">
-                    <mat-label>About</mat-label>
-                    <textarea matInput [formControlName]="'about'" cdkTextareaAutosize
+                    <mat-label>Descripción</mat-label>
+                    <textarea matInput [formControlName]="'description'" cdkTextareaAutosize
                         [cdkAutosizeMinRows]="5"></textarea>
                 </mat-form-field>
                 <div class="text-hint mt-1 text-md">
-                    Brief description for your profile. Basic HTML and Emoji are
-                    allowed.
+                    Breve descripción de tu micrositio.
                 </div>
             </div>
         </div>
@@ -58,119 +43,44 @@
         <!-- Divider -->
         <div class="my-10 border-t"></div>
 
+        @if(micrositie){
         <!-- Section -->
         <div class="w-full">
-            <div class="text-xl">Personal Information</div>
+            <div class="text-xl">Zona de peligro</div>
             <div class="text-secondary">
-                Communication details in case we want to connect with you. These
-                will be kept private.
+                Las opciones de esta sección son de administración del micrositio, ¡tenga cuidado!.
             </div>
         </div>
-        <div class="mt-8 grid w-full gap-6 sm:grid-cols-4">
-            <!-- Email -->
-            <div class="sm:col-span-2">
-                <mat-form-field class="w-full" [subscriptSizing]="'dynamic'">
-                    <mat-label>Email</mat-label>
-                    <mat-icon class="icon-size-5" [svgIcon]="'heroicons_solid:envelope'" matPrefix></mat-icon>
-                    <input [formControlName]="'email'" matInput />
-                </mat-form-field>
-            </div>
-            <!-- Phone -->
-            <div class="sm:col-span-2">
-                <mat-form-field class="w-full" [subscriptSizing]="'dynamic'">
-                    <mat-label>Phone</mat-label>
-                    <mat-icon class="icon-size-5" [svgIcon]="'heroicons_solid:phone'" matPrefix></mat-icon>
-                    <input [formControlName]="'phone'" matInput />
-                </mat-form-field>
-            </div>
-            <!-- Country -->
-            <div class="sm:col-span-2">
-                <mat-form-field class="w-full" [subscriptSizing]="'dynamic'">
-                    <mat-label>Country</mat-label>
-                    <mat-icon class="icon-size-5" [svgIcon]="'heroicons_solid:map-pin'" matPrefix></mat-icon>
-                    <mat-select [formControlName]="'country'">
-                        <mat-option [value]="'usa'">United States</mat-option>
-                        <mat-option [value]="'canada'">Canada</mat-option>
-                        <mat-option [value]="'mexico'">Mexico</mat-option>
-                        <mat-option [value]="'france'">France</mat-option>
-                        <mat-option [value]="'germany'">Germany</mat-option>
-                        <mat-option [value]="'italy'">Italy</mat-option>
-                    </mat-select>
-                </mat-form-field>
-            </div>
-            <!-- Language -->
-            <div class="sm:col-span-2">
-                <mat-form-field class="w-full" [subscriptSizing]="'dynamic'">
-                    <mat-label>Language</mat-label>
-                    <mat-icon class="icon-size-5" [svgIcon]="'heroicons_solid:globe-alt'" matPrefix></mat-icon>
-                    <mat-select [formControlName]="'language'">
-                        <mat-option [value]="'english'">English</mat-option>
-                        <mat-option [value]="'french'">French</mat-option>
-                        <mat-option [value]="'spanish'">Spanish</mat-option>
-                        <mat-option [value]="'german'">German</mat-option>
-                        <mat-option [value]="'italian'">Italian</mat-option>
-                    </mat-select>
-                </mat-form-field>
+        <div class="mt-8 grid w-full grid-cols-1 gap-6 border border-warn p-4 rounded-md">
+            <!--Desactivar -->
+            <div class="flex items-center justify-between">
+                <div class="flex-auto cursor-pointer" (click)="status.toggle()">
+                    <div class="font-medium leading-6">
+                        @if(micrositieForm.get('status').value ){
+                        Desactivar
+                        }@else {
+                        Activar
+                        }
+                    </div>
+                    <div class="text-secondary text-md">
+                        Habilita/Deshabilita el micrositio.
+                    </div>
+                </div>
+                <mat-slide-toggle class="ml-2" [color]="'primary'" [formControlName]="'status'" #status>
+                </mat-slide-toggle>
             </div>
         </div>
+
 
         <!-- Divider -->
         <div class="mb-10 mt-11 border-t"></div>
-
-          <!-- Section -->
-          <div class="w-full">
-            <div class="text-xl">Schema</div>
-            <div class="text-secondary">
-                Communication details in case we want to connect with you. These
-                will be kept private.
-            </div>
-        </div>
-        <div class="mt-6 flex flex-col md:flex-row justify-start gap-3">
-            <!-- Auto -->
-            <div class="w-full md:w-50 bg-hover flex cursor-pointer items-center rounded-full py-3 pl-5 pr-6 ring-inset ring-primary"
-                [class.ring-2]="config.scheme === 'auto'"
-                matTooltip="Automatically sets the scheme based on user's operating system's color scheme preference using 'prefer-color-scheme' media query."
-                (click)="setScheme('auto')">
-                <div class="flex items-center overflow-hidden rounded-full">
-                    <mat-icon class="icon-size-5" [svgIcon]="'heroicons_solid:bolt'"></mat-icon>
-                </div>
-                <div class="ml-2 flex items-center font-medium leading-5"
-                    [class.text-secondary]="config.scheme !== 'auto'">
-                    Auto
-                </div>
-            </div>
-            <!-- Dark -->
-            <div class="w-full md:w-50 bg-hover flex cursor-pointer items-center rounded-full py-3 pl-5 pr-6 ring-inset ring-primary"
-                [class.ring-2]="config.scheme === 'dark'" (click)="setScheme('dark')">
-                <div class="flex items-center overflow-hidden rounded-full">
-                    <mat-icon class="icon-size-5" [svgIcon]="'heroicons_solid:moon'"></mat-icon>
-                </div>
-                <div class="ml-2 flex items-center font-medium leading-5"
-                    [class.text-secondary]="config.scheme !== 'dark'">
-                    Dark
-                </div>
-            </div>
-            <!-- Light -->
-            <div class="w-full md:w-50 bg-hover flex cursor-pointer items-center rounded-full py-3 pl-5 pr-6 ring-inset ring-primary"
-                [class.ring-2]="config.scheme === 'light'" (click)="setScheme('light')">
-                <div class="flex items-center overflow-hidden rounded-full">
-                    <mat-icon class="icon-size-5" [svgIcon]="'heroicons_solid:sun'"></mat-icon>
-                </div>
-                <div class="ml-2 flex items-center font-medium leading-5"
-                    [class.text-secondary]="config.scheme !== 'light'">
-                    Light
-                </div>
-            </div>
-        </div>
-
-        <!-- Divider -->
-        <div class="mb-10 mt-11 border-t"></div>
+        }
 
         <!-- Actions -->
         <div class="flex items-center justify-end">
-            <button mat-stroked-button type="button">Cancel</button>
+            <button [routerLink]="['/admin/modules/microsities']" mat-stroked-button type="button">Cancelar</button>
             <button class="ml-4" mat-flat-button type="button" [color]="'primary'">
-                Save
+                Guardar
             </button>
         </div>
     </form>

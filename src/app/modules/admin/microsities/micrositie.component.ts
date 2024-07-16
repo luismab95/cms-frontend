@@ -63,9 +63,9 @@ import {
     selector: 'micrositie',
     templateUrl: './micrositie.component.html',
     styles: [
-        /* language=SCSS */
+        /* microsities=SCSS */
         `
-            .inventory-grid {
+            .microsities-grid {
                 grid-template-columns: 48px auto 40px;
 
                 @screen sm {
@@ -632,5 +632,16 @@ export class MicrositieComponent implements OnInit, AfterViewInit, OnDestroy {
      */
     trackByFn(index: number, item: any): any {
         return item.id || index;
+    }
+
+    /**
+     * Go to detail page
+     *
+     * @param micrositie
+     */
+    goToDetail(micrositie?: any) {
+        this._router.navigateByUrl('admin/modules/microsities/detail', {
+            state: { micrositie },
+        });
     }
 }

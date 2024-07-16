@@ -1,30 +1,50 @@
 import { TextFieldModule } from '@angular/cdk/text-field';
-import { NgClass } from '@angular/common';
+import { NgClass, TitleCasePipe, UpperCasePipe } from '@angular/common';
 import {
     ChangeDetectionStrategy,
     Component,
+    Input,
     OnInit,
     ViewEncapsulation,
 } from '@angular/core';
 import {
     FormsModule,
     ReactiveFormsModule,
-    UntypedFormBuilder,
-    UntypedFormGroup,
-    Validators,
+    UntypedFormControl,
 } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatOptionModule } from '@angular/material/core';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
+import { MatPaginatorModule } from '@angular/material/paginator';
 import { MatSelectModule } from '@angular/material/select';
-import { FuseConfig, FuseConfigService, Scheme } from '@fuse/services/config';
-import { Subject, takeUntil } from 'rxjs';
+import { Router } from '@angular/router';
+import { Subject } from 'rxjs';
 
 @Component({
     selector: 'microsities-pages',
     templateUrl: './pages.component.html',
+    styles: [
+        /* language=SCSS */
+        `
+            .pages-grid {
+                grid-template-columns: 48px auto 40px;
+
+                @screen sm {
+                    grid-template-columns: 48px auto 112px 72px;
+                }
+
+                @screen md {
+                    grid-template-columns: 48px 112px auto 112px 72px;
+                }
+
+                @screen lg {
+                    grid-template-columns: 48px 112px auto 112px 96px 96px 72px;
+                }
+            }
+        `,
+    ],
     encapsulation: ViewEncapsulation.None,
     changeDetection: ChangeDetectionStrategy.OnPush,
     standalone: true,
@@ -39,20 +59,22 @@ import { Subject, takeUntil } from 'rxjs';
         MatOptionModule,
         MatButtonModule,
         NgClass,
+        TitleCasePipe,
+        UpperCasePipe,
+        MatPaginatorModule,
     ],
 })
 export class MicrositiesPagesComponent implements OnInit {
-    accountForm: UntypedFormGroup;
-    config: FuseConfig;
+    @Input() micrositie: any;
+    pages: any[] = [];
+    isLoading: boolean = false;
+    searchInputControl: UntypedFormControl = new UntypedFormControl();
     private _unsubscribeAll: Subject<any> = new Subject<any>();
 
     /**
      * Constructor
      */
-    constructor(
-        private _formBuilder: UntypedFormBuilder,
-        private _fuseConfigService: FuseConfigService
-    ) {}
+    constructor(private _router: Router) {}
 
     // -----------------------------------------------------------------------------------------------------
     // @ Lifecycle hooks
@@ -62,28 +84,25 @@ export class MicrositiesPagesComponent implements OnInit {
      * On init
      */
     ngOnInit(): void {
-        // Create the form
-        this.accountForm = this._formBuilder.group({
-            name: ['Brian Hughes'],
-            username: ['brianh'],
-            title: ['Senior Frontend Developer'],
-            company: ['YXZ Software'],
-            about: [
-                "Hey! This is Brian; husband, father and gamer. I'm mostly passionate about bleeding edge tech and chocolate! 🍫",
-            ],
-            email: ['hughes.brian@mail.com', Validators.email],
-            phone: ['121-490-33-12'],
-            country: ['usa'],
-            language: ['english'],
-        });
-
-        // Subscribe to config changes
-        this._fuseConfigService.config$
-            .pipe(takeUntil(this._unsubscribeAll))
-            .subscribe((config: FuseConfig) => {
-                // Store the config
-                this.config = config;
-            });
+        // Set languages data
+        this.pages = [
+            {
+                id: 1,
+                name: 'Novedades',
+                description:
+                    'Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
+                path: '/novedades',
+                status: true,
+            },
+            {
+                id: 1,
+                name: 'Mitos',
+                description:
+                    'Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
+                path: '/mitos',
+                status: false,
+            },
+        ];
     }
 
     /**
@@ -96,11 +115,23 @@ export class MicrositiesPagesComponent implements OnInit {
     }
 
     /**
-     * Set the scheme on the config
+     * Track by function for ngFor loops
      *
-     * @param scheme
+     * @param index
+     * @param item
      */
-    setScheme(scheme: Scheme): void {
-        this._fuseConfigService.config = { scheme };
+    trackByFn(index: number, item: any): any {
+        return item.id || index;
+    }
+
+    /**
+     * Go to detail page
+     *
+     * @param page
+     */
+    goToDetail(page?: any) {
+        this._router.navigateByUrl('admin/modules/pages/detail', {
+            state: { page, micrositie: this.micrositie },
+        });
     }
 }

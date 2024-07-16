@@ -10,8 +10,9 @@
                     <button [routerLink]="['/admin/modules/microsities']" mat-icon-button>
                         <mat-icon [svgIcon]="'heroicons_outline:arrow-left'"></mat-icon>
                     </button>
+
                     <span class="ms-2">
-                        Micrositie
+                        {{micrositie ? 'Micrositio':'Nuevo micrositio'}}
                     </span>
                 </div>
                 <!-- Close button -->
@@ -76,11 +77,11 @@
                     @switch (selectedPanel) {
                     <!-- Information -->
                     @case ('information') {
-                    <microsities-information></microsities-information>
+                    <microsities-information [micrositie]="micrositie"></microsities-information>
                     }
                     <!-- Pages -->
                     @case ('pages') {
-                    <microsities-pages></microsities-pages>
+                    <microsities-pages [micrositie]="micrositie"></microsities-pages>
                     }
 
                     }

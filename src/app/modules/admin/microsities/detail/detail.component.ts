@@ -11,7 +11,7 @@ import {
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatDrawer, MatSidenavModule } from '@angular/material/sidenav';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { FuseMediaWatcherService } from '@fuse/services/media-watcher';
 import { Subject, takeUntil } from 'rxjs';
 import { MicrositiesInformationComponent } from './information/information.component';
@@ -38,6 +38,7 @@ export class MicroSitiesDetailComponent implements OnInit, OnDestroy {
     drawerMode: 'over' | 'side' = 'side';
     drawerOpened: boolean = true;
     panels: any[] = [];
+    micrositie: any;
     selectedPanel: string = 'information';
     private _unsubscribeAll: Subject<any> = new Subject<any>();
 
@@ -46,8 +47,12 @@ export class MicroSitiesDetailComponent implements OnInit, OnDestroy {
      */
     constructor(
         private _changeDetectorRef: ChangeDetectorRef,
-        private _fuseMediaWatcherService: FuseMediaWatcherService
-    ) {}
+        private _fuseMediaWatcherService: FuseMediaWatcherService,
+        private _router: Router
+    ) {
+        this.micrositie =
+            this._router.getCurrentNavigation()?.extras?.state?.micrositie;
+    }
 
     // -----------------------------------------------------------------------------------------------------
     // @ Lifecycle hooks
@@ -62,17 +67,19 @@ export class MicroSitiesDetailComponent implements OnInit, OnDestroy {
             {
                 id: 'information',
                 icon: 'heroicons_outline:information-circle',
-                title: 'Information',
-                description:
-                    'Manage your public profile and private information',
-            },
-            {
-                id: 'pages',
-                icon: 'heroicons_outline:document-duplicate',
-                title: 'Pages',
-                description: "Manage when you'll be notified on which channels",
+                title: 'Información',
+                description: 'Gestiona la información de tu micrositio.',
             },
         ];
+
+        if (this.micrositie) {
+            this.panels.push({
+                id: 'pages',
+                icon: 'heroicons_outline:document-duplicate',
+                title: 'Páginas',
+                description: 'Gestiona las páginas de tu micrositio.',
+            });
+        }
 
         // Subscribe to media changes
         this._fuseMediaWatcherService.onMediaChange$

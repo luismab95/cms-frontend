@@ -39,6 +39,7 @@ import { MatSort, MatSortModule } from '@angular/material/sort';
 import { fuseAnimations } from '@fuse/animations';
 import { FuseConfirmationService } from '@fuse/services/confirmation';
 
+import { Router } from '@angular/router';
 import {
     Observable,
     Subject,
@@ -57,15 +58,14 @@ import {
     InventoryTag,
     InventoryVendor,
 } from './pages.types';
-import { Router } from '@angular/router';
 
 @Component({
     selector: 'pages',
     templateUrl: './pages.component.html',
     styles: [
-        /* language=SCSS */
+        /* pages=SCSS */
         `
-            .inventory-grid {
+            .pages-grid {
                 grid-template-columns: 48px auto 40px;
 
                 @screen sm {
@@ -632,5 +632,16 @@ export class PagesComponent implements OnInit, AfterViewInit, OnDestroy {
      */
     trackByFn(index: number, item: any): any {
         return item.id || index;
+    }
+
+    /**
+     * Go to detail page
+     *
+     * @param page
+     */
+    goToDetail(page?: any) {
+        this._router.navigateByUrl('admin/modules/pages/detail', {
+            state: { page },
+        });
     }
 }

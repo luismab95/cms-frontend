@@ -6,7 +6,6 @@ import {
     Routes,
 } from '@angular/router';
 import { catchError, throwError } from 'rxjs';
-import { UsersDetailsComponent } from './details/details.component';
 import { UsersListComponent } from './list/list.component';
 import { UsersComponent } from './users.component';
 import { ContactsService } from './users.service';
@@ -42,44 +41,6 @@ const contactResolver = (
     );
 };
 
-/**
- * Can deactivate contacts details
- *
- * @param component
- * @param currentRoute
- * @param currentState
- * @param nextState
- */
-const canDeactivateContactsDetails = (
-    component: UsersDetailsComponent,
-    currentRoute: ActivatedRouteSnapshot,
-    currentState: RouterStateSnapshot,
-    nextState: RouterStateSnapshot
-) => {
-    // Get the next route
-    let nextRoute: ActivatedRouteSnapshot = nextState.root;
-    while (nextRoute.firstChild) {
-        nextRoute = nextRoute.firstChild;
-    }
-
-    // If the next state doesn't contain '/contacts'
-    // it means we are navigating away from the
-    // contacts app
-    if (!nextState.url.includes('/users')) {
-        // Let it navigate
-        return true;
-    }
-
-    // If we are navigating to another contact...
-    if (nextRoute.paramMap.get('id')) {
-        // Just navigate
-        return true;
-    }
-
-    // Otherwise, close the drawer first, and then navigate
-    return component.closeDrawer().then(() => true);
-};
-
 export default [
     {
         path: '',
@@ -95,18 +56,6 @@ export default [
                     contacts: () => inject(ContactsService).getContacts(),
                     countries: () => inject(ContactsService).getCountries(),
                 },
-                children: [
-                    {
-                        path: ':id',
-                        component: UsersDetailsComponent,
-                        resolve: {
-                            contact: contactResolver,
-                            countries: () =>
-                                inject(ContactsService).getCountries(),
-                        },
-                        canDeactivate: [canDeactivateContactsDetails],
-                    },
-                ],
             },
         ],
     },

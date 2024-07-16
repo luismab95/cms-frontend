@@ -131,7 +131,7 @@ export class SitieLanguagesDetailsComponent implements OnInit, OnDestroy {
         // Open the confirmation dialog
         const confirmation = this._fuseConfirmationService.open({
             title: `${this.language.status ? 'Inactivar' : 'Activar'} idioma`,
-            message: `¿Estás seguro de que deseas ${this.language.status ? 'Inactivar' : 'Activar'} este idioma?.`,
+            message: `¿Estás seguro de que deseas ${this.language.status ? 'inactivar' : 'activar'} este idioma?.`,
             actions: {
                 confirm: {
                     label: 'Aceptar',

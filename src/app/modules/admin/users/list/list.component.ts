@@ -1,6 +1,5 @@
 import {
     AsyncPipe,
-    DOCUMENT,
     I18nPluralPipe,
     NgClass,
     TitleCasePipe,
@@ -9,10 +8,8 @@ import {
     ChangeDetectionStrategy,
     ChangeDetectorRef,
     Component,
-    Inject,
     OnDestroy,
     OnInit,
-    ViewChild,
     ViewEncapsulation,
 } from '@angular/core';
 import {
@@ -25,23 +22,13 @@ import { MatOptionModule } from '@angular/material/core';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
+import { MatPaginatorModule } from '@angular/material/paginator';
 import { MatSelectModule } from '@angular/material/select';
-import { MatDrawer, MatSidenavModule } from '@angular/material/sidenav';
-import {
-    ActivatedRoute,
-    Router,
-    RouterLink,
-    RouterOutlet,
-} from '@angular/router';
-import { FuseMediaWatcherService } from '@fuse/services/media-watcher';
-import {
-    Observable,
-    Subject,
-    filter,
-    fromEvent,
-    switchMap,
-    takeUntil,
-} from 'rxjs';
+import { MatSidenavModule } from '@angular/material/sidenav';
+import { RouterLink, RouterOutlet } from '@angular/router';
+import { ModalService } from 'app/shared/services/modal.service';
+import { Observable, Subject, switchMap, takeUntil } from 'rxjs';
+import { UsersDetailsComponent } from '../details/details.component';
 import { ContactsService } from '../users.service';
 import { Contact, Country } from '../users.types';
 
@@ -67,15 +54,13 @@ import { Contact, Country } from '../users.types';
         MatSelectModule,
         MatOptionModule,
         TitleCasePipe,
+        MatPaginatorModule,
     ],
 })
 export class UsersListComponent implements OnInit, OnDestroy {
-    @ViewChild('matDrawer', { static: true }) matDrawer: MatDrawer;
-
     roles: any[];
-
     contacts$: Observable<Contact[]>;
-
+    users: any[] = [];
     contactsCount: number = 0;
     contactsTableColumns: string[] = ['name', 'email', 'phoneNumber', 'job'];
     countries: Country[];
@@ -88,12 +73,9 @@ export class UsersListComponent implements OnInit, OnDestroy {
      * Constructor
      */
     constructor(
-        private _activatedRoute: ActivatedRoute,
         private _changeDetectorRef: ChangeDetectorRef,
         private _contactsService: ContactsService,
-        @Inject(DOCUMENT) private _document: any,
-        private _router: Router,
-        private _fuseMediaWatcherService: FuseMediaWatcherService
+        private _modalSvc: ModalService
     ) {}
 
     // -----------------------------------------------------------------------------------------------------
@@ -126,35 +108,41 @@ export class UsersListComponent implements OnInit, OnDestroy {
             },
         ];
 
+        this.contactsCount = 80;
+
+        this.users = [
+            {
+                name: 'John Mar',
+                lastname: 'Doe Test',
+                email: 'johndoe@gmail.com',
+                status: true,
+                bloqued: false,
+                roleId: 'read',
+            },
+            {
+                name: 'Daemon Percival',
+                lastname: 'Route Lars',
+                email: 'daemonP@gmail.com',
+                status: true,
+                bloqued: true,
+                roleId: 'write',
+            },
+            {
+                name: 'Marie Linz',
+                lastname: 'Per Toick',
+                email: 'marLinz@gmail.com',
+                status: false,
+                bloqued: false,
+                roleId: 'read',
+            },
+        ];
+
         // Get the contacts
         this.contacts$ = this._contactsService.contacts$;
         this._contactsService.contacts$
             .pipe(takeUntil(this._unsubscribeAll))
             .subscribe((contacts: Contact[]) => {
                 // Update the counts
-                this.contactsCount = contacts.length;
-
-                // Mark for check
-                this._changeDetectorRef.markForCheck();
-            });
-
-        // Get the contact
-        this._contactsService.contact$
-            .pipe(takeUntil(this._unsubscribeAll))
-            .subscribe((contact: Contact) => {
-                // Update the selected contact
-                this.selectedContact = contact;
-
-                // Mark for check
-                this._changeDetectorRef.markForCheck();
-            });
-
-        // Get the countries
-        this._contactsService.countries$
-            .pipe(takeUntil(this._unsubscribeAll))
-            .subscribe((countries: Country[]) => {
-                // Update the countries
-                this.countries = countries;
 
                 // Mark for check
                 this._changeDetectorRef.markForCheck();
@@ -170,46 +158,6 @@ export class UsersListComponent implements OnInit, OnDestroy {
                 )
             )
             .subscribe();
-
-        // Subscribe to MatDrawer opened change
-        this.matDrawer.openedChange.subscribe((opened) => {
-            if (!opened) {
-                // Remove the selected contact when drawer closed
-                this.selectedContact = null;
-
-                // Mark for check
-                this._changeDetectorRef.markForCheck();
-            }
-        });
-
-        // Subscribe to media changes
-        this._fuseMediaWatcherService.onMediaChange$
-            .pipe(takeUntil(this._unsubscribeAll))
-            .subscribe(({ matchingAliases }) => {
-                // Set the drawerMode if the given breakpoint is active
-                if (matchingAliases.includes('lg')) {
-                    this.drawerMode = 'side';
-                } else {
-                    this.drawerMode = 'over';
-                }
-
-                // Mark for check
-                this._changeDetectorRef.markForCheck();
-            });
-
-        // Listen for shortcuts
-        fromEvent(this._document, 'keydown')
-            .pipe(
-                takeUntil(this._unsubscribeAll),
-                filter<KeyboardEvent>(
-                    (event) =>
-                        (event.ctrlKey === true || event.metaKey) && // Ctrl or Cmd
-                        event.key === '/' // '/'
-                )
-            )
-            .subscribe(() => {
-                this.createContact();
-            });
     }
 
     /**
@@ -226,33 +174,6 @@ export class UsersListComponent implements OnInit, OnDestroy {
     // -----------------------------------------------------------------------------------------------------
 
     /**
-     * On backdrop clicked
-     */
-    onBackdropClicked(): void {
-        // Go back to the list
-        this._router.navigate(['./'], { relativeTo: this._activatedRoute });
-
-        // Mark for check
-        this._changeDetectorRef.markForCheck();
-    }
-
-    /**
-     * Create contact
-     */
-    createContact(): void {
-        // Create the contact
-        this._contactsService.createContact().subscribe((newContact) => {
-            // Go to the new contact
-            this._router.navigate(['./', newContact.id], {
-                relativeTo: this._activatedRoute,
-            });
-
-            // Mark for check
-            this._changeDetectorRef.markForCheck();
-        });
-    }
-
-    /**
      * Track by function for ngFor loops
      *
      * @param index
@@ -260,5 +181,17 @@ export class UsersListComponent implements OnInit, OnDestroy {
      */
     trackByFn(index: number, item: any): any {
         return item.id || index;
+    }
+
+    /**
+     * Open modal laguanges detail
+     *
+     * @param data
+     */
+    openDetailsModal(data?: any): void {
+        this._modalSvc.openModal<UsersDetailsComponent, any>(
+            UsersDetailsComponent,
+            data
+        );
     }
 }

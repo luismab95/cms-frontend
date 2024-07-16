@@ -11,7 +11,7 @@ import {
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatDrawer, MatSidenavModule } from '@angular/material/sidenav';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { FuseMediaWatcherService } from '@fuse/services/media-watcher';
 import { Subject, takeUntil } from 'rxjs';
 import { TemplatesDrawerComponent } from './drawer/drawer.component';
@@ -39,6 +39,7 @@ export class TemplatesDetailComponent implements OnInit, OnDestroy {
     drawerOpened: boolean = true;
     panels: any[] = [];
     selectedPanel: string = 'information';
+    template: any;
     private _unsubscribeAll: Subject<any> = new Subject<any>();
 
     /**
@@ -46,8 +47,12 @@ export class TemplatesDetailComponent implements OnInit, OnDestroy {
      */
     constructor(
         private _changeDetectorRef: ChangeDetectorRef,
-        private _fuseMediaWatcherService: FuseMediaWatcherService
-    ) {}
+        private _fuseMediaWatcherService: FuseMediaWatcherService,
+        private _router: Router
+    ) {
+        this.template =
+            this._router.getCurrentNavigation()?.extras?.state?.template;
+    }
 
     // -----------------------------------------------------------------------------------------------------
     // @ Lifecycle hooks
@@ -62,18 +67,20 @@ export class TemplatesDetailComponent implements OnInit, OnDestroy {
             {
                 id: 'information',
                 icon: 'heroicons_outline:information-circle',
-                title: 'Information',
-                description:
-                    'Manage your public profile and private information',
-            },
-            {
-                id: 'drawer',
-                icon: 'heroicons_outline:paint-brush',
-                title: 'Drawer',
-                description:
-                    'Manage your password and 2-step verification preferences',
+                title: 'Información',
+                description: 'Gestiona la información de tu plantilla.',
             },
         ];
+
+        if (this.template) {
+            this.panels.push({
+                id: 'drawer',
+                icon: 'heroicons_outline:paint-brush',
+                title: 'Personalizar',
+                description:
+                    'Personaliza tu encabezado y pie de tus páginas web.',
+            });
+        }
 
         // Subscribe to media changes
         this._fuseMediaWatcherService.onMediaChange$

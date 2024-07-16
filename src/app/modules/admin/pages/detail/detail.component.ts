@@ -11,12 +11,12 @@ import {
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatDrawer, MatSidenavModule } from '@angular/material/sidenav';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { FuseMediaWatcherService } from '@fuse/services/media-watcher';
 import { Subject, takeUntil } from 'rxjs';
+import { PagesDrawerComponent } from './drawer/drawer.component';
 import { PagesInformationComponent } from './information/information.component';
 import { PagesLangugesComponent } from './languages/languages.component';
-import { PagesDrawerComponent } from './drawer/drawer.component';
 
 @Component({
     selector: 'pages-detail',
@@ -40,6 +40,8 @@ export class PagesDetailComponent implements OnInit, OnDestroy {
     drawerMode: 'over' | 'side' = 'side';
     drawerOpened: boolean = true;
     panels: any[] = [];
+    page: any;
+    micrositie: any;
     selectedPanel: string = 'information';
     private _unsubscribeAll: Subject<any> = new Subject<any>();
 
@@ -48,8 +50,13 @@ export class PagesDetailComponent implements OnInit, OnDestroy {
      */
     constructor(
         private _changeDetectorRef: ChangeDetectorRef,
-        private _fuseMediaWatcherService: FuseMediaWatcherService
-    ) {}
+        private _fuseMediaWatcherService: FuseMediaWatcherService,
+        private _router: Router
+    ) {
+        this.page = this._router.getCurrentNavigation()?.extras?.state?.page;
+        this.micrositie =
+            this._router.getCurrentNavigation()?.extras?.state?.micrositie;
+    }
 
     // -----------------------------------------------------------------------------------------------------
     // @ Lifecycle hooks
@@ -64,25 +71,26 @@ export class PagesDetailComponent implements OnInit, OnDestroy {
             {
                 id: 'information',
                 icon: 'heroicons_outline:information-circle',
-                title: 'Information',
-                description:
-                    'Manage your public profile and private information',
-            },
-            {
-                id: 'languages',
-                icon: 'heroicons_outline:language',
-                title: 'Languages',
-                description:
-                    'Manage your password and 2-step verification preferences',
-            },
-            {
-                id: 'drawer',
-                icon: 'heroicons_outline:paint-brush',
-                title: 'Drawer',
-                description:
-                    'Manage your password and 2-step verification preferences',
+                title: 'Información',
+                description: 'Gestiona la información de tu página.',
             },
         ];
+
+        if (this.page) {
+            this.panels.push({
+                id: 'languages',
+                icon: 'heroicons_outline:language',
+                title: 'Idiomas',
+                description:
+                    'Administra la información de tu página en los diferentes idiomas del sitio.',
+            });
+            this.panels.push({
+                id: 'drawer',
+                icon: 'heroicons_outline:paint-brush',
+                title: 'Personalizar',
+                description: 'Personaliza el contenido de tu página.',
+            });
+        }
 
         // Subscribe to media changes
         this._fuseMediaWatcherService.onMediaChange$
@@ -146,5 +154,19 @@ export class PagesDetailComponent implements OnInit, OnDestroy {
      */
     trackByFn(index: number, item: any): any {
         return item.id || index;
+    }
+
+    /**
+     * Ir atras
+     *
+     */
+    goToBack(): any {
+        if (this.micrositie) {
+            this._router.navigateByUrl('/admin/modules/microsities/detail', {
+                state: { micrositie: this.micrositie },
+            });
+        } else {
+            this._router.navigateByUrl('/admin/modules/pages');
+        }
     }
 }

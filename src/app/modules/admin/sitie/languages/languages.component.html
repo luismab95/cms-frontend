@@ -1,13 +1,19 @@
 <div class="w-full max-w-full">
     <div
-        class="py-10 flex min-w-0 flex-auto flex-col dark:bg-transparent sm:absolute top-100 sm:inset-0 sm:overflow-hidden">
+        class="md:py-10 flex min-w-0 flex-auto flex-col dark:bg-transparent sm:absolute top-100 sm:inset-0 sm:overflow-hidden">
 
         <!-- Header -->
         <div
             class="relative flex flex-0 flex-col border-b px-6 pb-8 sm:flex-row sm:items-center sm:justify-between md:px-8">
 
             <!-- Title -->
-            <div class="text-4xl font-extrabold tracking-tight"></div>
+            <div>
+                <div class="text-4xl font-extrabold leading-none tracking-tight">
+                </div>
+                <div class="text-secondary -mt-10 md:mt-8 ml-4 flex items-center font-medium">
+                    10 idiomas
+                </div>
+            </div>
             <!-- Actions -->
             <div class="mt-6 flex shrink-0 items-center sm:ml-4 sm:mt-0">
                 <!-- Search -->
@@ -40,7 +46,7 @@
                         <div class="hidden md:block" [mat-sort-header]="'lang'">
                             Código
                         </div>
-                        <div class="hidden lg:block" [mat-sort-header]="'active'">
+                        <div class="hidden lg:block" [mat-sort-header]="'status'">
                             Estado
                         </div>
                         <div class="hidden lg:block"></div>
@@ -97,11 +103,7 @@
                             <button (click)="openDetailsModal(language)" mat-icon-button>
                                 <mat-icon>more_vert</mat-icon>
                             </button>
-
                         </div>
-
-
-
                     </div>
                     }
                 </div>
@@ -117,3 +119,4 @@
             </div>
         </div>
     </div>
+</div>

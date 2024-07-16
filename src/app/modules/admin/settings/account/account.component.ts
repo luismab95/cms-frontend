@@ -46,7 +46,6 @@ export class SettingsAccountComponent implements OnInit {
     accountForm: UntypedFormGroup;
     config: FuseConfig;
     roles: any[];
-    permissions: any[] = [];
 
     private _unsubscribeAll: Subject<any> = new Subject<any>();
 
@@ -97,52 +96,6 @@ export class SettingsAccountComponent implements OnInit {
                 value: 'admin',
                 description:
                     'Can read, clone, and push to this repository. Can also manage issues, pull requests, and repository settings, including adding collaborators.',
-            },
-        ];
-
-        // Setup the roles
-        this.permissions = [
-            {
-                resource: 'Usuarios',
-                actions: [
-                    {
-                        name: 'Crear',
-                        detail: 'Can read, clone, and push to this repository. Can also manage issues and pull requests.',
-                    },
-                    {
-                        name: 'Crear',
-                        detail: 'Can read, clone, and push to this repository. Can also manage issues and pull requests.',
-                    },
-                    {
-                        name: 'Crear',
-                        detail: 'Can read, clone, and push to this repository. Can also manage issues and pull requests.',
-                    },
-                    {
-                        name: 'Crear',
-                        detail: 'Can read, clone, and push to this repository. Can also manage issues and pull requests.',
-                    },
-                ],
-            },
-            {
-                resource: 'Usuarios',
-                actions: [
-                    {
-                        name: 'Crear',
-                        detail: 'Can read, clone, and push to this repository. Can also manage issues and pull requests.',
-                    },
-                    {
-                        name: 'Crear',
-                        detail: 'Can read, clone, and push to this repository. Can also manage issues and pull requests.',
-                    },
-                    {
-                        name: 'Crear',
-                        detail: 'Can read, clone, and push to this repository. Can also manage issues and pull requests.',
-                    },
-                    {
-                        name: 'Crear',
-                        detail: 'Can read, clone, and push to this repository. Can also manage issues and pull requests.',
-                    },
-                ],
             },
         ];
 

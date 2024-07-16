@@ -1,6 +1,7 @@
 import {
     ChangeDetectionStrategy,
     Component,
+    Input,
     OnInit,
     ViewEncapsulation,
 } from '@angular/core';
@@ -15,6 +16,8 @@ import { Subject } from 'rxjs';
     imports: [],
 })
 export class PagesDrawerComponent implements OnInit {
+    @Input() page: any;
+    @Input() micrositie: any;
     private _unsubscribeAll: Subject<any> = new Subject<any>();
 
     /**
