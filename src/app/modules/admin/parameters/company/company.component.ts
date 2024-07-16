@@ -19,8 +19,8 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
-import { FuseConfig, FuseConfigService, Scheme } from '@fuse/services/config';
-import { Subject, takeUntil } from 'rxjs';
+import { FuseConfig } from '@fuse/services/config';
+import { Subject } from 'rxjs';
 
 @Component({
     selector: 'parameters-company',
@@ -42,17 +42,14 @@ import { Subject, takeUntil } from 'rxjs';
     ],
 })
 export class ParametersCompanyComponent implements OnInit {
-    accountForm: UntypedFormGroup;
+    companyForm: UntypedFormGroup;
     config: FuseConfig;
     private _unsubscribeAll: Subject<any> = new Subject<any>();
 
     /**
      * Constructor
      */
-    constructor(
-        private _formBuilder: UntypedFormBuilder,
-        private _fuseConfigService: FuseConfigService
-    ) {}
+    constructor(private _formBuilder: UntypedFormBuilder) {}
 
     // -----------------------------------------------------------------------------------------------------
     // @ Lifecycle hooks
@@ -63,27 +60,25 @@ export class ParametersCompanyComponent implements OnInit {
      */
     ngOnInit(): void {
         // Create the form
-        this.accountForm = this._formBuilder.group({
-            name: ['Brian Hughes'],
-            username: ['brianh'],
-            title: ['Senior Frontend Developer'],
-            company: ['YXZ Software'],
-            about: [
-                "Hey! This is Brian; husband, father and gamer. I'm mostly passionate about bleeding edge tech and chocolate! 🍫",
+        this.companyForm = this._formBuilder.group({
+            name: ['Mi compañia', Validators.required],
+            description: [
+                'Lorem ipsum dolor sit, amet consectetur adipisicing elit. Magnam in iste iure obcaecati impedit modi sed, ipsa, cupiditate temporibus esse, maiores dolores nobis. Commodi assumenda, quibusdam laudantium atque ab consequatur!',
+                Validators.required,
             ],
-            email: ['hughes.brian@mail.com', Validators.email],
-            phone: ['121-490-33-12'],
-            country: ['usa'],
-            language: ['english'],
+            website: ['micompanie.com', Validators.required],
+            urlStatics: ['http://www/micompanie.com/file', Validators.required],
+            email: [
+                'hola@micompanie.com',
+                [Validators.required, Validators.email],
+            ],
+            phone: ['0987878787', Validators.required],
+            country: ['ecuador', Validators.required],
+            terms: [
+                'http://www/micompanie.com/file/terms.pdf',
+                Validators.required,
+            ],
         });
-
-        // Subscribe to config changes
-        this._fuseConfigService.config$
-            .pipe(takeUntil(this._unsubscribeAll))
-            .subscribe((config: FuseConfig) => {
-                // Store the config
-                this.config = config;
-            });
     }
 
     /**
@@ -93,14 +88,5 @@ export class ParametersCompanyComponent implements OnInit {
         // Unsubscribe from all subscriptions
         this._unsubscribeAll.next(null);
         this._unsubscribeAll.complete();
-    }
-
-    /**
-     * Set the scheme on the config
-     *
-     * @param scheme
-     */
-    setScheme(scheme: Scheme): void {
-        this._fuseConfigService.config = { scheme };
     }
 }

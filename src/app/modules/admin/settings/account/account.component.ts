@@ -1,5 +1,5 @@
 import { TextFieldModule } from '@angular/cdk/text-field';
-import { NgClass } from '@angular/common';
+import { NgClass, TitleCasePipe } from '@angular/common';
 import {
     ChangeDetectionStrategy,
     Component,
@@ -39,11 +39,15 @@ import { Subject, takeUntil } from 'rxjs';
         MatOptionModule,
         MatButtonModule,
         NgClass,
+        TitleCasePipe,
     ],
 })
 export class SettingsAccountComponent implements OnInit {
     accountForm: UntypedFormGroup;
     config: FuseConfig;
+    roles: any[];
+    permissions: any[] = [];
+
     private _unsubscribeAll: Subject<any> = new Subject<any>();
 
     /**
@@ -64,18 +68,83 @@ export class SettingsAccountComponent implements OnInit {
     ngOnInit(): void {
         // Create the form
         this.accountForm = this._formBuilder.group({
-            name: ['Brian Hughes'],
-            username: ['brianh'],
-            title: ['Senior Frontend Developer'],
-            company: ['YXZ Software'],
-            about: [
-                "Hey! This is Brian; husband, father and gamer. I'm mostly passionate about bleeding edge tech and chocolate! 🍫",
+            name: ['Brian Marcel', Validators.required],
+            lastname: ['Hughes Rich', Validators.required],
+            email: [
+                'hughes.brian@mail.com',
+                [Validators.required, Validators.email],
             ],
-            email: ['hughes.brian@mail.com', Validators.email],
-            phone: ['121-490-33-12'],
-            country: ['usa'],
-            language: ['english'],
+            roleId: ['read', Validators.required],
+            twoFactor: [true],
         });
+
+        // Setup the roles
+        this.roles = [
+            {
+                label: 'Read',
+                value: 'read',
+                description:
+                    'Can read and clone this repository. Can also open and comment on issues and pull requests.',
+            },
+            {
+                label: 'Write',
+                value: 'write',
+                description:
+                    'Can read, clone, and push to this repository. Can also manage issues and pull requests.',
+            },
+            {
+                label: 'Admin',
+                value: 'admin',
+                description:
+                    'Can read, clone, and push to this repository. Can also manage issues, pull requests, and repository settings, including adding collaborators.',
+            },
+        ];
+
+        // Setup the roles
+        this.permissions = [
+            {
+                resource: 'Usuarios',
+                actions: [
+                    {
+                        name: 'Crear',
+                        detail: 'Can read, clone, and push to this repository. Can also manage issues and pull requests.',
+                    },
+                    {
+                        name: 'Crear',
+                        detail: 'Can read, clone, and push to this repository. Can also manage issues and pull requests.',
+                    },
+                    {
+                        name: 'Crear',
+                        detail: 'Can read, clone, and push to this repository. Can also manage issues and pull requests.',
+                    },
+                    {
+                        name: 'Crear',
+                        detail: 'Can read, clone, and push to this repository. Can also manage issues and pull requests.',
+                    },
+                ],
+            },
+            {
+                resource: 'Usuarios',
+                actions: [
+                    {
+                        name: 'Crear',
+                        detail: 'Can read, clone, and push to this repository. Can also manage issues and pull requests.',
+                    },
+                    {
+                        name: 'Crear',
+                        detail: 'Can read, clone, and push to this repository. Can also manage issues and pull requests.',
+                    },
+                    {
+                        name: 'Crear',
+                        detail: 'Can read, clone, and push to this repository. Can also manage issues and pull requests.',
+                    },
+                    {
+                        name: 'Crear',
+                        detail: 'Can read, clone, and push to this repository. Can also manage issues and pull requests.',
+                    },
+                ],
+            },
+        ];
 
         // Subscribe to config changes
         this._fuseConfigService.config$
@@ -93,6 +162,20 @@ export class SettingsAccountComponent implements OnInit {
         // Unsubscribe from all subscriptions
         this._unsubscribeAll.next(null);
         this._unsubscribeAll.complete();
+    }
+
+    // -----------------------------------------------------------------------------------------------------
+    // @ Public methods
+    // -----------------------------------------------------------------------------------------------------
+
+    /**
+     * Track by function for ngFor loops
+     *
+     * @param index
+     * @param item
+     */
+    trackByFn(index: number, item: any): any {
+        return item.id || index;
     }
 
     /**

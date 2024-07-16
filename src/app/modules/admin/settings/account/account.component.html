@@ -3,56 +3,66 @@
     <form [formGroup]="accountForm">
         <!-- Section -->
         <div class="w-full">
-            <div class="text-xl">Profile</div>
+            <div class="text-xl">Perfil</div>
             <div class="text-secondary">
-                Following information is publicly displayed, be careful!
+                La siguiente información se muestra públicamente, ¡tenga cuidado!.
             </div>
         </div>
         <div class="mt-8 grid w-full gap-6 sm:grid-cols-4">
             <!-- Name -->
-            <div class="sm:col-span-4">
+            <div class="sm:col-span-2">
                 <mat-form-field class="w-full" [subscriptSizing]="'dynamic'">
-                    <mat-label>Name</mat-label>
-                    <mat-icon class="icon-size-5" [svgIcon]="'heroicons_solid:user'" matPrefix></mat-icon>
+                    <mat-label>Nombres</mat-label>
+                    <mat-icon class="icon-size-5" [svgIcon]="'mat_solid:text_fields'" matPrefix></mat-icon>
                     <input [formControlName]="'name'" matInput />
                 </mat-form-field>
             </div>
-            <!-- Username -->
-            <div class="sm:col-span-4">
-                <mat-form-field class="fuse-mat-emphasized-affix w-full" [subscriptSizing]="'dynamic'">
-                    <mat-label>Username</mat-label>
-                    <div class="text-secondary" matPrefix>fusetheme.com/</div>
-                    <input [formControlName]="'username'" matInput />
-                </mat-form-field>
-            </div>
-            <!-- Title -->
+
+            <!-- Lastname -->
             <div class="sm:col-span-2">
                 <mat-form-field class="w-full" [subscriptSizing]="'dynamic'">
-                    <mat-label>Title</mat-label>
-                    <mat-icon class="icon-size-5" [svgIcon]="'heroicons_solid:briefcase'" matPrefix></mat-icon>
-                    <input [formControlName]="'title'" matInput />
+                    <mat-label>Apellidos</mat-label>
+                    <mat-icon class="icon-size-5" [svgIcon]="'mat_solid:text_fields'" matPrefix></mat-icon>
+                    <input [formControlName]="'lastname'" matInput />
                 </mat-form-field>
             </div>
-            <!-- Company -->
+
+            <!-- Email -->
             <div class="sm:col-span-2">
                 <mat-form-field class="w-full" [subscriptSizing]="'dynamic'">
-                    <mat-label>Company</mat-label>
-                    <mat-icon class="icon-size-5" [svgIcon]="'heroicons_solid:building-office-2'" matPrefix></mat-icon>
-                    <input [formControlName]="'company'" matInput />
+                    <mat-label>Correo electrónico</mat-label>
+                    <mat-icon class="icon-size-5" [svgIcon]="'heroicons_solid:envelope'" matPrefix></mat-icon>
+                    <input [formControlName]="'email'" matInput />
                 </mat-form-field>
             </div>
-            <!-- About -->
-            <div class="sm:col-span-4">
+
+            <!-- Role -->
+            <div class="sm:col-span-2">
                 <mat-form-field class="w-full" [subscriptSizing]="'dynamic'">
-                    <mat-label>About</mat-label>
-                    <textarea matInput [formControlName]="'about'" cdkTextareaAutosize
-                        [cdkAutosizeMinRows]="5"></textarea>
+                    <mat-label>Rol</mat-label>
+                    <mat-icon class="icon-size-5" [svgIcon]="'mat_solid:perm_contact_calendar'" matPrefix></mat-icon>
+                    <mat-select [panelClass]="
+                            'w-72 min-w-72 max-w-72 h-auto max-h-none'
+                        " [value]="'read'" disableOptionCentering #roleSelect="matSelect">
+                        <mat-select-trigger class="text-md">
+                            <span class="ml-1 font-medium">{{
+                                roleSelect.value | titlecase
+                                }}</span>
+                        </mat-select-trigger>
+                        @for (role of roles; track role) {
+                        <mat-option class="h-auto py-4 leading-none" [value]="role.value">
+                            <div class="font-medium">
+                                {{ role.label }}
+                            </div>
+                            <div class="text-secondary mt-1.5 whitespace-normal text-sm leading-normal">
+                                {{ role.description }}
+                            </div>
+                        </mat-option>
+                        }
+                    </mat-select>
                 </mat-form-field>
-                <div class="text-hint mt-1 text-md">
-                    Brief description for your profile. Basic HTML and Emoji are
-                    allowed.
-                </div>
             </div>
+
         </div>
 
         <!-- Divider -->
@@ -60,69 +70,9 @@
 
         <!-- Section -->
         <div class="w-full">
-            <div class="text-xl">Personal Information</div>
+            <div class="text-xl">Aspecto</div>
             <div class="text-secondary">
-                Communication details in case we want to connect with you. These
-                will be kept private.
-            </div>
-        </div>
-        <div class="mt-8 grid w-full gap-6 sm:grid-cols-4">
-            <!-- Email -->
-            <div class="sm:col-span-2">
-                <mat-form-field class="w-full" [subscriptSizing]="'dynamic'">
-                    <mat-label>Email</mat-label>
-                    <mat-icon class="icon-size-5" [svgIcon]="'heroicons_solid:envelope'" matPrefix></mat-icon>
-                    <input [formControlName]="'email'" matInput />
-                </mat-form-field>
-            </div>
-            <!-- Phone -->
-            <div class="sm:col-span-2">
-                <mat-form-field class="w-full" [subscriptSizing]="'dynamic'">
-                    <mat-label>Phone</mat-label>
-                    <mat-icon class="icon-size-5" [svgIcon]="'heroicons_solid:phone'" matPrefix></mat-icon>
-                    <input [formControlName]="'phone'" matInput />
-                </mat-form-field>
-            </div>
-            <!-- Country -->
-            <div class="sm:col-span-2">
-                <mat-form-field class="w-full" [subscriptSizing]="'dynamic'">
-                    <mat-label>Country</mat-label>
-                    <mat-icon class="icon-size-5" [svgIcon]="'heroicons_solid:map-pin'" matPrefix></mat-icon>
-                    <mat-select [formControlName]="'country'">
-                        <mat-option [value]="'usa'">United States</mat-option>
-                        <mat-option [value]="'canada'">Canada</mat-option>
-                        <mat-option [value]="'mexico'">Mexico</mat-option>
-                        <mat-option [value]="'france'">France</mat-option>
-                        <mat-option [value]="'germany'">Germany</mat-option>
-                        <mat-option [value]="'italy'">Italy</mat-option>
-                    </mat-select>
-                </mat-form-field>
-            </div>
-            <!-- Language -->
-            <div class="sm:col-span-2">
-                <mat-form-field class="w-full" [subscriptSizing]="'dynamic'">
-                    <mat-label>Language</mat-label>
-                    <mat-icon class="icon-size-5" [svgIcon]="'heroicons_solid:globe-alt'" matPrefix></mat-icon>
-                    <mat-select [formControlName]="'language'">
-                        <mat-option [value]="'english'">English</mat-option>
-                        <mat-option [value]="'french'">French</mat-option>
-                        <mat-option [value]="'spanish'">Spanish</mat-option>
-                        <mat-option [value]="'german'">German</mat-option>
-                        <mat-option [value]="'italian'">Italian</mat-option>
-                    </mat-select>
-                </mat-form-field>
-            </div>
-        </div>
-
-        <!-- Divider -->
-        <div class="mb-10 mt-11 border-t"></div>
-
-          <!-- Section -->
-          <div class="w-full">
-            <div class="text-xl">Schema</div>
-            <div class="text-secondary">
-                Communication details in case we want to connect with you. These
-                will be kept private.
+                Este ajuste solo se aplica a este navegador.
             </div>
         </div>
         <div class="mt-6 flex flex-col md:flex-row justify-start gap-3">
@@ -136,7 +86,7 @@
                 </div>
                 <div class="ml-2 flex items-center font-medium leading-5"
                     [class.text-secondary]="config.scheme !== 'auto'">
-                    Auto
+                    Usar tema del dispositivo
                 </div>
             </div>
             <!-- Dark -->
@@ -147,7 +97,7 @@
                 </div>
                 <div class="ml-2 flex items-center font-medium leading-5"
                     [class.text-secondary]="config.scheme !== 'dark'">
-                    Dark
+                    Oscuro
                 </div>
             </div>
             <!-- Light -->
@@ -158,19 +108,19 @@
                 </div>
                 <div class="ml-2 flex items-center font-medium leading-5"
                     [class.text-secondary]="config.scheme !== 'light'">
-                    Light
+                    Claro
                 </div>
             </div>
         </div>
 
         <!-- Divider -->
-        <div class="mb-10 mt-11 border-t"></div>
+        <div class="my-10 border-t"></div>
 
         <!-- Actions -->
         <div class="flex items-center justify-end">
-            <button mat-stroked-button type="button">Cancel</button>
+            <button mat-stroked-button type="button">Cancelar</button>
             <button class="ml-4" mat-flat-button type="button" [color]="'primary'">
-                Save
+                Guardar
             </button>
         </div>
     </form>

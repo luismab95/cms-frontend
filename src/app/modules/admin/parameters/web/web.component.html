@@ -1,164 +1,263 @@
 <div class="w-full max-w-3xl">
-    <!-- Form -->
-    <form [formGroup]="accountForm">
-        <!-- Section -->
+    <div class="flex flex-col">
+        <!-- Theme -->
         <div class="w-full">
-            <div class="text-xl">Profile</div>
+            <div class="text-xl">Tema</div>
             <div class="text-secondary">
-                Following information is publicly displayed, be careful!
+                Configura el tema de tu aplicación.
             </div>
         </div>
-        <div class="mt-8 grid w-full gap-6 sm:grid-cols-4">
-            <!-- Name -->
-            <div class="sm:col-span-4">
-                <mat-form-field class="w-full" [subscriptSizing]="'dynamic'">
-                    <mat-label>Name</mat-label>
-                    <mat-icon class="icon-size-5" [svgIcon]="'heroicons_solid:user'" matPrefix></mat-icon>
-                    <input [formControlName]="'name'" matInput />
-                </mat-form-field>
-            </div>
-            <!-- Username -->
-            <div class="sm:col-span-4">
-                <mat-form-field class="fuse-mat-emphasized-affix w-full" [subscriptSizing]="'dynamic'">
-                    <mat-label>Username</mat-label>
-                    <div class="text-secondary" matPrefix>fusetheme.com/</div>
-                    <input [formControlName]="'username'" matInput />
-                </mat-form-field>
-            </div>
-            <!-- Title -->
-            <div class="sm:col-span-2">
-                <mat-form-field class="w-full" [subscriptSizing]="'dynamic'">
-                    <mat-label>Title</mat-label>
-                    <mat-icon class="icon-size-5" [svgIcon]="'heroicons_solid:briefcase'" matPrefix></mat-icon>
-                    <input [formControlName]="'title'" matInput />
-                </mat-form-field>
-            </div>
-            <!-- Company -->
-            <div class="sm:col-span-2">
-                <mat-form-field class="w-full" [subscriptSizing]="'dynamic'">
-                    <mat-label>Company</mat-label>
-                    <mat-icon class="icon-size-5" [svgIcon]="'heroicons_solid:building-office-2'" matPrefix></mat-icon>
-                    <input [formControlName]="'company'" matInput />
-                </mat-form-field>
-            </div>
-            <!-- About -->
-            <div class="sm:col-span-4">
-                <mat-form-field class="w-full" [subscriptSizing]="'dynamic'">
-                    <mat-label>About</mat-label>
-                    <textarea matInput [formControlName]="'about'" cdkTextareaAutosize
-                        [cdkAutosizeMinRows]="5"></textarea>
-                </mat-form-field>
-                <div class="text-hint mt-1 text-md">
-                    Brief description for your profile. Basic HTML and Emoji are
-                    allowed.
+        <div class="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3">
+            @for (theme of config.themes; track theme) {
+            <div class="bg-hover flex cursor-pointer items-center justify-center rounded-full px-4 py-3 ring-inset ring-primary"
+                [class.ring-2]="config.theme === theme.id" [ngClass]="theme.id" (click)="setTheme(theme.id)">
+                <div class="h-3 w-3 flex-0 rounded-full bg-primary"></div>
+                <div class="ml-2.5 truncate font-medium leading-5" [class.text-secondary]="config.theme !== theme.id">
+                    {{ theme.name }}
                 </div>
             </div>
-        </div>
-
-        <!-- Divider -->
-        <div class="my-10 border-t"></div>
-
-        <!-- Section -->
-        <div class="w-full">
-            <div class="text-xl">Personal Information</div>
-            <div class="text-secondary">
-                Communication details in case we want to connect with you. These
-                will be kept private.
-            </div>
-        </div>
-        <div class="mt-8 grid w-full gap-6 sm:grid-cols-4">
-            <!-- Email -->
-            <div class="sm:col-span-2">
-                <mat-form-field class="w-full" [subscriptSizing]="'dynamic'">
-                    <mat-label>Email</mat-label>
-                    <mat-icon class="icon-size-5" [svgIcon]="'heroicons_solid:envelope'" matPrefix></mat-icon>
-                    <input [formControlName]="'email'" matInput />
-                </mat-form-field>
-            </div>
-            <!-- Phone -->
-            <div class="sm:col-span-2">
-                <mat-form-field class="w-full" [subscriptSizing]="'dynamic'">
-                    <mat-label>Phone</mat-label>
-                    <mat-icon class="icon-size-5" [svgIcon]="'heroicons_solid:phone'" matPrefix></mat-icon>
-                    <input [formControlName]="'phone'" matInput />
-                </mat-form-field>
-            </div>
-            <!-- Country -->
-            <div class="sm:col-span-2">
-                <mat-form-field class="w-full" [subscriptSizing]="'dynamic'">
-                    <mat-label>Country</mat-label>
-                    <mat-icon class="icon-size-5" [svgIcon]="'heroicons_solid:map-pin'" matPrefix></mat-icon>
-                    <mat-select [formControlName]="'country'">
-                        <mat-option [value]="'usa'">United States</mat-option>
-                        <mat-option [value]="'canada'">Canada</mat-option>
-                        <mat-option [value]="'mexico'">Mexico</mat-option>
-                        <mat-option [value]="'france'">France</mat-option>
-                        <mat-option [value]="'germany'">Germany</mat-option>
-                        <mat-option [value]="'italy'">Italy</mat-option>
-                    </mat-select>
-                </mat-form-field>
-            </div>
-            <!-- Language -->
-            <div class="sm:col-span-2">
-                <mat-form-field class="w-full" [subscriptSizing]="'dynamic'">
-                    <mat-label>Language</mat-label>
-                    <mat-icon class="icon-size-5" [svgIcon]="'heroicons_solid:globe-alt'" matPrefix></mat-icon>
-                    <mat-select [formControlName]="'language'">
-                        <mat-option [value]="'english'">English</mat-option>
-                        <mat-option [value]="'french'">French</mat-option>
-                        <mat-option [value]="'spanish'">Spanish</mat-option>
-                        <mat-option [value]="'german'">German</mat-option>
-                        <mat-option [value]="'italian'">Italian</mat-option>
-                    </mat-select>
-                </mat-form-field>
-            </div>
+            }
         </div>
 
         <!-- Divider -->
         <div class="mb-10 mt-11 border-t"></div>
 
-          <!-- Section -->
-          <div class="w-full">
-            <div class="text-xl">Schema</div>
+        <!-- Layout -->
+        <div class="w-full">
+            <div class="text-xl">Diseño</div>
             <div class="text-secondary">
-                Communication details in case we want to connect with you. These
-                will be kept private.
+                Configura el diseño de tu aplicación.
             </div>
         </div>
-        <div class="mt-6 flex flex-col md:flex-row justify-start gap-3">
-            <!-- Auto -->
-            <div class="w-full md:w-50 bg-hover flex cursor-pointer items-center rounded-full py-3 pl-5 pr-6 ring-inset ring-primary"
-                [class.ring-2]="config.scheme === 'auto'"
-                matTooltip="Automatically sets the scheme based on user's operating system's color scheme preference using 'prefer-color-scheme' media query."
-                (click)="setScheme('auto')">
-                <div class="flex items-center overflow-hidden rounded-full">
-                    <mat-icon class="icon-size-5" [svgIcon]="'heroicons_solid:bolt'"></mat-icon>
+        <div class="mt-6 flex flex-wrap gap-2">
+
+            <!-- Classic -->
+            <div class="w-full md:w-1/4 flex cursor-pointer flex-col" (click)="setLayout('classic')">
+                <div class="flex h-20 overflow-hidden rounded-md border-2 hover:opacity-80"
+                    [class.border-primary]="config.layout === 'classic'">
+                    <div class="w-8 bg-gray-100 dark:bg-gray-800">
+                        <div class="mx-1.5 mt-3 space-y-1">
+                            <div class="h-1 rounded-sm bg-gray-300 dark:bg-gray-700"></div>
+                            <div class="h-1 rounded-sm bg-gray-300 dark:bg-gray-700"></div>
+                            <div class="h-1 rounded-sm bg-gray-300 dark:bg-gray-700"></div>
+                            <div class="h-1 rounded-sm bg-gray-300 dark:bg-gray-700"></div>
+                            <div class="h-1 rounded-sm bg-gray-300 dark:bg-gray-700"></div>
+                        </div>
+                    </div>
+                    <div class="flex flex-auto flex-col border-l">
+                        <div class="h-3 bg-gray-100 dark:bg-gray-800">
+                            <div class="mr-1.5 flex h-full items-center justify-end">
+                                <div class="ml-1 h-1 w-1 rounded-full bg-gray-300 dark:bg-gray-700"></div>
+                                <div class="ml-1 h-1 w-1 rounded-full bg-gray-300 dark:bg-gray-700"></div>
+                                <div class="ml-1 h-1 w-1 rounded-full bg-gray-300 dark:bg-gray-700"></div>
+                            </div>
+                        </div>
+                        <div class="flex flex-auto border-t bg-gray-50 dark:bg-gray-900"></div>
+                    </div>
                 </div>
-                <div class="ml-2 flex items-center font-medium leading-5"
-                    [class.text-secondary]="config.scheme !== 'auto'">
-                    Auto
+                <div class="text-secondary mt-2 text-center text-md font-medium"
+                    [class.text-primary]="config.layout === 'classic'">
+                    Classic
                 </div>
             </div>
-            <!-- Dark -->
-            <div class="w-full md:w-50 bg-hover flex cursor-pointer items-center rounded-full py-3 pl-5 pr-6 ring-inset ring-primary"
-                [class.ring-2]="config.scheme === 'dark'" (click)="setScheme('dark')">
-                <div class="flex items-center overflow-hidden rounded-full">
-                    <mat-icon class="icon-size-5" [svgIcon]="'heroicons_solid:moon'"></mat-icon>
+
+            <!-- Classy -->
+            <div class="w-full md:w-1/4 flex cursor-pointer flex-col" (click)="setLayout('classy')">
+                <div class="flex h-20 overflow-hidden rounded-md border-2 hover:opacity-80"
+                    [class.border-primary]="config.layout === 'classy'">
+                    <div class="w-8 bg-gray-100 dark:bg-gray-800">
+                        <div class="mx-1 mt-1 flex items-center">
+                            <div class="h-1 w-1 rounded-full bg-gray-300 dark:bg-gray-700"></div>
+                            <div class="ml-auto h-1 w-1 rounded-full bg-gray-300 dark:bg-gray-700"></div>
+                            <div class="ml-0.5 h-1 w-1 rounded-full bg-gray-300 dark:bg-gray-700"></div>
+                        </div>
+                        <div class="mx-auto mt-2.5 h-4 w-4 rounded-full bg-gray-300 dark:bg-gray-700"></div>
+                        <div class="mx-1 mt-2 space-y-1">
+                            <div class="h-1 rounded-sm bg-gray-300 dark:bg-gray-700"></div>
+                            <div class="h-1 rounded-sm bg-gray-300 dark:bg-gray-700"></div>
+                            <div class="h-1 rounded-sm bg-gray-300 dark:bg-gray-700"></div>
+                            <div class="h-1 rounded-sm bg-gray-300 dark:bg-gray-700"></div>
+                        </div>
+                    </div>
+                    <div class="flex flex-auto flex-col border-l">
+                        <div class="h-3 bg-gray-100 dark:bg-gray-800">
+                            <div class="mr-2 flex h-full items-center justify-end">
+                                <div class="h-1 w-1 rounded-full bg-gray-300 dark:bg-gray-700"></div>
+                            </div>
+                        </div>
+                        <div class="flex flex-auto border-t bg-gray-50 dark:bg-gray-900"></div>
+                    </div>
                 </div>
-                <div class="ml-2 flex items-center font-medium leading-5"
-                    [class.text-secondary]="config.scheme !== 'dark'">
-                    Dark
+                <div class="text-secondary mt-2 text-center text-md font-medium"
+                    [class.text-primary]="config.layout === 'classy'">
+                    Classy
                 </div>
             </div>
-            <!-- Light -->
-            <div class="w-full md:w-50 bg-hover flex cursor-pointer items-center rounded-full py-3 pl-5 pr-6 ring-inset ring-primary"
-                [class.ring-2]="config.scheme === 'light'" (click)="setScheme('light')">
-                <div class="flex items-center overflow-hidden rounded-full">
-                    <mat-icon class="icon-size-5" [svgIcon]="'heroicons_solid:sun'"></mat-icon>
+
+            <!-- Dense -->
+            <div class="w-full md:w-1/4 flex cursor-pointer flex-col" (click)="setLayout('dense')">
+                <div class="flex h-20 overflow-hidden rounded-md border-2 hover:opacity-80"
+                    [class.border-primary]="config.layout === 'dense'">
+                    <div class="w-4 bg-gray-100 dark:bg-gray-800">
+                        <div class="mx-auto mt-2 h-2 w-2 rounded-sm bg-gray-300 dark:bg-gray-700"></div>
+                        <div class="mt-2 flex w-full flex-col items-center space-y-1">
+                            <div class="h-2 w-2 rounded-sm bg-gray-300 dark:bg-gray-700"></div>
+                            <div class="h-2 w-2 rounded-sm bg-gray-300 dark:bg-gray-700"></div>
+                            <div class="h-2 w-2 rounded-sm bg-gray-300 dark:bg-gray-700"></div>
+                        </div>
+                    </div>
+                    <div class="flex flex-auto flex-col border-l">
+                        <div class="h-3 bg-gray-100 dark:bg-gray-800">
+                            <div class="mr-1.5 flex h-full items-center justify-end">
+                                <div class="ml-1 h-1 w-1 rounded-full bg-gray-300 dark:bg-gray-700"></div>
+                                <div class="ml-1 h-1 w-1 rounded-full bg-gray-300 dark:bg-gray-700"></div>
+                                <div class="ml-1 h-1 w-1 rounded-full bg-gray-300 dark:bg-gray-700"></div>
+                            </div>
+                        </div>
+                        <div class="flex flex-auto border-t bg-gray-50 dark:bg-gray-900"></div>
+                    </div>
                 </div>
-                <div class="ml-2 flex items-center font-medium leading-5"
-                    [class.text-secondary]="config.scheme !== 'light'">
-                    Light
+                <div class="text-secondary mt-2 text-center text-md font-medium"
+                    [class.text-primary]="config.layout === 'dense'">
+                    Dense
+                </div>
+            </div>
+
+            <!-- Futuristic -->
+            <div class="w-full md:w-1/4  flex cursor-pointer flex-col" (click)="setLayout('futuristic')">
+                <div class="flex h-20 overflow-hidden rounded-md border-2 hover:opacity-80"
+                    [class.border-primary]="config.layout === 'futuristic'">
+                    <div class="w-8 bg-gray-100 dark:bg-gray-800">
+                        <div class="flex h-full flex-auto flex-col space-y-1 px-1.5 py-3">
+                            <div class="h-1 rounded-sm bg-gray-300 dark:bg-gray-700"></div>
+                            <div class="h-1 rounded-sm bg-gray-300 dark:bg-gray-700"></div>
+                            <div class="h-1 rounded-sm bg-gray-300 dark:bg-gray-700"></div>
+                            <div class="flex-auto"></div>
+                            <div class="h-1 rounded-sm bg-gray-300 dark:bg-gray-700"></div>
+                        </div>
+                    </div>
+                    <div class="flex flex-auto flex-col border-l">
+                        <div class="h-3 bg-gray-100 dark:bg-gray-800">
+                            <div class="mr-1.5 flex h-full items-center justify-end">
+                                <div class="ml-1 h-1 w-1 rounded-full bg-gray-300 dark:bg-gray-700"></div>
+                                <div class="ml-1 h-1 w-1 rounded-full bg-gray-300 dark:bg-gray-700"></div>
+                                <div class="ml-1 h-1 w-1 rounded-full bg-gray-300 dark:bg-gray-700"></div>
+                            </div>
+                        </div>
+                        <div class="flex flex-auto border-t bg-gray-50 dark:bg-gray-900"></div>
+                    </div>
+                </div>
+                <div class="text-secondary mt-2 text-center text-md font-medium"
+                    [class.text-primary]="config.layout === 'futuristic'">
+                    Futuristic
+                </div>
+            </div>
+
+            <!-- Centered -->
+            <div class="w-full md:w-1/4  flex cursor-pointer flex-col" (click)="setLayout('centered')">
+                <div class="flex h-20 overflow-hidden rounded-md border-2 hover:opacity-80"
+                    [class.border-primary]="config.layout === 'centered'">
+                    <div class="mx-2 my-1 flex flex-auto flex-col overflow-hidden rounded-md border">
+                        <div class="flex h-3 items-center bg-gray-100 dark:bg-gray-800">
+                            <div class="ml-1.5 flex">
+                                <div class="h-1 w-1 rounded-full bg-gray-300 dark:bg-gray-700"></div>
+                                <div class="ml-1 h-1 w-3 rounded-full bg-gray-300 dark:bg-gray-700"></div>
+                                <div class="ml-1 h-1 w-3 rounded-full bg-gray-300 dark:bg-gray-700"></div>
+                                <div class="ml-1 h-1 w-3 rounded-full bg-gray-300 dark:bg-gray-700"></div>
+                            </div>
+                            <div class="ml-auto mr-1.5 flex items-center justify-end">
+                                <div class="ml-1 h-1 w-1 rounded-full bg-gray-300 dark:bg-gray-700"></div>
+                                <div class="ml-1 h-1 w-1 rounded-full bg-gray-300 dark:bg-gray-700"></div>
+                            </div>
+                        </div>
+                        <div class="flex flex-auto border-t bg-gray-50 dark:bg-gray-900"></div>
+                    </div>
+                </div>
+                <div class="text-secondary mt-2 text-center text-md font-medium"
+                    [class.text-primary]="config.layout === 'centered'">
+                    Centered
+                </div>
+            </div>
+
+            <!-- Enterprise -->
+            <div class="w-full md:w-1/4  flex cursor-pointer flex-col" (click)="setLayout('enterprise')">
+                <div class="flex h-20 flex-col overflow-hidden rounded-md border-2 hover:opacity-80"
+                    [class.border-primary]="config.layout === 'enterprise'">
+                    <div class="flex h-3 items-center bg-gray-100 px-2 dark:bg-gray-800">
+                        <div class="h-2 w-2 rounded-full bg-gray-300 dark:bg-gray-700"></div>
+                        <div class="ml-auto flex items-center justify-end space-x-1">
+                            <div class="h-1 w-1 rounded-full bg-gray-300 dark:bg-gray-700"></div>
+                            <div class="h-1 w-1 rounded-full bg-gray-300 dark:bg-gray-700"></div>
+                            <div class="h-1 w-1 rounded-full bg-gray-300 dark:bg-gray-700"></div>
+                        </div>
+                    </div>
+                    <div class="flex h-3 items-center space-x-1 border-b border-t bg-gray-100 px-2 dark:bg-gray-800">
+                        <div class="h-1 w-3 rounded-full bg-gray-300 dark:bg-gray-700"></div>
+                        <div class="h-1 w-3 rounded-full bg-gray-300 dark:bg-gray-700"></div>
+                        <div class="h-1 w-3 rounded-full bg-gray-300 dark:bg-gray-700"></div>
+                        <div class="h-1 w-3 rounded-full bg-gray-300 dark:bg-gray-700"></div>
+                    </div>
+                    <div class="mx-2 my-1 flex flex-auto flex-col overflow-hidden rounded border">
+                        <div class="flex flex-auto bg-gray-50 dark:bg-gray-900"></div>
+                    </div>
+                </div>
+                <div class="text-secondary mt-2 text-center text-md font-medium"
+                    [class.text-primary]="config.layout === 'enterprise'">
+                    Enterprise
+                </div>
+            </div>
+
+            <!-- Material -->
+            <div class="w-full md:w-1/4  flex cursor-pointer flex-col" (click)="setLayout('material')">
+                <div class="flex h-20 flex-col overflow-hidden rounded-md border-2 hover:opacity-80"
+                    [class.border-primary]="config.layout === 'material'">
+                    <div class="mx-2 my-1 flex flex-auto flex-col overflow-hidden rounded border">
+                        <div class="flex h-4 items-center bg-gray-100 px-2 dark:bg-gray-800">
+                            <div class="h-2 w-2 rounded-full bg-gray-300 dark:bg-gray-700"></div>
+                            <div class="ml-auto flex items-center justify-end space-x-1">
+                                <div class="h-1 w-1 rounded-full bg-gray-300 dark:bg-gray-700"></div>
+                                <div class="h-1 w-1 rounded-full bg-gray-300 dark:bg-gray-700"></div>
+                                <div class="h-1 w-1 rounded-full bg-gray-300 dark:bg-gray-700"></div>
+                            </div>
+                        </div>
+                        <div class="flex h-2 items-center space-x-1 bg-gray-100 px-2 dark:bg-gray-800">
+                            <div class="h-1 w-3 rounded-full bg-gray-300 dark:bg-gray-700"></div>
+                            <div class="h-1 w-3 rounded-full bg-gray-300 dark:bg-gray-700"></div>
+                            <div class="h-1 w-3 rounded-full bg-gray-300 dark:bg-gray-700"></div>
+                            <div class="h-1 w-3 rounded-full bg-gray-300 dark:bg-gray-700"></div>
+                        </div>
+                        <div class="flex flex-auto border-t bg-gray-50 dark:bg-gray-900"></div>
+                    </div>
+                </div>
+                <div class="text-secondary mt-2 text-center text-md font-medium"
+                    [class.text-primary]="config.layout === 'material'">
+                    Material
+                </div>
+            </div>
+
+            <!-- Modern -->
+            <div class="w-full md:w-1/4  flex cursor-pointer flex-col" (click)="setLayout('modern')">
+                <div class="flex h-20 flex-col overflow-hidden rounded-md border-2 hover:opacity-80"
+                    [class.border-primary]="config.layout === 'modern'">
+                    <div class="flex h-4 items-center border-b bg-gray-100 px-2 dark:bg-gray-800">
+                        <div class="h-2 w-2 rounded-full bg-gray-300 dark:bg-gray-700"></div>
+                        <div class="ml-2 flex h-3 items-center space-x-1">
+                            <div class="h-1 w-3 rounded-full bg-gray-300 dark:bg-gray-700"></div>
+                            <div class="h-1 w-3 rounded-full bg-gray-300 dark:bg-gray-700"></div>
+                            <div class="h-1 w-3 rounded-full bg-gray-300 dark:bg-gray-700"></div>
+                        </div>
+                        <div class="ml-auto flex items-center justify-end space-x-1">
+                            <div class="h-1 w-1 rounded-full bg-gray-300 dark:bg-gray-700"></div>
+                            <div class="h-1 w-1 rounded-full bg-gray-300 dark:bg-gray-700"></div>
+                        </div>
+                    </div>
+                    <div class="flex flex-auto flex-col">
+                        <div class="flex flex-auto bg-gray-50 dark:bg-gray-900"></div>
+                    </div>
+                </div>
+                <div class="text-secondary mt-2 text-center text-md font-medium"
+                    [class.text-primary]="config.layout === 'modern'">
+                    Modern
                 </div>
             </div>
         </div>
@@ -168,10 +267,10 @@
 
         <!-- Actions -->
         <div class="flex items-center justify-end">
-            <button mat-stroked-button type="button">Cancel</button>
+            <button mat-stroked-button type="button">Cancelar</button>
             <button class="ml-4" mat-flat-button type="button" [color]="'primary'">
-                Save
+                Guardar
             </button>
         </div>
-    </form>
+    </div>
 </div>

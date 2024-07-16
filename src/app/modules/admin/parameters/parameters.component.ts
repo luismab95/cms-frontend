@@ -66,34 +66,34 @@ export class ParametersComponent implements OnInit, OnDestroy {
             {
                 id: 'company',
                 icon: 'heroicons_outline:building-office',
-                title: 'Company',
-                description:
-                    'Manage your public profile and private information',
+                title: 'Compañía',
+                description: 'Gestiona la información de tu compañia.',
             },
             {
-                id: 'logos',
+                id: 'images',
                 icon: 'heroicons_outline:photo',
-                title: 'Logos',
-                description:
-                    'Manage your password and 2-step verification preferences',
+                title: 'Imágenes',
+                description: 'Gestiona las imágenes de la aplicación.',
             },
             {
                 id: 'email',
                 icon: 'heroicons_outline:envelope',
-                title: 'Email',
-                description: "Manage when you'll be notified on which channels",
+                title: 'Correo electrónico',
+                description:
+                    'Administra las creedenciales para el envio de correos electrónicos.',
             },
             {
                 id: 'security',
                 icon: 'heroicons_outline:shield-check',
-                title: 'Security',
-                description: "Manage when you'll be notified on which channels",
+                title: 'Seguridad',
+                description:
+                    'Administra los parámetros de seguridad de tu aplicación.',
             },
             {
                 id: 'web',
                 icon: 'heroicons_outline:window',
                 title: 'Web',
-                description: "Manage when you'll be notified on which channels",
+                description: 'Gestiona el diseño de tu aplicación.',
             },
         ];
 

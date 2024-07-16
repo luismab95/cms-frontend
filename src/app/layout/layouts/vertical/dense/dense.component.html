@@ -23,9 +23,13 @@
         class="bg-card relative z-49 flex h-16 w-full flex-0 items-center px-4 shadow dark:border-b dark:bg-transparent dark:shadow-none md:px-6 print:hidden">
         <div class="flex items-center space-x-2 pr-2">
             <!-- Navigation toggle button -->
-            <!-- <button mat-icon-button (click)="toggleNavigationAppearance()">
-                <mat-icon [svgIcon]="'heroicons_outline:arrows-right-left'"></mat-icon>
+            <!-- <button mat-icon-button (click)="toggleNavigation('mainNavigation')">
+                <mat-icon [svgIcon]="'heroicons_outline:bars-3'"></mat-icon>
             </button> -->
+            <!-- Navigation appearance toggle button -->
+            <button class="hidden md:inline-flex" mat-icon-button (click)="toggleNavigationAppearance()">
+                <mat-icon [svgIcon]="'heroicons_outline:arrows-right-left'"></mat-icon>
+            </button>
 
         </div>
         <!-- Components -->

@@ -1,4 +1,4 @@
-import { CurrencyPipe, NgClass } from '@angular/common';
+import { CurrencyPipe, DecimalPipe, NgClass } from '@angular/common';
 import {
     ChangeDetectionStrategy,
     Component,
@@ -15,6 +15,7 @@ import { MatTableModule } from '@angular/material/table';
 import { MatTabsModule } from '@angular/material/tabs';
 import { Router, RouterLink } from '@angular/router';
 import { TranslocoModule } from '@ngneat/transloco';
+import { analytics } from 'app/mock-api/dashboards/analytics/data';
 import { HomeService } from 'app/modules/admin/dashboards/home/home.service';
 import { ApexOptions, NgApexchartsModule } from 'ng-apexcharts';
 import { Subject, takeUntil } from 'rxjs';
@@ -38,6 +39,7 @@ import { Subject, takeUntil } from 'rxjs';
         NgClass,
         RouterLink,
         CurrencyPipe,
+        DecimalPipe,
     ],
 })
 export class HomeComponent implements OnInit, OnDestroy {
@@ -47,7 +49,11 @@ export class HomeComponent implements OnInit, OnDestroy {
     chartWeeklyExpenses: ApexOptions = {};
     chartMonthlyExpenses: ApexOptions = {};
     chartYearlyExpenses: ApexOptions = {};
+    chartVisitors: ApexOptions = {};
+    chartVisitorsVsPageViews: ApexOptions = {};
+
     data: any;
+    dataA: any;
     selectedProject: string = 'ACME Corp. Backend App';
     private _unsubscribeAll: Subject<any> = new Subject<any>();
 
@@ -76,6 +82,16 @@ export class HomeComponent implements OnInit, OnDestroy {
 
                 // Prepare the chart data
                 this._prepareChartData();
+            });
+
+        this._homeService.dataA$
+            .pipe(takeUntil(this._unsubscribeAll))
+            .subscribe((data) => {
+                // Store the data
+                this.dataA = analytics;
+
+                // Prepare the chart data
+                this._prepareChartDataA();
             });
 
         // Attach SVG fill fixer to all ApexCharts
@@ -452,6 +468,189 @@ export class HomeComponent implements OnInit, OnDestroy {
                 labels: {
                     formatter: (val): string => `$${val}`,
                 },
+            },
+        };
+    }
+
+    /**
+     * Prepare the chart data from the data
+     *
+     * @private
+     */
+    private _prepareChartDataA(): void {
+        // Visitors
+        this.chartVisitors = {
+            chart: {
+                animations: {
+                    speed: 400,
+                    animateGradually: {
+                        enabled: false,
+                    },
+                },
+                fontFamily: 'inherit',
+                foreColor: 'inherit',
+                width: '100%',
+                height: '100%',
+                type: 'area',
+                toolbar: {
+                    show: false,
+                },
+                zoom: {
+                    enabled: false,
+                },
+            },
+            colors: ['#818CF8'],
+            dataLabels: {
+                enabled: false,
+            },
+            fill: {
+                colors: ['#312E81'],
+            },
+            grid: {
+                show: true,
+                borderColor: '#334155',
+                padding: {
+                    top: 10,
+                    bottom: -40,
+                    left: 0,
+                    right: 0,
+                },
+                position: 'back',
+                xaxis: {
+                    lines: {
+                        show: true,
+                    },
+                },
+            },
+            series: this.dataA.visitors.series,
+            stroke: {
+                width: 2,
+            },
+            tooltip: {
+                followCursor: true,
+                theme: 'dark',
+                x: {
+                    format: 'MMM dd, yyyy',
+                },
+                y: {
+                    formatter: (value: number): string => `${value}`,
+                },
+            },
+            xaxis: {
+                axisBorder: {
+                    show: false,
+                },
+                axisTicks: {
+                    show: false,
+                },
+                crosshairs: {
+                    stroke: {
+                        color: '#475569',
+                        dashArray: 0,
+                        width: 2,
+                    },
+                },
+                labels: {
+                    offsetY: -20,
+                    style: {
+                        colors: '#CBD5E1',
+                    },
+                },
+                tickAmount: 20,
+                tooltip: {
+                    enabled: false,
+                },
+                type: 'datetime',
+            },
+            yaxis: {
+                axisTicks: {
+                    show: false,
+                },
+                axisBorder: {
+                    show: false,
+                },
+                min: (min): number => min - 750,
+                max: (max): number => max + 250,
+                tickAmount: 5,
+                show: false,
+            },
+        };
+
+        // Visitors vs Page Views
+        this.chartVisitorsVsPageViews = {
+            chart: {
+                animations: {
+                    enabled: false,
+                },
+                fontFamily: 'inherit',
+                foreColor: 'inherit',
+                height: '100%',
+                type: 'area',
+                toolbar: {
+                    show: false,
+                },
+                zoom: {
+                    enabled: false,
+                },
+            },
+            colors: ['#64748B', '#94A3B8'],
+            dataLabels: {
+                enabled: false,
+            },
+            fill: {
+                colors: ['#64748B', '#94A3B8'],
+                opacity: 0.5,
+            },
+            grid: {
+                show: false,
+                padding: {
+                    bottom: -40,
+                    left: 0,
+                    right: 0,
+                },
+            },
+            legend: {
+                show: false,
+            },
+            series: this.dataA.visitorsVsPageViews.series,
+            stroke: {
+                curve: 'smooth',
+                width: 2,
+            },
+            tooltip: {
+                followCursor: true,
+                theme: 'dark',
+                x: {
+                    format: 'MMM dd, yyyy',
+                },
+            },
+            xaxis: {
+                axisBorder: {
+                    show: false,
+                },
+                labels: {
+                    offsetY: -20,
+                    rotate: 0,
+                    style: {
+                        colors: 'var(--fuse-text-secondary)',
+                    },
+                },
+                tickAmount: 3,
+                tooltip: {
+                    enabled: false,
+                },
+                type: 'datetime',
+            },
+            yaxis: {
+                labels: {
+                    style: {
+                        colors: 'var(--fuse-text-secondary)',
+                    },
+                },
+                max: (max): number => max + 250,
+                min: (min): number => min - 250,
+                show: false,
+                tickAmount: 5,
             },
         };
     }

@@ -62,22 +62,23 @@ export class SettingsComponent implements OnInit, OnDestroy {
             {
                 id: 'account',
                 icon: 'heroicons_outline:user-circle',
-                title: 'Account',
+                title: 'Cuenta',
                 description:
-                    'Manage your public profile and private information',
+                    'Administra tu perfil público e información privada',
             },
             {
                 id: 'security',
                 icon: 'heroicons_outline:lock-closed',
-                title: 'Security',
+                title: 'Seguridad',
                 description:
-                    'Manage your password and 2-step verification preferences',
+                    'Administre su contraseña y preferencias de verificación en dos pasos',
             },
             {
                 id: 'notifications',
                 icon: 'heroicons_outline:bell',
-                title: 'Notifications',
-                description: "Manage when you'll be notified on which channels",
+                title: 'Notificaciones',
+                description:
+                    'Administra cuándo recibirás notificaciones en qué canales',
             },
         ];
 

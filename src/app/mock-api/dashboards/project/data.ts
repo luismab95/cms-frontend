@@ -248,10 +248,10 @@ export const project = {
         columns: [
             'type',
             'total',
-            'expensesAmount',
+              'expensesAmount',
             'expensesPercentage',
             'remainingAmount',
-            'remainingPercentage',
+            // 'remainingPercentage',
         ],
         rows: [
             {

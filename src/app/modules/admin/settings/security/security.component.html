@@ -3,46 +3,30 @@
     <form [formGroup]="securityForm">
         <!-- Section -->
         <div class="w-full">
-            <div class="text-xl">Change your password</div>
+            <div class="text-xl">Cambia tu contraseña</div>
             <div class="text-secondary">
-                You can only change your password twice within 24 hours!
+                ¡Solo puedes cambiar tu contraseña dos veces dentro de 24 horas!.
             </div>
         </div>
         <div class="mt-8 grid w-full gap-6 sm:grid-cols-4">
             <!-- Current password -->
             <div class="sm:col-span-4">
                 <mat-form-field class="w-full" [subscriptSizing]="'dynamic'">
-                    <mat-label>Current password</mat-label>
-                    <mat-icon
-                        class="icon-size-5"
-                        [svgIcon]="'heroicons_solid:key'"
-                        matPrefix
-                    ></mat-icon>
-                    <input
-                        [formControlName]="'currentPassword'"
-                        type="password"
-                        matInput
-                    />
+                    <mat-label>Contraseña actual</mat-label>
+                    <mat-icon class="icon-size-5" [svgIcon]="'heroicons_solid:key'" matPrefix></mat-icon>
+                    <input [formControlName]="'currentPassword'" type="password" matInput />
                 </mat-form-field>
             </div>
             <!-- New password -->
             <div class="sm:col-span-4">
                 <mat-form-field class="w-full" [subscriptSizing]="'dynamic'">
-                    <mat-label>New password</mat-label>
-                    <mat-icon
-                        class="icon-size-5"
-                        [svgIcon]="'heroicons_solid:key'"
-                        matPrefix
-                    ></mat-icon>
-                    <input
-                        [formControlName]="'newPassword'"
-                        type="password"
-                        matInput
-                    />
+                    <mat-label>Nueva contraseña</mat-label>
+                    <mat-icon class="icon-size-5" [svgIcon]="'heroicons_solid:key'" matPrefix></mat-icon>
+                    <input [formControlName]="'newPassword'" type="password" matInput />
                 </mat-form-field>
                 <div class="text-hint mt-1 text-md">
-                    Minimum 8 characters. Must include numbers, letters and
-                    special characters.
+                    Mínimo 8 caracteres. Debe incluir números, letras y
+                    caracteres especiales.
                 </div>
             </div>
         </div>
@@ -52,54 +36,39 @@
 
         <!-- Section -->
         <div class="w-full">
-            <div class="text-xl">Security preferences</div>
+            <div class="text-xl">Preferencias de seguridad</div>
             <div class="text-secondary">
-                Keep your account more secure with following preferences.
+                Mantenga su cuenta más segura con las siguientes preferencias.
             </div>
         </div>
         <div class="mt-8 grid w-full gap-6 sm:grid-cols-4">
             <!-- 2-step auth -->
             <div class="flex items-center justify-between sm:col-span-4">
-                <div
-                    class="flex-auto cursor-pointer"
-                    (click)="twoStepToggle.toggle()"
-                >
+                <div class="flex-auto cursor-pointer" (click)="twoStepToggle.toggle()">
                     <div class="font-medium leading-6">
-                        Enable 2-step authentication
+                        Habilitar la autenticación de 2 pasos
                     </div>
                     <div class="text-secondary text-md">
-                        Protects you against password theft by requesting an
-                        authentication code via SMS on every login.
+                        Le protege contra el robo de contraseñas solicitando una
+                        código de autenticación vía correo electrónico en cada inicio de sesión.
                     </div>
                 </div>
-                <mat-slide-toggle
-                    class="ml-4"
-                    [color]="'primary'"
-                    [formControlName]="'twoStep'"
-                    #twoStepToggle
-                >
+                <mat-slide-toggle class="ml-4" [color]="'primary'" [formControlName]="'twoStep'" #twoStepToggle>
                 </mat-slide-toggle>
             </div>
             <!-- Ask to change password -->
             <div class="flex items-center justify-between sm:col-span-4">
-                <div
-                    class="flex-auto cursor-pointer"
-                    (click)="askPasswordChangeToggle.toggle()"
-                >
+                <div class="flex-auto cursor-pointer" (click)="askPasswordChangeToggle.toggle()">
                     <div class="font-medium leading-6">
-                        Ask to change password on every 6 months
+                        Solicite cambiar la contraseña cada 6 meses
                     </div>
                     <div class="text-secondary text-md">
-                        A simple but an effective way to be protected against
-                        data leaks and password theft.
+                        Una forma sencilla pero eficaz de protegerse contra
+                        fugas de datos y robo de contraseñas.
                     </div>
                 </div>
-                <mat-slide-toggle
-                    class="ml-4"
-                    [color]="'primary'"
-                    [formControlName]="'askPasswordChange'"
-                    #askPasswordChangeToggle
-                >
+                <mat-slide-toggle class="ml-4" [color]="'primary'" [formControlName]="'askPasswordChange'"
+                    #askPasswordChangeToggle>
                 </mat-slide-toggle>
             </div>
         </div>
@@ -109,14 +78,9 @@
 
         <!-- Actions -->
         <div class="flex items-center justify-end">
-            <button mat-stroked-button type="button">Cancel</button>
-            <button
-                class="ml-4"
-                mat-flat-button
-                type="button"
-                [color]="'primary'"
-            >
-                Save
+            <button mat-stroked-button type="button">Cancelar</button>
+            <button class="ml-4" mat-flat-button type="button" [color]="'primary'">
+                Guardar
             </button>
         </div>
     </form>

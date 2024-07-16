@@ -8,18 +8,15 @@ import {
     ViewEncapsulation,
 } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
+import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
+import { MatInputModule } from '@angular/material/input';
 import { MatDrawer, MatSidenavModule } from '@angular/material/sidenav';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import {
-    ActivatedRoute,
-    Router,
-    RouterLink,
-    RouterOutlet,
-} from '@angular/router';
-import { FuseMediaWatcherService } from '@fuse/services/media-watcher';
-
+import { RouterLink, RouterOutlet } from '@angular/router';
+import { ModalService } from 'app/shared/services/modal.service';
 import { Subject, takeUntil } from 'rxjs';
+import { FileManagerDetailsComponent } from '../details/details.component';
 import { FileManagerService } from '../file-manager.service';
 import { Item, Items } from '../file-manager.types';
 
@@ -36,6 +33,8 @@ import { Item, Items } from '../file-manager.types';
         MatButtonModule,
         MatIconModule,
         MatTooltipModule,
+        MatFormFieldModule,
+        MatInputModule,
     ],
 })
 export class FileManagerListComponent implements OnInit, OnDestroy {
@@ -49,11 +48,9 @@ export class FileManagerListComponent implements OnInit, OnDestroy {
      * Constructor
      */
     constructor(
-        private _activatedRoute: ActivatedRoute,
         private _changeDetectorRef: ChangeDetectorRef,
-        private _router: Router,
         private _fileManagerService: FileManagerService,
-        private _fuseMediaWatcherService: FuseMediaWatcherService
+        private _modalSvc: ModalService
     ) {}
 
     // -----------------------------------------------------------------------------------------------------
@@ -83,18 +80,6 @@ export class FileManagerListComponent implements OnInit, OnDestroy {
                 // Mark for check
                 this._changeDetectorRef.markForCheck();
             });
-
-        // Subscribe to media query change
-        this._fuseMediaWatcherService
-            .onMediaQueryChange$('(min-width: 1440px)')
-            .pipe(takeUntil(this._unsubscribeAll))
-            .subscribe((state) => {
-                // Calculate the drawer mode
-                this.drawerMode = state.matches ? 'side' : 'over';
-
-                // Mark for check
-                this._changeDetectorRef.markForCheck();
-            });
     }
 
     /**
@@ -111,17 +96,6 @@ export class FileManagerListComponent implements OnInit, OnDestroy {
     // -----------------------------------------------------------------------------------------------------
 
     /**
-     * On backdrop clicked
-     */
-    onBackdropClicked(): void {
-        // Go back to the list
-        this._router.navigate(['./'], { relativeTo: this._activatedRoute });
-
-        // Mark for check
-        this._changeDetectorRef.markForCheck();
-    }
-
-    /**
      * Track by function for ngFor loops
      *
      * @param index
@@ -129,5 +103,17 @@ export class FileManagerListComponent implements OnInit, OnDestroy {
      */
     trackByFn(index: number, item: any): any {
         return item.id || index;
+    }
+
+    /**
+     * Open modal laguanges detail
+     *
+     * @param data
+     */
+    openDetailsModal(data?: Item): void {
+        this._modalSvc.openModal<FileManagerDetailsComponent, Item>(
+            FileManagerDetailsComponent,
+            data
+        );
     }
 }

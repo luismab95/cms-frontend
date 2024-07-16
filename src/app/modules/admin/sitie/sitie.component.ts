@@ -13,8 +13,8 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatDrawer, MatSidenavModule } from '@angular/material/sidenav';
 import { FuseMediaWatcherService } from '@fuse/services/media-watcher';
 import { Subject, takeUntil } from 'rxjs';
-import { SettingsInformationComponent } from './information/information.component';
-import { SettingsLanguagesComponent } from './languages/languages.component';
+import { SitieInformationComponent } from './information/information.component';
+import { SitieLanguagesComponent } from './languages/languages.component';
 
 @Component({
     selector: 'sitie',
@@ -27,8 +27,8 @@ import { SettingsLanguagesComponent } from './languages/languages.component';
         MatButtonModule,
         MatIconModule,
         NgClass,
-        SettingsInformationComponent,
-        SettingsLanguagesComponent,
+        SitieInformationComponent,
+        SitieLanguagesComponent,
     ],
 })
 export class SitieComponent implements OnInit, OnDestroy {
@@ -60,16 +60,14 @@ export class SitieComponent implements OnInit, OnDestroy {
             {
                 id: 'information',
                 icon: 'heroicons_outline:information-circle',
-                title: 'Information',
-                description:
-                    'Manage your public profile and private information',
+                title: 'Información',
+                description: 'Gestiona la información del sitio.',
             },
             {
                 id: 'languages',
                 icon: 'heroicons_outline:language',
-                title: 'Languages',
-                description:
-                    'Manage your password and 2-step verification preferences',
+                title: 'Idiomas',
+                description: 'Gestiona los idiomas del sitio.',
             },
         ];
 

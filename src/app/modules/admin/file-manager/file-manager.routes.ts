@@ -6,7 +6,6 @@ import {
     Routes,
 } from '@angular/router';
 import { catchError, throwError } from 'rxjs';
-import { FileManagerDetailsComponent } from './details/details.component';
 import { FileManagerComponent } from './file-manager.component';
 import { FileManagerService } from './file-manager.service';
 import { FileManagerListComponent } from './list/list.component';
@@ -73,44 +72,6 @@ const itemResolver = (
     );
 };
 
-/**
- * Can deactivate file manager details
- *
- * @param component
- * @param currentRoute
- * @param currentState
- * @param nextState
- */
-const canDeactivateFileManagerDetails = (
-    component: FileManagerDetailsComponent,
-    currentRoute: ActivatedRouteSnapshot,
-    currentState: RouterStateSnapshot,
-    nextState: RouterStateSnapshot
-) => {
-    // Get the next route
-    let nextRoute: ActivatedRouteSnapshot = nextState.root;
-    while (nextRoute.firstChild) {
-        nextRoute = nextRoute.firstChild;
-    }
-
-    // If the next state doesn't contain '/file-manager'
-    // it means we are navigating away from the
-    // file manager app
-    if (!nextState.url.includes('/file-manager')) {
-        // Let it navigate
-        return true;
-    }
-
-    // If we are navigating to another item...
-    if (nextState.url.includes('/details')) {
-        // Just navigate
-        return true;
-    }
-
-    // Otherwise, close the drawer first, and then navigate
-    return component.closeDrawer().then(() => true);
-};
-
 export default [
     {
         path: '',
@@ -122,16 +83,6 @@ export default [
                 resolve: {
                     item: folderResolver,
                 },
-                children: [
-                    {
-                        path: 'details/:id',
-                        component: FileManagerDetailsComponent,
-                        resolve: {
-                            item: itemResolver,
-                        },
-                        canDeactivate: [canDeactivateFileManagerDetails],
-                    },
-                ],
             },
             {
                 path: '',
@@ -139,16 +90,6 @@ export default [
                 resolve: {
                     items: () => inject(FileManagerService).getItems(),
                 },
-                children: [
-                    {
-                        path: 'details/:id',
-                        component: FileManagerDetailsComponent,
-                        resolve: {
-                            item: itemResolver,
-                        },
-                        canDeactivate: [canDeactivateFileManagerDetails],
-                    },
-                ],
             },
         ],
     },

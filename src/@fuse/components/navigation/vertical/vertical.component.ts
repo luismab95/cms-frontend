@@ -115,9 +115,6 @@ export class FuseVerticalNavigationComponent
     @Output() readonly openedChanged: EventEmitter<boolean> =
         new EventEmitter<boolean>();
     @Output()
-    readonly toggleNavigationAppearanceChanged: EventEmitter<boolean> =
-        new EventEmitter<boolean>();
-    @Output()
     readonly positionChanged: EventEmitter<FuseVerticalNavigationPosition> =
         new EventEmitter<FuseVerticalNavigationPosition>();
     @ViewChild('navigationContent') private _navigationContentEl: ElementRef;
@@ -834,12 +831,5 @@ export class FuseVerticalNavigationComponent
 
         // Execute the observable
         this.openedChanged.next(open);
-    }
-
-    /**
-     * Toggle the navigation appearance
-     */
-    toggleNavigationAppearance(): void {
-        this.toggleNavigationAppearanceChanged.emit(true);
     }
 }

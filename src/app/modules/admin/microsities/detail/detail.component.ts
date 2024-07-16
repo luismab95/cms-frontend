@@ -15,7 +15,6 @@ import { RouterLink } from '@angular/router';
 import { FuseMediaWatcherService } from '@fuse/services/media-watcher';
 import { Subject, takeUntil } from 'rxjs';
 import { MicrositiesInformationComponent } from './information/information.component';
-import { MicrositiesLangugesComponent } from './languages/languages.component';
 import { MicrositiesPagesComponent } from './pages/pages.component';
 
 @Component({
@@ -30,7 +29,6 @@ import { MicrositiesPagesComponent } from './pages/pages.component';
         MatIconModule,
         NgClass,
         MicrositiesInformationComponent,
-        MicrositiesLangugesComponent,
         MicrositiesPagesComponent,
         RouterLink,
     ],
@@ -67,13 +65,6 @@ export class MicroSitiesDetailComponent implements OnInit, OnDestroy {
                 title: 'Information',
                 description:
                     'Manage your public profile and private information',
-            },
-            {
-                id: 'languages',
-                icon: 'heroicons_outline:language',
-                title: 'Languages',
-                description:
-                    'Manage your password and 2-step verification preferences',
             },
             {
                 id: 'pages',

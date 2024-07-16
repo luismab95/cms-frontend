@@ -19,8 +19,8 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
-import { FuseConfig, FuseConfigService, Scheme } from '@fuse/services/config';
-import { Subject, takeUntil } from 'rxjs';
+import { FuseConfig } from '@fuse/services/config';
+import { Subject } from 'rxjs';
 
 @Component({
     selector: 'parameters-logos',
@@ -49,10 +49,7 @@ export class ParametersLogosComponent implements OnInit {
     /**
      * Constructor
      */
-    constructor(
-        private _formBuilder: UntypedFormBuilder,
-        private _fuseConfigService: FuseConfigService
-    ) {}
+    constructor(private _formBuilder: UntypedFormBuilder) {}
 
     // -----------------------------------------------------------------------------------------------------
     // @ Lifecycle hooks
@@ -76,14 +73,6 @@ export class ParametersLogosComponent implements OnInit {
             country: ['usa'],
             language: ['english'],
         });
-
-        // Subscribe to config changes
-        this._fuseConfigService.config$
-            .pipe(takeUntil(this._unsubscribeAll))
-            .subscribe((config: FuseConfig) => {
-                // Store the config
-                this.config = config;
-            });
     }
 
     /**
@@ -96,11 +85,17 @@ export class ParametersLogosComponent implements OnInit {
     }
 
     /**
-     * Set the scheme on the config
+     * Upload image to given note
      *
-     * @param scheme
+     * @param note
+     * @param fileList
      */
-    setScheme(scheme: Scheme): void {
-        this._fuseConfigService.config = { scheme };
-    }
+    uploadImage(note: any, fileList: FileList): void {}
+
+    /**
+     * Remove the image on the given note
+     *
+     * @param note
+     */
+    removeImage(note: any): void {}
 }

@@ -19,8 +19,8 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
-import { FuseConfig, FuseConfigService, Scheme } from '@fuse/services/config';
-import { Subject, takeUntil } from 'rxjs';
+import { FuseConfig } from '@fuse/services/config';
+import { Subject } from 'rxjs';
 
 @Component({
     selector: 'parameters-email',
@@ -42,17 +42,14 @@ import { Subject, takeUntil } from 'rxjs';
     ],
 })
 export class ParametersEmailComponent implements OnInit {
-    accountForm: UntypedFormGroup;
+    emailForm: UntypedFormGroup;
     config: FuseConfig;
     private _unsubscribeAll: Subject<any> = new Subject<any>();
 
     /**
      * Constructor
      */
-    constructor(
-        private _formBuilder: UntypedFormBuilder,
-        private _fuseConfigService: FuseConfigService
-    ) {}
+    constructor(private _formBuilder: UntypedFormBuilder) {}
 
     // -----------------------------------------------------------------------------------------------------
     // @ Lifecycle hooks
@@ -63,27 +60,16 @@ export class ParametersEmailComponent implements OnInit {
      */
     ngOnInit(): void {
         // Create the form
-        this.accountForm = this._formBuilder.group({
-            name: ['Brian Hughes'],
-            username: ['brianh'],
-            title: ['Senior Frontend Developer'],
-            company: ['YXZ Software'],
-            about: [
-                "Hey! This is Brian; husband, father and gamer. I'm mostly passionate about bleeding edge tech and chocolate! 🍫",
+        this.emailForm = this._formBuilder.group({
+            host: ['google.com', Validators.required],
+            port: ['25', Validators.required],
+            username: ['asdasd234234k234k23n4nj2n3409s0d', Validators.required],
+            password: ['9f0sdf8sd98f9sd8f0sd8f9s8df90sd8', Validators.required],
+            email: [
+                'hughes.brian@mail.com',
+                [Validators.email, Validators.required],
             ],
-            email: ['hughes.brian@mail.com', Validators.email],
-            phone: ['121-490-33-12'],
-            country: ['usa'],
-            language: ['english'],
         });
-
-        // Subscribe to config changes
-        this._fuseConfigService.config$
-            .pipe(takeUntil(this._unsubscribeAll))
-            .subscribe((config: FuseConfig) => {
-                // Store the config
-                this.config = config;
-            });
     }
 
     /**
@@ -93,14 +79,5 @@ export class ParametersEmailComponent implements OnInit {
         // Unsubscribe from all subscriptions
         this._unsubscribeAll.next(null);
         this._unsubscribeAll.complete();
-    }
-
-    /**
-     * Set the scheme on the config
-     *
-     * @param scheme
-     */
-    setScheme(scheme: Scheme): void {
-        this._fuseConfigService.config = { scheme };
     }
 }

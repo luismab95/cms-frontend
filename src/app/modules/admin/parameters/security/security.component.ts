@@ -11,7 +11,6 @@ import {
     ReactiveFormsModule,
     UntypedFormBuilder,
     UntypedFormGroup,
-    Validators,
 } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatOptionModule } from '@angular/material/core';
@@ -19,8 +18,9 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
-import { FuseConfig, FuseConfigService, Scheme } from '@fuse/services/config';
-import { Subject, takeUntil } from 'rxjs';
+import { MatSlideToggleModule } from '@angular/material/slide-toggle';
+import { FuseConfig } from '@fuse/services/config';
+import { Subject } from 'rxjs';
 
 @Component({
     selector: 'parameters-security',
@@ -39,20 +39,18 @@ import { Subject, takeUntil } from 'rxjs';
         MatOptionModule,
         MatButtonModule,
         NgClass,
+        MatSlideToggleModule,
     ],
 })
 export class ParametersSecurityComponent implements OnInit {
-    accountForm: UntypedFormGroup;
+    securityForm: UntypedFormGroup;
     config: FuseConfig;
     private _unsubscribeAll: Subject<any> = new Subject<any>();
 
     /**
      * Constructor
      */
-    constructor(
-        private _formBuilder: UntypedFormBuilder,
-        private _fuseConfigService: FuseConfigService
-    ) {}
+    constructor(private _formBuilder: UntypedFormBuilder) {}
 
     // -----------------------------------------------------------------------------------------------------
     // @ Lifecycle hooks
@@ -63,27 +61,16 @@ export class ParametersSecurityComponent implements OnInit {
      */
     ngOnInit(): void {
         // Create the form
-        this.accountForm = this._formBuilder.group({
-            name: ['Brian Hughes'],
-            username: ['brianh'],
-            title: ['Senior Frontend Developer'],
-            company: ['YXZ Software'],
-            about: [
-                "Hey! This is Brian; husband, father and gamer. I'm mostly passionate about bleeding edge tech and chocolate! 🍫",
-            ],
-            email: ['hughes.brian@mail.com', Validators.email],
-            phone: ['121-490-33-12'],
-            country: ['usa'],
-            language: ['english'],
+        this.securityForm = this._formBuilder.group({
+            inactivity: ['100'],
+            attemps: ['3'],
+            pwdLong: ['16'],
+            pwdNumber: [true],
+            pwdMayus: [true],
+            pwdSpecial: [true],
+            otpLong: [8],
+            otpType: ['letras'],
         });
-
-        // Subscribe to config changes
-        this._fuseConfigService.config$
-            .pipe(takeUntil(this._unsubscribeAll))
-            .subscribe((config: FuseConfig) => {
-                // Store the config
-                this.config = config;
-            });
     }
 
     /**
@@ -93,14 +80,5 @@ export class ParametersSecurityComponent implements OnInit {
         // Unsubscribe from all subscriptions
         this._unsubscribeAll.next(null);
         this._unsubscribeAll.complete();
-    }
-
-    /**
-     * Set the scheme on the config
-     *
-     * @param scheme
-     */
-    setScheme(scheme: Scheme): void {
-        this._fuseConfigService.config = { scheme };
     }
 }

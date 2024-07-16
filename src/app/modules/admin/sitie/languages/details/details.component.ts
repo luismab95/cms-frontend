@@ -1,3 +1,5 @@
+import { TextFieldModule } from '@angular/cdk/text-field';
+import { DatePipe, NgClass } from '@angular/common';
 import {
     ChangeDetectionStrategy,
     ChangeDetectorRef,
@@ -7,34 +9,60 @@ import {
     ViewEncapsulation,
     inject,
 } from '@angular/core';
+import {
+    FormsModule,
+    ReactiveFormsModule,
+    UntypedFormBuilder,
+    UntypedFormGroup,
+    Validators,
+} from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
+import { MatCheckboxModule } from '@angular/material/checkbox';
+import { MatOptionModule, MatRippleModule } from '@angular/material/core';
+import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MAT_DIALOG_DATA, MatDialogModule } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
+import { MatSelectModule } from '@angular/material/select';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { RouterLink } from '@angular/router';
+import { FuseFindByKeyPipe } from '@fuse/pipes/find-by-key/find-by-key.pipe';
 import { FuseConfirmationService } from '@fuse/services/confirmation';
 import { Subject } from 'rxjs';
-import { Item } from '../file-manager.types';
 
 @Component({
-    selector: 'file-manager-details',
+    selector: 'sitie-languages-details',
     templateUrl: './details.component.html',
     encapsulation: ViewEncapsulation.None,
     changeDetection: ChangeDetectionStrategy.OnPush,
     standalone: true,
     imports: [
         MatButtonModule,
-        MatIconModule,
-        MatDialogModule,
-        MatInputModule,
-        MatFormFieldModule,
         MatTooltipModule,
+        RouterLink,
+        MatIconModule,
+        FormsModule,
+        ReactiveFormsModule,
+        MatRippleModule,
+        MatFormFieldModule,
+        MatInputModule,
+        MatCheckboxModule,
+        NgClass,
+        MatSelectModule,
+        MatOptionModule,
+        MatDatepickerModule,
+        TextFieldModule,
+        FuseFindByKeyPipe,
+        DatePipe,
+        MatDialogModule,
     ],
 })
-export class FileManagerDetailsComponent implements OnInit, OnDestroy {
-    item: Item;
+export class SitieLanguagesDetailsComponent implements OnInit, OnDestroy {
     editMode: boolean = false;
+    languageForm: UntypedFormGroup;
+    language: any;
+
     private readonly _matDialog = inject(MAT_DIALOG_DATA);
     private _unsubscribeAll: Subject<any> = new Subject<any>();
 
@@ -42,8 +70,9 @@ export class FileManagerDetailsComponent implements OnInit, OnDestroy {
      * Constructor
      */
     constructor(
-        private _fuseConfirmationService: FuseConfirmationService,
-        private _changeDetectorRef: ChangeDetectorRef
+        private _changeDetectorRef: ChangeDetectorRef,
+        private _formBuilder: UntypedFormBuilder,
+        private _fuseConfirmationService: FuseConfirmationService
     ) {}
 
     // -----------------------------------------------------------------------------------------------------
@@ -54,9 +83,15 @@ export class FileManagerDetailsComponent implements OnInit, OnDestroy {
      * On init
      */
     ngOnInit(): void {
-        // Get the item
+        // Create the language form
+        this.languageForm = this._formBuilder.group({
+            name: ['', [Validators.required]],
+            lang: ['', [Validators.required]],
+            icon: ['', [Validators.required]],
+        });
         if (this._matDialog) {
-            this.item = this._matDialog;
+            this.language = this._matDialog;
+            this.languageForm.patchValue(this._matDialog);
         }
     }
 
@@ -74,13 +109,29 @@ export class FileManagerDetailsComponent implements OnInit, OnDestroy {
     // -----------------------------------------------------------------------------------------------------
 
     /**
-     * Delete the file
+     * Toggle edit mode
+     *
+     * @param editMode
      */
-    deleteFile(): void {
+    toggleEditMode(editMode: boolean | null = null): void {
+        if (editMode === null) {
+            this.editMode = !this.editMode;
+        } else {
+            this.editMode = editMode;
+        }
+
+        // Mark for check
+        this._changeDetectorRef.markForCheck();
+    }
+
+    /**
+     * Toggle the language
+     */
+    toggleLanguage(): void {
         // Open the confirmation dialog
         const confirmation = this._fuseConfirmationService.open({
-            title: `Eliminar archivo`,
-            message: `¿Estás seguro de que deseas eliminar este archivo?.`,
+            title: `${this.language.status ? 'Inactivar' : 'Activar'} idioma`,
+            message: `¿Estás seguro de que deseas ${this.language.status ? 'Inactivar' : 'Activar'} este idioma?.`,
             actions: {
                 confirm: {
                     label: 'Aceptar',
@@ -100,21 +151,5 @@ export class FileManagerDetailsComponent implements OnInit, OnDestroy {
                 this._changeDetectorRef.markForCheck();
             }
         });
-    }
-
-    /**
-     * Toggle edit mode
-     *
-     * @param editMode
-     */
-    toggleEditMode(editMode: boolean | null = null): void {
-        if (editMode === null) {
-            this.editMode = !this.editMode;
-        } else {
-            this.editMode = editMode;
-        }
-
-        // Mark for check
-        this._changeDetectorRef.markForCheck();
     }
 }
