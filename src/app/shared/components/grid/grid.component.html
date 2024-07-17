@@ -1,65 +1,33 @@
 <!-- Sections -->
-@for (section of grid; track trackByFn($index, section)) {
-<div [ngClass]="{'min-h-40 rounded-lg border border-dashed border-sky-300 mx-4 my-2': !preview}" class="flex flex-col">
-    <!-- Options -->
-    @if(!preview){
-    <div class="text-lg font-semibold flex justify-between items-center px-2">
-        <button mat-icon-button>
-            <mat-icon [matTooltip]="'Arrastrar y soltar'" [svgIcon]="'mat_solid:drag_indicator'"></mat-icon>
-        </button>
-        Sección {{$index + 1}}
-        <div>
-            <button mat-icon-button [matMenuTriggerFor]="secctionMenu">
-                <mat-icon class="icon-size-5" [svgIcon]="
-                        'heroicons_mini:ellipsis-vertical'
-                    "></mat-icon>
-            </button>
-            <mat-menu #secctionMenu="matMenu">
-
-                <button mat-menu-item>
-                    <mat-icon [svgIcon]="'heroicons_outline:plus'"></mat-icon>
-                    Nueva fila
-                </button>
-                <button mat-menu-item>
-                    <mat-icon [svgIcon]="'heroicons_outline:cog-6-tooth'"></mat-icon>
-                    Configurar
-                </button>
-                <button mat-menu-item class="text-warn">
-                    <mat-icon [color]="'warn'" [svgIcon]="'heroicons_outline:trash'"></mat-icon>
-                    Eliminar
-                </button>
-            </mat-menu>
-        </div>
-    </div>
-    }
-
-    <!-- Rows -->
-    @for (row of section.rows; track trackByFn($index, row)) {
-    <div [ngClass]="{'min-h-40 rounded-lg border border-dashed border-orange-300 mx-4 my-2': !preview}"
+<div class="sections" cdkDropList cdkDropListOrientation="vertical" (cdkDropListDropped)="drop($event,grid)">
+    @for (section of grid; track trackByFn($index, section)) {
+    <div cdkDragBoundary=".sections" cdkDrag [cdkDragDisabled]="preview"
+        [ngClass]="{'min-h-40 rounded-lg border border-dashed border-sky-300 mx-4 my-2': !preview}"
         class="flex flex-col">
         <!-- Options -->
         @if(!preview){
         <div class="text-lg font-semibold flex justify-between items-center px-2">
-            <button mat-icon-button>
+            <button cdkDragHandle mat-icon-button>
                 <mat-icon [matTooltip]="'Arrastrar y soltar'" [svgIcon]="'mat_solid:drag_indicator'"></mat-icon>
             </button>
-            Fila {{$index + 1}}
+            Sección {{section.uuid}}
             <div>
-                <button mat-icon-button [matMenuTriggerFor]="rowMenu">
+                <button mat-icon-button [matMenuTriggerFor]="secctionMenu">
                     <mat-icon class="icon-size-5" [svgIcon]="
-                            'heroicons_mini:ellipsis-vertical'
-                        "></mat-icon>
+                        'heroicons_mini:ellipsis-vertical'
+                    "></mat-icon>
                 </button>
-                <mat-menu #rowMenu="matMenu">
-                    <button mat-menu-item>
+                <mat-menu #secctionMenu="matMenu">
+
+                    <button (click)="addRow(section)" mat-menu-item>
                         <mat-icon [svgIcon]="'heroicons_outline:plus'"></mat-icon>
-                        Nueva columna
+                        Nueva fila
                     </button>
-                    <button mat-menu-item>
+                    <button (click)="openSettingsModal(section,'sección')" mat-menu-item>
                         <mat-icon [svgIcon]="'heroicons_outline:cog-6-tooth'"></mat-icon>
                         Configurar
                     </button>
-                    <button mat-menu-item class="text-warn">
+                    <button (click)="deleteSection(section.uuid)" mat-menu-item class="text-warn">
                         <mat-icon [color]="'warn'" [svgIcon]="'heroicons_outline:trash'"></mat-icon>
                         Eliminar
                     </button>
@@ -67,32 +35,37 @@
             </div>
         </div>
         }
+        <!-- Rows -->
+        <div class="rows" cdkDropList cdkDropListOrientation="vertical"
+            (cdkDropListDropped)="drop($event,section.rows)">
+            @for (row of section.rows; track trackByFn($index, row)) {
+            <div cdkDragBoundary=".rows" cdkDrag [cdkDragDisabled]="preview"
+                [ngClass]="{'min-h-40 rounded-lg border border-dashed border-orange-300 mx-4 my-2': !preview}"
+                class="flex flex-col ">
 
-        <!-- Columns -->
-        <div [ngClass]="{'flex-row':previewType === 'desktop' || previewType === 'none','flex-col':previewType !== 'desktop' && previewType !== 'none'}"
-            class="flex">
-            @for (column of row.columns; track trackByFn($index, column)) {
-            <div [ngClass]="{'min-h-40 rounded-lg border border-dashed border-purple-300 mx-4 my-2': !preview}"
-                class="w-full">
                 <!-- Options -->
                 @if(!preview){
                 <div class="text-lg font-semibold flex justify-between items-center px-2">
-                    <button mat-icon-button>
+                    <button cdkDragHandle mat-icon-button>
                         <mat-icon [matTooltip]="'Arrastrar y soltar'" [svgIcon]="'mat_solid:drag_indicator'"></mat-icon>
                     </button>
-                    Columna {{$index + 1}}
+                    Fila {{row.uuid}}
                     <div>
-                        <button mat-icon-button [matMenuTriggerFor]="columnOptions">
+                        <button mat-icon-button [matMenuTriggerFor]="rowMenu">
                             <mat-icon class="icon-size-5" [svgIcon]="
-                            'heroicons_mini:ellipsis-vertical'
-                        "></mat-icon>
+                                'heroicons_mini:ellipsis-vertical'
+                            "></mat-icon>
                         </button>
-                        <mat-menu #columnOptions="matMenu">
-                            <button mat-menu-item>
+                        <mat-menu #rowMenu="matMenu">
+                            <button (click)="addColumn(row)" mat-menu-item>
+                                <mat-icon [svgIcon]="'heroicons_outline:plus'"></mat-icon>
+                                Nueva columna
+                            </button>
+                            <button (click)="openSettingsModal(row,'fila')" mat-menu-item>
                                 <mat-icon [svgIcon]="'heroicons_outline:cog-6-tooth'"></mat-icon>
                                 Configurar
                             </button>
-                            <button mat-menu-item class="text-warn">
+                            <button (click)="deleteRow(row.uuid,section)" mat-menu-item class="text-warn">
                                 <mat-icon [color]="'warn'" [svgIcon]="'heroicons_outline:trash'"></mat-icon>
                                 Eliminar
                             </button>
@@ -100,40 +73,85 @@
                     </div>
                 </div>
                 }
-
-                <div [ngClass]="{'min-h-40 rounded-lg border border-dashed border-pink-300 mx-4 my-2': !preview }"
-                    class="flex flex-col">
-                    <!-- Options -->
-                    @if(!preview){
-                    <div class="text-sm font-semibold flex justify-between items-center px-2">
-                        Elemento
-                        <div>
-                            <button mat-icon-button [matMenuTriggerFor]="elementOptions">
-                                <mat-icon class="icon-size-5" [svgIcon]="'heroicons_mini:ellipsis-vertical'"></mat-icon>
+                <!-- Columns -->
+                <div cdkDropList cdkDropListOrientation="horizontal" (cdkDropListDropped)="drop($event,row.columns)"
+                    [ngClass]="{'flex-row':previewType === 'desktop' || previewType === 'none','flex-col':previewType !== 'desktop' && previewType !== 'none'}"
+                    class="flex columns">
+                    @for (column of row.columns; track trackByFn($index, column)) {
+                    <div cdkDragBoundary=".columns" cdkDrag [cdkDragDisabled]="preview"
+                        [ngClass]="{'min-h-40 rounded-lg border border-dashed border-purple-300 mx-4 my-2': !preview}"
+                        class="w-full relative">
+                        <!-- Options -->
+                        @if(!preview){
+                        <div class="text-lg font-semibold flex justify-between items-center px-2">
+                            <button cdkDragHandle mat-icon-button>
+                                <mat-icon [matTooltip]="'Arrastrar y soltar'"
+                                    [svgIcon]="'mat_solid:drag_indicator'"></mat-icon>
                             </button>
-                            <mat-menu #elementOptions="matMenu">
-                                <button mat-menu-item>
-                                    <mat-icon [svgIcon]="'heroicons_outline:cog-6-tooth'"></mat-icon>
-                                    Configurar
+                            Columna {{column.uuid}}
+                            <div>
+                                <button mat-icon-button [matMenuTriggerFor]="columnOptions">
+                                    <mat-icon class="icon-size-5" [svgIcon]="
+                                        'heroicons_mini:ellipsis-vertical'
+                                    "></mat-icon>
                                 </button>
-                                <button mat-menu-item class="text-warn">
-                                    <mat-icon [color]="'warn'" [svgIcon]="'heroicons_outline:trash'"></mat-icon>
-                                    Eliminar
-                                </button>
-                            </mat-menu>
+                                <mat-menu #columnOptions="matMenu">
+                                    @if(column.element === null){
+                                    <button (click)="addElement(column)" mat-menu-item>
+                                        <mat-icon [svgIcon]="'heroicons_outline:plus'"></mat-icon>
+                                        Agregar elemento
+                                    </button>
+                                    }
+                                    <button (click)="openSettingsModal(column,'columna')" mat-menu-item>
+                                        <mat-icon [svgIcon]="'heroicons_outline:cog-6-tooth'"></mat-icon>
+                                        Configurar
+                                    </button>
+                                    <button (click)="deleteColumn(column.uuid,row)" mat-menu-item class="text-warn">
+                                        <mat-icon [color]="'warn'" [svgIcon]="'heroicons_outline:trash'"></mat-icon>
+                                        Eliminar
+                                    </button>
+                                </mat-menu>
+                            </div>
                         </div>
+                        }
+                        @if(column.element !== null){
+                        <div [ngClass]="{'min-h-40 rounded-lg border border-dashed border-pink-300 mx-4 my-2': !preview }"
+                            class="flex flex-col">
+                            <!-- Options -->
+                            @if(!preview){
+                            <div class="text-sm font-semibold flex justify-between items-center px-2">
+                                <div></div>
+                                Elemento {{column.element.name}}
+                                <div>
+                                    <button mat-icon-button [matMenuTriggerFor]="elementOptions">
+                                        <mat-icon class="icon-size-5"
+                                            [svgIcon]="'heroicons_mini:ellipsis-vertical'"></mat-icon>
+                                    </button>
+                                    <mat-menu #elementOptions="matMenu">
+                                        <button (click)="openSettingsModal(column.element,'Elemento')" mat-menu-item>
+                                            <mat-icon [svgIcon]="'heroicons_outline:cog-6-tooth'"></mat-icon>
+                                            Configurar
+                                        </button>
+                                        <button (click)="deleteElement(column)" mat-menu-item class="text-warn">
+                                            <mat-icon [color]="'warn'" [svgIcon]="'heroicons_outline:trash'"></mat-icon>
+                                            Eliminar
+                                        </button>
+                                    </mat-menu>
+                                </div>
+                            </div>
+                            }
+                            <!-- Element -->
+                            <div class="flex items-center justify-center h-full w-full p-2">
+
+                            </div>
+                        </div>
+                        }
                     </div>
                     }
-                    <div class="flex items-center justify-center h-full w-full p-2">
-                        Elemento aqui
-                    </div>
                 </div>
-
             </div>
             }
         </div>
     </div>
     }
-
 </div>
-}

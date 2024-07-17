@@ -1,7 +1,7 @@
 <div class="w-full max-w-full bg-default">
     <div class="flex min-w-0 flex-auto flex-col dark:bg-transparent absolute -top-0 w-full -left-0">
         <div class="relative">
-            <div class="sticky top-0 left-0 right-0w-full bg-card shadow-md p-3 z-10">
+            <div class="sticky top-0 left-0 right-0 w-full bg-card shadow-md p-3 z-10">
                 <div class="flex items-center flex-col md:flex-row justify-between">
                     <div class="flex items-center justify-end">
                         <button mat-icon-button (click)="toggleFullscreen()"
@@ -66,7 +66,7 @@
                                 <mat-icon class="icon-size-5" [svgIcon]="'heroicons_mini:ellipsis-vertical'"></mat-icon>
                             </button>
                             <mat-menu #headerMenu="matMenu">
-                                <button mat-menu-item>
+                                <button (click)="addSection()" mat-menu-item>
                                     <mat-icon [svgIcon]="'heroicons_outline:plus'"></mat-icon>
                                     Nueva sección
                                 </button>
@@ -78,7 +78,8 @@
                         </div>
                     </div>
                     }
-                    <grid [previewType]="preview" [preview]="previewMode"></grid>
+                    <grid [grid]="body()" [previewType]="preview" [preview]="previewMode"
+                        (deleteSectionEvent)="setGrid($event)"></grid>
                 </div>
                 <div class="bg-card cursor-not-allowed h-40 rounded-2xl flex justify-center items-center">
                     <span class="-rotate-45 text-xl text-center">

@@ -1,4 +1,4 @@
-import { NgClass } from '@angular/common';
+import { CommonModule, NgClass } from '@angular/common';
 import {
     ChangeDetectionStrategy,
     Component,
@@ -7,6 +7,7 @@ import {
     OnInit,
     Output,
     ViewEncapsulation,
+    signal,
 } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
@@ -14,6 +15,9 @@ import { MatMenuModule } from '@angular/material/menu';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { RouterLink } from '@angular/router';
 import { GridComponent } from 'app/shared/components/grid/grid.component';
+import { GridSettingsComponent } from 'app/shared/components/grid/settings/settings.component';
+import { ModalService } from 'app/shared/services/modal.service';
+import { generateRandomString } from 'app/shared/utils/random.utils';
 import { Subject } from 'rxjs';
 
 @Component({
@@ -30,6 +34,7 @@ import { Subject } from 'rxjs';
         MatTooltipModule,
         GridComponent,
         MatMenuModule,
+        CommonModule,
     ],
 })
 export class TemplatesDrawerComponent implements OnInit {
@@ -38,12 +43,14 @@ export class TemplatesDrawerComponent implements OnInit {
         new EventEmitter<boolean>();
     preview: string = 'none';
     previewMode: boolean = false;
+    header = signal<any>([]);
+    footer = signal<any>([]);
     private _unsubscribeAll: Subject<any> = new Subject<any>();
 
     /**
      * Constructor
      */
-    constructor() {}
+    constructor(private _modalSvc: ModalService) {}
 
     // -----------------------------------------------------------------------------------------------------
     // @ Lifecycle hooks
@@ -52,7 +59,61 @@ export class TemplatesDrawerComponent implements OnInit {
     /**
      * On init
      */
-    ngOnInit(): void {}
+    ngOnInit(): void {
+        // Set header
+        this.setGrid(
+            [
+                {
+                    uuid: generateRandomString(8),
+                    css: {},
+                    config: {},
+                    rows: [
+                        {
+                            uuid: generateRandomString(8),
+                            css: {},
+                            config: {},
+                            columns: [
+                                {
+                                    uuid: generateRandomString(8),
+                                    css: {},
+                                    config: {},
+                                    element: null,
+                                },
+                            ],
+                        },
+                    ],
+                },
+            ],
+            'header'
+        );
+
+        // Set footer
+        this.setGrid(
+            [
+                {
+                    uuid: generateRandomString(8),
+                    css: {},
+                    config: {},
+                    rows: [
+                        {
+                            uuid: generateRandomString(8),
+                            css: {},
+                            config: {},
+                            columns: [
+                                {
+                                    uuid: generateRandomString(8),
+                                    css: {},
+                                    config: {},
+                                    element: null,
+                                },
+                            ],
+                        },
+                    ],
+                },
+            ],
+            'footer'
+        );
+    }
 
     /**
      * On destroy
@@ -82,5 +143,63 @@ export class TemplatesDrawerComponent implements OnInit {
     setPreview(mode: string) {
         this.preview = mode;
         this.previewMode = mode !== 'none' ? true : false;
+    }
+
+    /**
+     * Add section to grid
+     * @param item header | footer
+     */
+    addSection(item: 'header' | 'footer') {
+        const newSection = {
+            uuid: generateRandomString(8),
+            css: {},
+            config: {},
+            rows: [
+                {
+                    uuid: generateRandomString(8),
+                    css: {},
+                    config: {},
+                    columns: [
+                        {
+                            uuid: generateRandomString(8),
+                            css: {},
+                            config: {},
+                            element: null,
+                        },
+                    ],
+                },
+            ],
+        };
+        if (item === 'header')
+            this.header.update((values) => {
+                return [...values, newSection];
+            });
+        if (item === 'footer')
+            this.footer.update((values) => {
+                return [...values, newSection];
+            });
+    }
+
+    /**
+     * Set data to grid
+     * @param grid
+     * @param item
+     */
+    setGrid(grid: any, item: 'header' | 'footer') {
+        if (item === 'header') this.header.set(grid);
+        if (item === 'footer') this.footer.set(grid);
+    }
+
+    /**
+     * Open modal settings detail
+     *
+     * @param data
+     * @param item
+     */
+    openSettingsModal<T>(data: T, item: string): void {
+        this._modalSvc.openModal<GridSettingsComponent, T>(
+            GridSettingsComponent,
+            { title: item, ...data }
+        );
     }
 }

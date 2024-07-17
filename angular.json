@@ -20,7 +20,9 @@
                         "outputPath": "dist/fuse",
                         "index": "src/index.html",
                         "browser": "src/main.ts",
-                        "polyfills": ["zone.js"],
+                        "polyfills": [
+                            "zone.js"
+                        ],
                         "tsConfig": "tsconfig.app.json",
                         "inlineStyleLanguage": "scss",
                         "allowedCommonJsDependencies": [
@@ -39,10 +41,17 @@
                                 "glob": "_redirects",
                                 "input": "src",
                                 "output": "/"
+                            },
+                            {
+                                "glob": "**/*",
+                                "input": "node_modules/monaco-editor",
+                                "output": "/assets/monaco/"
                             }
                         ],
                         "stylePreprocessorOptions": {
-                            "includePaths": ["src/@fuse/styles"]
+                            "includePaths": [
+                                "src/@fuse/styles"
+                            ]
                         },
                         "styles": [
                             "src/@fuse/styles/tailwind.scss",
@@ -96,7 +105,10 @@
                 "test": {
                     "builder": "@angular-devkit/build-angular:karma",
                     "options": {
-                        "polyfills": ["zone.js", "zone.js/testing"],
+                        "polyfills": [
+                            "zone.js",
+                            "zone.js/testing"
+                        ],
                         "tsConfig": "tsconfig.spec.json",
                         "inlineStyleLanguage": "scss",
                         "assets": [
@@ -105,7 +117,9 @@
                                 "input": "public"
                             }
                         ],
-                        "styles": ["src/styles/styles.scss"],
+                        "styles": [
+                            "src/styles/styles.scss"
+                        ],
                         "scripts": []
                     }
                 }

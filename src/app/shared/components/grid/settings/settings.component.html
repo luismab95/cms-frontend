@@ -1,0 +1,52 @@
+<div class="flex w-full flex-col relative h-full">
+    <!-- Header -->
+    <div class="flex flex-row w-full justify-between items-start mb-3">
+        <!-- Title -->
+        <div class="truncate text-3xl w-3/4 font-bold mt-3">
+            Configurar {{title}}
+        </div>
+        <!-- Close button -->
+        <div class="w-1/4 flex justify-end">
+            <a mat-icon-button [matTooltip]="'Close'" [mat-dialog-close]="false">
+                <mat-icon class="text-dark" [svgIcon]="'heroicons_outline:x-mark'"></mat-icon>
+            </a>
+        </div>
+    </div>
+    <div class="w-full h-full">
+        <mat-tab-group mat-stretch-tabs="false" [animationDuration]="'0'">
+            <mat-tab label="Propiedades">
+                <ng-template matTabContent>
+
+                </ng-template>
+            </mat-tab>
+
+            <mat-tab label="Estilos (CSS)">
+                <ng-template matTabContent>
+                    <div class="w-full py-2 flex items-center justify-between">
+                        <span class="text-md italic text-secondary">Personaliza los estilos de tu {{title}}.</span>
+                        <mat-icon [matTooltip]="'Ayuda'" class="icon-size-5 cursor-pointer"
+                            [svgIcon]="'mat_solid:help'"></mat-icon>
+                    </div>
+                    <ngx-monaco-editor class="h-160 md:h-160" [options]="options" [model]="model"></ngx-monaco-editor>
+                </ng-template>
+            </mat-tab>
+        </mat-tab-group>
+    </div>
+
+
+    <!-- Actions -->
+    <div class="absolute -bottom-6 w-full md:w-140 -left-6 z-10">
+        <div
+            class="mt-10 flex items-center overflow-hidden justify-end border-t bg-gray-50 py-4 dark:bg-transparent pr-8">
+            <!-- Cancel -->
+            <button class="ml-auto" mat-button [matTooltip]="'Cancelar'" [mat-dialog-close]="false">
+                Cancelar
+            </button>
+            <!-- Save -->
+            <button class="ml-2" mat-flat-button [color]="'primary'" [matTooltip]="'Guardar'">
+                Guardar
+            </button>
+        </div>
+    </div>
+
+</div>

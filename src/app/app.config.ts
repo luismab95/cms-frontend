@@ -1,5 +1,5 @@
 import { provideHttpClient } from '@angular/common/http';
-import { APP_INITIALIZER, ApplicationConfig, inject } from '@angular/core';
+import { APP_INITIALIZER, ApplicationConfig, importProvidersFrom, inject } from '@angular/core';
 import { LuxonDateAdapter } from '@angular/material-luxon-adapter';
 import { DateAdapter, MAT_DATE_FORMATS } from '@angular/material/core';
 import { provideAnimations } from '@angular/platform-browser/animations';
@@ -17,9 +17,11 @@ import { provideIcons } from 'app/core/icons/icons.provider';
 import { mockApiServices } from 'app/mock-api';
 import { firstValueFrom } from 'rxjs';
 import { TranslocoHttpLoader } from './core/transloco/transloco.http-loader';
+import { MonacoEditorModule } from 'ngx-monaco-editor-v2';
 
 export const appConfig: ApplicationConfig = {
     providers: [
+        importProvidersFrom(MonacoEditorModule.forRoot()),
         provideAnimations(),
         provideHttpClient(),
         provideRouter(

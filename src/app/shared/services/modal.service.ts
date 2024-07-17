@@ -9,7 +9,7 @@ export class ModalService {
     openModal<CT, T>(componentRef: ComponentType<CT>, data?: T): void {
         this._dialog.open(componentRef, {
             data,
-            width: '550px',
+            width: '560px',
             height: '100%',
             disableClose: true,
             hasBackdrop: true,

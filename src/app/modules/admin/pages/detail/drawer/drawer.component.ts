@@ -7,6 +7,7 @@ import {
     OnInit,
     Output,
     ViewEncapsulation,
+    signal,
 } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
@@ -14,6 +15,7 @@ import { MatMenuModule } from '@angular/material/menu';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { Router, RouterLink } from '@angular/router';
 import { GridComponent } from 'app/shared/components/grid/grid.component';
+import { generateRandomString } from 'app/shared/utils/random.utils';
 import { Subject } from 'rxjs';
 @Component({
     selector: 'pages-drawer',
@@ -39,6 +41,7 @@ export class PagesDrawerComponent implements OnInit {
         new EventEmitter<boolean>();
     preview: string = 'none';
     previewMode: boolean = false;
+    body = signal<any>([]);
     private _unsubscribeAll: Subject<any> = new Subject<any>();
 
     /**
@@ -53,7 +56,31 @@ export class PagesDrawerComponent implements OnInit {
     /**
      * On init
      */
-    ngOnInit(): void {}
+    ngOnInit(): void {
+        // Set body
+        this.setGrid([
+            {
+                uuid: generateRandomString(8),
+                css: {},
+                config: {},
+                rows: [
+                    {
+                        uuid: generateRandomString(8),
+                        css: {},
+                        config: {},
+                        columns: [
+                            {
+                                uuid: generateRandomString(8),
+                                css: {},
+                                config: {},
+                                element: null,
+                            },
+                        ],
+                    },
+                ],
+            },
+        ]);
+    }
 
     /**
      * On destroy
@@ -97,5 +124,42 @@ export class PagesDrawerComponent implements OnInit {
         } else {
             this._router.navigateByUrl('/admin/modules/pages');
         }
+    }
+
+    /**
+     * Add section to grid
+     */
+    addSection() {
+        const newSection = {
+            uuid: generateRandomString(8),
+            css: {},
+            config: {},
+            rows: [
+                {
+                    uuid: generateRandomString(8),
+                    css: {},
+                    config: {},
+                    columns: [
+                        {
+                            uuid: generateRandomString(8),
+                            css: {},
+                            config: {},
+                            element: null,
+                        },
+                    ],
+                },
+            ],
+        };
+        this.body.update((values) => {
+            return [...values, newSection];
+        });
+    }
+
+    /**
+     * Set data to grid
+     * @param grid
+     */
+    setGrid(grid: any) {
+        this.body.set(grid);
     }
 }
