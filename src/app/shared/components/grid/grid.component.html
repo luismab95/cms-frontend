@@ -1,0 +1,139 @@
+<!-- Sections -->
+@for (section of grid; track trackByFn($index, section)) {
+<div [ngClass]="{'min-h-40 rounded-lg border border-dashed border-sky-300 mx-4 my-2': !preview}" class="flex flex-col">
+    <!-- Options -->
+    @if(!preview){
+    <div class="text-lg font-semibold flex justify-between items-center px-2">
+        <button mat-icon-button>
+            <mat-icon [matTooltip]="'Arrastrar y soltar'" [svgIcon]="'mat_solid:drag_indicator'"></mat-icon>
+        </button>
+        Sección {{$index + 1}}
+        <div>
+            <button mat-icon-button [matMenuTriggerFor]="secctionMenu">
+                <mat-icon class="icon-size-5" [svgIcon]="
+                        'heroicons_mini:ellipsis-vertical'
+                    "></mat-icon>
+            </button>
+            <mat-menu #secctionMenu="matMenu">
+
+                <button mat-menu-item>
+                    <mat-icon [svgIcon]="'heroicons_outline:plus'"></mat-icon>
+                    Nueva fila
+                </button>
+                <button mat-menu-item>
+                    <mat-icon [svgIcon]="'heroicons_outline:cog-6-tooth'"></mat-icon>
+                    Configurar
+                </button>
+                <button mat-menu-item class="text-warn">
+                    <mat-icon [color]="'warn'" [svgIcon]="'heroicons_outline:trash'"></mat-icon>
+                    Eliminar
+                </button>
+            </mat-menu>
+        </div>
+    </div>
+    }
+
+    <!-- Rows -->
+    @for (row of section.rows; track trackByFn($index, row)) {
+    <div [ngClass]="{'min-h-40 rounded-lg border border-dashed border-orange-300 mx-4 my-2': !preview}"
+        class="flex flex-col">
+        <!-- Options -->
+        @if(!preview){
+        <div class="text-lg font-semibold flex justify-between items-center px-2">
+            <button mat-icon-button>
+                <mat-icon [matTooltip]="'Arrastrar y soltar'" [svgIcon]="'mat_solid:drag_indicator'"></mat-icon>
+            </button>
+            Fila {{$index + 1}}
+            <div>
+                <button mat-icon-button [matMenuTriggerFor]="rowMenu">
+                    <mat-icon class="icon-size-5" [svgIcon]="
+                            'heroicons_mini:ellipsis-vertical'
+                        "></mat-icon>
+                </button>
+                <mat-menu #rowMenu="matMenu">
+                    <button mat-menu-item>
+                        <mat-icon [svgIcon]="'heroicons_outline:plus'"></mat-icon>
+                        Nueva columna
+                    </button>
+                    <button mat-menu-item>
+                        <mat-icon [svgIcon]="'heroicons_outline:cog-6-tooth'"></mat-icon>
+                        Configurar
+                    </button>
+                    <button mat-menu-item class="text-warn">
+                        <mat-icon [color]="'warn'" [svgIcon]="'heroicons_outline:trash'"></mat-icon>
+                        Eliminar
+                    </button>
+                </mat-menu>
+            </div>
+        </div>
+        }
+
+        <!-- Columns -->
+        <div [ngClass]="{'flex-row':previewType === 'desktop' || previewType === 'none','flex-col':previewType !== 'desktop' && previewType !== 'none'}"
+            class="flex">
+            @for (column of row.columns; track trackByFn($index, column)) {
+            <div [ngClass]="{'min-h-40 rounded-lg border border-dashed border-purple-300 mx-4 my-2': !preview}"
+                class="w-full">
+                <!-- Options -->
+                @if(!preview){
+                <div class="text-lg font-semibold flex justify-between items-center px-2">
+                    <button mat-icon-button>
+                        <mat-icon [matTooltip]="'Arrastrar y soltar'" [svgIcon]="'mat_solid:drag_indicator'"></mat-icon>
+                    </button>
+                    Columna {{$index + 1}}
+                    <div>
+                        <button mat-icon-button [matMenuTriggerFor]="columnOptions">
+                            <mat-icon class="icon-size-5" [svgIcon]="
+                            'heroicons_mini:ellipsis-vertical'
+                        "></mat-icon>
+                        </button>
+                        <mat-menu #columnOptions="matMenu">
+                            <button mat-menu-item>
+                                <mat-icon [svgIcon]="'heroicons_outline:cog-6-tooth'"></mat-icon>
+                                Configurar
+                            </button>
+                            <button mat-menu-item class="text-warn">
+                                <mat-icon [color]="'warn'" [svgIcon]="'heroicons_outline:trash'"></mat-icon>
+                                Eliminar
+                            </button>
+                        </mat-menu>
+                    </div>
+                </div>
+                }
+
+                <div [ngClass]="{'min-h-40 rounded-lg border border-dashed border-pink-300 mx-4 my-2': !preview }"
+                    class="flex flex-col">
+                    <!-- Options -->
+                    @if(!preview){
+                    <div class="text-sm font-semibold flex justify-between items-center px-2">
+                        Elemento
+                        <div>
+                            <button mat-icon-button [matMenuTriggerFor]="elementOptions">
+                                <mat-icon class="icon-size-5" [svgIcon]="'heroicons_mini:ellipsis-vertical'"></mat-icon>
+                            </button>
+                            <mat-menu #elementOptions="matMenu">
+                                <button mat-menu-item>
+                                    <mat-icon [svgIcon]="'heroicons_outline:cog-6-tooth'"></mat-icon>
+                                    Configurar
+                                </button>
+                                <button mat-menu-item class="text-warn">
+                                    <mat-icon [color]="'warn'" [svgIcon]="'heroicons_outline:trash'"></mat-icon>
+                                    Eliminar
+                                </button>
+                            </mat-menu>
+                        </div>
+                    </div>
+                    }
+                    <div class="flex items-center justify-center h-full w-full p-2">
+                        Elemento aqui
+                    </div>
+                </div>
+
+            </div>
+            }
+        </div>
+    </div>
+    }
+
+</div>
+}
