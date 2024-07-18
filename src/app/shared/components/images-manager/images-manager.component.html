@@ -1,0 +1,100 @@
+<div class="relative flex h-full w-full flex-col">
+    <!-- Dismiss button -->
+    <div class="absolute right-0 top-0 pr-4 pt-4 z-10">
+        <button mat-icon-button [matDialogClose]="undefined">
+            <mat-icon class="text-secondary" [svgIcon]="'heroicons_outline:x-mark'"></mat-icon>
+        </button>
+    </div>
+
+    <!-- Header -->
+    <div
+        class="relative mt-8 flex flex-0 flex-col border-b px-6 py-8 md:flex-row sm:items-center sm:justify-between md:px-8">
+
+        <!-- Title -->
+        <div>
+            <div class="text-4xl font-extrabold leading-none tracking-tight">
+                Administrador de imágenes</div>
+            <div class="text-secondary mt-0.5 flex items-center font-medium">
+                Selecciona una imágen para agregarla
+            </div>
+        </div>
+        <!-- Actions -->
+        <div class="mt-6 flex shrink-0 items-center ml-0 sm:ml-4 md:mt-0 ">
+            <!-- Search -->
+            <mat-form-field class="fuse-mat-dense fuse-mat-rounded min-w-56 sm:min-w-64" [subscriptSizing]="'dynamic'">
+                <mat-icon class="icon-size-5" matPrefix [svgIcon]="'heroicons_solid:magnifying-glass'"></mat-icon>
+                <input matInput [autocomplete]="'off'" [placeholder]="'Buscar imágen'" />
+            </mat-form-field>
+            <!-- Upload button -->
+            <button class="ml-4" mat-flat-button [color]="'primary'">
+                <mat-icon [svgIcon]="'heroicons_outline:cloud-arrow-up'"></mat-icon>
+                <span class="hidden sm:block ml-2 mr-1">Subir imágen</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Main -->
+    <div class="flex flex-auto overflow-hidden">
+        <!-- Images list -->
+        <div class="flex flex-auto flex-col sm:mb-18 overflow-y-auto">
+
+            <div class="flex flex-auto overflow-hidden">
+                <div class="flex flex-auto flex-col sm:mb-18 overflow-y-auto">
+                    <!-- @if (
+                items &&
+                (items.folders.length > 0 || items.files.length > 0)
+                ) { -->
+                    <div
+                        class="p-4 flex flex-wrap justify-center md:justify-start px-4 sm:px-8 items-center gap-4">
+                        <!-- Files -->
+                        @for (
+                        file of files;
+                        track trackByFn($index, file)
+                        ) {
+                        <a class="bg-card flex h-40 w-40 cursor-pointer flex-col rounded-2xl p-4 shadow">
+                            <div class="aspect-[9/6]">
+                                <div class="flex h-full items-center justify-center">
+                                    <!-- Icons -->
+                                    <div class="relative w-40">
+                                        <img class="w-full object-cover rounded-md" [src]="file.url" />
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="flex flex-auto flex-col justify-center text-center text-sm font-medium">
+                                <div class="truncate" [matTooltip]="file.name">
+                                    {{ file.name }}
+                                </div>
+                            </div>
+                        </a>
+                        }
+                    </div>
+                    <!-- } @else { -->
+                    <!-- No items template -->
+                    <!-- <div class="flex flex-auto flex-col items-center justify-center bg-gray-100 dark:bg-transparent">
+                    <mat-icon class="icon-size-24" [svgIcon]="'heroicons_outline:folder-open'"></mat-icon>
+                    <div class="text-secondary mt-4 text-2xl font-semibold tracking-tight">
+                        ¡No hay imágenes!
+                    </div>
+                </div>
+                } -->
+                </div>
+            </div>
+            <!-- Actions -->
+            <div
+                class="z-10 w-full flex items-center justify-center space-x-3 bg-gray-50 px-6 py-4 dark:bg-black dark:bg-opacity-10 sm:justify-end absolute bottom-0">
+                <!-- Cancel -->
+                <button mat-stroked-button [matDialogClose]="'cancelled'">
+                    Cancelar
+                </button>
+                <!-- Confirm -->
+                <button mat-flat-button [color]="'primary'" [matDialogClose]="'confirmed'">
+                    Aceptar
+                </button>
+            </div>
+
+        </div>
+    </div>
+
+
+
+</div>

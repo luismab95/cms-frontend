@@ -17,6 +17,19 @@
             <mat-tab label="Propiedades">
                 <ng-template matTabContent>
 
+                    <div class="w-full py-2 flex flex-col items-start justify-between">
+                        <mat-label>Imágen de fondo</mat-label>
+                        <div class="relative w-full">
+                            <div class="absolute bottom-0 right-0 p-4">
+                                <button mat-icon-button (click)="openImagesManager()">
+                                    <mat-icon class="text-white" [svgIcon]="'heroicons_outline:photo'"></mat-icon>
+                                </button>
+                            </div>
+                            <img class="w-full object-cover rounded-md"
+                                [src]="'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSuViN7efAwB5dbdgcONdw73Omzm1fDYqFK9g&s'" />
+                        </div>
+                    </div>
+
                 </ng-template>
             </mat-tab>
 

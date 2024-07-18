@@ -7,12 +7,17 @@ import {
     inject,
 } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
-import { MAT_DIALOG_DATA, MatDialogModule } from '@angular/material/dialog';
+import {
+    MAT_DIALOG_DATA,
+    MatDialog,
+    MatDialogModule,
+} from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTabsModule } from '@angular/material/tabs';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MonacoEditorModule, NgxEditorModel } from 'ngx-monaco-editor-v2';
 import { Subject } from 'rxjs';
+import { ImagesManagerComponent } from '../../images-manager/images-manager.component';
 
 @Component({
     selector: 'grid-settings',
@@ -59,6 +64,7 @@ export class GridSettingsComponent implements OnInit, OnDestroy {
         language: 'css',
     };
     private readonly _matDialog = inject(MAT_DIALOG_DATA);
+    private readonly _dialog = inject(MatDialog);
     private _unsubscribeAll: Subject<any> = new Subject<any>();
 
     /**
@@ -89,4 +95,17 @@ export class GridSettingsComponent implements OnInit, OnDestroy {
     // -----------------------------------------------------------------------------------------------------
     // @ Public methods
     // -----------------------------------------------------------------------------------------------------
+
+    /**
+     * Open modal images manager
+     */
+    openImagesManager() {
+        this._dialog.open(ImagesManagerComponent, {
+            height: '80%',
+            disableClose: true,
+            hasBackdrop: true,
+            autoFocus: false,
+            panelClass: 'images-manager-dialog-panel',
+        });
+    }
 }

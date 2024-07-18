@@ -21,6 +21,17 @@ export class ModalService {
         });
     }
 
+    openCenterModal<CT, T>(componentRef: ComponentType<CT>, data?: T): void {
+        this._dialog.open(componentRef, {
+            data,
+            width: '560px',
+            height: '560px',
+            disableClose: true,
+            hasBackdrop: true,
+            autoFocus: false,
+        });
+    }
+
     closeModal(): void {
         this._dialog.closeAll();
     }
