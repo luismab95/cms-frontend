@@ -1,0 +1,92 @@
+<div class="relative flex h-full w-full flex-col">
+    <!-- Dismiss button -->
+    <div class="absolute right-0 top-0 pr-4 pt-4 z-10">
+        <button mat-icon-button [matDialogClose]="undefined">
+            <mat-icon class="text-secondary" [svgIcon]="'heroicons_outline:x-mark'"></mat-icon>
+        </button>
+    </div>
+
+    <!-- Header -->
+    <div class="relative mt-8 flex flex-0 border-b py-8 flex-col sm:items-center sm:justify-between">
+
+        <!-- Title -->
+        <div>
+            <div class="text-4xl font-extrabold leading-none tracking-tight">
+                Administrador de elementos</div>
+            <div class="text-secondary mt-0.5 flex items-center font-medium">
+                Selecciona un elemento para agregarlo
+            </div>
+        </div>
+        <!-- Actions -->
+        <div class="mt-6 flex shrink-0 items-center ml-0 sm:ml-4">
+            <!-- Search -->
+            <mat-form-field class="fuse-mat-dense fuse-mat-rounded min-w-64 md:min-w-120" [subscriptSizing]="'dynamic'">
+                <mat-icon class="icon-size-5" matPrefix [svgIcon]="'heroicons_solid:magnifying-glass'"></mat-icon>
+                <input matInput [autocomplete]="'off'" [placeholder]="'Buscar elemento'" />
+            </mat-form-field>
+        </div>
+    </div>
+
+    <!-- Main -->
+    <div class="flex flex-auto overflow-hidden">
+        <!-- Images list -->
+        <div class="flex flex-auto flex-col sm:mb-18 overflow-y-auto">
+
+            <div class="flex flex-auto overflow-hidden">
+                <div class="flex flex-auto flex-col sm:mb-18 overflow-y-auto">
+                    <!-- @if (
+                items &&
+                (items.folders.length > 0 || items.files.length > 0)
+                ) { -->
+                    <div class="py-4 flex flex-wrap justify-center items-center gap-4">
+                        <!-- Files -->
+                        @for (
+                        file of files;
+                        track trackByFn($index, file)
+                        ) {
+                        <a class="bg-card flex h-50 w-50 cursor-pointer flex-col rounded-2xl p-4 shadow">
+                            <div class="aspect-[9/6]">
+                                <div class="flex h-full items-center justify-center">
+                                    <!-- Icons -->
+                                    <div class="relative w-40">
+                                        <img class="w-full object-cover rounded-md" [src]="file.url" />
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="flex flex-auto flex-col justify-center text-center text-sm font-medium">
+                                <div class="truncate" [matTooltip]="file.name">
+                                    {{ file.name }}
+                                </div>
+                            </div>
+                        </a>
+                        }
+                    </div>
+                    <!-- } @else { -->
+                    <!-- No items template -->
+                    <!-- <div class="flex flex-auto flex-col items-center justify-center bg-gray-100 dark:bg-transparent">
+                    <mat-icon class="icon-size-24" [svgIcon]="'heroicons_outline:folder-open'"></mat-icon>
+                    <div class="text-secondary mt-4 text-2xl font-semibold tracking-tight">
+                        ¡No hay imágenes!
+                    </div>
+                </div>
+                } -->
+                </div>
+            </div>
+            <!-- Actions -->
+            <div class="absolute -bottom-6 w-full md:w-140 -left-6 z-10">
+                <div
+                    class="mt-10 flex items-center overflow-hidden justify-end border-t bg-gray-50 py-4 dark:bg-transparent pr-8">
+                    <!-- Cancel -->
+                    <button class="ml-auto" mat-button [matTooltip]="'Cancelar'" [mat-dialog-close]="false">
+                        Cancelar
+                    </button>
+                    <!-- Save -->
+                    <button class="ml-2" mat-flat-button [color]="'primary'" [matTooltip]="'Guardar'">
+                        Agregar
+                    </button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>

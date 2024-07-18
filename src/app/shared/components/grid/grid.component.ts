@@ -22,6 +22,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { ModalService } from 'app/shared/services/modal.service';
 import { generateRandomString } from 'app/shared/utils/random.utils';
 import { Subject } from 'rxjs';
+import { ElementsManagerComponent } from '../elements-manager/elements-manager.component';
 import { GridSettingsComponent } from './settings/settings.component';
 
 @Component({
@@ -277,6 +278,19 @@ export class GridComponent implements OnInit {
         this._modalSvc.openModal<GridSettingsComponent, T>(
             GridSettingsComponent,
             { title: item, ...data }
+        );
+    }
+
+    /**
+     * Open modal settings detail
+     *
+     * @param data
+     * @param item
+     */
+    openElementsMangerModal<T>(data: T, item: string): void {
+        this._modalSvc.openModal<ElementsManagerComponent, T>(
+            ElementsManagerComponent,
+            data
         );
     }
 }

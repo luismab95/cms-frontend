@@ -97,7 +97,7 @@
                                 </button>
                                 <mat-menu #columnOptions="matMenu">
                                     @if(column.element === null){
-                                    <button (click)="addElement(column)" mat-menu-item>
+                                    <button (click)="openElementsMangerModal(column)" mat-menu-item>
                                         <mat-icon [svgIcon]="'heroicons_outline:plus'"></mat-icon>
                                         Agregar elemento
                                     </button>
