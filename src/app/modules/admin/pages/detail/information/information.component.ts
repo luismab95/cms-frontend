@@ -72,6 +72,7 @@ export class PagesInformationComponent implements OnInit {
             name: ['', Validators.required],
             path: ['', Validators.required],
             status: [true],
+            isHomePage: [false],
         });
 
         if (this.page) {

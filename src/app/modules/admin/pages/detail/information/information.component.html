@@ -56,6 +56,20 @@
                 <mat-slide-toggle class="ml-2" [color]="'primary'" [formControlName]="'status'" #status>
                 </mat-slide-toggle>
             </div>
+
+            <!-- Toggle home page -->
+            <div class="flex items-center justify-between">
+                <div class="flex-auto cursor-pointer" (click)="homePage.toggle()">
+                    <div class="font-medium leading-6">
+                        Página principal
+                    </div>
+                    <div class="text-secondary text-md">
+                        Establecer como página principal del @if(micrositie){ micrositio }@else { sitio web}
+                    </div>
+                </div>
+                <mat-slide-toggle class="ml-2" [color]="'primary'" [formControlName]="'isHomePage'" #homePage>
+                </mat-slide-toggle>
+            </div>
         </div>
 
 

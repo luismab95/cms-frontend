@@ -45,12 +45,19 @@ export class TemplatesDrawerComponent implements OnInit {
     previewMode: boolean = false;
     header = signal<any>([]);
     footer = signal<any>([]);
+    autosaveTimer: any;
+    autosave = signal<boolean>(false);
     private _unsubscribeAll: Subject<any> = new Subject<any>();
 
     /**
      * Constructor
      */
-    constructor(private _modalSvc: ModalService) {}
+    constructor(private _modalSvc: ModalService) {
+        // Example autosave logic
+        this.autosaveTimer = setInterval(() => {
+            this.saveChanges();
+        }, 10000);
+    }
 
     // -----------------------------------------------------------------------------------------------------
     // @ Lifecycle hooks
@@ -86,6 +93,23 @@ export class TemplatesDrawerComponent implements OnInit {
             ],
             'header'
         );
+
+        // Load CSS
+        const styleElement = document.createElement('style');
+        styleElement.textContent = `.header {
+    background-color: #333; /* Background color */
+    color: #fff; /* Text color */
+    padding: 20px 0; /* Padding around content */
+    text-align: center; /* Center align text */
+}
+    .footer {
+    background-color: #333; /* Background color */
+    color: #fff; /* Text color */
+    padding: 20px 0; /* Padding around content */
+    text-align: center; /* Center align text */
+    width: 100%; /* Full width */
+}`;
+        document.head.appendChild(styleElement);
 
         // Set footer
         this.setGrid(
@@ -127,6 +151,24 @@ export class TemplatesDrawerComponent implements OnInit {
     // -----------------------------------------------------------------------------------------------------
     // @ Public methods
     // -----------------------------------------------------------------------------------------------------
+
+    /**
+     * Autosave
+     * @param changes
+     * @returns
+     */
+    saveChanges() {
+        this.autosave.set(true);
+
+        // Replace this with actual save logic, e.g., HTTP call to server
+        // Simulated save request
+        return new Promise((resolve) => {
+            setTimeout(() => {
+                this.autosave.set(false);
+                resolve('Saved successfully');
+            }, 5000);
+        });
+    }
 
     /**
      * Toggle fullscreem mode

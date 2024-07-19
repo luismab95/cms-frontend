@@ -19,6 +19,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { ElementsComponent } from 'app/shared/components/element/elements.component';
 import { ModalService } from 'app/shared/services/modal.service';
 import { generateRandomString } from 'app/shared/utils/random.utils';
 import { Subject } from 'rxjs';
@@ -41,11 +42,12 @@ import { GridSettingsComponent } from './settings/settings.component';
         CdkDropList,
         CdkDrag,
         CdkDragHandle,
+        ElementsComponent,
     ],
 })
 export class GridComponent implements OnInit {
     @Input() preview: boolean = false;
-    @Input() previewType: string;
+    @Input() previewType: string = 'none';
     @Input() grid: any[] = [];
     @Output() deleteSectionEvent: EventEmitter<any[]> = new EventEmitter<
         any[]
@@ -65,98 +67,26 @@ export class GridComponent implements OnInit {
      * On init
      */
     ngOnInit(): void {
-        //Set data grid
-        // this.grid = [
-        //     {
-        //         uuid: '1',
-        //         css: {},
-        //         config: {},
-        //         rows: [
-        //             {
-        //                 uuid: '1',
-        //                 css: {},
-        //                 config: {},
-        //                 columns: [
-        //                     {
-        //                         uuid: '1',
-        //                         css: {},
-        //                         config: {},
-        //                         element: {},
-        //                     },
-        //                     {
-        //                         uuid: '2',
-        //                         css: {},
-        //                         config: {},
-        //                         element: {},
-        //                     },
-        //                 ],
-        //             },
-        //         ],
-        //     },
-        //     {
-        //         uuid: '1',
-        //         css: {},
-        //         config: {},
-        //         rows: [
-        //             {
-        //                 uuid: '1',
-        //                 css: {},
-        //                 config: {},
-        //                 columns: [
-        //                     {
-        //                         uuid: '1',
-        //                         css: {},
-        //                         config: {},
-        //                         element: {},
-        //                     },
-        //                     {
-        //                         uuid: '2',
-        //                         css: {},
-        //                         config: {},
-        //                         element: {},
-        //                     },
-        //                     {
-        //                         uuid: '1',
-        //                         css: {},
-        //                         config: {},
-        //                         element: {},
-        //                     },
-        //                     {
-        //                         uuid: '2',
-        //                         css: {},
-        //                         config: {},
-        //                         element: {},
-        //                     },
-        //                 ],
-        //             },
-        //             {
-        //                 uuid: '1',
-        //                 css: {},
-        //                 config: {},
-        //                 columns: [
-        //                     {
-        //                         uuid: '1',
-        //                         css: {},
-        //                         config: {},
-        //                         element: {},
-        //                     },
-        //                     {
-        //                         uuid: '2',
-        //                         css: {},
-        //                         config: {},
-        //                         element: {},
-        //                     },
-        //                     {
-        //                         uuid: '2',
-        //                         css: {},
-        //                         config: {},
-        //                         element: {},
-        //                     },
-        //                 ],
-        //             },
-        //         ],
-        //     },
-        // ];
+        // Load CSS
+        const styleElement = document.createElement('style');
+        styleElement.textContent = `.grid-section {
+             background-color: gray; /* Example background color */
+             color: #333; /* Example text color */
+             height:200px; /* Example height */
+         }
+             .grid-row {
+             background-color: gray; /* Example background color */
+             color: #333; /* Example text color */
+                          height:200px; /* Example height */
+         }
+             .grid-col {
+             background-color: gray; /* Example background color */
+             color: #333; /* Example text color */
+                          height:200px; /* Example height */
+                          width:50%; /* Example width */
+
+         }`;
+        document.head.appendChild(styleElement);
     }
 
     /**
@@ -285,12 +215,12 @@ export class GridComponent implements OnInit {
      * Open modal settings detail
      *
      * @param data
-     * @param item
      */
-    openElementsMangerModal<T>(data: T, item: string): void {
+    openElementsMangerModal<T>(data: any): void {
         this._modalSvc.openModal<ElementsManagerComponent, T>(
             ElementsManagerComponent,
             data
         );
+        this.addElement(data);
     }
 }

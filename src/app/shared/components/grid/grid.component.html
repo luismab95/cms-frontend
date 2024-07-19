@@ -3,7 +3,7 @@
     @for (section of grid; track trackByFn($index, section)) {
     <div cdkDragBoundary=".sections" cdkDrag [cdkDragDisabled]="preview"
         [ngClass]="{'min-h-40 rounded-lg border border-dashed border-sky-300 mx-4 my-2': !preview}"
-        class="flex flex-col">
+        class="flex flex-col grid-section">
         <!-- Options -->
         @if(!preview){
         <div class="text-lg font-semibold flex justify-between items-center px-2">
@@ -41,7 +41,7 @@
             @for (row of section.rows; track trackByFn($index, row)) {
             <div cdkDragBoundary=".rows" cdkDrag [cdkDragDisabled]="preview"
                 [ngClass]="{'min-h-40 rounded-lg border border-dashed border-orange-300 mx-4 my-2': !preview}"
-                class="flex flex-col ">
+                class="flex flex-col grid-row">
 
                 <!-- Options -->
                 @if(!preview){
@@ -79,8 +79,8 @@
                     class="flex columns">
                     @for (column of row.columns; track trackByFn($index, column)) {
                     <div cdkDragBoundary=".columns" cdkDrag [cdkDragDisabled]="preview"
-                        [ngClass]="{'min-h-40 rounded-lg border border-dashed border-purple-300 mx-4 my-2': !preview}"
-                        class="w-full relative">
+                        [ngClass]="{'w-full':previewType === 'mobile' || previewType === 'tablet','min-h-40 rounded-lg border border-dashed border-purple-300 mx-4 my-2': !preview}"
+                        class="relative grid-col">
                         <!-- Options -->
                         @if(!preview){
                         <div class="text-lg font-semibold flex justify-between items-center px-2">
@@ -128,7 +128,7 @@
                                             [svgIcon]="'heroicons_mini:ellipsis-vertical'"></mat-icon>
                                     </button>
                                     <mat-menu #elementOptions="matMenu">
-                                        <button (click)="openSettingsModal(column.element,'Elemento')" mat-menu-item>
+                                        <button (click)="openSettingsModal(column)" mat-menu-item>
                                             <mat-icon [svgIcon]="'heroicons_outline:cog-6-tooth'"></mat-icon>
                                             Configurar
                                         </button>
@@ -141,8 +141,8 @@
                             </div>
                             }
                             <!-- Element -->
-                            <div class="flex items-center justify-center h-full w-full p-2">
-
+                            <div [ngClass]="{'flex items-center justify-center p-2': !preview}" class=" h-full w-full">
+                                <elements></elements>
                             </div>
                         </div>
                         }

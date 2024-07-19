@@ -19,7 +19,6 @@ import { Subject } from 'rxjs';
     selector: 'elements-manager',
     templateUrl: './elements-manager.component.html',
     encapsulation: ViewEncapsulation.None,
-    styles: [``],
     changeDetection: ChangeDetectionStrategy.OnPush,
     standalone: true,
     imports: [

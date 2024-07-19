@@ -3,11 +3,15 @@
         <div class="relative">
             <div class="sticky top-0 left-0 right-0 w-full bg-card shadow-md p-3 z-10">
                 <div class="flex items-center flex-col md:flex-row justify-between">
-                    <div class="flex items-center justify-end">
+                    <div class="flex items-center justify-center">
                         <button mat-icon-button (click)="toggleFullscreen()"
                             [matTooltip]=" 'Alternar pantalla completa'">
                             <mat-icon [svgIcon]="'heroicons_outline:arrows-pointing-out'"></mat-icon>
                         </button>
+                        @if(autosave()){
+                        <div class="ml-2 italic text-secondary leading-6 animate-pulse">
+                            Guardando cambios en borrador</div>
+                        }
                     </div>
                     <div
                         class="my-3 md:my-0 flex items-center overflow-hidden rounded-full bg-gray-200 p-0.5 dark:bg-gray-700">
@@ -56,7 +60,7 @@
                     </span>
                 </div>
                 <div [ngClass]="{'my-3 min-h-40 rounded-2xl border-2 border-dashed border-gray-300':!previewMode}"
-                    class="flex flex-col">
+                    class="flex flex-col body">
                     <!-- Options -->
                     @if(!previewMode){
                     <div class="text-xl font-semibold flex justify-between items-center px-2">
@@ -70,7 +74,7 @@
                                     <mat-icon [svgIcon]="'heroicons_outline:plus'"></mat-icon>
                                     Nueva sección
                                 </button>
-                                <button mat-menu-item>
+                                <button (click)="openSettingsModal(body())" mat-menu-item>
                                     <mat-icon [svgIcon]="'heroicons_outline:cog-6-tooth'"></mat-icon>
                                     Configurar
                                 </button>

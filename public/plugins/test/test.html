@@ -1,0 +1,23 @@
+<!-- HTML -->
+<button id="pluginContent" class="modern-button"></button>
+<!-- JS -->
+<script>
+    window.addEventListener('message', event => {
+        const data = event.data;
+        if (data.properties !== undefined) {
+            // Load data
+            document.getElementById('pluginContent').innerText = data.properties.text.ref;
+
+            // Load events
+            document.getElementById('pluginContent').addEventListener('click', function () {
+                // parent.location.href = data.properties.config.go;
+                window.open(data.properties.config.go, '_blank');
+            });
+
+            // Load CSS
+            const styleElement = document.createElement('style');
+            styleElement.textContent = data.properties.css;
+            document.head.appendChild(styleElement);
+        }
+    });
+</script>

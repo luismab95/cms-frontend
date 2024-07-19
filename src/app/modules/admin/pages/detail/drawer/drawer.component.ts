@@ -15,6 +15,8 @@ import { MatMenuModule } from '@angular/material/menu';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { Router, RouterLink } from '@angular/router';
 import { GridComponent } from 'app/shared/components/grid/grid.component';
+import { GridSettingsComponent } from 'app/shared/components/grid/settings/settings.component';
+import { ModalService } from 'app/shared/services/modal.service';
 import { generateRandomString } from 'app/shared/utils/random.utils';
 import { Subject } from 'rxjs';
 @Component({
@@ -42,12 +44,22 @@ export class PagesDrawerComponent implements OnInit {
     preview: string = 'none';
     previewMode: boolean = false;
     body = signal<any>([]);
+    autosaveTimer: any;
+    autosave = signal<boolean>(false);
     private _unsubscribeAll: Subject<any> = new Subject<any>();
 
     /**
      * Constructor
      */
-    constructor(private _router: Router) {}
+    constructor(
+        private _router: Router,
+        private _modalSvc: ModalService
+    ) {
+        // Example autosave logic
+        this.autosaveTimer = setInterval(() => {
+            this.saveChanges();
+        }, 10000);
+    }
 
     // -----------------------------------------------------------------------------------------------------
     // @ Lifecycle hooks
@@ -80,6 +92,20 @@ export class PagesDrawerComponent implements OnInit {
                 ],
             },
         ]);
+
+        // Load CSS
+        const styleElement = document.createElement('style');
+        styleElement.textContent = `.body {
+            font-family: Arial, sans-serif; /* Example font stack */
+            line-height: 1.6; /* Example line height */
+            background-color: #f0f0f0; /* Example background color */
+            color: #333; /* Example text color */
+            margin: 0; /* Remove default margin */
+            padding: 0; /* Remove default padding */
+            height: 600px; /* height */
+            width: 100%; /* width */
+        }`;
+        document.head.appendChild(styleElement);
     }
 
     /**
@@ -89,11 +115,32 @@ export class PagesDrawerComponent implements OnInit {
         // Unsubscribe from all subscriptions
         this._unsubscribeAll.next(null);
         this._unsubscribeAll.complete();
+        if (this.autosaveTimer) {
+            clearTimeout(this.autosaveTimer);
+        }
     }
 
     // -----------------------------------------------------------------------------------------------------
     // @ Public methods
     // -----------------------------------------------------------------------------------------------------
+
+    /**
+     * Autosave
+     * @param changes
+     * @returns
+     */
+    saveChanges() {
+        this.autosave.set(true);
+
+        // Replace this with actual save logic, e.g., HTTP call to server
+        // Simulated save request
+        return new Promise((resolve) => {
+            setTimeout(() => {
+                this.autosave.set(false);
+                resolve('Saved successfully');
+            }, 5000);
+        });
+    }
 
     /**
      * Toggle fullscreem mode
@@ -161,5 +208,18 @@ export class PagesDrawerComponent implements OnInit {
      */
     setGrid(grid: any) {
         this.body.set(grid);
+    }
+
+    /**
+     * Open modal settings detail
+     *
+     * @param data
+     * @param item
+     */
+    openSettingsModal<T>(data: T, item: string): void {
+        this._modalSvc.openModal<GridSettingsComponent, T>(
+            GridSettingsComponent,
+            { title: item, ...data }
+        );
     }
 }

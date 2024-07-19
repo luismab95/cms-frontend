@@ -9,7 +9,7 @@ import { LayoutComponent } from 'app/layout/layout.component';
 /* eslint-disable @typescript-eslint/explicit-function-return-type */
 export const appRoutes: Route[] = [
     // Redirect empty path to '/dashboards/project'
-    { path: '', pathMatch: 'full', redirectTo: 'home' },
+    { path: '', pathMatch: 'full', redirectTo: 'es' },
 
     // Redirect signed-in user to the '/dashboards/project'
     //
@@ -87,22 +87,6 @@ export const appRoutes: Route[] = [
                     import(
                         'app/modules/auth/unlock-session/unlock-session.routes'
                     ),
-            },
-        ],
-    },
-
-    // Landing routes
-    {
-        path: '',
-        component: LayoutComponent,
-        data: {
-            layout: 'empty',
-        },
-        children: [
-            {
-                path: 'home',
-                loadChildren: () =>
-                    import('app/modules/landing/home/home.routes'),
             },
         ],
     },
@@ -212,6 +196,32 @@ export const appRoutes: Route[] = [
         pathMatch: 'full',
         loadChildren: () =>
             import('app/modules/error/error-404/error-404.routes'),
+    },
+
+    // Landing routes
+    {
+        path: ':lang',
+        component: LayoutComponent,
+        data: {
+            layout: 'empty',
+        },
+        children: [
+            {
+                path: '',
+                loadChildren: () =>
+                    import('app/modules/landing/router/router.routes'),
+            },
+            {
+                path: ':page',
+                loadChildren: () =>
+                    import('app/modules/landing/router/router.routes'),
+            },
+            {
+                path: ':micrositie/:page',
+                loadChildren: () =>
+                    import('app/modules/landing/router/router.routes'),
+            },
+        ],
     },
 
     { path: '**', redirectTo: '404-not-found' },
