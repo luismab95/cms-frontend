@@ -40,6 +40,7 @@ import { fuseAnimations } from '@fuse/animations';
 import { FuseConfirmationService } from '@fuse/services/confirmation';
 
 import { Router } from '@angular/router';
+import { PaginationComponent } from 'app/shared/components/pagination/pagination.component';
 import {
     Observable,
     Subject,
@@ -105,6 +106,7 @@ import {
         MatRippleModule,
         AsyncPipe,
         CurrencyPipe,
+        PaginationComponent,
     ],
 })
 export class PagesComponent implements OnInit, AfterViewInit, OnDestroy {

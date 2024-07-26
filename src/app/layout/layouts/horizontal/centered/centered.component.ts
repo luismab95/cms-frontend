@@ -1,4 +1,10 @@
-import { Component, OnDestroy, OnInit, ViewEncapsulation } from '@angular/core';
+import {
+    Component,
+    Input,
+    OnDestroy,
+    OnInit,
+    ViewEncapsulation,
+} from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { ActivatedRoute, Router, RouterOutlet } from '@angular/router';
@@ -12,12 +18,11 @@ import {
 import { FuseMediaWatcherService } from '@fuse/services/media-watcher';
 import { NavigationService } from 'app/core/navigation/navigation.service';
 import { Navigation } from 'app/core/navigation/navigation.types';
-import { LanguagesComponent } from 'app/layout/common/languages/languages.component';
-import { MessagesComponent } from 'app/layout/common/messages/messages.component';
 import { NotificationsComponent } from 'app/layout/common/notifications/notifications.component';
 import { SearchComponent } from 'app/layout/common/search/search.component';
-import { ShortcutsComponent } from 'app/layout/common/shortcuts/shortcuts.component';
 import { UserComponent } from 'app/layout/common/user/user.component';
+import { ParameterI } from 'app/modules/admin/parameters/parameter.interface';
+import { findParameter } from 'app/shared/utils/parameter.utils';
 import { Subject, takeUntil } from 'rxjs';
 
 @Component({
@@ -31,17 +36,15 @@ import { Subject, takeUntil } from 'rxjs';
         FuseHorizontalNavigationComponent,
         MatButtonModule,
         MatIconModule,
-        LanguagesComponent,
         FuseFullscreenComponent,
         SearchComponent,
-        ShortcutsComponent,
-        MessagesComponent,
         NotificationsComponent,
         UserComponent,
         RouterOutlet,
     ],
 })
 export class CenteredLayoutComponent implements OnInit, OnDestroy {
+    @Input() parameters: ParameterI[] = [];
     navigation: Navigation;
     isScreenSmall: boolean;
     private _unsubscribeAll: Subject<any> = new Subject<any>();
@@ -121,5 +124,24 @@ export class CenteredLayoutComponent implements OnInit, OnDestroy {
             // Toggle the opened status
             navigation.toggle();
         }
+    }
+
+    /**
+     * Get parameter
+     * @param code
+     */
+    getParameter(code: string) {
+        if (this.parameters.length > 0) {
+            return findParameter(code, this.parameters).value;
+        }
+    }
+
+    /**
+     * Get logo
+     * @param code
+     * @returns
+     */
+    getLogo(code: string) {
+        return `${this.getParameter('APP_STATICS_URL')}/${this.getParameter(code)}`;
     }
 }

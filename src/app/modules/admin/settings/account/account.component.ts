@@ -2,9 +2,12 @@ import { TextFieldModule } from '@angular/cdk/text-field';
 import { NgClass, TitleCasePipe } from '@angular/common';
 import {
     ChangeDetectionStrategy,
+    ChangeDetectorRef,
     Component,
+    Input,
     OnInit,
     ViewEncapsulation,
+    inject,
 } from '@angular/core';
 import {
     FormsModule,
@@ -18,14 +21,20 @@ import { MatOptionModule } from '@angular/material/core';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSelectModule } from '@angular/material/select';
+import { fuseAnimations } from '@fuse/animations';
 import { FuseConfig, FuseConfigService, Scheme } from '@fuse/services/config';
+import { UserService } from 'app/core/user/user.service';
+import { RoleI, UserI } from 'app/core/user/user.types';
+import { ToastrService } from 'ngx-toastr';
 import { Subject, takeUntil } from 'rxjs';
 
 @Component({
     selector: 'settings-account',
     templateUrl: './account.component.html',
     encapsulation: ViewEncapsulation.None,
+    animations: fuseAnimations,
     changeDetection: ChangeDetectionStrategy.OnPush,
     standalone: true,
     imports: [
@@ -40,13 +49,16 @@ import { Subject, takeUntil } from 'rxjs';
         MatButtonModule,
         NgClass,
         TitleCasePipe,
+        MatProgressSpinnerModule,
     ],
 })
 export class SettingsAccountComponent implements OnInit {
+    @Input() user: UserI;
     accountForm: UntypedFormGroup;
     config: FuseConfig;
-    roles: any[];
-
+    roles: RoleI[];
+    currentSchema: Scheme;
+    private _userService = inject(UserService);
     private _unsubscribeAll: Subject<any> = new Subject<any>();
 
     /**
@@ -54,7 +66,9 @@ export class SettingsAccountComponent implements OnInit {
      */
     constructor(
         private _formBuilder: UntypedFormBuilder,
-        private _fuseConfigService: FuseConfigService
+        private _fuseConfigService: FuseConfigService,
+        private _changeDetectorRef: ChangeDetectorRef,
+        private _toastrService: ToastrService
     ) {}
 
     // -----------------------------------------------------------------------------------------------------
@@ -65,39 +79,28 @@ export class SettingsAccountComponent implements OnInit {
      * On init
      */
     ngOnInit(): void {
+        // Set schema
+        this.currentSchema = sessionStorage.getItem('scheme') as Scheme;
+
+        // Subscribe to role changes
+        this._userService.role$
+            .pipe(takeUntil(this._unsubscribeAll))
+            .subscribe((role: RoleI) => {
+                this.roles = [role];
+
+                // Mark for check
+                this._changeDetectorRef.markForCheck();
+            });
+
         // Create the form
         this.accountForm = this._formBuilder.group({
-            name: ['Brian Marcel', Validators.required],
-            lastname: ['Hughes Rich', Validators.required],
-            email: [
-                'hughes.brian@mail.com',
-                [Validators.required, Validators.email],
-            ],
-            roleId: ['read', Validators.required],
-            twoFactor: [true],
+            firstname: ['', Validators.required],
+            lastname: ['', Validators.required],
+            email: ['', [Validators.required, Validators.email]],
+            roleId: ['', Validators.required],
         });
 
-        // Setup the roles
-        this.roles = [
-            {
-                label: 'Read',
-                value: 'read',
-                description:
-                    'Can read and clone this repository. Can also open and comment on issues and pull requests.',
-            },
-            {
-                label: 'Write',
-                value: 'write',
-                description:
-                    'Can read, clone, and push to this repository. Can also manage issues and pull requests.',
-            },
-            {
-                label: 'Admin',
-                value: 'admin',
-                description:
-                    'Can read, clone, and push to this repository. Can also manage issues, pull requests, and repository settings, including adding collaborators.',
-            },
-        ];
+        this.accountForm.patchValue({ ...this.user, roleId: this.roles[0].id });
 
         // Subscribe to config changes
         this._fuseConfigService.config$
@@ -105,6 +108,7 @@ export class SettingsAccountComponent implements OnInit {
             .subscribe((config: FuseConfig) => {
                 // Store the config
                 this.config = config;
+                this.config.scheme = sessionStorage.getItem('scheme') as Scheme;
             });
     }
 
@@ -137,6 +141,53 @@ export class SettingsAccountComponent implements OnInit {
      * @param scheme
      */
     setScheme(scheme: Scheme): void {
+        sessionStorage.setItem('scheme', scheme);
         this._fuseConfigService.config = { scheme };
+    }
+
+    /**
+     * Save action
+     */
+    save() {
+        // Return if the form is invalid
+        if (this.accountForm.invalid) {
+            return;
+        }
+
+        // Disable the form
+        this.accountForm.disable();
+
+        this._userService
+            .update(this.user.id, this.accountForm.value)
+            .pipe(takeUntil(this._unsubscribeAll))
+            .subscribe({
+                next: (response) => {
+                    // Re-enable the form
+                    this.accountForm.enable();
+                    // Set the alert
+                    this._toastrService.success(
+                        'Proceso realizado con éxito.',
+                        'Aviso'
+                    );
+                },
+                error: (response) => {
+                    // Re-enable the form
+                    this.accountForm.enable();
+                    // Reset the form
+                    this.accountForm.reset();
+
+                    // Set the alert
+                    this._toastrService.error(response.error.message, 'Aviso');
+                },
+            });
+    }
+
+    /**
+     * Cancel action
+     */
+    cancel() {
+        this.setScheme(this.currentSchema);
+        this.accountForm.reset();
+        this.accountForm.patchValue({ ...this.user, roleId: this.roles[0].id });
     }
 }

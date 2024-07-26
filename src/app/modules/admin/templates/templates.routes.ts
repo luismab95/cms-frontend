@@ -1,19 +1,21 @@
 import { inject } from '@angular/core';
 import { Routes } from '@angular/router';
 import { TemplatesDetailComponent } from './detail/detail.component';
-import { TemplatesComponent } from './templates.component';
-import { InventoryService } from './templates.service';
+import { TemplatesListComponent } from './list.component';
+import { TemplateService } from './templates.service';
 
 export default [
     {
         path: '',
-        component: TemplatesComponent,
+        component: TemplatesListComponent,
         resolve: {
-            brands: () => inject(InventoryService).getBrands(),
-            categories: () => inject(InventoryService).getCategories(),
-            products: () => inject(InventoryService).getProducts(),
-            tags: () => inject(InventoryService).getTags(),
-            vendors: () => inject(InventoryService).getVendors(),
+            templates: () =>
+                inject(TemplateService).getAll({
+                    page: 1,
+                    limit: 10,
+                    search: null,
+                    status: true,
+                }),
         },
     },
     {

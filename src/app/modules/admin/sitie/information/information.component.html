@@ -15,6 +15,9 @@
                     <mat-label>Nombre</mat-label>
                     <mat-icon class="icon-size-5" [svgIcon]="'heroicons_solid:document-text'" matPrefix></mat-icon>
                     <input [formControlName]="'name'" matInput />
+                    @if (sitieForm.get('name').hasError('required')) {
+                    <mat-error>Se requiere nombre. </mat-error>
+                    }
                 </mat-form-field>
             </div>
             <!-- Dominio -->
@@ -23,14 +26,22 @@
                     <mat-label>Dominio</mat-label>
                     <mat-icon class="icon-size-5" [svgIcon]="'heroicons_solid:globe-alt'" matPrefix></mat-icon>
                     <input [formControlName]="'domain'" matInput />
+                    @if (sitieForm.get('domain').hasError('required')) {
+                    <mat-error>Se requiere dominio. </mat-error>
+                    }
+                    @if (sitieForm.get('domain').hasError('pattern')) {
+                    <mat-error>Dominio no válido. </mat-error>
+                    }
                 </mat-form-field>
             </div>
             <!-- Descripción -->
             <div class="sm:col-span-4">
                 <mat-form-field class="w-full" [subscriptSizing]="'dynamic'">
                     <mat-label>Descripción</mat-label>
-                    <textarea matInput [formControlName]="'description'" cdkTextareaAutosize
-                        [cdkAutosizeMinRows]="5"></textarea>
+                    <textarea matInput [formControlName]="'description'" cdkTextareaAutosize rows="5"></textarea>
+                    @if (sitieForm.get('description').hasError('required')) {
+                    <mat-error>Se requiere descripción. </mat-error>
+                    }
                 </mat-form-field>
                 <div class="text-hint mt-1 text-md">
                     Breve descripción del sitio.
@@ -56,12 +67,13 @@
                     <mat-label>Plantilla</mat-label>
                     <mat-icon class="icon-size-5" [svgIcon]="'heroicons_solid:rectangle-group'" matPrefix></mat-icon>
                     <mat-select [formControlName]="'templateId'">
-                        <mat-option [value]="'english'">Plantilla 1</mat-option>
-                        <mat-option [value]="'french'">Plantilla 2</mat-option>
-                        <mat-option [value]="'spanish'">Plantilla 3</mat-option>
-                        <mat-option [value]="'german'">Plantilla 4</mat-option>
-                        <mat-option [value]="'italian'">Plantilla 5</mat-option>
+                        @for (template of templates; track template) {
+                        <mat-option [value]="template.id">{{template.name}}</mat-option>
+                        }
                     </mat-select>
+                    @if (sitieForm.get('templateId').hasError('required')) {
+                    <mat-error>Se requiere plantilla. </mat-error>
+                    }
                 </mat-form-field>
             </div>
         </div>
@@ -88,7 +100,7 @@
                         }
                     </div>
                     <div class="text-secondary text-md">
-                        Habilita/Deshabilita el sitio.
+                        Deshabilita/Habilita el sitio.
                     </div>
                 </div>
                 <mat-slide-toggle class="ml-2" [color]="'primary'" [formControlName]="'status'" #status>
@@ -101,7 +113,7 @@
                 <div class="flex-auto cursor-pointer" (click)="maintenance.toggle()">
                     <div class="font-medium leading-6">En mantenimiento</div>
                     <div class="text-secondary text-md">
-                        Habilita/Deshabilita el modo mantenimiento.
+                        Deshabilita/Habilita el modo mantenimiento.
                     </div>
                 </div>
                 <mat-slide-toggle class="ml-2" [color]="'primary'" [formControlName]="'maintenance'" #maintenance>
@@ -114,9 +126,14 @@
 
         <!-- Actions -->
         <div class="flex items-center justify-end">
-            <button mat-stroked-button type="button">Cancelar</button>
-            <button class="ml-4" mat-flat-button type="button" [color]="'primary'">
-                Guardar
+            <button (click)="cancel()" mat-stroked-button type="button">Cancelar</button>
+            <button class="ml-4" mat-flat-button type="button" [color]="'primary'" (click)="save()">
+                @if (!sitieForm.disabled) {
+                <span> Guardar</span>
+                }
+                @if (sitieForm.disabled) {
+                <mat-progress-spinner [diameter]="24" [mode]="'indeterminate'"></mat-progress-spinner>
+                }
             </button>
         </div>
     </form>

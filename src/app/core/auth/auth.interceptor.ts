@@ -37,10 +37,7 @@ export const authInterceptor = (
         !AuthUtils.isTokenExpired(authService.accessToken)
     ) {
         newReq = req.clone({
-            headers: req.headers.set(
-                'Authorization',
-                'Bearer ' + authService.accessToken
-            ),
+            headers: req.headers.set('Authorization', authService.accessToken),
         });
     }
 

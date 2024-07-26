@@ -1,0 +1,4 @@
+@if(otpInputConfig !== undefined){
+<ngx-otp-input class="" #otpInput (otpComplete)="getOtp($event)" [status]="getStatus()"
+    [options]="otpInputConfig"></ngx-otp-input>
+}

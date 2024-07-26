@@ -14,8 +14,9 @@ import { MatDividerModule } from '@angular/material/divider';
 import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
 import { Router } from '@angular/router';
+import { AuthService } from 'app/core/auth/auth.service';
 import { UserService } from 'app/core/user/user.service';
-import { User } from 'app/core/user/user.types';
+import { RoleI, UserI } from 'app/core/user/user.types';
 import { Subject, takeUntil } from 'rxjs';
 
 @Component({
@@ -39,7 +40,8 @@ export class UserComponent implements OnInit, OnDestroy {
     /* eslint-enable @typescript-eslint/naming-convention */
 
     @Input() showAvatar: boolean = true;
-    user: User;
+    user: UserI;
+    role: RoleI;
 
     private _unsubscribeAll: Subject<any> = new Subject<any>();
 
@@ -49,7 +51,8 @@ export class UserComponent implements OnInit, OnDestroy {
     constructor(
         private _changeDetectorRef: ChangeDetectorRef,
         private _router: Router,
-        private _userService: UserService
+        private _userService: UserService,
+        private _authService: AuthService
     ) {}
 
     // -----------------------------------------------------------------------------------------------------
@@ -63,8 +66,17 @@ export class UserComponent implements OnInit, OnDestroy {
         // Subscribe to user changes
         this._userService.user$
             .pipe(takeUntil(this._unsubscribeAll))
-            .subscribe((user: User) => {
+            .subscribe((user: UserI) => {
                 this.user = user;
+
+                // Mark for check
+                this._changeDetectorRef.markForCheck();
+            });
+
+        this._userService.role$
+            .pipe(takeUntil(this._unsubscribeAll))
+            .subscribe((role: RoleI) => {
+                this.role = role;
 
                 // Mark for check
                 this._changeDetectorRef.markForCheck();
@@ -85,29 +97,15 @@ export class UserComponent implements OnInit, OnDestroy {
     // -----------------------------------------------------------------------------------------------------
 
     /**
-     * Update the user status
-     *
-     * @param status
-     */
-    updateUserStatus(status: string): void {
-        // Return if user is not available
-        if (!this.user) {
-            return;
-        }
-
-        // Update the user
-        this._userService
-            .update({
-                ...this.user,
-                status,
-            })
-            .subscribe();
-    }
-
-    /**
      * Sign out
      */
     signOut(): void {
-        this._router.navigate(['/sign-out']);
+        const token = this._authService.accessToken;
+        this._authService.signOut();
+        this._authService.logout(token).subscribe({
+            next: () => {
+                this._router.navigate(['/auth/sign-out']);
+            },
+        });
     }
 }

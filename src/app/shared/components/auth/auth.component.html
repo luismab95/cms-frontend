@@ -1,0 +1,13 @@
+<div style="background-image: url('{{getAuthBackground()}}');"
+    class="bg-no-repeat bg-center bg-cover w-full relative hidden h-full flex-auto items-center justify-center overflow-hidden p-16 dark:border-r md:flex lg:px-28">
+    <!-- Content -->
+    <div class="relative z-10 w-full max-w-2xl">
+        <div class="text-7xl font-bold leading-none text-gray-100">
+            <div>Bienvenido a</div>
+            <div>{{getCompanyInfo('COMPANY_NAME').name}}</div>
+        </div>
+        <div class="mt-6 text-lg leading-6 tracking-tight text-gray-400">
+            {{getCompanyInfo('COMPANY_DESCRIPTION').value}}
+        </div>
+    </div>
+    </div>

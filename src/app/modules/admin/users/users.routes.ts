@@ -1,62 +1,22 @@
 import { inject } from '@angular/core';
-import {
-    ActivatedRouteSnapshot,
-    Router,
-    RouterStateSnapshot,
-    Routes,
-} from '@angular/router';
-import { catchError, throwError } from 'rxjs';
-import { UsersListComponent } from './list/list.component';
-import { UsersComponent } from './users.component';
-import { ContactsService } from './users.service';
-
-/**
- * Contact resolver
- *
- * @param route
- * @param state
- */
-const contactResolver = (
-    route: ActivatedRouteSnapshot,
-    state: RouterStateSnapshot
-) => {
-    const contactsService = inject(ContactsService);
-    const router = inject(Router);
-
-    return contactsService.getContactById(route.paramMap.get('id')).pipe(
-        // Error here means the requested contact is not available
-        catchError((error) => {
-            // Log the error
-            console.error(error);
-
-            // Get the parent url
-            const parentUrl = state.url.split('/').slice(0, -1).join('/');
-
-            // Navigate to there
-            router.navigateByUrl(parentUrl);
-
-            // Throw an error
-            return throwError(error);
-        })
-    );
-};
+import { Routes } from '@angular/router';
+import { UserService } from 'app/core/user/user.service';
+import { RoleService } from 'app/shared/services/role.service';
+import { UsersListComponent } from './list.component';
 
 export default [
     {
         path: '',
-        component: UsersComponent,
+        component: UsersListComponent,
         resolve: {
-            tags: () => inject(ContactsService).getTags(),
+            users: () =>
+                inject(UserService).getAll({
+                    limit: 10,
+                    page: 1,
+                    search: null,
+                    status: true,
+                }),
+            roles: () => inject(RoleService).getAll(),
         },
-        children: [
-            {
-                path: '',
-                component: UsersListComponent,
-                resolve: {
-                    contacts: () => inject(ContactsService).getContacts(),
-                    countries: () => inject(ContactsService).getCountries(),
-                },
-            },
-        ],
     },
 ] as Routes;

@@ -7,11 +7,14 @@ import {
     OnInit,
     ViewChild,
     ViewEncapsulation,
+    inject,
 } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatDrawer, MatSidenavModule } from '@angular/material/sidenav';
 import { FuseMediaWatcherService } from '@fuse/services/media-watcher';
+import { UserService } from 'app/core/user/user.service';
+import { UserI } from 'app/core/user/user.types';
 import { Subject, takeUntil } from 'rxjs';
 import { SettingsAccountComponent } from './account/account.component';
 import { SettingsNotificationsComponent } from './notifications/notifications.component';
@@ -39,6 +42,8 @@ export class SettingsComponent implements OnInit, OnDestroy {
     drawerOpened: boolean = true;
     panels: any[] = [];
     selectedPanel: string = 'account';
+    user: UserI;
+    private _userService = inject(UserService);
     private _unsubscribeAll: Subject<any> = new Subject<any>();
 
     /**
@@ -57,6 +62,16 @@ export class SettingsComponent implements OnInit, OnDestroy {
      * On init
      */
     ngOnInit(): void {
+        // Subscribe to user changes
+        this._userService.user$
+            .pipe(takeUntil(this._unsubscribeAll))
+            .subscribe((user: UserI) => {
+                this.user = user;
+
+                // Mark for check
+                this._changeDetectorRef.markForCheck();
+            });
+
         // Setup available panels
         this.panels = [
             {
@@ -73,13 +88,13 @@ export class SettingsComponent implements OnInit, OnDestroy {
                 description:
                     'Administre su contraseña y preferencias de verificación en dos pasos',
             },
-            {
-                id: 'notifications',
-                icon: 'heroicons_outline:bell',
-                title: 'Notificaciones',
-                description:
-                    'Administra cuándo recibirás notificaciones en qué canales',
-            },
+            // {
+            //     id: 'notifications',
+            //     icon: 'heroicons_outline:bell',
+            //     title: 'Notificaciones',
+            //     description:
+            //         'Administra cuándo recibirás notificaciones en qué canales',
+            // },
         ];
 
         // Subscribe to media changes

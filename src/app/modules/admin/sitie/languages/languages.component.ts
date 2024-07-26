@@ -1,30 +1,36 @@
-import { TextFieldModule } from '@angular/cdk/text-field';
-import { NgClass, TitleCasePipe, UpperCasePipe } from '@angular/common';
+import { AsyncPipe, TitleCasePipe, UpperCasePipe } from '@angular/common';
 import {
     ChangeDetectionStrategy,
+    ChangeDetectorRef,
     Component,
     OnInit,
     ViewEncapsulation,
+    inject,
 } from '@angular/core';
 import {
     FormsModule,
     ReactiveFormsModule,
     UntypedFormControl,
-    UntypedFormGroup,
 } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
-import { MatOptionModule } from '@angular/material/core';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
-import { MatPaginatorModule } from '@angular/material/paginator';
-import { MatSelectModule } from '@angular/material/select';
-import { MatSlideToggleModule } from '@angular/material/slide-toggle';
-import { MatSortModule } from '@angular/material/sort';
-import { FuseConfig } from '@fuse/services/config';
+import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
+import { PaginationComponent } from 'app/shared/components/pagination/pagination.component';
+import {
+    PaginationResponseI,
+    PaginationResquestI,
+} from 'app/shared/interfaces/response.interface';
 import { ModalService } from 'app/shared/services/modal.service';
-import { Subject } from 'rxjs';
+import { findParameter } from 'app/shared/utils/parameter.utils';
+import { ToastrService } from 'ngx-toastr';
+import { Observable, Subject, debounceTime, takeUntil } from 'rxjs';
+import { ParameterI } from '../../parameters/parameter.interface';
+import { ParameterService } from '../../parameters/parameter.service';
 import { SitieLanguagesDetailsComponent } from './details/details.component';
+import { LanguageService } from './language.service';
+import { LanguageI } from './language.types';
 
 @Component({
     selector: 'sitie-languages',
@@ -33,18 +39,18 @@ import { SitieLanguagesDetailsComponent } from './details/details.component';
         /* language=SCSS */
         `
             .languages-grid {
-                grid-template-columns: 48px auto 40px;
+                grid-template-columns: 24px auto 24px;
 
                 @screen sm {
-                    grid-template-columns: 48px auto 112px 72px;
+                    grid-template-columns: 24px auto 24px;
                 }
 
                 @screen md {
-                    grid-template-columns: 48px 112px auto 112px 72px;
+                    grid-template-columns: 24px 112px auto 24px 24px;
                 }
 
                 @screen lg {
-                    grid-template-columns: 48px 112px auto 112px 96px 96px 72px;
+                    grid-template-columns: 24px 112px auto 80px 80px 24px 42px;
                 }
             }
         `,
@@ -58,30 +64,43 @@ import { SitieLanguagesDetailsComponent } from './details/details.component';
         MatFormFieldModule,
         MatIconModule,
         MatInputModule,
-        TextFieldModule,
-        MatSelectModule,
-        MatOptionModule,
         MatButtonModule,
-        NgClass,
-        MatSortModule,
-        MatSlideToggleModule,
         MatPaginatorModule,
         TitleCasePipe,
         UpperCasePipe,
+        PaginationComponent,
+        AsyncPipe,
     ],
 })
 export class SitieLanguagesComponent implements OnInit {
-    accountForm: UntypedFormGroup;
-    config: FuseConfig;
+    languagesCount: number = 0;
+    languages$: Observable<PaginationResponseI<LanguageI[]>>;
     isLoading: boolean = false;
-    languages: any[] = [];
+    urlStatics: string;
     searchInputControl: UntypedFormControl = new UntypedFormControl();
+    private _parameterService = inject(ParameterService);
     private _unsubscribeAll: Subject<any> = new Subject<any>();
 
     /**
      * Constructor
      */
-    constructor(private _modalSvc: ModalService) {}
+    constructor(
+        private _modalSvc: ModalService,
+        private _changeDetectorRef: ChangeDetectorRef,
+        private _languageService: LanguageService,
+        private _toastrService: ToastrService
+    ) {
+        this._parameterService.parameter$
+            .pipe(takeUntil(this._unsubscribeAll))
+            .subscribe((parameters: ParameterI[]) => {
+                this.urlStatics = this.getParameter(
+                    'APP_STATICS_URL',
+                    parameters
+                );
+                // Mark for check
+                this._changeDetectorRef.markForCheck();
+            });
+    }
 
     // -----------------------------------------------------------------------------------------------------
     // @ Lifecycle hooks
@@ -91,23 +110,32 @@ export class SitieLanguagesComponent implements OnInit {
      * On init
      */
     ngOnInit(): void {
-        // Set languages data
-        this.languages = [
-            {
-                id: 1,
-                lang: 'ES',
-                name: 'Español - Ecuador',
-                icon: 'https://upload.wikimedia.org/wikipedia/commons/e/e8/Flag_of_Ecuador.svg',
-                status: true,
-            },
-            {
-                id: 2,
-                lang: 'EN',
-                name: 'Ingles - Estados Unidos',
-                icon: 'https://img.freepik.com/vector-gratis/ilustracion-bandera-estados-unidos_53876-18165.jpg?size=626&ext=jpg&ga=GA1.1.2008272138.1721001600&semt=ais_user',
-                status: false,
-            },
-        ];
+        // Get the languages
+        this.languages$ = this._languageService.languages$;
+        this._languageService.languages$
+            .pipe(takeUntil(this._unsubscribeAll))
+            .subscribe((languages) => {
+                // Update the users
+                this.languages$ = this._languageService.languages$;
+                this.languagesCount = languages.total;
+                // Mark for check
+                this._changeDetectorRef.markForCheck();
+            });
+
+        // Subscribe to search input field value changes
+        this.searchInputControl.valueChanges
+            .pipe(debounceTime(700))
+            .subscribe((search: string) => {
+                this.getAll(
+                    {
+                        pageSize: 10,
+                        pageIndex: 0,
+                        length: this.languagesCount,
+                    },
+                    search === '' ? null : search,
+                    search === '' ? true : null
+                );
+            });
     }
 
     /**
@@ -117,6 +145,42 @@ export class SitieLanguagesComponent implements OnInit {
         // Unsubscribe from all subscriptions
         this._unsubscribeAll.next(null);
         this._unsubscribeAll.complete();
+    }
+
+    // -----------------------------------------------------------------------------------------------------
+    // @ Public methods
+    // -----------------------------------------------------------------------------------------------------
+
+    /**
+     * Get all
+     * @param page
+     */
+    getAll(
+        event: PageEvent,
+        search: string | null = null,
+        status: boolean = true
+    ) {
+        const params: PaginationResquestI = {
+            page: event?.pageIndex + 1,
+            limit: event?.pageSize,
+            search,
+            status,
+        };
+        this.isLoading = true;
+        this._languageService
+            .getAll(params)
+            .pipe(takeUntil(this._unsubscribeAll))
+            .subscribe({
+                next: (res) => {
+                    this.isLoading = false;
+                },
+                error: (response) => {
+                    this.isLoading = false;
+
+                    // Set the alert
+                    this._toastrService.error(response.error.message, 'Aviso');
+                },
+            });
     }
 
     /**
@@ -134,10 +198,38 @@ export class SitieLanguagesComponent implements OnInit {
      *
      * @param data
      */
-    openDetailsModal(data?: any): void {
-        this._modalSvc.openModal<SitieLanguagesDetailsComponent, any>(
+    openDetailsModal(data?: LanguageI): void {
+        const dialogRef = this._modalSvc.openModal<
             SitieLanguagesDetailsComponent,
-            data
-        );
+            LanguageI
+        >(SitieLanguagesDetailsComponent, data);
+
+        dialogRef.afterClosed().subscribe((result) => {
+            if (result) {
+                this.getAll({
+                    pageSize: 10,
+                    pageIndex: 0,
+                    length: this.languagesCount,
+                });
+            }
+        });
+    }
+
+    /**
+     * Get parameter
+     * @param code
+     */
+    getParameter(code: string, parameters: ParameterI[]) {
+        if (parameters.length > 0) {
+            return findParameter(code, parameters).value;
+        }
+    }
+
+    /**
+     * Get icon
+     * @returns
+     */
+    getICon(icon: string) {
+        return `${this.urlStatics}/${icon}`;
     }
 }

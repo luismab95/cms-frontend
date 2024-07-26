@@ -9,7 +9,7 @@
     <ng-container fuseVerticalNavigationContentHeader>
         <!-- Logo -->
         <div class="flex h-20 items-center justify-center">
-            <img class="w-8" src="images/logo/logo.svg" alt="Logo image" />
+            <img class="w-8" [src]="getLogo()" alt="Logo image" />
         </div>
     </ng-container>
 </fuse-vertical-navigation>
@@ -59,7 +59,7 @@
     <!-- Footer -->
     <div
         class="bg-card relative z-49 flex h-14 w-full flex-0 items-center justify-start border-t px-4 dark:bg-transparent md:px-6 print:hidden">
-        <span class="text-secondary font-medium">Fuse &copy; {{ currentYear }}</span>
+        <span class="text-secondary font-medium">{{getParameter('COMPANY_NAME')}} &copy; {{ currentYear }}</span>
     </div>
 </div>
 

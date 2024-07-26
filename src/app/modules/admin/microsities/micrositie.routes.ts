@@ -1,23 +1,29 @@
 import { inject } from '@angular/core';
 import { Routes } from '@angular/router';
+import { SitieService } from '../sitie/sitie.service';
 import { MicroSitiesDetailComponent } from './detail/detail.component';
-import { MicrositieComponent } from './micrositie.component';
-import { InventoryService } from './micrositie.service';
+import { MicrositieListComponent } from './list.component';
+import { MicrosityService } from './micrositie.service';
 
 export default [
     {
         path: '',
-        component: MicrositieComponent,
+        component: MicrositieListComponent,
         resolve: {
-            brands: () => inject(InventoryService).getBrands(),
-            categories: () => inject(InventoryService).getCategories(),
-            products: () => inject(InventoryService).getProducts(),
-            tags: () => inject(InventoryService).getTags(),
-            vendors: () => inject(InventoryService).getVendors(),
+            microsities: () =>
+                inject(MicrosityService).getAll({
+                    page: 1,
+                    limit: 10,
+                    search: null,
+                    status: true,
+                }),
         },
     },
     {
         path: 'detail',
         component: MicroSitiesDetailComponent,
+        resolve: {
+            sitie: () => inject(SitieService).find(),
+        },
     },
 ] as Routes;

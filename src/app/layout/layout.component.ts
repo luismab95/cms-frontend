@@ -1,17 +1,24 @@
 import { DOCUMENT } from '@angular/common';
 import {
+    ChangeDetectorRef,
     Component,
     Inject,
     OnDestroy,
     OnInit,
     Renderer2,
     ViewEncapsulation,
+    inject,
+    signal,
 } from '@angular/core';
+import { Meta, Title } from '@angular/platform-browser';
 import { ActivatedRoute, NavigationEnd, Router } from '@angular/router';
 import { FuseConfig, FuseConfigService } from '@fuse/services/config';
 import { FuseMediaWatcherService } from '@fuse/services/media-watcher';
 import { FusePlatformService } from '@fuse/services/platform';
 import { FUSE_VERSION } from '@fuse/version';
+import { ParameterI } from 'app/modules/admin/parameters/parameter.interface';
+import { ParameterService } from 'app/modules/admin/parameters/parameter.service';
+import { findParameter } from 'app/shared/utils/parameter.utils';
 import { Subject, combineLatest, filter, map, takeUntil } from 'rxjs';
 import { SettingsComponent } from './common/settings/settings.component';
 import { EmptyLayoutComponent } from './layouts/empty/empty.component';
@@ -21,10 +28,8 @@ import { MaterialLayoutComponent } from './layouts/horizontal/material/material.
 import { ModernLayoutComponent } from './layouts/horizontal/modern/modern.component';
 import { ClassicLayoutComponent } from './layouts/vertical/classic/classic.component';
 import { ClassyLayoutComponent } from './layouts/vertical/classy/classy.component';
-import { CompactLayoutComponent } from './layouts/vertical/compact/compact.component';
 import { DenseLayoutComponent } from './layouts/vertical/dense/dense.component';
 import { FuturisticLayoutComponent } from './layouts/vertical/futuristic/futuristic.component';
-import { ThinLayoutComponent } from './layouts/vertical/thin/thin.component';
 
 @Component({
     selector: 'layout',
@@ -40,10 +45,8 @@ import { ThinLayoutComponent } from './layouts/vertical/thin/thin.component';
         ModernLayoutComponent,
         ClassicLayoutComponent,
         ClassyLayoutComponent,
-        CompactLayoutComponent,
         DenseLayoutComponent,
         FuturisticLayoutComponent,
-        ThinLayoutComponent,
         SettingsComponent,
     ],
 })
@@ -52,6 +55,9 @@ export class LayoutComponent implements OnInit, OnDestroy {
     layout: string;
     scheme: 'dark' | 'light';
     theme: string;
+    parameters = signal<ParameterI[]>([]);
+
+    private _parameterService = inject(ParameterService);
     private _unsubscribeAll: Subject<any> = new Subject<any>();
 
     /**
@@ -64,8 +70,23 @@ export class LayoutComponent implements OnInit, OnDestroy {
         private _router: Router,
         private _fuseConfigService: FuseConfigService,
         private _fuseMediaWatcherService: FuseMediaWatcherService,
-        private _fusePlatformService: FusePlatformService
-    ) {}
+        private _fusePlatformService: FusePlatformService,
+        private _changeDetectorRef: ChangeDetectorRef,
+        private _metaService: Meta,
+        private _titleService: Title
+    ) {
+        this._parameterService.parameter$
+            .pipe(takeUntil(this._unsubscribeAll))
+            .subscribe((parameters: ParameterI[]) => {
+                this.parameters.set(parameters);
+                this.updateMetaTags();
+                this.layout = this.getParameter('APP_LAYOUT_TYPE');
+                this.theme = this.getParameter('APP_THEME');
+                this._updateTheme();
+                // Mark for check
+                this._changeDetectorRef.markForCheck();
+            });
+    }
 
     // -----------------------------------------------------------------------------------------------------
     // @ Lifecycle hooks
@@ -92,13 +113,16 @@ export class LayoutComponent implements OnInit, OnDestroy {
                     };
 
                     // If the scheme is set to 'auto'...
-                    if (config.scheme === 'auto') {
+                    const schema = sessionStorage.getItem('scheme');
+                    if (schema === null || schema === 'auto') {
                         // Decide the scheme using the media query
                         options.scheme = mql.breakpoints[
                             '(prefers-color-scheme: dark)'
                         ]
                             ? 'dark'
                             : 'light';
+                    } else {
+                        options.scheme = sessionStorage.getItem('scheme');
                     }
 
                     return options;
@@ -106,8 +130,9 @@ export class LayoutComponent implements OnInit, OnDestroy {
             )
             .subscribe((options) => {
                 // Store the options
+
                 this.scheme = options.scheme;
-                this.theme = options.theme;
+                // this.theme = options.theme;
 
                 // Update the scheme and theme
                 this._updateScheme();
@@ -174,7 +199,7 @@ export class LayoutComponent implements OnInit, OnDestroy {
         }
 
         // 1. Set the layout from the config
-        this.layout = this.config.layout;
+        // this.layout = this.getParameter('APP_LAYOUT_TYPE') || 'dense';
 
         // 2. Get the query parameter from the current route and
         // set the layout and save the layout to the config
@@ -247,5 +272,35 @@ export class LayoutComponent implements OnInit, OnDestroy {
 
         // Add class name for the currently selected theme
         this._document.body.classList.add(this.theme);
+    }
+
+    /**
+     * Get parameter
+     * @param code
+     */
+    getParameter(code: string) {
+        if (this.parameters().length > 0) {
+            return findParameter(code, this.parameters()).value;
+        }
+    }
+
+    /**
+     * Update meta
+     */
+    updateMetaTags() {
+        this._titleService.setTitle(this.getParameter('COMPANY_NAME'));
+        this._metaService.updateTag({
+            name: 'description',
+            content: this.getParameter('COMPANY_DESCRIPTION'),
+        });
+        this._metaService.updateTag({
+            name: 'keywords',
+            content: `CMS, ${this.getParameter('COMPANY_NAME')}`,
+        });
+        const link = this._document.createElement('link');
+        link.rel = 'icon';
+        link.href = `${this.getParameter('APP_STATICS_URL')}/${this.getParameter('LOGO_ICON')}`;
+        link.type = 'image/x-icon';
+        this._document.head.appendChild(link);
     }
 }

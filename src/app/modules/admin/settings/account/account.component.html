@@ -1,4 +1,5 @@
 <div class="w-full max-w-3xl">
+
     <!-- Form -->
     <form [formGroup]="accountForm">
         <!-- Section -->
@@ -14,7 +15,10 @@
                 <mat-form-field class="w-full" [subscriptSizing]="'dynamic'">
                     <mat-label>Nombres</mat-label>
                     <mat-icon class="icon-size-5" [svgIcon]="'mat_solid:text_fields'" matPrefix></mat-icon>
-                    <input [formControlName]="'name'" matInput />
+                    <input [formControlName]="'firstname'" matInput />
+                    @if (accountForm.get('firstname').hasError('required')) {
+                    <mat-error>Se requiere apellidos. </mat-error>
+                    }
                 </mat-form-field>
             </div>
 
@@ -24,6 +28,9 @@
                     <mat-label>Apellidos</mat-label>
                     <mat-icon class="icon-size-5" [svgIcon]="'mat_solid:text_fields'" matPrefix></mat-icon>
                     <input [formControlName]="'lastname'" matInput />
+                    @if (accountForm.get('lastname').hasError('required')) {
+                    <mat-error>Se requiere apellidos. </mat-error>
+                    }
                 </mat-form-field>
             </div>
 
@@ -33,6 +40,14 @@
                     <mat-label>Correo electrónico</mat-label>
                     <mat-icon class="icon-size-5" [svgIcon]="'heroicons_solid:envelope'" matPrefix></mat-icon>
                     <input [formControlName]="'email'" matInput />
+                    @if (accountForm.get('email').hasError('required')) {
+                    <mat-error>Se requiere dirección de correo electrónico. </mat-error>
+                    }
+                    @if (accountForm.get('email').hasError('email')) {
+                    <mat-error>
+                        Por favor, introduce una dirección de correo electrónico válida.
+                    </mat-error>
+                    }
                 </mat-form-field>
             </div>
 
@@ -41,18 +56,17 @@
                 <mat-form-field class="w-full" [subscriptSizing]="'dynamic'">
                     <mat-label>Rol</mat-label>
                     <mat-icon class="icon-size-5" [svgIcon]="'mat_solid:perm_contact_calendar'" matPrefix></mat-icon>
-                    <mat-select [panelClass]="
-                            'w-72 min-w-72 max-w-72 h-auto max-h-none'
-                        " [value]="'read'" disableOptionCentering #roleSelect="matSelect">
+                    <mat-select [formControlName]="'roleId'" [panelClass]="'w-72 min-w-72 max-w-72 h-auto max-h-none'"
+                        disableOptionCentering #roleSelect="matSelect">
                         <mat-select-trigger class="text-md">
                             <span class="ml-1 font-medium">{{
-                                roleSelect.value | titlecase
+                                roles[0].name | titlecase
                                 }}</span>
                         </mat-select-trigger>
                         @for (role of roles; track role) {
-                        <mat-option class="h-auto py-4 leading-none" [value]="role.value">
+                        <mat-option class="h-auto py-4 leading-none" [value]="role.id">
                             <div class="font-medium">
-                                {{ role.label }}
+                                {{ role.name }}
                             </div>
                             <div class="text-secondary mt-1.5 whitespace-normal text-sm leading-normal">
                                 {{ role.description }}
@@ -60,6 +74,9 @@
                         </mat-option>
                         }
                     </mat-select>
+                    @if (accountForm.get('roleId').hasError('required')) {
+                    <mat-error>Se requiere rol. </mat-error>
+                    }
                 </mat-form-field>
             </div>
 
@@ -76,9 +93,10 @@
             </div>
         </div>
         <div class="mt-6 flex flex-col md:flex-row justify-start gap-3">
+
             <!-- Auto -->
             <div class="w-full md:w-50 bg-hover flex cursor-pointer items-center rounded-full py-3 pl-5 pr-6 ring-inset ring-primary"
-                [class.ring-2]="config.scheme === 'auto'"
+                [class.ring-2]="config.scheme === 'auto' || config.scheme === null"
                 matTooltip="Establece automáticamente el esquema según la preferencia de esquema de color del sistema operativo del usuario mediante la consulta de medios 'prefer-color-scheme'."
                 (click)="setScheme('auto')">
                 <div class="flex items-center overflow-hidden rounded-full">
@@ -118,9 +136,15 @@
 
         <!-- Actions -->
         <div class="flex items-center justify-end">
-            <button mat-stroked-button type="button">Cancelar</button>
-            <button class="ml-4" mat-flat-button type="button" [color]="'primary'">
-                Guardar
+            <button (click)="cancel()" mat-stroked-button type="button">Cancelar</button>
+            <button class="ml-4" mat-flat-button type="button" [color]="'primary'" [disabled]="accountForm.disabled"
+                (click)="save()">
+                @if (!accountForm.disabled) {
+                <span> Guardar</span>
+                }
+                @if (accountForm.disabled) {
+                <mat-progress-spinner [diameter]="24" [mode]="'indeterminate'"></mat-progress-spinner>
+                }
             </button>
         </div>
     </form>

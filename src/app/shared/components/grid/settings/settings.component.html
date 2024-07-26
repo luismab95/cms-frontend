@@ -24,9 +24,20 @@
                                 <button mat-icon-button (click)="openImagesManager()">
                                     <mat-icon class="text-white" [svgIcon]="'heroicons_outline:photo'"></mat-icon>
                                 </button>
+                                @if(config.backgroundImage!== ''){
+                                <button mat-icon-button (click)="updateImage('')">
+                                    <mat-icon class="text-white" [svgIcon]="'heroicons_outline:trash'"></mat-icon>
+                                </button> }
                             </div>
-                            <img class="w-full object-cover rounded-md"
-                                [src]="'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSuViN7efAwB5dbdgcONdw73Omzm1fDYqFK9g&s'" />
+                            @if(config.backgroundImage === ''){
+                            <div class="h-52 w-full bg-gray-300 rounded-lg flex justify-center items-center mt-3">
+                                <span class="-rotate-45 text-md md:text-2xl text-center">
+                                    SIN IMÁGEN
+                                </span>
+                            </div>
+                            }@else{
+                            <img class="w-full object-cover rounded-md" [src]="getLogo()" alt="image" />
+                            }
                         </div>
                     </div>
 
@@ -40,7 +51,8 @@
                         <mat-icon [matTooltip]="'Ayuda'" class="icon-size-5 cursor-pointer"
                             [svgIcon]="'mat_solid:help'"></mat-icon>
                     </div>
-                    <ngx-monaco-editor class="h-160 md:h-160" [options]="options" [model]="model"></ngx-monaco-editor>
+                    <ngx-monaco-editor [formControl]="cssControl" class="h-160 md:h-160"
+                        [options]="options"></ngx-monaco-editor>
                 </ng-template>
             </mat-tab>
         </mat-tab-group>
@@ -56,7 +68,7 @@
                 Cancelar
             </button>
             <!-- Save -->
-            <button class="ml-2" mat-flat-button [color]="'primary'" [matTooltip]="'Guardar'">
+            <button (click)="save()" class="ml-2" mat-flat-button [color]="'primary'" [matTooltip]="'Guardar'">
                 Guardar
             </button>
         </div>

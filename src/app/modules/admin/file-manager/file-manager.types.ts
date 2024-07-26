@@ -1,18 +1,22 @@
-export interface Items {
-    folders: Item[];
-    files: Item[];
-    path: any[];
+export interface FileI {
+    id?: number;
+    name?: string;
+    description: string;
+    mimeType?: string;
+    size?: number;
+    filename?: string;
+    status?: boolean;
+    path?: string;
+    url?: string;
 }
 
-export interface Item {
-    id?: string;
-    folderId?: string;
-    name?: string;
-    createdBy?: string;
-    createdAt?: string;
-    modifiedAt?: string;
-    size?: string;
-    type?: string;
-    contents?: string | null;
-    description?: string | null;
+export interface FileUploadI {
+    fieldname: string;
+    originalname: string;
+    encoding: string;
+    mimetype: string;
+    destination: string;
+    filename: string;
+    path: string;
+    size: number;
 }

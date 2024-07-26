@@ -77,10 +77,10 @@
                     @switch (selectedPanel) {
                     <!-- Information -->
                     @case ('information') {
-                    <templates-information [template]="template"></templates-information>
+                    <templates-information></templates-information>
                     }
                     @case ('drawer') {
-                    <templates-drawer [template]="template" (fullscreemToggle)="drawer.toggle()"></templates-drawer>
+                    <templates-drawer [template]="template()" (fullscreemToggle)="drawer.toggle()"></templates-drawer>
                     }
                     }
                 </div>

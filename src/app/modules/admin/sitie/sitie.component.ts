@@ -7,6 +7,7 @@ import {
     OnInit,
     ViewChild,
     ViewEncapsulation,
+    signal,
 } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
@@ -15,6 +16,8 @@ import { FuseMediaWatcherService } from '@fuse/services/media-watcher';
 import { Subject, takeUntil } from 'rxjs';
 import { SitieInformationComponent } from './information/information.component';
 import { SitieLanguagesComponent } from './languages/languages.component';
+import { SitieService } from './sitie.service';
+import { SitieI } from './sitie.types';
 
 @Component({
     selector: 'sitie',
@@ -37,6 +40,7 @@ export class SitieComponent implements OnInit, OnDestroy {
     drawerOpened: boolean = true;
     panels: any[] = [];
     selectedPanel: string = 'information';
+    sitie = signal<SitieI>(null);
     private _unsubscribeAll: Subject<any> = new Subject<any>();
 
     /**
@@ -44,7 +48,8 @@ export class SitieComponent implements OnInit, OnDestroy {
      */
     constructor(
         private _changeDetectorRef: ChangeDetectorRef,
-        private _fuseMediaWatcherService: FuseMediaWatcherService
+        private _fuseMediaWatcherService: FuseMediaWatcherService,
+        private _sitieService: SitieService
     ) {}
 
     // -----------------------------------------------------------------------------------------------------
@@ -70,6 +75,16 @@ export class SitieComponent implements OnInit, OnDestroy {
                 description: 'Gestiona los idiomas del sitio.',
             },
         ];
+
+        this._sitieService.sitie$
+            .pipe(takeUntil(this._unsubscribeAll))
+            .subscribe((sitie) => {
+                // Update the sitie
+                this.sitie.set(sitie);
+
+                // Mark for check
+                this._changeDetectorRef.markForCheck();
+            });
 
         // Subscribe to media changes
         this._fuseMediaWatcherService.onMediaChange$

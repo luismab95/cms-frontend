@@ -1,4 +1,10 @@
-import { Component, OnDestroy, OnInit, ViewEncapsulation } from '@angular/core';
+import {
+    Component,
+    Input,
+    OnDestroy,
+    OnInit,
+    ViewEncapsulation,
+} from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { ActivatedRoute, Router, RouterOutlet } from '@angular/router';
@@ -12,14 +18,12 @@ import { FuseMediaWatcherService } from '@fuse/services/media-watcher';
 import { NavigationService } from 'app/core/navigation/navigation.service';
 import { Navigation } from 'app/core/navigation/navigation.types';
 import { UserService } from 'app/core/user/user.service';
-import { User } from 'app/core/user/user.types';
-import { LanguagesComponent } from 'app/layout/common/languages/languages.component';
-import { MessagesComponent } from 'app/layout/common/messages/messages.component';
+import { UserI } from 'app/core/user/user.types';
 import { NotificationsComponent } from 'app/layout/common/notifications/notifications.component';
-import { QuickChatComponent } from 'app/layout/common/quick-chat/quick-chat.component';
 import { SearchComponent } from 'app/layout/common/search/search.component';
-import { ShortcutsComponent } from 'app/layout/common/shortcuts/shortcuts.component';
 import { UserComponent } from 'app/layout/common/user/user.component';
+import { ParameterI } from 'app/modules/admin/parameters/parameter.interface';
+import { findParameter } from 'app/shared/utils/parameter.utils';
 import { Subject, takeUntil } from 'rxjs';
 
 @Component({
@@ -34,19 +38,16 @@ import { Subject, takeUntil } from 'rxjs';
         UserComponent,
         MatIconModule,
         MatButtonModule,
-        LanguagesComponent,
         FuseFullscreenComponent,
         SearchComponent,
-        ShortcutsComponent,
-        MessagesComponent,
         RouterOutlet,
-        QuickChatComponent,
     ],
 })
 export class ClassyLayoutComponent implements OnInit, OnDestroy {
+    @Input() parameters: ParameterI[] = [];
     isScreenSmall: boolean;
     navigation: Navigation;
-    user: User;
+    user: UserI;
     private _unsubscribeAll: Subject<any> = new Subject<any>();
 
     /**
@@ -90,7 +91,7 @@ export class ClassyLayoutComponent implements OnInit, OnDestroy {
         // Subscribe to the user service
         this._userService.user$
             .pipe(takeUntil(this._unsubscribeAll))
-            .subscribe((user: User) => {
+            .subscribe((user: UserI) => {
                 this.user = user;
             });
 
@@ -132,5 +133,24 @@ export class ClassyLayoutComponent implements OnInit, OnDestroy {
             // Toggle the opened status
             navigation.toggle();
         }
+    }
+
+    /**
+     * Get parameter
+     * @param code
+     */
+    getParameter(code: string) {
+        if (this.parameters.length > 0) {
+            return findParameter(code, this.parameters).value;
+        }
+    }
+
+    /**
+     * Get logo
+     * @param code
+     * @returns
+     */
+    getLogo(code: string) {
+        return `${this.getParameter('APP_STATICS_URL')}/${this.getParameter(code)}`;
     }
 }

@@ -71,16 +71,16 @@
                     @switch (selectedPanel) {
                     <!-- Account -->
                     @case ('account') {
-                    <settings-account></settings-account>
+                    <settings-account [user]="user"></settings-account>
                     }
                     <!-- Security -->
                     @case ('security') {
-                    <settings-security></settings-security>
+                    <settings-security [user]="user"></settings-security>
                     }
                     <!-- Notifications -->
-                    @case ('notifications') {
+                    <!-- @case ('notifications') {
                     <settings-notifications></settings-notifications>
-                    }
+                    } -->
                     }
                 </div>
             </div>

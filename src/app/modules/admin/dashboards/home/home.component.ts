@@ -14,7 +14,8 @@ import { MatMenuModule } from '@angular/material/menu';
 import { MatTableModule } from '@angular/material/table';
 import { MatTabsModule } from '@angular/material/tabs';
 import { Router, RouterLink } from '@angular/router';
-import { TranslocoModule } from '@ngneat/transloco';
+import { UserService } from 'app/core/user/user.service';
+import { UserI } from 'app/core/user/user.types';
 import { analytics } from 'app/mock-api/dashboards/analytics/data';
 import { HomeService } from 'app/modules/admin/dashboards/home/home.service';
 import { ApexOptions, NgApexchartsModule } from 'ng-apexcharts';
@@ -27,7 +28,6 @@ import { Subject, takeUntil } from 'rxjs';
     changeDetection: ChangeDetectionStrategy.OnPush,
     standalone: true,
     imports: [
-        TranslocoModule,
         MatIconModule,
         MatButtonModule,
         MatRippleModule,
@@ -43,6 +43,7 @@ import { Subject, takeUntil } from 'rxjs';
     ],
 })
 export class HomeComponent implements OnInit, OnDestroy {
+    user: UserI;
     chartGithubIssues: ApexOptions = {};
     chartTaskDistribution: ApexOptions = {};
     chartBudgetDistribution: ApexOptions = {};
@@ -62,7 +63,8 @@ export class HomeComponent implements OnInit, OnDestroy {
      */
     constructor(
         private _homeService: HomeService,
-        private _router: Router
+        private _router: Router,
+        private _userService: UserService
     ) {}
 
     // -----------------------------------------------------------------------------------------------------
@@ -73,6 +75,13 @@ export class HomeComponent implements OnInit, OnDestroy {
      * On init
      */
     ngOnInit(): void {
+        // Subscribe to the user service
+        this._userService.user$
+            .pipe(takeUntil(this._unsubscribeAll))
+            .subscribe((user: UserI) => {
+                this.user = user;
+            });
+
         // Get the data
         this._homeService.data$
             .pipe(takeUntil(this._unsubscribeAll))

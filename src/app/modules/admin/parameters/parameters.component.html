@@ -67,30 +67,38 @@
                 </div>
 
                 <!-- Load settings panel -->
+                @if(parameters().length > 0){
+
                 <div class="mt-8">
                     @switch (selectedPanel) {
                     <!-- Company -->
                     @case ('company') {
-                    <parameters-company></parameters-company>
+                    <parameters-company [parameters]="parameters()"
+                        (refreshParameters)="getAllParameters()"></parameters-company>
                     }
                     <!-- Images -->
                     @case ('images') {
-                    <parameters-logos></parameters-logos>
+                    <parameters-logos [parameters]="parameters()"
+                        (refreshParameters)="getAllParameters()"></parameters-logos>
                     }
                     <!-- Email -->
                     @case ('email') {
-                    <parameters-email></parameters-email>
+                    <parameters-email [parameters]="parameters()"
+                        (refreshParameters)="getAllParameters()"></parameters-email>
                     }
                     <!-- Security -->
                     @case ('security') {
-                    <parameters-security></parameters-security>
+                    <parameters-security [parameters]="parameters()"
+                        (refreshParameters)="getAllParameters()"></parameters-security>
                     }
                     <!-- Web -->
                     @case ('web') {
-                    <parameters-web></parameters-web>
+                    <parameters-web [parameters]="parameters()"
+                        (refreshParameters)="getAllParameters()"></parameters-web>
                     }
                     }
                 </div>
+                }
             </div>
         </mat-drawer-content>
     </mat-drawer-container>

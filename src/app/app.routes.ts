@@ -58,24 +58,6 @@ export const appRoutes: Route[] = [
                 loadChildren: () =>
                     import('app/modules/auth/sign-in/sign-in.routes'),
             },
-            //Default
-            {
-                path: '**',
-                redirectTo: 'sign-in',
-            },
-        ],
-    },
-
-    // Auth routes for authenticated users
-    {
-        path: '',
-        canActivate: [AuthGuard],
-        canActivateChild: [AuthGuard],
-        component: LayoutComponent,
-        data: {
-            layout: 'empty',
-        },
-        children: [
             {
                 path: 'sign-out',
                 loadChildren: () =>
@@ -87,6 +69,11 @@ export const appRoutes: Route[] = [
                     import(
                         'app/modules/auth/unlock-session/unlock-session.routes'
                     ),
+            },
+            //Default
+            {
+                path: '**',
+                redirectTo: 'sign-in',
             },
         ],
     },
@@ -196,6 +183,14 @@ export const appRoutes: Route[] = [
         pathMatch: 'full',
         loadChildren: () =>
             import('app/modules/error/error-404/error-404.routes'),
+    },
+
+    // 500 error
+    {
+        path: '505-error',
+        pathMatch: 'full',
+        loadChildren: () =>
+            import('app/modules/error/error-500/error-500.routes'),
     },
 
     // Landing routes

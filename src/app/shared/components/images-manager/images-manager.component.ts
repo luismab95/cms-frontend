@@ -1,19 +1,30 @@
 import {
     ChangeDetectionStrategy,
+    ChangeDetectorRef,
     Component,
     OnDestroy,
     OnInit,
     ViewEncapsulation,
+    inject,
 } from '@angular/core';
+import { ReactiveFormsModule, UntypedFormControl } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
-import { MatDialogModule } from '@angular/material/dialog';
+import { MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatTabsModule } from '@angular/material/tabs';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { FileManagerService } from 'app/modules/admin/file-manager/file-manager.service';
+import { FileI } from 'app/modules/admin/file-manager/file-manager.types';
+import { ParameterI } from 'app/modules/admin/parameters/parameter.interface';
+import { ParameterService } from 'app/modules/admin/parameters/parameter.service';
+import { PaginationResquestI } from 'app/shared/interfaces/response.interface';
+import { FileService } from 'app/shared/services/file.service';
+import { findParameter } from 'app/shared/utils/parameter.utils';
 import { MonacoEditorModule } from 'ngx-monaco-editor-v2';
-import { Subject } from 'rxjs';
+import { ToastrService } from 'ngx-toastr';
+import { Subject, debounceTime, takeUntil } from 'rxjs';
 
 @Component({
     selector: 'images-manager',
@@ -46,16 +57,40 @@ import { Subject } from 'rxjs';
         MonacoEditorModule,
         MatFormFieldModule,
         MatInputModule,
+        ReactiveFormsModule,
     ],
 })
 export class ImagesManagerComponent implements OnInit, OnDestroy {
-    files: any[] = [];
+    files: FileI[] = [];
+    searchInputControl: UntypedFormControl = new UntypedFormControl();
+    urlStatics: string;
+    selectedImage: string;
+
+    private _fileService = inject(FileService);
+    private _parameterService = inject(ParameterService);
     private _unsubscribeAll: Subject<any> = new Subject<any>();
 
     /**
      * Constructor
      */
-    constructor() {}
+    constructor(
+        private _toastrService: ToastrService,
+        private _fileManagerService: FileManagerService,
+        private _changeDetectorRef: ChangeDetectorRef,
+        public _matDialogRef: MatDialogRef<ImagesManagerComponent>
+    ) {
+        this._parameterService.parameter$
+            .pipe(takeUntil(this._unsubscribeAll))
+            .subscribe((parameters: ParameterI[]) => {
+                this.urlStatics = this.getParameter(
+                    'APP_STATICS_URL',
+                    parameters
+                );
+                // Mark for check
+                this._changeDetectorRef.markForCheck();
+            });
+        this.getAll('image');
+    }
 
     // -----------------------------------------------------------------------------------------------------
     // @ Lifecycle hooks
@@ -65,153 +100,12 @@ export class ImagesManagerComponent implements OnInit, OnDestroy {
      * On init
      */
     ngOnInit(): void {
-        // Set files
-        this.files = [
-            {
-                name: 'image1',
-                type: 'image/jpeg',
-                size: '2MB',
-                url: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSuViN7efAwB5dbdgcONdw73Omzm1fDYqFK9g&s',
-            },
-            {
-                name: 'image1',
-                type: 'image/jpeg',
-                size: '2MB',
-                url: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSuViN7efAwB5dbdgcONdw73Omzm1fDYqFK9g&s',
-            },
-            {
-                name: 'image1',
-                type: 'image/jpeg',
-                size: '2MB',
-                url: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSuViN7efAwB5dbdgcONdw73Omzm1fDYqFK9g&s',
-            },
-            {
-                name: 'image1',
-                type: 'image/jpeg',
-                size: '2MB',
-                url: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSuViN7efAwB5dbdgcONdw73Omzm1fDYqFK9g&s',
-            },
-            {
-                name: 'image1',
-                type: 'image/jpeg',
-                size: '2MB',
-                url: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSuViN7efAwB5dbdgcONdw73Omzm1fDYqFK9g&s',
-            },
-            {
-                name: 'image1',
-                type: 'image/jpeg',
-                size: '2MB',
-                url: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSuViN7efAwB5dbdgcONdw73Omzm1fDYqFK9g&s',
-            },
-            {
-                name: 'image1',
-                type: 'image/jpeg',
-                size: '2MB',
-                url: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSuViN7efAwB5dbdgcONdw73Omzm1fDYqFK9g&s',
-            },
-            {
-                name: 'image1',
-                type: 'image/jpeg',
-                size: '2MB',
-                url: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSuViN7efAwB5dbdgcONdw73Omzm1fDYqFK9g&s',
-            },
-            {
-                name: 'image1',
-                type: 'image/jpeg',
-                size: '2MB',
-                url: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSuViN7efAwB5dbdgcONdw73Omzm1fDYqFK9g&s',
-            },
-            {
-                name: 'image1',
-                type: 'image/jpeg',
-                size: '2MB',
-                url: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSuViN7efAwB5dbdgcONdw73Omzm1fDYqFK9g&s',
-            },
-            {
-                name: 'image1',
-                type: 'image/jpeg',
-                size: '2MB',
-                url: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSuViN7efAwB5dbdgcONdw73Omzm1fDYqFK9g&s',
-            },
-            {
-                name: 'image1',
-                type: 'image/jpeg',
-                size: '2MB',
-                url: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSuViN7efAwB5dbdgcONdw73Omzm1fDYqFK9g&s',
-            },
-            {
-                name: 'image1',
-                type: 'image/jpeg',
-                size: '2MB',
-                url: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSuViN7efAwB5dbdgcONdw73Omzm1fDYqFK9g&s',
-            },
-            {
-                name: 'image1',
-                type: 'image/jpeg',
-                size: '2MB',
-                url: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSuViN7efAwB5dbdgcONdw73Omzm1fDYqFK9g&s',
-            },
-            {
-                name: 'image1',
-                type: 'image/jpeg',
-                size: '2MB',
-                url: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSuViN7efAwB5dbdgcONdw73Omzm1fDYqFK9g&s',
-            },
-            {
-                name: 'image1',
-                type: 'image/jpeg',
-                size: '2MB',
-                url: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSuViN7efAwB5dbdgcONdw73Omzm1fDYqFK9g&s',
-            },
-            {
-                name: 'image1',
-                type: 'image/jpeg',
-                size: '2MB',
-                url: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSuViN7efAwB5dbdgcONdw73Omzm1fDYqFK9g&s',
-            },
-            {
-                name: 'image1',
-                type: 'image/jpeg',
-                size: '2MB',
-                url: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSuViN7efAwB5dbdgcONdw73Omzm1fDYqFK9g&s',
-            },
-            {
-                name: 'image1',
-                type: 'image/jpeg',
-                size: '2MB',
-                url: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSuViN7efAwB5dbdgcONdw73Omzm1fDYqFK9g&s',
-            },
-            {
-                name: 'image1',
-                type: 'image/jpeg',
-                size: '2MB',
-                url: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSuViN7efAwB5dbdgcONdw73Omzm1fDYqFK9g&s',
-            },
-            {
-                name: 'image1',
-                type: 'image/jpeg',
-                size: '2MB',
-                url: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSuViN7efAwB5dbdgcONdw73Omzm1fDYqFK9g&s',
-            },
-            {
-                name: 'image1',
-                type: 'image/jpeg',
-                size: '2MB',
-                url: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSuViN7efAwB5dbdgcONdw73Omzm1fDYqFK9g&s',
-            },
-            {
-                name: 'image1',
-                type: 'image/jpeg',
-                size: '2MB',
-                url: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSuViN7efAwB5dbdgcONdw73Omzm1fDYqFK9g&s',
-            },
-            {
-                name: 'image1',
-                type: 'image/jpeg',
-                size: '2MB',
-                url: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSuViN7efAwB5dbdgcONdw73Omzm1fDYqFK9g&s',
-            },
-        ];
+        // Subscribe to search input field value changes
+        this.searchInputControl.valueChanges
+            .pipe(debounceTime(700))
+            .subscribe((search: string) => {
+                this.getAll(search === '' ? null : search);
+            });
     }
 
     /**
@@ -234,5 +128,76 @@ export class ImagesManagerComponent implements OnInit, OnDestroy {
      */
     trackByFn(index: number, item: any): any {
         return item.id || index;
+    }
+
+    /**
+     * Get all
+     * @param page
+     */
+    getAll(search: string | null = null) {
+        const params: PaginationResquestI = {
+            page: 1,
+            limit: 20,
+            search,
+            status: true,
+        };
+        this._fileManagerService
+            .getFiles(params)
+            .pipe(takeUntil(this._unsubscribeAll))
+            .subscribe({
+                next: (res) => {
+                    this.files = res.message.records;
+
+                    // Mark for check
+                    this._changeDetectorRef.markForCheck();
+                },
+                error: (response) => {
+                    // Set the alert
+                    this._toastrService.error(response.error.message, 'Aviso');
+                },
+            });
+    }
+
+    /**
+     * Get image
+     * @returns
+     */
+    getImage(file: FileI) {
+        return `${this.urlStatics}/${file.path}`;
+    }
+
+    /**
+     * Get parameter
+     * @param code
+     */
+    getParameter(code: string, parameters: ParameterI[]) {
+        if (parameters.length > 0) {
+            return findParameter(code, parameters).value;
+        }
+    }
+
+    /**
+     * Remove the image on the given note
+     * @param event
+     */
+    uploadImage(event: any) {
+        const file: File = event.target.files[0];
+        this._fileService.uploadFile(file).subscribe({
+            next: (response) => {
+                this.selectImage(response.message.path);
+            },
+            error: (response) => {
+                // Set the alert
+                this._toastrService.error(response.error.message, 'Aviso');
+            },
+        });
+    }
+
+    /**
+     * Select Image
+     * @param path
+     */
+    selectImage(path: string) {
+        this._matDialogRef.close(path);
     }
 }

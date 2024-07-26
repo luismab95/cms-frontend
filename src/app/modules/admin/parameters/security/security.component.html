@@ -15,15 +15,27 @@
                     <mat-label>Números de intentos para inicio de sesión</mat-label>
                     <mat-icon class="icon-size-5" [svgIcon]="'mat_solid:block'" matPrefix></mat-icon>
                     <input [formControlName]="'attemps'" matInput />
+                    @if (securityForm.get('attemps').hasError('required')) {
+                    <mat-error>Se requiere números de intentos para inicio de sesión </mat-error>
+                    }
+                    @if (securityForm.get('attemps').hasError('pattern')) {
+                    <mat-error>Valor no válido </mat-error>
+                    }
                 </mat-form-field>
             </div>
 
             <!-- Inactivity -->
             <div class="sm:col-span-2">
                 <mat-form-field class="w-full" [subscriptSizing]="'dynamic'">
-                    <mat-label>Tiempo para cierre de sesión por inactividad (minutos)</mat-label>
+                    <mat-label>Tiempo cierre de sesión por inactividad (minutos)</mat-label>
                     <mat-icon class="icon-size-5" [svgIcon]="'mat_solid:access_time'" matPrefix></mat-icon>
                     <input [formControlName]="'inactivity'" matInput />
+                    @if (securityForm.get('inactivity').hasError('required')) {
+                    <mat-error>Se requiere tiempo cierre de sesión por inactividad </mat-error>
+                    }
+                    @if (securityForm.get('inactivity').hasError('pattern')) {
+                    <mat-error>Valor no válido </mat-error>
+                    }
                 </mat-form-field>
             </div>
 
@@ -43,9 +55,15 @@
             <!-- Long -->
             <div class="sm:col-span-2">
                 <mat-form-field class="w-full" [subscriptSizing]="'dynamic'">
-                    <mat-label>Longitud de código OTP</mat-label>
+                    <mat-label>Longitud de código de verificación OTP</mat-label>
                     <mat-icon class="icon-size-5" [svgIcon]="'mat_solid:password'" matPrefix></mat-icon>
                     <input [formControlName]="'otpLong'" matInput />
+                    @if (securityForm.get('otpLong').hasError('required')) {
+                    <mat-error>Se requiere longitud de código de verificación OTP </mat-error>
+                    }
+                    @if (securityForm.get('otpLong').hasError('pattern')) {
+                    <mat-error>Valor no válido </mat-error>
+                    }
                 </mat-form-field>
             </div>
 
@@ -55,10 +73,13 @@
                     <mat-label>Tipo de caracteres</mat-label>
                     <mat-icon class="icon-size-5" [svgIcon]="'mat_solid:text_format'" matPrefix></mat-icon>
                     <mat-select [formControlName]="'otpType'">
-                        <mat-option [value]="'numerico'">Númerico</mat-option>
-                        <mat-option [value]="'letras'">Letras</mat-option>
-                        <mat-option [value]="'combinado'">Combinado</mat-option>
+                        <mat-option [value]="'NUMBER'">Númerico</mat-option>
+                        <mat-option [value]="'LETTER'">Letras</mat-option>
+                        <mat-option [value]="'COMBINED'">Combinado</mat-option>
                     </mat-select>
+                    @if (securityForm.get('otpType').hasError('required')) {
+                    <mat-error>Se requiere tipo de caracteres </mat-error>
+                    }
                 </mat-form-field>
             </div>
 
@@ -81,6 +102,12 @@
                     <mat-label>Longitud mínima de contraseñas</mat-label>
                     <mat-icon class="icon-size-5" [svgIcon]="'mat_solid:password'" matPrefix></mat-icon>
                     <input [formControlName]="'pwdLong'" matInput />
+                    @if (securityForm.get('pwdLong').hasError('required')) {
+                    <mat-error>Se requiere longitud mínima de contraseñas </mat-error>
+                    }
+                    @if (securityForm.get('pwdLong').hasError('pattern')) {
+                    <mat-error>Valor no válido </mat-error>
+                    }
                 </mat-form-field>
             </div>
 
@@ -133,9 +160,15 @@
 
         <!-- Actions -->
         <div class="flex items-center justify-end">
-            <button mat-stroked-button type="button">Cancelar</button>
-            <button class="ml-4" mat-flat-button type="button" [color]="'primary'">
-                Guardar
+            <button (click)="cancel()" mat-stroked-button type="button">Cancelar</button>
+            <button class="ml-4" mat-flat-button type="button" [color]="'primary'" [disabled]="securityForm.disabled"
+                (click)="save()">
+                @if (!securityForm.disabled) {
+                <span> Guardar</span>
+                }
+                @if (securityForm.disabled) {
+                <mat-progress-spinner [diameter]="24" [mode]="'indeterminate'"></mat-progress-spinner>
+                }
             </button>
         </div>
     </form>

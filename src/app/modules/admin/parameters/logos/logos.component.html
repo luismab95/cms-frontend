@@ -1,6 +1,7 @@
 <div class="w-full max-w-3xl">
+
     <!-- Form -->
-    <form [formGroup]="accountForm">
+    <form [formGroup]="logoForm">
         <!-- Section -->
         <div class="w-full">
             <div class="text-xl">Fondos</div>
@@ -10,15 +11,16 @@
         </div>
         <div class="mt-8 grid w-full gap-6 sm:grid-cols-4">
             <div class="sm:col-span-4">
-                <mat-label>Auth</mat-label>
+                <mat-label>Autentificación</mat-label>
                 <div class="relative w-full">
                     <div class="absolute bottom-0 right-0 p-4">
-                        <button mat-icon-button (click)="removeImage(null)">
+                        <button class="bg-gray-300" mat-icon-button (click)="authBackgroundLogo.click()">
                             <mat-icon class="text-white" [svgIcon]="'heroicons_outline:photo'"></mat-icon>
                         </button>
                     </div>
-                    <img class="w-full object-cover"
-                        [src]="'https://img.freepik.com/foto-gratis/majestuoso-pico-montana-tranquilo-paisaje-invernal-generado-ia_188544-15662.jpg'" />
+                    <img class="w-full object-cover" [src]="getValue('authBackground')" />
+                    <input #authBackgroundLogo class="hidden" accept="image/*"
+                        (change)="removeImage($event,'authBackground')" required="" type="file" />
                 </div>
             </div>
         </div>
@@ -37,14 +39,15 @@
         <div class="mt-8 grid w-full gap-6 sm:grid-cols-4">
             <div class="sm:col-span-4">
                 <mat-label>Web</mat-label>
-                <div class="relative w-50">
+                <div class="relative w-30">
                     <div class="absolute bottom-0 right-0 p-4">
-                        <button mat-icon-button (click)="removeImage(null)">
-                            <mat-icon class="text-white" [svgIcon]="'heroicons_outline:photo'"></mat-icon>
+                        <button class="bg-gray-300" mat-icon-button (click)="iconLogo.click()">
+                            <mat-icon class="text-white" cl [svgIcon]="'heroicons_outline:photo'"></mat-icon>
                         </button>
                     </div>
-                    <img class="w-full object-cover"
-                        [src]="'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSuViN7efAwB5dbdgcONdw73Omzm1fDYqFK9g&s'" />
+                    <img class="w-full object-cover" [src]="getValue('icon')" />
+                    <input #iconLogo class="hidden" accept="image/*" (change)="removeImage($event,'icon')" required=""
+                        type="file" />
                 </div>
             </div>
         </div>
@@ -64,36 +67,39 @@
                 <div class="relative w-60">
                     <mat-label>Principal</mat-label>
                     <div class="absolute bottom-0 right-0 p-4">
-                        <button mat-icon-button (click)="removeImage(null)">
+                        <button class="bg-gray-300" mat-icon-button (click)="primaryLogo.click()">
                             <mat-icon class="text-white" [svgIcon]="'heroicons_outline:photo'"></mat-icon>
                         </button>
                     </div>
-                    <img class="w-full object-cover"
-                        [src]="'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSuViN7efAwB5dbdgcONdw73Omzm1fDYqFK9g&s'" />
+                    <img class="w-full object-cover" [src]="getValue('primary')" />
+                    <input #primaryLogo class="hidden" accept="image/*" (change)="removeImage($event,'primary')"
+                        required="" type="file" />
                 </div>
             </div>
             <div class="sm:col-span-4">
                 <div class="relative w-60">
                     <mat-label>Secundario</mat-label>
                     <div class="absolute bottom-0 right-0 p-4">
-                        <button mat-icon-button (click)="removeImage(null)">
+                        <button class="bg-gray-300" mat-icon-button (click)="secondaryLogo.click()">
                             <mat-icon class="text-white" [svgIcon]="'heroicons_outline:photo'"></mat-icon>
                         </button>
                     </div>
-                    <img class="w-full object-cover"
-                        [src]="'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSCiIZU2_B-cwF3LgRbkk9p0oEe4BZg8l9fxw&s'" />
+                    <img class="w-full object-cover" [src]="getValue('secondary')" />
+                    <input #secondaryLogo class="hidden" accept="image/*" (change)="removeImage($event,'secondary')"
+                        required="" type="file" />
                 </div>
             </div>
             <div class="sm:col-span-4">
                 <div class="relative w-60">
                     <mat-label>Email</mat-label>
                     <div class="absolute bottom-0 right-0 p-4">
-                        <button mat-icon-button (click)="removeImage(null)">
+                        <button class="bg-gray-300" mat-icon-button (click)="emailLogo.click()">
                             <mat-icon class="text-white" [svgIcon]="'heroicons_outline:photo'"></mat-icon>
                         </button>
                     </div>
-                    <img class="w-full object-cover"
-                        [src]="'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSCiIZU2_B-cwF3LgRbkk9p0oEe4BZg8l9fxw&s'" />
+                    <img class="w-full object-cover" [src]="getValue('email')" />
+                    <input #emailLogo class="hidden" accept="image/*" (change)="removeImage($event,'email')" required=""
+                        type="file" />
                 </div>
             </div>
         </div>
@@ -103,9 +109,15 @@
 
         <!-- Actions -->
         <div class="flex items-center justify-end">
-            <button mat-stroked-button type="button">Cancelar</button>
-            <button class="ml-4" mat-flat-button type="button" [color]="'primary'">
-                Guardar
+            <button (click)="cancel()" mat-stroked-button type="button">Cancelar</button>
+            <button class="ml-4" mat-flat-button type="button" [color]="'primary'" [disabled]="logoForm.disabled"
+                (click)="save()">
+                @if (!logoForm.disabled) {
+                <span> Guardar</span>
+                }
+                @if (logoForm.disabled) {
+                <mat-progress-spinner [diameter]="24" [mode]="'indeterminate'"></mat-progress-spinner>
+                }
             </button>
         </div>
     </form>

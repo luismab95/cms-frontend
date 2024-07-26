@@ -38,8 +38,14 @@
                         <button [routerLink]="['/admin/modules/templates']" mat-stroked-button
                             type=" button">Cancelar</button>
                         @if(preview === 'none'){
-                        <button class="ml-4" mat-flat-button type="button" [color]="'primary'">
-                            Guardar
+                        <button class="ml-4" mat-flat-button type="button" [color]="'primary'"
+                            (click)="updateTemplate()">
+                            @if (!saveAction()) {
+                            <span> Guardar</span>
+                            }
+                            @if (saveAction()) {
+                            <mat-progress-spinner [diameter]="24" [mode]="'indeterminate'"></mat-progress-spinner>
+                            }
                         </button>
                         }@else {
                         <button (click)="setPreview('none')" class="ml-4" mat-flat-button type="button"
@@ -55,7 +61,8 @@
             <div [ngClass]="{'rounded-lg shadow-lg border border-solid border-gray-300':previewMode,'w-full':preview === 'none' || preview === 'desktop','w-1/2':preview === 'tablet','w-1/4':preview === 'mobile', 'px-4 md:px-8':!previewMode}"
                 class="w-full mb-8 mt-4 z-0 mx-auto">
                 <!-- CONTENT GOES HERE -->
-                <div [ngClass]="{'min-h-40 rounded-2xl border-2 border-dashed border-gray-300':!previewMode}"
+                <div [ngStyle]="getStyles('header')"
+                    [ngClass]="{'min-h-40 rounded-2xl border-2 border-dashed border-gray-300':!previewMode}"
                     class="flex flex-col header">
                     <!-- Options -->
                     @if(!previewMode){
@@ -70,7 +77,8 @@
                                     <mat-icon [svgIcon]="'heroicons_outline:plus'"></mat-icon>
                                     Nueva sección
                                 </button>
-                                <button (click)="openSettingsModal(header(),'Encabezado')" mat-menu-item>
+                                <button (click)="openSettingsModal(template.data.header,'Encabezado','header')"
+                                    mat-menu-item>
                                     <mat-icon [svgIcon]="'heroicons_outline:cog-6-tooth'"></mat-icon>
                                     Configurar
                                 </button>
@@ -86,7 +94,8 @@
                         CONTENIDO DE LA PÁGINA
                     </span>
                 </div>
-                <div [ngClass]="{'min-h-40 rounded-2xl border-2 border-dashed border-gray-300':!previewMode}"
+                <div [ngStyle]="getStyles('footer')"
+                    [ngClass]="{'min-h-40 rounded-2xl border-2 border-dashed border-gray-300':!previewMode}"
                     class="flex flex-col footer">
                     <!-- Options -->
                     @if(!previewMode){
@@ -101,7 +110,8 @@
                                     <mat-icon [svgIcon]="'heroicons_outline:plus'"></mat-icon>
                                     Nueva sección
                                 </button>
-                                <button (click)="openSettingsModal(footer(),'Pie de página')" mat-menu-item>
+                                <button (click)="openSettingsModal(template.data.footer,'Pie de página', 'footer')"
+                                    mat-menu-item>
                                     <mat-icon [svgIcon]="'heroicons_outline:cog-6-tooth'"></mat-icon>
                                     Configurar
                                 </button>

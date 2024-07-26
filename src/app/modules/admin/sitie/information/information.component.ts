@@ -2,25 +2,33 @@ import { TextFieldModule } from '@angular/cdk/text-field';
 import { NgClass } from '@angular/common';
 import {
     ChangeDetectionStrategy,
+    ChangeDetectorRef,
     Component,
     OnInit,
     ViewEncapsulation,
+    signal,
 } from '@angular/core';
 import {
     FormsModule,
     ReactiveFormsModule,
     UntypedFormBuilder,
     UntypedFormGroup,
+    Validators,
 } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatOptionModule } from '@angular/material/core';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSelectModule } from '@angular/material/select';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
-import { FuseConfig, FuseConfigService, Scheme } from '@fuse/services/config';
+import { ToastrService } from 'ngx-toastr';
 import { Subject, takeUntil } from 'rxjs';
+import { TemplateService } from '../../templates/templates.service';
+import { TemplateI } from '../../templates/templates.types';
+import { SitieService } from '../sitie.service';
+import { SitieI } from '../sitie.types';
 
 @Component({
     selector: 'sitie-information',
@@ -35,16 +43,18 @@ import { Subject, takeUntil } from 'rxjs';
         MatIconModule,
         MatInputModule,
         TextFieldModule,
+        MatButtonModule,
         MatSelectModule,
         MatOptionModule,
-        MatButtonModule,
         NgClass,
         MatSlideToggleModule,
+        MatProgressSpinnerModule,
     ],
 })
 export class SitieInformationComponent implements OnInit {
     sitieForm: UntypedFormGroup;
-    config: FuseConfig;
+    sitie = signal<SitieI>(null);
+    templates: TemplateI[] = [];
     private _unsubscribeAll: Subject<any> = new Subject<any>();
 
     /**
@@ -52,8 +62,33 @@ export class SitieInformationComponent implements OnInit {
      */
     constructor(
         private _formBuilder: UntypedFormBuilder,
-        private _fuseConfigService: FuseConfigService
-    ) {}
+        private _sitieService: SitieService,
+        private _templateService: TemplateService,
+        private _changeDetectorRef: ChangeDetectorRef,
+        private _toastrService: ToastrService
+    ) {
+        // Get sitie
+        this._sitieService.sitie$
+            .pipe(takeUntil(this._unsubscribeAll))
+            .subscribe((sitie) => {
+                // Update the sitie
+                this.sitie.set(sitie);
+
+                // Mark for check
+                this._changeDetectorRef.markForCheck();
+            });
+
+        // Get templates
+        this._templateService.templates$
+            .pipe(takeUntil(this._unsubscribeAll))
+            .subscribe((templates) => {
+                // Update the sitie
+                this.templates = templates.records;
+
+                // Mark for check
+                this._changeDetectorRef.markForCheck();
+            });
+    }
 
     // -----------------------------------------------------------------------------------------------------
     // @ Lifecycle hooks
@@ -65,23 +100,25 @@ export class SitieInformationComponent implements OnInit {
     ngOnInit(): void {
         // Create the form
         this.sitieForm = this._formBuilder.group({
-            name: ['misitie'],
-            domain: ['misitie.com'],
-            description: [
-                "Hey! This is Brian; husband, father and gamer. I'm mostly passionate about bleeding edge tech and chocolate!",
+            name: ['', Validators.required],
+            domain: [
+                '',
+                [
+                    Validators.required,
+                    Validators.pattern(
+                        /^[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}(\/.*)?$/
+                    ),
+                ],
             ],
-            status: [true],
-            maintenance: [false],
-            templateId: ['english'],
+            description: ['', [Validators.required, Validators.maxLength(255)]],
+            status: [],
+            maintenance: [],
+            templateId: ['', Validators.required],
         });
 
-        // Subscribe to config changes
-        this._fuseConfigService.config$
-            .pipe(takeUntil(this._unsubscribeAll))
-            .subscribe((config: FuseConfig) => {
-                // Store the config
-                this.config = config;
-            });
+        if (this.sitie()) {
+            this.sitieForm.patchValue({ ...this.sitie() });
+        }
     }
 
     /**
@@ -93,12 +130,50 @@ export class SitieInformationComponent implements OnInit {
         this._unsubscribeAll.complete();
     }
 
+    // -----------------------------------------------------------------------------------------------------
+    // @ Public methods
+    // -----------------------------------------------------------------------------------------------------
+
     /**
-     * Set the scheme on the config
-     *
-     * @param scheme
+     * Save action
      */
-    setScheme(scheme: Scheme): void {
-        this._fuseConfigService.config = { scheme };
+    save() {
+        // Return if the form is invalid
+        if (this.sitieForm.invalid) {
+            return;
+        }
+
+        // Disable the form
+        this.sitieForm.disable();
+
+        this._sitieService
+            .update(this.sitie().id, this.sitieForm.value)
+            .pipe(takeUntil(this._unsubscribeAll))
+            .subscribe({
+                next: (response) => {
+                    // Re-enable the form
+                    this.sitieForm.enable();
+                    // Set the alert
+                    this._toastrService.success(
+                        'Proceso realizado con éxito.',
+                        'Aviso'
+                    );
+                },
+                error: (response) => {
+                    // Re-enable the form
+                    this.sitieForm.enable();
+
+                    // Set the alert
+                    this._toastrService.error(response.error.message, 'Aviso');
+                },
+            });
+    }
+
+    /**
+     * Cancel action
+     */
+    cancel() {
+        this.sitieForm.reset();
+        this.sitieForm.patchValue({ ...this.sitie() });
     }
 }

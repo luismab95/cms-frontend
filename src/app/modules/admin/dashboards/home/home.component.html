@@ -9,12 +9,10 @@
                         <img class="h-full w-full object-cover" src="images/avatars/brian-hughes.jpg" />
                     </div>
                     <div class="ml-4 flex min-w-0 flex-col">
-                        <ng-container *transloco="let t">
-                            <div
-                                class="truncate text-2xl font-semibold leading-7 tracking-tight md:text-5xl md:leading-snug">
-                                Bienvenido, Brian!
-                            </div>
-                        </ng-container>
+                        <div
+                            class="truncate text-2xl font-semibold leading-7 tracking-tight md:text-5xl md:leading-snug">
+                            Bienvenido, {{user.firstname}}
+                        </div>
                         <div class="flex items-center">
                             <mat-icon class="icon-size-5" [svgIcon]="'heroicons_solid:bell'"></mat-icon>
                             <div class="text-secondary ml-1.5 truncate leading-6">

@@ -11,9 +11,11 @@ import {
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatDrawer, MatSidenavModule } from '@angular/material/sidenav';
-import { Router, RouterLink } from '@angular/router';
+import { RouterLink } from '@angular/router';
 import { FuseMediaWatcherService } from '@fuse/services/media-watcher';
 import { Subject, takeUntil } from 'rxjs';
+import { MicrosityService } from '../micrositie.service';
+import { MicrositieI } from '../micrositie.types';
 import { MicrositiesInformationComponent } from './information/information.component';
 import { MicrositiesPagesComponent } from './pages/pages.component';
 
@@ -38,7 +40,7 @@ export class MicroSitiesDetailComponent implements OnInit, OnDestroy {
     drawerMode: 'over' | 'side' = 'side';
     drawerOpened: boolean = true;
     panels: any[] = [];
-    micrositie: any;
+    micrositie: MicrositieI;
     selectedPanel: string = 'information';
     private _unsubscribeAll: Subject<any> = new Subject<any>();
 
@@ -48,20 +50,8 @@ export class MicroSitiesDetailComponent implements OnInit, OnDestroy {
     constructor(
         private _changeDetectorRef: ChangeDetectorRef,
         private _fuseMediaWatcherService: FuseMediaWatcherService,
-        private _router: Router
+        private _microsityService: MicrosityService
     ) {
-        this.micrositie =
-            this._router.getCurrentNavigation()?.extras?.state?.micrositie;
-    }
-
-    // -----------------------------------------------------------------------------------------------------
-    // @ Lifecycle hooks
-    // -----------------------------------------------------------------------------------------------------
-
-    /**
-     * On init
-     */
-    ngOnInit(): void {
         // Setup available panels
         this.panels = [
             {
@@ -72,15 +62,33 @@ export class MicroSitiesDetailComponent implements OnInit, OnDestroy {
             },
         ];
 
-        if (this.micrositie) {
-            this.panels.push({
-                id: 'pages',
-                icon: 'heroicons_outline:document-duplicate',
-                title: 'Páginas',
-                description: 'Gestiona las páginas de tu micrositio.',
-            });
-        }
+        this._microsityService.micrositie$
+            .pipe(takeUntil(this._unsubscribeAll))
+            .subscribe((micrositie) => {
+                // Update the micrositie
+                this.micrositie = micrositie;
 
+                if (micrositie && this.panels.length !== 2) {
+                    this.panels.push({
+                        id: 'pages',
+                        icon: 'heroicons_outline:document-duplicate',
+                        title: 'Páginas',
+                        description: 'Gestiona las páginas de tu micrositio.',
+                    });
+                }
+                // Mark for check
+                this._changeDetectorRef.markForCheck();
+            });
+    }
+
+    // -----------------------------------------------------------------------------------------------------
+    // @ Lifecycle hooks
+    // -----------------------------------------------------------------------------------------------------
+
+    /**
+     * On init
+     */
+    ngOnInit(): void {
         // Subscribe to media changes
         this._fuseMediaWatcherService.onMediaChange$
             .pipe(takeUntil(this._unsubscribeAll))

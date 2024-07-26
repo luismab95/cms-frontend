@@ -15,6 +15,9 @@
                     <mat-label>Nombre</mat-label>
                     <mat-icon class="icon-size-5" [svgIcon]="'mat_outline:text_fields'" matPrefix></mat-icon>
                     <input [formControlName]="'name'" matInput />
+                    @if (templateForm.get('name').hasError('required')) {
+                    <mat-error>Se requiere nombre. </mat-error>
+                    }
                 </mat-form-field>
             </div>
 
@@ -22,8 +25,13 @@
             <div class="sm:col-span-4">
                 <mat-form-field class="w-full" [subscriptSizing]="'dynamic'">
                     <mat-label>Descripción</mat-label>
-                    <textarea matInput [formControlName]="'description'" cdkTextareaAutosize
-                        [cdkAutosizeMinRows]="5"></textarea>
+                    <textarea matInput [formControlName]="'description'" rows="5"></textarea>
+                    @if (templateForm.get('description').hasError('required')) {
+                    <mat-error>Se requiere descripción. </mat-error>
+                    }
+                    @if (templateForm.get('description').hasError('maxlength')) {
+                    <mat-error>Descripción permite un máximo de 255 caracteres. </mat-error>
+                    }
                 </mat-form-field>
                 <div class="text-hint mt-1 text-md">
                     Breve descripción de tu plantilla.
@@ -54,7 +62,7 @@
                         }
                     </div>
                     <div class="text-secondary text-md">
-                        Habilita/Deshabilita la plantilla.
+                        Deshabilita/Habilita la plantilla.
                     </div>
                 </div>
                 <mat-slide-toggle class="ml-2" [color]="'primary'" [formControlName]="'status'" #status>
@@ -70,8 +78,13 @@
         <!-- Actions -->
         <div class="flex items-center justify-end">
             <button [routerLink]="['/admin/modules/templates']" mat-stroked-button type="button">Cancelar</button>
-            <button class="ml-4" mat-flat-button type="button" [color]="'primary'">
-                Guardar
+            <button class="ml-4" mat-flat-button type="button" [color]="'primary'" (click)="newTemplate()">
+                @if (!templateForm.disabled) {
+                <span> Guardar</span>
+                }
+                @if (templateForm.disabled) {
+                <mat-progress-spinner [diameter]="24" [mode]="'indeterminate'"></mat-progress-spinner>
+                }
             </button>
         </div>
     </form>

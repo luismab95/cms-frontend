@@ -7,6 +7,8 @@ import {
     OnInit,
     ViewChild,
     ViewEncapsulation,
+    inject,
+    signal,
 } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
@@ -16,6 +18,8 @@ import { Subject, takeUntil } from 'rxjs';
 import { ParametersCompanyComponent } from './company/company.component';
 import { ParametersEmailComponent } from './email/email.component';
 import { ParametersLogosComponent } from './logos/logos.component';
+import { ParameterI } from './parameter.interface';
+import { ParameterService } from './parameter.service';
 import { ParametersSecurityComponent } from './security/security.component';
 import { ParametersWebComponent } from './web/web.component';
 
@@ -42,7 +46,9 @@ export class ParametersComponent implements OnInit, OnDestroy {
     drawerMode: 'over' | 'side' = 'side';
     drawerOpened: boolean = true;
     panels: any[] = [];
+    parameters = signal<ParameterI[]>([]);
     selectedPanel: string = 'company';
+    private _parameterService = inject(ParameterService);
     private _unsubscribeAll: Subject<any> = new Subject<any>();
 
     /**
@@ -113,6 +119,9 @@ export class ParametersComponent implements OnInit, OnDestroy {
                 // Mark for check
                 this._changeDetectorRef.markForCheck();
             });
+
+        //Get parameters
+        this.getAllParameters();
     }
 
     /**
@@ -127,6 +136,19 @@ export class ParametersComponent implements OnInit, OnDestroy {
     // -----------------------------------------------------------------------------------------------------
     // @ Public methods
     // -----------------------------------------------------------------------------------------------------
+
+    /**
+     * Get parameters
+     */
+    getAllParameters() {
+        this._parameterService.getAll().subscribe({
+            next: (res) => {
+                this.parameters.set(res.message);
+                // Mark for check
+                this._changeDetectorRef.markForCheck();
+            },
+        });
+    }
 
     /**
      * Navigate to the panel

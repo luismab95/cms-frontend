@@ -11,7 +11,7 @@
                 <div class="text-4xl font-extrabold leading-none tracking-tight">
                 </div>
                 <div class="text-secondary -mt-10 md:mt-8 ml-4 flex items-center font-medium">
-                    10 idiomas
+                    {{languagesCount}} idiomas
                 </div>
             </div>
             <!-- Actions -->
@@ -34,31 +34,30 @@
         <div class="flex flex-auto overflow-hidden bg-card h-160">
             <!-- Languages list -->
             <div class="flex flex-auto flex-col overflow-hidden sm:mb-18 sm:overflow-y-auto">
-                <!-- @if (products$ | async; as products) { -->
-                @if (languages.length > 0) {
+
                 <div class="grid">
                     <!-- Header -->
-                    <div class="languages-grid text-secondary sticky top-0 z-10 grid gap-4 bg-gray-50 px-6 py-4 text-md font-semibold shadow dark:bg-black dark:bg-opacity-5 md:px-8"
-                        matSort matSortDisableClear>
+                    <div
+                        class="languages-grid text-secondary sticky top-0 z-10 grid gap-4 bg-gray-50 px-6 py-4 text-md font-semibold shadow dark:bg-black dark:bg-opacity-5 md:px-8">
                         <div>#</div>
                         <div class="hidden md:block">Imágen</div>
-                        <div [mat-sort-header]="'name'">Idioma</div>
-                        <div class="hidden md:block" [mat-sort-header]="'lang'">
+                        <div>Idioma</div>
+                        <div class="hidden md:block">
                             Código
                         </div>
-                        <div class="hidden lg:block" [mat-sort-header]="'status'">
+                        <div class="hidden lg:block">
                             Estado
                         </div>
                         <div class="hidden lg:block"></div>
                         <div></div>
                     </div>
                     <!-- Rows -->
-                    <!-- @if (products$ | async; as products) {-->
+                    @if (languages$ | async; as languages) {
+                    @if (languages.records.length > 0) {
                     @for (
-                    language of languages;
+                    language of languages.records;
                     track trackByFn($index, language)
                     ) {
-
                     <div class="languages-grid grid items-center gap-4 border-b px-6 py-3 md:px-8 bg-card">
                         <!-- # -->
                         <div class="truncate">
@@ -69,7 +68,7 @@
                         <div class="hidden md:flex items-center">
                             <div
                                 class="relative mr-6 flex h-12 w-12 flex-0 items-center justify-center overflow-hidden rounded border">
-                                <img class="w-8" [alt]="'Product thumbnail image'" [src]="language.icon" />
+                                <img class="w-8" [alt]="'image'" [src]="getICon(language.icon)" />
                             </div>
                         </div>
 
@@ -95,8 +94,7 @@
                         </div>
 
                         <!-- Space -->
-                        <div class="hidden lg:block">
-                        </div>
+                        <div class="hidden lg:block"></div>
 
                         <!-- Actions button -->
                         <div class="flex items-center justify-between">
@@ -106,16 +104,15 @@
                         </div>
                     </div>
                     }
+                    <pagination [isLoading]="isLoading" [page]="languages.page" [limit]="10" [total]="languages.total"
+                        [pages]="languages.totalPage" (pageEvent)="getAll($event)"></pagination>
+                    } @else {
+                    <div class="border-t p-8 text-center text-4xl font-semibold tracking-tight sm:p-16">
+                        ¡No hay idiomas!
+                    </div>
+                    }
+                    }
                 </div>
-                <mat-paginator
-                    class="z-10 border-b bg-gray-50 dark:bg-transparent sm:absolute sm:inset-x-0 sm:bottom-0 sm:border-b-0 sm:border-t"
-                    [ngClass]="{ 'pointer-events-none': isLoading }" [length]="100" [pageIndex]="1" [pageSize]="10"
-                    [pageSizeOptions]="[5, 10, 25, 100]" [showFirstLastButtons]="true"></mat-paginator>
-                } @else {
-                <div class="border-t p-8 text-center text-4xl font-semibold tracking-tight sm:p-16">
-                    ¡No hay idiomas!
-                </div>
-                }
             </div>
         </div>
     </div>

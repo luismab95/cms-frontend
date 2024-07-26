@@ -1,4 +1,12 @@
-import { Component, OnInit, ViewChild, ViewEncapsulation } from '@angular/core';
+import {
+    ChangeDetectorRef,
+    Component,
+    OnInit,
+    ViewChild,
+    ViewEncapsulation,
+    inject,
+    signal,
+} from '@angular/core';
 import {
     FormsModule,
     NgForm,
@@ -12,12 +20,17 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { fuseAnimations } from '@fuse/animations';
 import { FuseAlertComponent, FuseAlertType } from '@fuse/components/alert';
 import { FuseValidators } from '@fuse/validators';
 import { AuthService } from 'app/core/auth/auth.service';
-import { finalize } from 'rxjs';
+import { AuthUtils } from 'app/core/auth/auth.utils';
+import { ParameterI } from 'app/modules/admin/parameters/parameter.interface';
+import { ParameterService } from 'app/modules/admin/parameters/parameter.service';
+import { AuthComponent } from 'app/shared/components/auth/auth.component';
+import { findParameter, getLogo } from 'app/shared/utils/parameter.utils';
+import { Subject, finalize, takeUntil } from 'rxjs';
 
 @Component({
     selector: 'auth-reset-password',
@@ -35,6 +48,7 @@ import { finalize } from 'rxjs';
         MatIconModule,
         MatProgressSpinnerModule,
         RouterLink,
+        AuthComponent,
     ],
 })
 export class AuthResetPasswordComponent implements OnInit {
@@ -46,14 +60,40 @@ export class AuthResetPasswordComponent implements OnInit {
     };
     resetPasswordForm: UntypedFormGroup;
     showAlert: boolean = false;
+    parameters = signal<ParameterI[]>([]);
+    token: string;
+    longPwd: number | undefined;
+    mayusPwd: boolean | undefined;
+    specialPwd: boolean | undefined;
+    numberPwd: boolean | undefined;
+    private _parameterService = inject(ParameterService);
+    private _unsubscribeAll: Subject<any> = new Subject<any>();
 
     /**
      * Constructor
      */
     constructor(
         private _authService: AuthService,
-        private _formBuilder: UntypedFormBuilder
-    ) {}
+        private _formBuilder: UntypedFormBuilder,
+        private _router: Router,
+        private _activatedRoute: ActivatedRoute,
+        private _changeDetectorRef: ChangeDetectorRef
+    ) {
+        this.token = this._activatedRoute.snapshot.queryParamMap.get('token');
+        if (this.token === undefined)
+            this._router.navigateByUrl('/auth/sign-in');
+        if (AuthUtils.isTokenExpired(this.token)) {
+            this._router.navigateByUrl('/auth/sign-in');
+        }
+        this._parameterService.parameter$
+            .pipe(takeUntil(this._unsubscribeAll))
+            .subscribe((parameters: ParameterI[]) => {
+                this.parameters.set(parameters);
+
+                // Mark for check
+                this._changeDetectorRef.markForCheck();
+            });
+    }
 
     // -----------------------------------------------------------------------------------------------------
     // @ Lifecycle hooks
@@ -76,6 +116,8 @@ export class AuthResetPasswordComponent implements OnInit {
                 ),
             }
         );
+
+        this.getParameters();
     }
 
     // -----------------------------------------------------------------------------------------------------
@@ -99,7 +141,10 @@ export class AuthResetPasswordComponent implements OnInit {
 
         // Send the request to the server
         this._authService
-            .resetPassword(this.resetPasswordForm.get('password').value)
+            .resetPassword(
+                this.resetPasswordForm.get('password').value,
+                this.token
+            )
             .pipe(
                 finalize(() => {
                     // Re-enable the form
@@ -112,21 +157,74 @@ export class AuthResetPasswordComponent implements OnInit {
                     this.showAlert = true;
                 })
             )
-            .subscribe(
-                (response) => {
+            .subscribe({
+                next: (response) => {
                     // Set the alert
                     this.alert = {
                         type: 'success',
-                        message: 'Your password has been reset.',
+                        message: response.message,
                     };
                 },
-                (response) => {
+                error: (response) => {
                     // Set the alert
                     this.alert = {
                         type: 'error',
-                        message: 'Something went wrong, please try again.',
+                        message: response.error.message,
                     };
-                }
-            );
+                },
+            });
+    }
+
+    /**
+     * Get value of auth background
+     * @returns
+     */
+    getLogo() {
+        if (this.parameters().length > 0) {
+            return getLogo('LOGO_PRIMARY', this.parameters());
+        } else {
+            return '';
+        }
+    }
+
+    /**
+     * Get value of parameters PWD
+     */
+    getParameters() {
+        this.longPwd = Number(
+            findParameter('APP_PWD_LONG', this.parameters()).value
+        );
+        this.mayusPwd =
+            findParameter('APP_PWD_MAYUS', this.parameters()).value === 'true';
+        this.specialPwd =
+            findParameter('APP_PWD_SPECIAL', this.parameters()).value ===
+            'true';
+        this.numberPwd =
+            findParameter('APP_PWD_NUMBER', this.parameters()).value === 'true';
+
+        this.setParameters();
+    }
+
+    /**
+     * Set value to parameters PWD
+     */
+    setParameters() {
+        this.resetPasswordForm
+            .get('password')
+            ?.addValidators(Validators.pattern(this.validatePassword()));
+        this.resetPasswordForm.updateValueAndValidity();
+    }
+
+    /**
+     * Build pattern to PWD
+     * @returns
+     */
+    validatePassword(): RegExp {
+        let regex = '^';
+        if (this.mayusPwd) regex += '(?=.*[A-Z])';
+        if (this.specialPwd) regex += '(?=.*[@#$%^&+=])';
+        if (this.numberPwd) regex += '(?=.*\\d)';
+        regex += '.{' + this.longPwd + ',}$';
+        return new RegExp(regex);
     }
 }

@@ -7,13 +7,16 @@ import {
     OnInit,
     ViewChild,
     ViewEncapsulation,
+    signal,
 } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatDrawer, MatSidenavModule } from '@angular/material/sidenav';
-import { Router, RouterLink } from '@angular/router';
+import { RouterLink } from '@angular/router';
 import { FuseMediaWatcherService } from '@fuse/services/media-watcher';
 import { Subject, takeUntil } from 'rxjs';
+import { TemplateService } from '../templates.service';
+import { TemplateI } from '../templates.types';
 import { TemplatesDrawerComponent } from './drawer/drawer.component';
 import { TemplatesInformationComponent } from './information/information.component';
 
@@ -39,7 +42,7 @@ export class TemplatesDetailComponent implements OnInit, OnDestroy {
     drawerOpened: boolean = true;
     panels: any[] = [];
     selectedPanel: string = 'information';
-    template: any;
+    template = signal<TemplateI>(null);
     private _unsubscribeAll: Subject<any> = new Subject<any>();
 
     /**
@@ -48,11 +51,8 @@ export class TemplatesDetailComponent implements OnInit, OnDestroy {
     constructor(
         private _changeDetectorRef: ChangeDetectorRef,
         private _fuseMediaWatcherService: FuseMediaWatcherService,
-        private _router: Router
-    ) {
-        this.template =
-            this._router.getCurrentNavigation()?.extras?.state?.template;
-    }
+        private _templateService: TemplateService
+    ) {}
 
     // -----------------------------------------------------------------------------------------------------
     // @ Lifecycle hooks
@@ -72,15 +72,24 @@ export class TemplatesDetailComponent implements OnInit, OnDestroy {
             },
         ];
 
-        if (this.template) {
-            this.panels.push({
-                id: 'drawer',
-                icon: 'heroicons_outline:paint-brush',
-                title: 'Personalizar',
-                description:
-                    'Personaliza tu encabezado y pie de tus páginas web.',
+        this._templateService.template$
+            .pipe(takeUntil(this._unsubscribeAll))
+            .subscribe((template) => {
+                // Update the template
+                this.template.set(template);
+
+                if (template && this.panels.length !== 2) {
+                    this.panels.push({
+                        id: 'drawer',
+                        icon: 'heroicons_outline:paint-brush',
+                        title: 'Personalizar',
+                        description:
+                            'Personaliza tu encabezado y pie de tus páginas web.',
+                    });
+                }
+                // Mark for check
+                this._changeDetectorRef.markForCheck();
             });
-        }
 
         // Subscribe to media changes
         this._fuseMediaWatcherService.onMediaChange$

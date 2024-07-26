@@ -1,1 +1,2 @@
-<router-outlet></router-outlet>
+<loader></loader>
+<router-outlet (document:keypress)="onActivity($event)" (document:mousemove)="onActivity($event)"></router-outlet>

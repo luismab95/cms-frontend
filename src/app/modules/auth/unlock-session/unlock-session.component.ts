@@ -1,4 +1,12 @@
-import { Component, OnInit, ViewChild, ViewEncapsulation } from '@angular/core';
+import {
+    ChangeDetectorRef,
+    Component,
+    OnInit,
+    ViewChild,
+    ViewEncapsulation,
+    inject,
+    signal,
+} from '@angular/core';
 import {
     FormsModule,
     NgForm,
@@ -16,7 +24,12 @@ import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { fuseAnimations } from '@fuse/animations';
 import { FuseAlertComponent, FuseAlertType } from '@fuse/components/alert';
 import { AuthService } from 'app/core/auth/auth.service';
-import { UserService } from 'app/core/user/user.service';
+import { ParameterI } from 'app/modules/admin/parameters/parameter.interface';
+import { ParameterService } from 'app/modules/admin/parameters/parameter.service';
+import { AuthComponent } from 'app/shared/components/auth/auth.component';
+import { IpUtils } from 'app/shared/utils/ip.utils';
+import { getLogo } from 'app/shared/utils/parameter.utils';
+import { Subject, takeUntil } from 'rxjs';
 
 @Component({
     selector: 'auth-unlock-session',
@@ -34,7 +47,9 @@ import { UserService } from 'app/core/user/user.service';
         MatIconModule,
         MatProgressSpinnerModule,
         RouterLink,
+        AuthComponent,
     ],
+    providers: [IpUtils],
 })
 export class AuthUnlockSessionComponent implements OnInit {
     @ViewChild('unlockSessionNgForm') unlockSessionNgForm: NgForm;
@@ -46,7 +61,12 @@ export class AuthUnlockSessionComponent implements OnInit {
     name: string;
     showAlert: boolean = false;
     unlockSessionForm: UntypedFormGroup;
-    private _email: string;
+    parameters = signal<ParameterI[]>([]);
+    ip: string | undefined;
+    private _parameterService = inject(ParameterService);
+    private email: string;
+    private _ipUtils = inject(IpUtils);
+    private _unsubscribeAll: Subject<any> = new Subject<any>();
 
     /**
      * Constructor
@@ -56,8 +76,31 @@ export class AuthUnlockSessionComponent implements OnInit {
         private _authService: AuthService,
         private _formBuilder: UntypedFormBuilder,
         private _router: Router,
-        private _userService: UserService
-    ) {}
+        private _changeDetectorRef: ChangeDetectorRef
+    ) {
+        this._activatedRoute.params.subscribe((params) => {
+            this.email = params['email'];
+            this.name = params['name'];
+            if (this.email === undefined || this.name === undefined) {
+                this._router.navigateByUrl('/auth/sign-in');
+            }
+        });
+
+        this._parameterService.parameter$
+            .pipe(takeUntil(this._unsubscribeAll))
+            .subscribe((parameters: ParameterI[]) => {
+                this.parameters.set(parameters);
+
+                // Mark for check
+                this._changeDetectorRef.markForCheck();
+            });
+
+        this._ipUtils.getClientIp().subscribe({
+            next: (res) => {
+                this.ip = res;
+            },
+        });
+    }
 
     // -----------------------------------------------------------------------------------------------------
     // @ Lifecycle hooks
@@ -67,12 +110,6 @@ export class AuthUnlockSessionComponent implements OnInit {
      * On init
      */
     ngOnInit(): void {
-        // Get the user's name
-        this._userService.user$.subscribe((user) => {
-            this.name = user.name;
-            this._email = user.email;
-        });
-
         // Create the form
         this.unlockSessionForm = this._formBuilder.group({
             name: [
@@ -90,9 +127,9 @@ export class AuthUnlockSessionComponent implements OnInit {
     // -----------------------------------------------------------------------------------------------------
 
     /**
-     * Unlock
+     * Sign in
      */
-    unlock(): void {
+    signIn(): void {
         // Return if the form is invalid
         if (this.unlockSessionForm.invalid) {
             return;
@@ -104,29 +141,41 @@ export class AuthUnlockSessionComponent implements OnInit {
         // Hide the alert
         this.showAlert = false;
 
+        // Sign in
         this._authService
-            .unlockSession({
-                email: this._email ?? '',
-                password: this.unlockSessionForm.get('password').value,
-            })
-            .subscribe(
-                () => {
-                    // Set the redirect url.
-                    // The '/signed-in-redirect' is a dummy url to catch the request and redirect the user
-                    // to the correct page after a successful sign in. This way, that url can be set via
-                    // routing file and we don't have to touch here.
-                    const redirectURL =
-                        this._activatedRoute.snapshot.queryParamMap.get(
-                            'redirectURL'
-                        ) || '/signed-in-redirect';
-
-                    // Navigate to the redirect url
-                    this._router.navigateByUrl(redirectURL);
+            .signIn(
+                {
+                    email: this.email ?? '',
+                    password: this.unlockSessionForm.get('password').value,
                 },
-                (response) => {
+                this.ip
+            )
+            .subscribe({
+                next: (response) => {
+                    if (!response.message.includes('código de verificación')) {
+                        // Store the access token in the local storage
+                        this._authService.accessToken = response.message;
+
+                        const redirectURL =
+                            this._activatedRoute.snapshot.queryParamMap.get(
+                                'redirectURL'
+                            ) || '/signed-in-redirect';
+
+                        // Navigate to the redirect url
+                        this._router.navigateByUrl(redirectURL);
+                    } else {
+                        // Navigate to the redirect url
+                        this._router.navigateByUrl(
+                            '/auth/confirmation-required',
+                            {
+                                state: { email: this.email },
+                            }
+                        );
+                    }
+                },
+                error: (response) => {
                     // Re-enable the form
                     this.unlockSessionForm.enable();
-
                     // Reset the form
                     this.unlockSessionNgForm.resetForm({
                         name: {
@@ -134,16 +183,26 @@ export class AuthUnlockSessionComponent implements OnInit {
                             disabled: true,
                         },
                     });
-
                     // Set the alert
                     this.alert = {
                         type: 'error',
-                        message: 'Invalid password',
+                        message: response.error.message,
                     };
-
                     // Show the alert
                     this.showAlert = true;
-                }
-            );
+                },
+            });
+    }
+
+    /**
+     * Get value of auth background
+     * @returns
+     */
+    getLogo() {
+        if (this.parameters().length > 0) {
+            return getLogo('LOGO_PRIMARY', this.parameters());
+        } else {
+            return '';
+        }
     }
 }

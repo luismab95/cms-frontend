@@ -1,5 +1,4 @@
-import { TextFieldModule } from '@angular/cdk/text-field';
-import { DatePipe, NgClass, TitleCasePipe } from '@angular/common';
+import { NgClass, NgTemplateOutlet, TitleCasePipe } from '@angular/common';
 import {
     ChangeDetectionStrategy,
     ChangeDetectorRef,
@@ -17,20 +16,25 @@ import {
     Validators,
 } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
-import { MatCheckboxModule } from '@angular/material/checkbox';
-import { MatOptionModule, MatRippleModule } from '@angular/material/core';
-import { MatDatepickerModule } from '@angular/material/datepicker';
-import { MAT_DIALOG_DATA, MatDialogModule } from '@angular/material/dialog';
+import { MatOptionModule } from '@angular/material/core';
+import {
+    MAT_DIALOG_DATA,
+    MatDialogModule,
+    MatDialogRef,
+} from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSelectModule } from '@angular/material/select';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { RouterLink } from '@angular/router';
-import { FuseFindByKeyPipe } from '@fuse/pipes/find-by-key/find-by-key.pipe';
 import { FuseConfirmationService } from '@fuse/services/confirmation';
-import { Subject } from 'rxjs';
+import { UserService } from 'app/core/user/user.service';
+import { RoleI, UserI } from 'app/core/user/user.types';
+import { RoleService } from 'app/shared/services/role.service';
+import { ToastrService } from 'ngx-toastr';
+import { Subject, takeUntil } from 'rxjs';
 
 @Component({
     selector: 'users-details',
@@ -41,32 +45,29 @@ import { Subject } from 'rxjs';
     imports: [
         MatButtonModule,
         MatTooltipModule,
-        RouterLink,
         MatIconModule,
         FormsModule,
         ReactiveFormsModule,
-        MatRippleModule,
         MatFormFieldModule,
         MatInputModule,
-        MatCheckboxModule,
         NgClass,
         MatSelectModule,
         MatOptionModule,
-        MatDatepickerModule,
-        TextFieldModule,
-        FuseFindByKeyPipe,
-        DatePipe,
         MatDialogModule,
         TitleCasePipe,
         MatSlideToggleModule,
+        MatProgressSpinnerModule,
+        NgTemplateOutlet,
     ],
 })
 export class UsersDetailsComponent implements OnInit, OnDestroy {
+    user: UserI;
+    roles: RoleI[];
     editMode: boolean = false;
-    user: any;
     userForm: UntypedFormGroup;
-    roles: any[];
     private readonly _matDialog = inject(MAT_DIALOG_DATA);
+    private _userService = inject(UserService);
+    private _roleService = inject(RoleService);
     private _unsubscribeAll: Subject<any> = new Subject<any>();
 
     /**
@@ -75,7 +76,9 @@ export class UsersDetailsComponent implements OnInit, OnDestroy {
     constructor(
         private _changeDetectorRef: ChangeDetectorRef,
         private _formBuilder: UntypedFormBuilder,
-        private _fuseConfirmationService: FuseConfirmationService
+        private _fuseConfirmationService: FuseConfirmationService,
+        private _toastrService: ToastrService,
+        public _matDialogRef: MatDialogRef<UsersDetailsComponent>
     ) {}
 
     // -----------------------------------------------------------------------------------------------------
@@ -88,39 +91,27 @@ export class UsersDetailsComponent implements OnInit, OnDestroy {
     ngOnInit(): void {
         // Create the user form
         this.userForm = this._formBuilder.group({
-            name: ['', [Validators.required]],
+            firstname: ['', [Validators.required]],
             lastname: ['', [Validators.required]],
             email: ['', [Validators.required, Validators.email]],
             roleId: ['', Validators.required],
             bloqued: [''],
         });
-        
+
         if (this._matDialog) {
             this.user = this._matDialog;
             this.userForm.patchValue(this._matDialog);
         }
 
         // Setup the roles
-        this.roles = [
-            {
-                label: 'Read',
-                value: 'read',
-                description:
-                    'Can read and clone this repository. Can also open and comment on issues and pull requests.',
-            },
-            {
-                label: 'Write',
-                value: 'write',
-                description:
-                    'Can read, clone, and push to this repository. Can also manage issues and pull requests.',
-            },
-            {
-                label: 'Admin',
-                value: 'admin',
-                description:
-                    'Can read, clone, and push to this repository. Can also manage issues, pull requests, and repository settings, including adding collaborators.',
-            },
-        ];
+        this._roleService.roles$
+            .pipe(takeUntil(this._unsubscribeAll))
+            .subscribe((roles) => {
+                // Update the roles
+                this.roles = roles;
+                // Mark for check
+                this._changeDetectorRef.markForCheck();
+            });
     }
 
     /**
@@ -135,6 +126,122 @@ export class UsersDetailsComponent implements OnInit, OnDestroy {
     // -----------------------------------------------------------------------------------------------------
     // @ Public methods
     // -----------------------------------------------------------------------------------------------------
+
+    /**
+     * Add user
+     */
+    newUser() {
+        // Return if the form is invalid
+        if (this.userForm.invalid) {
+            return;
+        }
+
+        // Disable the form
+        this.userForm.disable();
+
+        delete this.userForm.value.bloqued;
+
+        this._userService
+            .create(this.userForm.value)
+            .pipe(takeUntil(this._unsubscribeAll))
+            .subscribe({
+                next: (response) => {
+                    // Re-enable the form
+                    this.userForm.enable();
+                    // Set the alert
+                    this._toastrService.success(response.message, 'Aviso');
+
+                    this._matDialogRef.close(true);
+                },
+                error: (response) => {
+                    // Re-enable the form
+                    this.userForm.enable();
+                    // Reset the form
+                    this.userForm.reset();
+
+                    // Set the alert
+                    this._toastrService.error(response.error.message, 'Aviso');
+                },
+            });
+    }
+
+    /**
+     * Update user
+     */
+    updateUser() {
+        // Return if the form is invalid
+        if (this.userForm.invalid) {
+            return;
+        }
+
+        // Disable the form
+        this.userForm.disable();
+
+        this._userService
+            .update(this.user.id, this.userForm.value)
+            .pipe(takeUntil(this._unsubscribeAll))
+            .subscribe({
+                next: (response) => {
+                    // Re-enable the form
+                    this.userForm.enable();
+                    // Set the alert
+                    this._toastrService.success(
+                        'Proceso realizado con éxito.',
+                        'Aviso'
+                    );
+
+                    this._matDialogRef.close(true);
+                },
+                error: (response) => {
+                    // Re-enable the form
+                    this.userForm.enable();
+
+                    // Set the alert
+                    this._toastrService.error(response.error.message, 'Aviso');
+                },
+            });
+    }
+
+    /**
+     * Delete user
+     */
+    deleteUser() {
+        // Disable the form
+        this.userForm.disable();
+
+        this._userService
+            .delete(this.user.id)
+            .pipe(takeUntil(this._unsubscribeAll))
+            .subscribe({
+                next: (response) => {
+                    // Re-enable the form
+                    this.userForm.enable();
+                    // Set the alert
+                    this._toastrService.success(response.message, 'Aviso');
+
+                    this._matDialogRef.close(true);
+                },
+                error: (response) => {
+                    // Re-enable the form
+                    this.userForm.enable();
+
+                    // Set the alert
+                    this._toastrService.error(response.error.message, 'Aviso');
+                },
+            });
+    }
+
+    /**
+     * Find role
+     * @param roleId
+     */
+    getRole(roleId: number) {
+        const role = this.roles.find((role) => role.id === roleId);
+        if (role !== undefined) {
+            return role.name;
+        }
+        return '';
+    }
 
     /**
      * Toggle edit mode
@@ -175,8 +282,7 @@ export class UsersDetailsComponent implements OnInit, OnDestroy {
         confirmation.afterClosed().subscribe((result) => {
             // If the confirm button pressed...
             if (result === 'confirmed') {
-                // Mark for check
-                this._changeDetectorRef.markForCheck();
+                this.deleteUser();
             }
         });
     }

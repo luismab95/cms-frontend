@@ -1,5 +1,5 @@
 import { provideHttpClient } from '@angular/common/http';
-import { APP_INITIALIZER, ApplicationConfig, importProvidersFrom, inject } from '@angular/core';
+import { ApplicationConfig, importProvidersFrom } from '@angular/core';
 import { LuxonDateAdapter } from '@angular/material-luxon-adapter';
 import { DateAdapter, MAT_DATE_FORMATS } from '@angular/material/core';
 import { provideAnimations } from '@angular/platform-browser/animations';
@@ -10,20 +10,25 @@ import {
     withPreloading,
 } from '@angular/router';
 import { provideFuse } from '@fuse';
-import { TranslocoService, provideTransloco } from '@ngneat/transloco';
 import { appRoutes } from 'app/app.routes';
 import { provideAuth } from 'app/core/auth/auth.provider';
 import { provideIcons } from 'app/core/icons/icons.provider';
 import { mockApiServices } from 'app/mock-api';
-import { firstValueFrom } from 'rxjs';
-import { TranslocoHttpLoader } from './core/transloco/transloco.http-loader';
 import { MonacoEditorModule } from 'ngx-monaco-editor-v2';
+import { provideToastr } from 'ngx-toastr';
 
 export const appConfig: ApplicationConfig = {
     providers: [
         importProvidersFrom(MonacoEditorModule.forRoot()),
         provideAnimations(),
         provideHttpClient(),
+        provideToastr({
+            timeOut: 5000,
+            positionClass: 'toast-top-right',
+            preventDuplicates: true,
+            progressBar: true,
+            closeButton: true,
+        }),
         provideRouter(
             appRoutes,
             withPreloading(PreloadAllModules),
@@ -48,39 +53,6 @@ export const appConfig: ApplicationConfig = {
                     monthYearA11yLabel: 'LLLL yyyy',
                 },
             },
-        },
-
-        // Transloco Config
-        provideTransloco({
-            config: {
-                availableLangs: [
-                    {
-                        id: 'en',
-                        label: 'English',
-                    },
-                    {
-                        id: 'tr',
-                        label: 'Turkish',
-                    },
-                ],
-                defaultLang: 'en',
-                fallbackLang: 'en',
-                reRenderOnLangChange: true,
-                prodMode: true,
-            },
-            loader: TranslocoHttpLoader,
-        }),
-        {
-            // Preload the default language before the app starts to prevent empty/jumping content
-            provide: APP_INITIALIZER,
-            useFactory: () => {
-                const translocoService = inject(TranslocoService);
-                const defaultLang = translocoService.getDefaultLang();
-                translocoService.setActiveLang(defaultLang);
-
-                return () => firstValueFrom(translocoService.load(defaultLang));
-            },
-            multi: true,
         },
 
         // Fuse
