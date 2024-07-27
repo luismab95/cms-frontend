@@ -21,6 +21,7 @@ export class UserService {
     private url = environment.apiUrl;
     private _httpClient = inject(HttpClient);
     private _user: ReplaySubject<UserI> = new ReplaySubject<UserI>(1);
+    private _userLogin: ReplaySubject<UserI> = new ReplaySubject<UserI>(1);
     private _users: ReplaySubject<PaginationResponseI<UserI[]>> =
         new ReplaySubject<PaginationResponseI<UserI[]>>(1);
     private _role: ReplaySubject<RoleI> = new ReplaySubject<RoleI>(1);
@@ -44,6 +45,20 @@ export class UserService {
 
     get user$(): Observable<UserI> {
         return this._user.asObservable();
+    }
+
+    /**
+     * Setter & getter for userLogin
+     *
+     * @param value
+     */
+    set userLogin(value: UserI) {
+        // Store the value
+        this._userLogin.next(value);
+    }
+
+    get userLogin$(): Observable<UserI> {
+        return this._userLogin.asObservable();
     }
 
     /**
@@ -125,7 +140,7 @@ export class UserService {
             >(`${this.url}/ms-security/users/session`)
             .pipe(
                 tap((response) => {
-                    this._user.next(response.message.user);
+                    this._userLogin.next(response.message.user);
                     this._role.next(response.message.role);
                     const navigation: Navigation = {
                         compact: response.message.navigation,
