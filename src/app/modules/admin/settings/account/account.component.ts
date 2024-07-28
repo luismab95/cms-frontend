@@ -27,6 +27,7 @@ import { fuseAnimations } from '@fuse/animations';
 import { FuseConfig, FuseConfigService, Scheme } from '@fuse/services/config';
 import { UserService } from 'app/core/user/user.service';
 import { RoleI, UserI } from 'app/core/user/user.types';
+import { CookieService } from 'ngx-cookie-service';
 import { ToastrService } from 'ngx-toastr';
 import { Subject, takeUntil } from 'rxjs';
 
@@ -58,6 +59,8 @@ export class SettingsAccountComponent implements OnInit {
     config: FuseConfig;
     roles: RoleI[];
     currentSchema: Scheme;
+
+    private _cookieService = inject(CookieService);
     private _userService = inject(UserService);
     private _unsubscribeAll: Subject<any> = new Subject<any>();
 
@@ -80,7 +83,7 @@ export class SettingsAccountComponent implements OnInit {
      */
     ngOnInit(): void {
         // Set schema
-        this.currentSchema = sessionStorage.getItem('scheme') as Scheme;
+        this.currentSchema = this._cookieService.get('scheme') as Scheme;
 
         // Subscribe to role changes
         this._userService.role$
@@ -108,7 +111,9 @@ export class SettingsAccountComponent implements OnInit {
             .subscribe((config: FuseConfig) => {
                 // Store the config
                 this.config = config;
-                this.config.scheme = sessionStorage.getItem('scheme') as Scheme;
+                this.config.scheme = this._cookieService.get(
+                    'scheme'
+                ) as Scheme;
             });
     }
 
@@ -141,7 +146,7 @@ export class SettingsAccountComponent implements OnInit {
      * @param scheme
      */
     setScheme(scheme: Scheme): void {
-        sessionStorage.setItem('scheme', scheme);
+        this._cookieService.set('scheme', scheme);
         this._fuseConfigService.config = { scheme };
     }
 

@@ -111,6 +111,39 @@ export class TemplateService {
     }
 
     /**
+     * Save the template
+     *
+     * @param templateId
+     * @param template
+     */
+    saveDraft(
+        templateId: number,
+        template: TemplateI
+    ): Observable<ResponseI<string>> {
+        return this._httpClient.patch<ResponseI<string>>(
+            `${this.url}/ms-cms/templates/draft/${templateId}`,
+            { ...template }
+        );
+    }
+
+    /**
+     * Delete draft template
+     *
+     * @param templateId
+     */
+    deleteDraft(templateId: number): Observable<ResponseI<TemplateI>> {
+        return this._httpClient
+            .delete<
+                ResponseI<TemplateI>
+            >(`${this.url}/ms-cms/templates/draft/${templateId}`)
+            .pipe(
+                tap((response) => {
+                    this._template.next(response.message);
+                })
+            );
+    }
+
+    /**
      * Update the user
      *
      * @param templateId

@@ -19,6 +19,7 @@ import { FUSE_VERSION } from '@fuse/version';
 import { ParameterI } from 'app/modules/admin/parameters/parameter.interface';
 import { ParameterService } from 'app/modules/admin/parameters/parameter.service';
 import { findParameter } from 'app/shared/utils/parameter.utils';
+import { CookieService } from 'ngx-cookie-service';
 import { Subject, combineLatest, filter, map, takeUntil } from 'rxjs';
 import { SettingsComponent } from './common/settings/settings.component';
 import { EmptyLayoutComponent } from './layouts/empty/empty.component';
@@ -58,6 +59,7 @@ export class LayoutComponent implements OnInit, OnDestroy {
     parameters = signal<ParameterI[]>([]);
 
     private _parameterService = inject(ParameterService);
+    private _cookieService = inject(CookieService);
     private _unsubscribeAll: Subject<any> = new Subject<any>();
 
     /**
@@ -113,8 +115,8 @@ export class LayoutComponent implements OnInit, OnDestroy {
                     };
 
                     // If the scheme is set to 'auto'...
-                    const schema = sessionStorage.getItem('scheme');
-                    if (schema === null || schema === 'auto') {
+                    const schema = this._cookieService.get('scheme');
+                    if (schema === '' || schema === 'auto') {
                         // Decide the scheme using the media query
                         options.scheme = mql.breakpoints[
                             '(prefers-color-scheme: dark)'
@@ -122,7 +124,7 @@ export class LayoutComponent implements OnInit, OnDestroy {
                             ? 'dark'
                             : 'light';
                     } else {
-                        options.scheme = sessionStorage.getItem('scheme');
+                        options.scheme = this._cookieService.get('scheme');
                     }
 
                     return options;

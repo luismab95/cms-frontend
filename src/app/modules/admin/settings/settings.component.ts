@@ -63,10 +63,10 @@ export class SettingsComponent implements OnInit, OnDestroy {
      */
     ngOnInit(): void {
         // Subscribe to user changes
-        this._userService.user$
+        this._userService.userLogin$
             .pipe(takeUntil(this._unsubscribeAll))
-            .subscribe((user: UserI) => {
-                this.user = user;
+            .subscribe((userLogin: UserI) => {
+                this.user = userLogin;
 
                 // Mark for check
                 this._changeDetectorRef.markForCheck();

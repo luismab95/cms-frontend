@@ -76,10 +76,10 @@ export class HomeComponent implements OnInit, OnDestroy {
      */
     ngOnInit(): void {
         // Subscribe to the user service
-        this._userService.user$
+        this._userService.userLogin$
             .pipe(takeUntil(this._unsubscribeAll))
-            .subscribe((user: UserI) => {
-                this.user = user;
+            .subscribe((userLogin: UserI) => {
+                this.user = userLogin;
             });
 
         // Get the data

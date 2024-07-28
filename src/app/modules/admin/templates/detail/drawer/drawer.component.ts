@@ -15,6 +15,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { RouterLink } from '@angular/router';
+import { FuseConfirmationService } from '@fuse/services/confirmation';
 import { ParameterI } from 'app/modules/admin/parameters/parameter.interface';
 import { ParameterService } from 'app/modules/admin/parameters/parameter.service';
 import { GridComponent } from 'app/shared/components/grid/grid.component';
@@ -70,12 +71,13 @@ export class TemplatesDrawerComponent implements OnInit {
         private _modalSvc: ModalService,
         private _templateService: TemplateService,
         private _toastrService: ToastrService,
-        private _changeDetectorRef: ChangeDetectorRef
+        private _changeDetectorRef: ChangeDetectorRef,
+        private _fuseConfirmationService: FuseConfirmationService
     ) {
         // autosave logic
         this.autosaveTimer = setInterval(() => {
-            this.saveChanges();
-        }, 10000);
+            this.updateDraft();
+        }, 60000);
 
         this._parameterService.parameter$
             .pipe(takeUntil(this._unsubscribeAll))
@@ -103,12 +105,11 @@ export class TemplatesDrawerComponent implements OnInit {
                 // Update the template
                 this.template = template;
 
-                if (template) {
-                    this.loadGridData();
-                    this.loadStyles();
+                if (this.template.draft !== null) {
+                    this.confirmDraft();
+                } else {
+                    this.loadTemplateData();
                 }
-                // Mark for check
-                this._changeDetectorRef.markForCheck();
             });
     }
 
@@ -124,6 +125,53 @@ export class TemplatesDrawerComponent implements OnInit {
     // -----------------------------------------------------------------------------------------------------
     // @ Public methods
     // -----------------------------------------------------------------------------------------------------
+
+    /**
+     * Load template data from the server and update the component properties accordingly.
+     */
+    loadTemplateData() {
+        this.loadGridData();
+        this.loadStyles();
+
+        // Mark for check
+        this._changeDetectorRef.markForCheck();
+    }
+
+    /**
+     * Update template
+     */
+    updateDraft() {
+        // Disable the save action
+        this.saveAction.set(true);
+        this.autosave.set(true);
+
+        //Set data page elements
+        this.template.data.header.data = this.header();
+        this.template.data.footer.data = this.footer();
+
+        this._templateService
+            .saveDraft(this.template.id, {
+                name: this.template.name,
+                description: this.template.description,
+                data: this.template.data,
+            })
+            .pipe(takeUntil(this._unsubscribeAll))
+            .subscribe({
+                next: (response) => {
+                    // Re-enable the save action
+                    this.saveAction.set(false);
+                    this.autosave.set(false);
+                },
+                error: (response) => {
+                    // Re-enable the save action
+                    this.saveAction.set(false);
+                    this.autosave.set(false);
+
+                    // Set the alert
+                    this._toastrService.error(response.error.message, 'Aviso');
+                },
+            });
+    }
 
     /**
      * Update template
@@ -148,6 +196,10 @@ export class TemplatesDrawerComponent implements OnInit {
 
         // Disable the save action
         this.saveAction.set(true);
+
+        //Set data page elements
+        this.template.data.header.data = this.header();
+        this.template.data.footer.data = this.footer();
 
         this._templateService
             .update(this.template.id, {
@@ -203,22 +255,6 @@ export class TemplatesDrawerComponent implements OnInit {
     }
 
     /**
-     * Autosave
-     * @param changes
-     * @returns
-     */
-    saveChanges() {
-        this.autosave.set(true);
-        // Replace this with actual save logic, e.g., HTTP call to server
-        return new Promise((resolve) => {
-            setTimeout(() => {
-                this.autosave.set(false);
-                resolve('Saved successfully');
-            }, 5000);
-        });
-    }
-
-    /**
      * Toggle fullscreem mode
      * @param mode
      */
@@ -268,6 +304,9 @@ export class TemplatesDrawerComponent implements OnInit {
             this.footer.update((values) => {
                 return [...values, newSection];
             });
+
+        // Mark for check
+        this._changeDetectorRef.markForCheck();
     }
 
     /**
@@ -278,6 +317,9 @@ export class TemplatesDrawerComponent implements OnInit {
     setGrid(grid: any, item: 'header' | 'footer') {
         if (item === 'header') this.header.set(grid);
         if (item === 'footer') this.footer.set(grid);
+
+        // Mark for check
+        this._changeDetectorRef.markForCheck();
     }
 
     /**
@@ -326,5 +368,61 @@ export class TemplatesDrawerComponent implements OnInit {
         if (parameters.length > 0) {
             return findParameter(code, parameters).value;
         }
+    }
+
+    /**
+     *  Choose load data draft
+     */
+    confirmDraft() {
+        // Open the confirmation dialog
+        const confirmation = this._fuseConfirmationService.open({
+            title: `Cambios sin guardar`,
+            message: `Tienes cambios sin guardar en borrador, ¿Deseas seguir editando?.`,
+            actions: {
+                confirm: {
+                    label: 'Editar',
+                    color: 'primary',
+                },
+                cancel: {
+                    label: 'Descartar',
+                },
+            },
+        });
+
+        // Subscribe to the confirmation dialog closed action
+        confirmation.afterClosed().subscribe((result) => {
+            // If the confirm button pressed...
+            if (result === 'confirmed') {
+                this.template.data = this.template.draft;
+            } else {
+                this.deleteDraft();
+            }
+            this.loadTemplateData();
+        });
+    }
+
+    /**
+     * Delete template draft
+     */
+    deleteDraft() {
+        // Disable the save action
+        this.saveAction.set(true);
+
+        this._templateService
+            .deleteDraft(this.template.id)
+            .pipe(takeUntil(this._unsubscribeAll))
+            .subscribe({
+                next: (response) => {
+                    // Re-enable the save action
+                    this.saveAction.set(false);
+                },
+                error: (response) => {
+                    // Re-enable the save action
+                    this.saveAction.set(false);
+
+                    // Set the alert
+                    this._toastrService.error(response.error.message, 'Aviso');
+                },
+            });
     }
 }

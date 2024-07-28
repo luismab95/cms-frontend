@@ -8,6 +8,7 @@ import {
 import { NgClass } from '@angular/common';
 import {
     ChangeDetectionStrategy,
+    ChangeDetectorRef,
     Component,
     EventEmitter,
     Input,
@@ -58,7 +59,10 @@ export class GridComponent implements OnInit {
     /**
      * Constructor
      */
-    constructor(private _modalSvc: ModalService) {}
+    constructor(
+        private _modalSvc: ModalService,
+        private _changeDetectorRef: ChangeDetectorRef
+    ) {}
 
     // -----------------------------------------------------------------------------------------------------
     // @ Lifecycle hooks

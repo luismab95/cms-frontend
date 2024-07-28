@@ -23,7 +23,7 @@ import {
     styles: `
         .ngx-otp-input-form {
             width: 100%;
-            displey: flex;
+            display: flex;
             justify-content: space-between;
         }
         .ngx-otp-input-box {
