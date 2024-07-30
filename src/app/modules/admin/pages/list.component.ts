@@ -25,6 +25,7 @@ import { PaginationComponent } from 'app/shared/components/pagination/pagination
 import { PaginationResponseI } from 'app/shared/interfaces/response.interface';
 import { ToastrService } from 'ngx-toastr';
 import { Observable, Subject, debounceTime, takeUntil } from 'rxjs';
+import { MicrosityService } from '../microsities/micrositie.service';
 import { PageService } from './pages.service';
 import { PageI, PagePaginationResquestI } from './pages.types';
 
@@ -82,9 +83,12 @@ export class PagesListComponent implements OnInit, OnDestroy {
     constructor(
         private _changeDetectorRef: ChangeDetectorRef,
         private _pageService: PageService,
+        private _microsityService: MicrosityService,
         private _router: Router,
         private _toastrService: ToastrService
-    ) {}
+    ) {
+        this._microsityService.micrositie = null;
+    }
 
     // -----------------------------------------------------------------------------------------------------
     // @ Lifecycle hooks

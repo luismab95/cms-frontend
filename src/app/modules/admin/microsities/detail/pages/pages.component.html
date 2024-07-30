@@ -11,7 +11,7 @@
                 <div class="text-4xl font-extrabold leading-none tracking-tight">
                 </div>
                 <div class="text-secondary -mt-10 md:mt-8 ml-4 flex items-center font-medium">
-                    10 páginas
+                    {{pagesCount}} páginas
                 </div>
             </div>
             <!-- Actions -->
@@ -34,51 +34,43 @@
         <div class="flex flex-auto overflow-hidden bg-card h-160">
             <!-- Languages list -->
             <div class="flex flex-auto flex-col overflow-hidden sm:mb-18 sm:overflow-y-auto">
-                <!-- @if (products$ | async; as products) { -->
-                @if (pages.length > 0) {
+
                 <div class="grid">
                     <!-- Header -->
-                    <div class="pages-grid text-secondary sticky top-0 z-10 grid gap-4 bg-gray-50 px-6 py-4 text-md font-semibold shadow dark:bg-black dark:bg-opacity-5 md:px-8"
-                        matSort matSortDisableClear>
+                    <div
+                        class="pages-grid text-secondary sticky top-0 z-10 grid gap-4 bg-gray-50 px-6 py-4 text-md font-semibold shadow dark:bg-black dark:bg-opacity-5 md:px-8">
                         <div>#</div>
-                        <div class="hidden md:block" [mat-sort-header]="'name'">
+                        <div class="hidden md:block">
                             Nombre
                         </div>
-                        <div [mat-sort-header]="'path'">Descripción</div>
-                        <div class="hidden sm:block" [mat-sort-header]="'micrositeId'">
-                            Ruta
-                        </div>
-                        <div class="hidden lg:block" [mat-sort-header]="'status'">
+                        <div>Ruta</div>
+                        <div class="hidden lg:block">
                             Estado
                         </div>
                         <div class="hidden lg:block"></div>
                         <div></div>
                     </div>
                     <!-- Rows -->
-                    <!-- @if (products$ | async; as products) {-->
+                    @if (pages$ | async; as pages) {
+                    @if (pages.records.length > 0) {
                     @for (
-                    page of pages;
+                    page of pages.records;
                     track trackByFn($index, page)
                     ) {
-
                     <div class="pages-grid grid items-center gap-4 border-b px-6 py-3 md:px-8 bg-card">
+                        <!-- # -->
                         <!-- # -->
                         <div class="truncate">
                             {{ $index +1}}
                         </div>
 
                         <!-- Name -->
-                        <div class="hidden truncate md:block">
+                        <div [matTooltip]="page.name" class="hidden truncate md:block">
                             {{ page.name }}
                         </div>
 
-                        <!-- Description -->
-                        <div class="truncate">
-                            {{ page.description }}
-                        </div>
-
                         <!-- Path -->
-                        <div class="hidden truncate sm:block">
+                        <div class="truncate">
                             {{ page.path }}
                         </div>
 
@@ -106,17 +98,15 @@
                         </div>
                     </div>
                     }
+                    <pagination [isLoading]="isLoading" [page]="pages.page" [limit]="10" [total]="pages.total"
+                        [pages]="pages.totalPage" (pageEvent)="getAll($event)"></pagination> }
+                    @else {
+                    <div class="border-t p-8 text-center text-4xl font-semibold tracking-tight sm:p-16">
+                        ¡No hay páginas!
+                    </div>
+                    }
+                    }
                 </div>
-                <mat-paginator
-                    class="z-10 border-b bg-gray-50 dark:bg-transparent sm:absolute sm:inset-x-0 sm:bottom-0 sm:border-b-0 sm:border-t"
-                    [ngClass]="{ 'pointer-events-none': isLoading }" [length]="100" [pageIndex]="1" [pageSize]="10"
-                    [pageSizeOptions]="[5, 10, 25, 100]" [showFirstLastButtons]="true"></mat-paginator>
-                } @else {
-                <div class="border-t p-8 text-center text-4xl font-semibold tracking-tight sm:p-16">
-                    ¡No hay págians!
-                </div>
-                }
             </div>
         </div>
     </div>
-</div>

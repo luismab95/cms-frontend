@@ -19,6 +19,8 @@ import { MatInputModule } from '@angular/material/input';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { Router, RouterLink } from '@angular/router';
+import { MicrosityService } from 'app/modules/admin/microsities/micrositie.service';
+import { MicrositieI } from 'app/modules/admin/microsities/micrositie.types';
 import { SitieService } from 'app/modules/admin/sitie/sitie.service';
 import { SitieI } from 'app/modules/admin/sitie/sitie.types';
 import { ToastrService } from 'ngx-toastr';
@@ -47,7 +49,7 @@ import { PageDataMongoI, PageI } from '../../pages.types';
 export class PagesInformationComponent implements OnInit {
     page: PageI;
     sitie: SitieI;
-    micrositie: any;
+    micrositie: MicrositieI;
     pageForm: UntypedFormGroup;
     private _unsubscribeAll: Subject<any> = new Subject<any>();
 
@@ -58,10 +60,20 @@ export class PagesInformationComponent implements OnInit {
         private _formBuilder: UntypedFormBuilder,
         private _pageService: PageService,
         private _sitieService: SitieService,
+        private _microsityService: MicrosityService,
         private _router: Router,
         private _toastrService: ToastrService,
         private _changeDetectorRef: ChangeDetectorRef
-    ) {}
+    ) {
+        this._microsityService.micrositie$
+            .pipe(takeUntil(this._unsubscribeAll))
+            .subscribe((micrositie) => {
+                // Update the templates
+                this.micrositie = micrositie;
+                // Mark for check
+                this._changeDetectorRef.markForCheck();
+            });
+    }
 
     // -----------------------------------------------------------------------------------------------------
     // @ Lifecycle hooks
@@ -142,6 +154,10 @@ export class PagesInformationComponent implements OnInit {
             },
         } as PageDataMongoI;
 
+        if (this.micrositie) {
+            this.pageForm.value['micrositieId'] = this.micrositie.id;
+        }
+
         //Delete status isHomePage
         delete this.pageForm.value.status;
         delete this.pageForm.value.isHomePage;
@@ -214,7 +230,7 @@ export class PagesInformationComponent implements OnInit {
     goToBack() {
         if (this.micrositie) {
             this._router.navigateByUrl('/admin/modules/microsities/detail', {
-                state: { micrositie: this.micrositie },
+                state: { id: this.micrositie.id },
             });
         } else {
             this._router.navigateByUrl('/admin/modules/pages');

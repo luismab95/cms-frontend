@@ -22,6 +22,8 @@ import { MatInputModule } from '@angular/material/input';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatTabsModule } from '@angular/material/tabs';
 import { Router, RouterLink } from '@angular/router';
+import { MicrosityService } from 'app/modules/admin/microsities/micrositie.service';
+import { MicrositieI } from 'app/modules/admin/microsities/micrositie.types';
 import { LanguageService } from 'app/modules/admin/sitie/languages/language.service';
 import { LanguageI } from 'app/modules/admin/sitie/languages/language.types';
 import { ToastrService } from 'ngx-toastr';
@@ -51,7 +53,7 @@ import { PageDetailReferenceI, PageI } from '../../pages.types';
 })
 export class PagesLangugesComponent implements OnInit {
     page: PageI;
-    micrositie: any;
+    micrositie: MicrositieI;
     languages: LanguageI[] = [];
     languageForm: UntypedFormGroup;
     private _unsubscribeAll: Subject<any> = new Subject<any>();
@@ -64,9 +66,19 @@ export class PagesLangugesComponent implements OnInit {
         private _router: Router,
         private _toastrService: ToastrService,
         private _pageService: PageService,
+        private _microsityService: MicrosityService,
         private _languageService: LanguageService,
         private _changeDetectorRef: ChangeDetectorRef
     ) {
+        this._microsityService.micrositie$
+            .pipe(takeUntil(this._unsubscribeAll))
+            .subscribe((micrositie) => {
+                // Update the templates
+                this.micrositie = micrositie;
+                // Mark for check
+                this._changeDetectorRef.markForCheck();
+            });
+
         // Create the form
         this.languageForm = this._formBuilder.group({
             languages: this._formBuilder.array([]),
@@ -232,7 +244,7 @@ export class PagesLangugesComponent implements OnInit {
     goToBack() {
         if (this.micrositie) {
             this._router.navigateByUrl('/admin/modules/microsities/detail', {
-                state: { micrositie: this.micrositie },
+                state: { id: this.micrositie.id },
             });
         } else {
             this._router.navigateByUrl('/admin/modules/pages');

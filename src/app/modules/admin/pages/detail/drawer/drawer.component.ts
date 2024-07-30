@@ -1,6 +1,7 @@
 import { NgClass } from '@angular/common';
 import {
     ChangeDetectionStrategy,
+    ChangeDetectorRef,
     Component,
     EventEmitter,
     Input,
@@ -14,11 +15,13 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { Router, RouterLink } from '@angular/router';
+import { MicrosityService } from 'app/modules/admin/microsities/micrositie.service';
+import { MicrositieI } from 'app/modules/admin/microsities/micrositie.types';
 import { GridComponent } from 'app/shared/components/grid/grid.component';
 import { GridSettingsComponent } from 'app/shared/components/grid/settings/settings.component';
 import { ModalService } from 'app/shared/services/modal.service';
 import { generateRandomString } from 'app/shared/utils/random.utils';
-import { Subject } from 'rxjs';
+import { Subject, takeUntil } from 'rxjs';
 @Component({
     selector: 'pages-drawer',
     templateUrl: './drawer.component.html',
@@ -37,10 +40,11 @@ import { Subject } from 'rxjs';
 })
 export class PagesDrawerComponent implements OnInit {
     @Input() page: any;
-    @Input() micrositie: any;
     @Input() template: any;
     @Output() fullscreemToggle: EventEmitter<boolean> =
         new EventEmitter<boolean>();
+
+    micrositie: MicrositieI;
     preview: string = 'none';
     previewMode: boolean = false;
     body = signal<any>([]);
@@ -53,12 +57,23 @@ export class PagesDrawerComponent implements OnInit {
      */
     constructor(
         private _router: Router,
-        private _modalSvc: ModalService
+        private _modalSvc: ModalService,
+        private _microsityService: MicrosityService,
+        private _changeDetectorRef: ChangeDetectorRef
     ) {
         // Example autosave logic
         this.autosaveTimer = setInterval(() => {
             this.saveChanges();
         }, 10000);
+
+        this._microsityService.micrositie$
+            .pipe(takeUntil(this._unsubscribeAll))
+            .subscribe((micrositie) => {
+                // Update the templates
+                this.micrositie = micrositie;
+                // Mark for check
+                this._changeDetectorRef.markForCheck();
+            });
     }
 
     // -----------------------------------------------------------------------------------------------------
@@ -166,7 +181,7 @@ export class PagesDrawerComponent implements OnInit {
     goToBack() {
         if (this.micrositie) {
             this._router.navigateByUrl('/admin/modules/microsities/detail', {
-                state: { micrositie: this.micrositie },
+                state: { id: this.micrositie.id },
             });
         } else {
             this._router.navigateByUrl('/admin/modules/pages');

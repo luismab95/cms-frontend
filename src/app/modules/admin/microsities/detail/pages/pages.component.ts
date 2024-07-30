@@ -1,9 +1,8 @@
-import { TextFieldModule } from '@angular/cdk/text-field';
-import { NgClass, TitleCasePipe, UpperCasePipe } from '@angular/common';
+import { AsyncPipe, NgClass } from '@angular/common';
 import {
     ChangeDetectionStrategy,
+    ChangeDetectorRef,
     Component,
-    Input,
     OnInit,
     ViewEncapsulation,
 } from '@angular/core';
@@ -13,14 +12,23 @@ import {
     UntypedFormControl,
 } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
-import { MatOptionModule } from '@angular/material/core';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
-import { MatPaginatorModule } from '@angular/material/paginator';
-import { MatSelectModule } from '@angular/material/select';
+import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { Router } from '@angular/router';
-import { Subject } from 'rxjs';
+import { PageService } from 'app/modules/admin/pages/pages.service';
+import {
+    PageI,
+    PagePaginationResquestI,
+} from 'app/modules/admin/pages/pages.types';
+import { PaginationComponent } from 'app/shared/components/pagination/pagination.component';
+import { PaginationResponseI } from 'app/shared/interfaces/response.interface';
+import { ToastrService } from 'ngx-toastr';
+import { Observable, Subject, debounceTime, takeUntil } from 'rxjs';
+import { MicrosityService } from '../../micrositie.service';
+import { MicrositieI } from '../../micrositie.types';
 
 @Component({
     selector: 'microsities-pages',
@@ -29,18 +37,18 @@ import { Subject } from 'rxjs';
         /* language=SCSS */
         `
             .pages-grid {
-                grid-template-columns: 48px auto 40px;
+                grid-template-columns: 24px auto 42px;
 
                 @screen sm {
-                    grid-template-columns: 48px auto 112px 72px;
+                    grid-template-columns: 24px auto 42px;
                 }
 
                 @screen md {
-                    grid-template-columns: 48px 112px auto 112px 72px;
+                    grid-template-columns: 24px auto 160px 42px;
                 }
 
                 @screen lg {
-                    grid-template-columns: 48px 112px auto 112px 96px 96px 72px;
+                    grid-template-columns: 24px auto 160px 80px 24px 42px;
                 }
             }
         `,
@@ -49,32 +57,46 @@ import { Subject } from 'rxjs';
     changeDetection: ChangeDetectionStrategy.OnPush,
     standalone: true,
     imports: [
-        FormsModule,
-        ReactiveFormsModule,
         MatFormFieldModule,
         MatIconModule,
         MatInputModule,
-        TextFieldModule,
-        MatSelectModule,
-        MatOptionModule,
+        FormsModule,
+        ReactiveFormsModule,
         MatButtonModule,
-        NgClass,
-        TitleCasePipe,
-        UpperCasePipe,
         MatPaginatorModule,
+        NgClass,
+        AsyncPipe,
+        PaginationComponent,
+        MatTooltipModule,
     ],
 })
 export class MicrositiesPagesComponent implements OnInit {
-    @Input() micrositie: any;
-    pages: any[] = [];
-    isLoading: boolean = false;
+    pagesCount: number = 0;
     searchInputControl: UntypedFormControl = new UntypedFormControl();
+    pages$: Observable<PaginationResponseI<PageI[]>>;
+    isLoading: boolean = false;
+    micrositie: MicrositieI;
     private _unsubscribeAll: Subject<any> = new Subject<any>();
 
     /**
      * Constructor
      */
-    constructor(private _router: Router) {}
+    constructor(
+        private _router: Router,
+        private _changeDetectorRef: ChangeDetectorRef,
+        private _pageService: PageService,
+        private _microsityService: MicrosityService,
+        private _toastrService: ToastrService
+    ) {
+        this._microsityService.micrositie$
+            .pipe(takeUntil(this._unsubscribeAll))
+            .subscribe((micrositie) => {
+                // Update the templates
+                this.micrositie = micrositie;
+                // Mark for check
+                this._changeDetectorRef.markForCheck();
+            });
+    }
 
     // -----------------------------------------------------------------------------------------------------
     // @ Lifecycle hooks
@@ -84,25 +106,32 @@ export class MicrositiesPagesComponent implements OnInit {
      * On init
      */
     ngOnInit(): void {
-        // Set languages data
-        this.pages = [
-            {
-                id: 1,
-                name: 'Novedades',
-                description:
-                    'Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
-                path: '/novedades',
-                status: true,
-            },
-            {
-                id: 1,
-                name: 'Mitos',
-                description:
-                    'Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
-                path: '/mitos',
-                status: false,
-            },
-        ];
+        // Get the templates
+        this.pages$ = this._pageService.pages$;
+        this._pageService.pages$
+            .pipe(takeUntil(this._unsubscribeAll))
+            .subscribe((pages) => {
+                // Update the templates
+                this.pages$ = this._pageService.pages$;
+                this.pagesCount = pages.total;
+                // Mark for check
+                this._changeDetectorRef.markForCheck();
+            });
+
+        // Subscribe to search input field value changes
+        this.searchInputControl.valueChanges
+            .pipe(debounceTime(700))
+            .subscribe((search: string) => {
+                this.getAll(
+                    {
+                        pageSize: 10,
+                        pageIndex: 0,
+                        length: this.pagesCount,
+                    },
+                    search === '' ? null : search,
+                    search === '' ? true : null
+                );
+            });
     }
 
     /**
@@ -112,6 +141,39 @@ export class MicrositiesPagesComponent implements OnInit {
         // Unsubscribe from all subscriptions
         this._unsubscribeAll.next(null);
         this._unsubscribeAll.complete();
+    }
+
+    /**
+     * Get all
+     * @param page
+     */
+    getAll(
+        event: PageEvent,
+        search: string | null = null,
+        status: boolean = true
+    ) {
+        const params: PagePaginationResquestI = {
+            page: event?.pageIndex + 1,
+            limit: event?.pageSize,
+            micrositieId: this.micrositie.id,
+            search,
+            status,
+        };
+        this.isLoading = true;
+        this._pageService
+            .getAll(params)
+            .pipe(takeUntil(this._unsubscribeAll))
+            .subscribe({
+                next: (res) => {
+                    this.isLoading = false;
+                },
+                error: (response) => {
+                    this.isLoading = false;
+
+                    // Set the alert
+                    this._toastrService.error(response.error.message, 'Aviso');
+                },
+            });
     }
 
     /**
@@ -129,9 +191,9 @@ export class MicrositiesPagesComponent implements OnInit {
      *
      * @param page
      */
-    goToDetail(page?: any) {
+    goToDetail(page?: PageI) {
         this._router.navigateByUrl('admin/modules/pages/detail', {
-            state: { page, micrositie: this.micrositie },
+            state: { id: page?.id, micrositieId: this.micrositie.id },
         });
     }
 }

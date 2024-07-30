@@ -15,6 +15,8 @@ import { MatDrawer, MatSidenavModule } from '@angular/material/sidenav';
 import { Router, RouterLink } from '@angular/router';
 import { FuseMediaWatcherService } from '@fuse/services/media-watcher';
 import { Subject, takeUntil } from 'rxjs';
+import { MicrosityService } from '../../microsities/micrositie.service';
+import { MicrositieI } from '../../microsities/micrositie.types';
 import { PageService } from '../pages.service';
 import { PageI } from '../pages.types';
 import { PagesDrawerComponent } from './drawer/drawer.component';
@@ -45,7 +47,7 @@ export class PagesDetailComponent implements OnInit, OnDestroy {
     panels: any[] = [];
     selectedPanel: string = 'information';
     page = signal<PageI>(null);
-    micrositie = signal<any>(null);
+    micrositie = signal<MicrositieI>(null);
     private _unsubscribeAll: Subject<any> = new Subject<any>();
 
     /**
@@ -55,10 +57,17 @@ export class PagesDetailComponent implements OnInit, OnDestroy {
         private _changeDetectorRef: ChangeDetectorRef,
         private _fuseMediaWatcherService: FuseMediaWatcherService,
         private _pageService: PageService,
+        private _microsityService: MicrosityService,
         private _router: Router
     ) {
-        this.micrositie =
-            this._router.getCurrentNavigation()?.extras?.state?.micrositie;
+        this._microsityService.micrositie$
+            .pipe(takeUntil(this._unsubscribeAll))
+            .subscribe((micrositie) => {
+                // Update the templates
+                this.micrositie.set(micrositie);
+                // Mark for check
+                this._changeDetectorRef.markForCheck();
+            });
     }
 
     // -----------------------------------------------------------------------------------------------------
@@ -173,9 +182,9 @@ export class PagesDetailComponent implements OnInit, OnDestroy {
      *
      */
     goToBack() {
-        if (this.micrositie) {
+        if (this.micrositie()) {
             this._router.navigateByUrl('/admin/modules/microsities/detail', {
-                state: { micrositie: this.micrositie() },
+                state: { id: this.micrositie().id },
             });
         } else {
             this._router.navigateByUrl('/admin/modules/pages');

@@ -82,6 +82,24 @@ export class MicrosityService {
     }
 
     /**
+     * Find micrositie
+     * @param micrositieId
+     * @returns
+     */
+    find(micrositieId: number): Observable<ResponseI<MicrositieI>> {
+        if (!micrositieId) return;
+        return this._httpClient
+            .get<
+                ResponseI<MicrositieI>
+            >(`${this.url}/ms-cms/microsities/${micrositieId}`)
+            .pipe(
+                tap((response) => {
+                    this._micrositie.next(response.message);
+                })
+            );
+    }
+
+    /**
      * Create the micrositie
      *
      * @param micrositie
