@@ -146,7 +146,9 @@ export class SettingsAccountComponent implements OnInit {
      * @param scheme
      */
     setScheme(scheme: Scheme): void {
-        this._cookieService.set('scheme', scheme);
+        const expireDate = new Date();
+        expireDate.setFullYear(expireDate.getFullYear() + 1);
+        this._cookieService.set('scheme', scheme, { expires: expireDate });
         this._fuseConfigService.config = { scheme };
     }
 
