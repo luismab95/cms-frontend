@@ -1,23 +1,43 @@
 import { inject } from '@angular/core';
-import { Routes } from '@angular/router';
+import { Router, Routes } from '@angular/router';
+import { LanguageService } from '../sitie/languages/language.service';
+import { SitieService } from '../sitie/sitie.service';
 import { PagesDetailComponent } from './detail/detail.component';
-import { PagesComponent } from './pages.component';
-import { InventoryService } from './pages.service';
+import { PagesListComponent } from './list.component';
+import { PageService } from './pages.service';
 
 export default [
     {
         path: '',
-        component: PagesComponent,
+        component: PagesListComponent,
         resolve: {
-            brands: () => inject(InventoryService).getBrands(),
-            categories: () => inject(InventoryService).getCategories(),
-            products: () => inject(InventoryService).getProducts(),
-            tags: () => inject(InventoryService).getTags(),
-            vendors: () => inject(InventoryService).getVendors(),
+            pages: () =>
+                inject(PageService).getAll({
+                    limit: 10,
+                    page: 1,
+                    search: null,
+                    status: true,
+                    micrositieId: null,
+                }),
         },
     },
+
     {
         path: 'detail',
         component: PagesDetailComponent,
+        resolve: {
+            page: () =>
+                inject(PageService).find(
+                    inject(Router).getCurrentNavigation()?.extras?.state?.id
+                ),
+            sitie: () => inject(SitieService).find(),
+            languages: () =>
+                inject(LanguageService).getAll({
+                    limit: 99999,
+                    page: 1,
+                    search: null,
+                    status: true,
+                }),
+        },
     },
 ] as Routes;

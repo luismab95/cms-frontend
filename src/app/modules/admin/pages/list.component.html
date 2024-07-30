@@ -8,7 +8,7 @@
             <div class="text-4xl font-extrabold leading-none tracking-tight">
                 Páginas</div>
             <div class="text-secondary mt-0.5 flex items-center font-medium">
-                10 páginas
+                {{pagesCount}} páginas
             </div>
         </div>
         <!-- Actions -->
@@ -31,31 +31,28 @@
     <div class="flex flex-auto overflow-hidden">
         <!-- Products list -->
         <div class="flex flex-auto flex-col overflow-hidden sm:mb-18 sm:overflow-y-auto">
-            @if (products$ | async; as products) {
-            @if (products.length > 0) {
+
             <div class="grid">
                 <!-- Header -->
-                <div class="pages-grid text-secondary sticky top-0 z-10 grid gap-4 bg-gray-50 px-6 py-4 text-md font-semibold shadow dark:bg-black dark:bg-opacity-5 md:px-8"
-                    matSort matSortDisableClear>
+                <div
+                    class="pages-grid text-secondary sticky top-0 z-10 grid gap-4 bg-gray-50 px-6 py-4 text-md font-semibold shadow dark:bg-black dark:bg-opacity-5 md:px-8">
                     <div>#</div>
-                    <div class="hidden md:block" [mat-sort-header]="'name'">
+                    <div class="hidden md:block">
                         Nombre
                     </div>
-                    <div [mat-sort-header]="'path'">Ruta</div>
-                    <div class="hidden sm:block" [mat-sort-header]="'micrositeId'">
-                        Micrositio
-                    </div>
-                    <div class="hidden lg:block" [mat-sort-header]="'status'">
+                    <div>Ruta</div>
+                    <div class="hidden lg:block">
                         Estado
                     </div>
                     <div class="hidden lg:block"></div>
                     <div></div>
                 </div>
                 <!-- Rows -->
-                @if (products$ | async; as products) {
+                @if (pages$ | async; as pages) {
+                @if (pages.records.length > 0) {
                 @for (
-                product of products;
-                track trackByFn($index, product)
+                page of pages.records;
+                track trackByFn($index, page)
                 ) {
                 <div class="pages-grid grid items-center gap-4 border-b px-6 py-3 md:px-8">
 
@@ -64,28 +61,24 @@
                         {{ $index +1}}
                     </div>
 
-                    <!-- SKU -->
-                    <div class="hidden truncate md:block">
-                        {{ product.sku }}
-                    </div>
-
                     <!-- Name -->
-                    <div class="truncate">
-                        {{ product.name }}
+                    <div [matTooltip]="page.name" class="hidden truncate md:block">
+                        {{ page.name }}
                     </div>
 
-                    <!-- Micrositie -->
-                    <div class="hidden truncate sm:block">
-                        {{ product.sku }}
+                    <!-- Path -->
+                    <div class="truncate">
+                        {{ page.path }}
                     </div>
+
 
                     <!-- Active -->
                     <div class="hidden lg:block">
-                        @if (product.active) {
+                        @if (page.status) {
                         <button class="bg-primary-400 text-white font-semibold w-30" mat-flat-button>
                             Activo</button>
                         }
-                        @if (!product.active) {
+                        @if (!page.status) {
                         <button class="bg-gray-400 text-white font-semibold w-30" mat-flat-button> Inactivo</button>
                         }
                     </div>
@@ -96,22 +89,21 @@
 
                     <!-- Actions button -->
                     <div class="flex items-center justify-between">
-                        <button (click)="goToDetail(product)" mat-icon-button>
+                        <button (click)="goToDetail(page)" mat-icon-button>
                             <mat-icon>more_vert</mat-icon>
                         </button>
                     </div>
                 </div>
                 }
+                <pagination [isLoading]="isLoading" [page]="pages.page" [limit]="10" [total]="pages.total"
+                    [pages]="pages.totalPage" (pageEvent)="getAll($event)"></pagination> }
+                @else {
+                <div class="border-t p-8 text-center text-4xl font-semibold tracking-tight sm:p-16">
+                    ¡No hay páginas!
+                </div>
+                }
                 }
             </div>
-            <pagination></pagination>
-            } @else {
-            <div class="border-t p-8 text-center text-4xl font-semibold tracking-tight sm:p-16">
-                ¡No hay páginas!
-            </div>
-            }
-            }
-
         </div>
     </div>
 </div>

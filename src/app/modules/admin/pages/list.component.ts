@@ -22,22 +22,19 @@ import { fuseAnimations } from '@fuse/animations';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { Router } from '@angular/router';
 import { PaginationComponent } from 'app/shared/components/pagination/pagination.component';
-import {
-    PaginationResponseI,
-    PaginationResquestI,
-} from 'app/shared/interfaces/response.interface';
+import { PaginationResponseI } from 'app/shared/interfaces/response.interface';
 import { ToastrService } from 'ngx-toastr';
 import { Observable, Subject, debounceTime, takeUntil } from 'rxjs';
-import { TemplateService } from './templates.service';
-import { TemplateI } from './templates.types';
+import { PageService } from './pages.service';
+import { PageI, PagePaginationResquestI } from './pages.types';
 
 @Component({
-    selector: 'list',
+    selector: 'pages',
     templateUrl: './list.component.html',
     styles: [
-        /* templates=SCSS */
+        /* pages=SCSS */
         `
-            .templates-grid {
+            .pages-grid {
                 grid-template-columns: 24px auto 42px;
 
                 @screen sm {
@@ -45,11 +42,11 @@ import { TemplateI } from './templates.types';
                 }
 
                 @screen md {
-                    grid-template-columns: 24px 160px auto 42px;
+                    grid-template-columns: 24px auto 160px 42px;
                 }
 
                 @screen lg {
-                    grid-template-columns: 24px 160px auto 80px 24px 42px;
+                    grid-template-columns: 24px auto 160px 80px 24px 42px;
                 }
             }
         `,
@@ -72,10 +69,10 @@ import { TemplateI } from './templates.types';
         MatTooltipModule,
     ],
 })
-export class TemplatesListComponent implements OnInit, OnDestroy {
-    templatesCount: number = 0;
+export class PagesListComponent implements OnInit, OnDestroy {
+    pagesCount: number = 0;
     searchInputControl: UntypedFormControl = new UntypedFormControl();
-    templates$: Observable<PaginationResponseI<TemplateI[]>>;
+    pages$: Observable<PaginationResponseI<PageI[]>>;
     isLoading: boolean = false;
     private _unsubscribeAll: Subject<any> = new Subject<any>();
 
@@ -84,7 +81,7 @@ export class TemplatesListComponent implements OnInit, OnDestroy {
      */
     constructor(
         private _changeDetectorRef: ChangeDetectorRef,
-        private _templateService: TemplateService,
+        private _pageService: PageService,
         private _router: Router,
         private _toastrService: ToastrService
     ) {}
@@ -98,13 +95,13 @@ export class TemplatesListComponent implements OnInit, OnDestroy {
      */
     ngOnInit(): void {
         // Get the templates
-        this.templates$ = this._templateService.templates$;
-        this._templateService.templates$
+        this.pages$ = this._pageService.pages$;
+        this._pageService.pages$
             .pipe(takeUntil(this._unsubscribeAll))
-            .subscribe((templates) => {
+            .subscribe((pages) => {
                 // Update the templates
-                this.templates$ = this._templateService.templates$;
-                this.templatesCount = templates.total;
+                this.pages$ = this._pageService.pages$;
+                this.pagesCount = pages.total;
                 // Mark for check
                 this._changeDetectorRef.markForCheck();
             });
@@ -117,7 +114,7 @@ export class TemplatesListComponent implements OnInit, OnDestroy {
                     {
                         pageSize: 10,
                         pageIndex: 0,
-                        length: this.templatesCount,
+                        length: this.pagesCount,
                     },
                     search === '' ? null : search,
                     search === '' ? true : null
@@ -147,14 +144,15 @@ export class TemplatesListComponent implements OnInit, OnDestroy {
         search: string | null = null,
         status: boolean = true
     ) {
-        const params: PaginationResquestI = {
+        const params: PagePaginationResquestI = {
             page: event?.pageIndex + 1,
             limit: event?.pageSize,
+            micrositieId: null,
             search,
             status,
         };
         this.isLoading = true;
-        this._templateService
+        this._pageService
             .getAll(params)
             .pipe(takeUntil(this._unsubscribeAll))
             .subscribe({
@@ -183,12 +181,11 @@ export class TemplatesListComponent implements OnInit, OnDestroy {
     /**
      * Go to detail page
      *
-     * @param template
+     * @param page
      */
-    goToDetail(template?: TemplateI) {
-        this._router.navigateByUrl('admin/modules/templates/detail');
-        this._router.navigateByUrl('admin/modules/templates/detail', {
-            state: { id: template?.id },
+    goToDetail(page?: PageI) {
+        this._router.navigateByUrl('admin/modules/pages/detail', {
+            state: { id: page?.id },
         });
     }
 }

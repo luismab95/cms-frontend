@@ -7,6 +7,7 @@ import {
     OnInit,
     ViewChild,
     ViewEncapsulation,
+    signal,
 } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
@@ -14,6 +15,8 @@ import { MatDrawer, MatSidenavModule } from '@angular/material/sidenav';
 import { Router, RouterLink } from '@angular/router';
 import { FuseMediaWatcherService } from '@fuse/services/media-watcher';
 import { Subject, takeUntil } from 'rxjs';
+import { PageService } from '../pages.service';
+import { PageI } from '../pages.types';
 import { PagesDrawerComponent } from './drawer/drawer.component';
 import { PagesInformationComponent } from './information/information.component';
 import { PagesLangugesComponent } from './languages/languages.component';
@@ -40,9 +43,9 @@ export class PagesDetailComponent implements OnInit, OnDestroy {
     drawerMode: 'over' | 'side' = 'side';
     drawerOpened: boolean = true;
     panels: any[] = [];
-    page: any;
-    micrositie: any;
     selectedPanel: string = 'information';
+    page = signal<PageI>(null);
+    micrositie = signal<any>(null);
     private _unsubscribeAll: Subject<any> = new Subject<any>();
 
     /**
@@ -51,9 +54,9 @@ export class PagesDetailComponent implements OnInit, OnDestroy {
     constructor(
         private _changeDetectorRef: ChangeDetectorRef,
         private _fuseMediaWatcherService: FuseMediaWatcherService,
+        private _pageService: PageService,
         private _router: Router
     ) {
-        this.page = this._router.getCurrentNavigation()?.extras?.state?.page;
         this.micrositie =
             this._router.getCurrentNavigation()?.extras?.state?.micrositie;
     }
@@ -76,21 +79,30 @@ export class PagesDetailComponent implements OnInit, OnDestroy {
             },
         ];
 
-        if (this.page) {
-            this.panels.push({
-                id: 'languages',
-                icon: 'heroicons_outline:language',
-                title: 'Idiomas',
-                description:
-                    'Administra la información de tu página en los diferentes idiomas del sitio.',
+        this._pageService.page$
+            .pipe(takeUntil(this._unsubscribeAll))
+            .subscribe((page) => {
+                // Update the template
+                this.page.set(page);
+
+                if (page && this.panels.length === 1) {
+                    this.panels.push({
+                        id: 'languages',
+                        icon: 'heroicons_outline:language',
+                        title: 'Idiomas',
+                        description:
+                            'Administra la información de tu página en los diferentes idiomas del sitio.',
+                    });
+                    this.panels.push({
+                        id: 'drawer',
+                        icon: 'heroicons_outline:paint-brush',
+                        title: 'Personalizar',
+                        description: 'Personaliza el contenido de tu página.',
+                    });
+                }
+                // Mark for check
+                this._changeDetectorRef.markForCheck();
             });
-            this.panels.push({
-                id: 'drawer',
-                icon: 'heroicons_outline:paint-brush',
-                title: 'Personalizar',
-                description: 'Personaliza el contenido de tu página.',
-            });
-        }
 
         // Subscribe to media changes
         this._fuseMediaWatcherService.onMediaChange$
@@ -160,10 +172,10 @@ export class PagesDetailComponent implements OnInit, OnDestroy {
      * Ir atras
      *
      */
-    goToBack(): any {
+    goToBack() {
         if (this.micrositie) {
             this._router.navigateByUrl('/admin/modules/microsities/detail', {
-                state: { micrositie: this.micrositie },
+                state: { micrositie: this.micrositie() },
             });
         } else {
             this._router.navigateByUrl('/admin/modules/pages');

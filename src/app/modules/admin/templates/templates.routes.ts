@@ -1,5 +1,5 @@
 import { inject } from '@angular/core';
-import { Routes } from '@angular/router';
+import { Router, Routes } from '@angular/router';
 import { TemplatesDetailComponent } from './detail/detail.component';
 import { TemplatesListComponent } from './list.component';
 import { TemplateService } from './templates.service';
@@ -21,5 +21,11 @@ export default [
     {
         path: 'detail',
         component: TemplatesDetailComponent,
+        resolve: {
+            template: () =>
+                inject(TemplateService).find(
+                    inject(Router).getCurrentNavigation()?.extras?.state?.id
+                ),
+        },
     },
 ] as Routes;

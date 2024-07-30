@@ -78,6 +78,25 @@ export class TemplateService {
             .pipe(
                 tap((response) => {
                     this._templates.next(response.message);
+                    this._template.next(null);
+                })
+            );
+    }
+
+    /**
+     * Find template
+     * @param templateId
+     * @returns
+     */
+    find(templateId: number): Observable<ResponseI<TemplateI>> {
+        if (!templateId) return;
+        return this._httpClient
+            .get<
+                ResponseI<TemplateI>
+            >(`${this.url}/ms-cms/templates/${templateId}`)
+            .pipe(
+                tap((response) => {
+                    this._template.next(response.message);
                 })
             );
     }
@@ -144,7 +163,7 @@ export class TemplateService {
     }
 
     /**
-     * Update the user
+     * Update the template
      *
      * @param templateId
      * @param template
