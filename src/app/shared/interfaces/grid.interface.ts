@@ -2,6 +2,7 @@ export interface PageElementsI {
     css: string;
     data: SectionI[];
     config: { [key: string]: any };
+    title?: string;
 }
 
 export interface ElementI {

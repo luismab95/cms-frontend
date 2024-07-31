@@ -37,9 +37,13 @@
                     <div class="flex items-center justify-end">
                         <button (click)="goToBack()" mat-stroked-button type=" button">Cancelar</button>
                         @if(preview === 'none'){
-                        <button class="ml-4" mat-flat-button type="button" [color]="'primary'">
-                            Guardar
-                        </button>
+                        <button class="ml-4" mat-flat-button type="button" [color]="'primary'" (click)="updatePage()">
+                            @if (!saveAction()) {
+                            <span> Guardar</span>
+                            }
+                            @if (saveAction()) {
+                            <mat-progress-spinner [diameter]="24" [mode]="'indeterminate'"></mat-progress-spinner>
+                            } </button>
                         }@else {
                         <button (click)="setPreview('none')" class="ml-4" mat-flat-button type="button"
                             [color]="'primary'">
@@ -59,7 +63,8 @@
                         ENCABEZADO
                     </span>
                 </div>
-                <div [ngClass]="{'my-3 min-h-40 rounded-2xl border-2 border-dashed border-gray-300':!previewMode}"
+                <div [ngStyle]="getStyles()"
+                    [ngClass]="{'my-3 min-h-40 rounded-2xl border-2 border-dashed border-gray-300':!previewMode}"
                     class="flex flex-col body">
                     <!-- Options -->
                     @if(!previewMode){
@@ -74,7 +79,7 @@
                                     <mat-icon [svgIcon]="'heroicons_outline:plus'"></mat-icon>
                                     Nueva sección
                                 </button>
-                                <button (click)="openSettingsModal(body())" mat-menu-item>
+                                <button (click)="openSettingsModal(page.data.body,'Contenido', 'body')" mat-menu-item>
                                     <mat-icon [svgIcon]="'heroicons_outline:cog-6-tooth'"></mat-icon>
                                     Configurar
                                 </button>

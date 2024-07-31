@@ -145,7 +145,7 @@ export class PageService {
         return this._httpClient
             .delete<
                 ResponseI<PageI>
-            >(`${this.url}/ms-cms/templates/draft/${pageId}`)
+            >(`${this.url}/ms-cms/pages/draft/${pageId}`)
             .pipe(
                 tap((response) => {
                     this._page.next(response.message);

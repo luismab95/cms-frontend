@@ -1,6 +1,5 @@
 import { inject } from '@angular/core';
 import { Router, Routes } from '@angular/router';
-import { PageService } from '../pages/pages.service';
 import { SitieService } from '../sitie/sitie.service';
 import { MicroSitiesDetailComponent } from './detail/detail.component';
 import { MicrositieListComponent } from './list.component';
@@ -29,16 +28,6 @@ export default [
                 inject(MicrosityService).find(
                     inject(Router).getCurrentNavigation()?.extras?.state?.id
                 ),
-            pages: () =>
-                inject(PageService).getAll({
-                    limit: 10,
-                    page: 1,
-                    status: true,
-                    search: null,
-                    micrositieId:
-                        inject(Router).getCurrentNavigation()?.extras?.state
-                            ?.id,
-                }),
         },
     },
 ] as Routes;

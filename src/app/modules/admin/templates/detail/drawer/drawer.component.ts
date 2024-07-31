@@ -1,4 +1,4 @@
-import { CommonModule, NgClass, NgStyle } from '@angular/common';
+import { NgClass, NgStyle } from '@angular/common';
 import {
     ChangeDetectionStrategy,
     ChangeDetectorRef,
@@ -20,6 +20,7 @@ import { ParameterI } from 'app/modules/admin/parameters/parameter.interface';
 import { ParameterService } from 'app/modules/admin/parameters/parameter.service';
 import { GridComponent } from 'app/shared/components/grid/grid.component';
 import { GridSettingsComponent } from 'app/shared/components/grid/settings/settings.component';
+import { PageElementsI, SectionI } from 'app/shared/interfaces/grid.interface';
 import { ModalService } from 'app/shared/services/modal.service';
 import { validGrid } from 'app/shared/utils/grid.utils';
 import { findParameter } from 'app/shared/utils/parameter.utils';
@@ -43,7 +44,6 @@ import { TemplateI } from '../../templates.types';
         MatTooltipModule,
         GridComponent,
         MatMenuModule,
-        CommonModule,
         NgStyle,
     ],
 })
@@ -54,8 +54,8 @@ export class TemplatesDrawerComponent implements OnInit {
     template: TemplateI;
     preview: string = 'none';
     previewMode: boolean = false;
-    header = signal<any>([]);
-    footer = signal<any>([]);
+    header = signal<SectionI[]>([]);
+    footer = signal<SectionI[]>([]);
     autosaveTimer: any;
     autosave = signal<boolean>(false);
     saveAction = signal<boolean>(false);
@@ -77,7 +77,7 @@ export class TemplatesDrawerComponent implements OnInit {
         // autosave logic
         this.autosaveTimer = setInterval(() => {
             this.updateDraft();
-        }, 60000);
+        }, 300000);
 
         this._parameterService.parameter$
             .pipe(takeUntil(this._unsubscribeAll))
@@ -102,13 +102,15 @@ export class TemplatesDrawerComponent implements OnInit {
         this._templateService.template$
             .pipe(takeUntil(this._unsubscribeAll))
             .subscribe((template) => {
-                // Update the template
-                this.template = template;
+                if (template) {
+                    // Update the template
+                    this.template = template;
 
-                if (this.template.draft !== null) {
-                    this.confirmDraft();
-                } else {
-                    this.loadTemplateData();
+                    if (this.template.draft !== null) {
+                        this.confirmDraft();
+                    } else {
+                        this.loadTemplateData();
+                    }
                 }
             });
     }
@@ -278,7 +280,7 @@ export class TemplatesDrawerComponent implements OnInit {
     addSection(item: 'header' | 'footer') {
         const newSection = {
             uuid: generateRandomString(8),
-            css: {},
+            css: '',
             config: {},
             rows: [
                 {
@@ -295,7 +297,7 @@ export class TemplatesDrawerComponent implements OnInit {
                     ],
                 },
             ],
-        };
+        } as SectionI;
         if (item === 'header')
             this.header.update((values) => {
                 return [...values, newSection];
@@ -314,7 +316,7 @@ export class TemplatesDrawerComponent implements OnInit {
      * @param grid
      * @param item
      */
-    setGrid(grid: any, item: 'header' | 'footer') {
+    setGrid(grid: SectionI[], item: 'header' | 'footer') {
         if (item === 'header') this.header.set(grid);
         if (item === 'footer') this.footer.set(grid);
 
@@ -328,11 +330,11 @@ export class TemplatesDrawerComponent implements OnInit {
      * @param data
      * @param item
      */
-    openSettingsModal<T>(data: T, item: string, code: string): void {
-        const dialogRef = this._modalSvc.openModal<GridSettingsComponent, T>(
+    openSettingsModal(data: PageElementsI, item: string, code: string): void {
+        const dialogRef = this._modalSvc.openModal<
             GridSettingsComponent,
-            { title: item, ...data }
-        );
+            PageElementsI
+        >(GridSettingsComponent, { title: item, ...data });
 
         dialogRef.afterClosed().subscribe((result) => {
             if (result) {

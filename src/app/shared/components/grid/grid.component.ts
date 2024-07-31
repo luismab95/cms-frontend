@@ -21,6 +21,8 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { ElementsComponent } from 'app/shared/components/element/elements.component';
+import { ElementCMSI } from 'app/shared/interfaces/element.interface';
+import { ColumnI, RowI, SectionI } from 'app/shared/interfaces/grid.interface';
 import { ModalService } from 'app/shared/services/modal.service';
 import { generateRandomString } from 'app/shared/utils/random.utils';
 import * as _ from 'lodash';
@@ -50,9 +52,9 @@ import { GridSettingsComponent } from './settings/settings.component';
 export class GridComponent implements OnInit {
     @Input() preview: boolean = false;
     @Input() previewType: string = 'none';
-    @Input() grid: any[] = [];
-    @Output() deleteSectionEvent: EventEmitter<any[]> = new EventEmitter<
-        any[]
+    @Input() grid: SectionI[] = [];
+    @Output() deleteSectionEvent: EventEmitter<SectionI[]> = new EventEmitter<
+        SectionI[]
     >();
     private _unsubscribeAll: Subject<any> = new Subject<any>();
 
@@ -74,23 +76,7 @@ export class GridComponent implements OnInit {
     ngOnInit(): void {
         // Load CSS
         const styleElement = document.createElement('style');
-        styleElement.textContent = `.grid-section {
-             background-color: gray; /* Example background color */
-             color: #333; /* Example text color */
-             min-height:200px; /* Example height */
-         }
-             .grid-row {
-             background-color: gray; /* Example background color */
-             color: #333; /* Example text color */
-             min-height:200px; /* Example height */
-         }
-             .grid-col {
-             background-color: gray; /* Example background color */
-             color: #333; /* Example text color */
-             min-height:200px; /* Example height */
-             width:50%; /* Example width */
-
-         }`;
+        styleElement.textContent = `.grid-section {} .grid-row {} .grid-col {}`;
         document.head.appendChild(styleElement);
     }
 
@@ -113,7 +99,7 @@ export class GridComponent implements OnInit {
      * @param index
      * @param item
      */
-    trackByFn(index: number, item: any): any {
+    trackByFn(index: number, item: any) {
         return item.id || index;
     }
 
@@ -130,10 +116,10 @@ export class GridComponent implements OnInit {
      * Add row to sections
      * @param row
      */
-    addRow(section: any) {
+    addRow(section: SectionI) {
         section.rows.push({
             uuid: generateRandomString(8),
-            css: {},
+            css: '',
             config: {},
             columns: [],
         });
@@ -143,10 +129,10 @@ export class GridComponent implements OnInit {
      * Add column to rows
      * @param row
      */
-    addColumn(row: any) {
+    addColumn(row: RowI) {
         row.columns.push({
             uuid: generateRandomString(8),
-            css: {},
+            css: '',
             config: {},
             element: null,
         });
@@ -156,16 +142,17 @@ export class GridComponent implements OnInit {
      * Add element to columns
      * @param column
      */
-    addElement(column: any) {
+    addElement(column: ColumnI, element: ElementCMSI) {
         column.element = {
             uuid: generateRandomString(8),
-            name: 'Boton',
-            css: {},
-            config: {},
-            text: {
-                ref: 'lorem ipsum...',
-            },
+            name: element.name,
+            css: element.css,
+            config: element.config,
+            text: element.text,
         };
+
+        // Mark for check
+        this._changeDetectorRef.markForCheck();
     }
 
     /**
@@ -182,7 +169,7 @@ export class GridComponent implements OnInit {
      * @param uuid
      * @param section
      */
-    deleteRow(uuid: string, section: any) {
+    deleteRow(uuid: string, section: SectionI) {
         section.rows = section.rows.filter((item) => item.uuid !== uuid);
     }
 
@@ -191,7 +178,7 @@ export class GridComponent implements OnInit {
      * @param uuid
      * @param row
      */
-    deleteColumn(uuid: string, row: any) {
+    deleteColumn(uuid: string, row: RowI) {
         row.columns = row.columns.filter((item) => item.uuid !== uuid);
     }
 
@@ -199,7 +186,7 @@ export class GridComponent implements OnInit {
      * Delete element to column
      * @param column
      */
-    deleteElement(column: any) {
+    deleteElement(column: ColumnI) {
         column.element = null;
     }
 
@@ -222,11 +209,16 @@ export class GridComponent implements OnInit {
      *
      * @param data
      */
-    openElementsMangerModal<T>(data: any): void {
-        this._modalSvc.openModal<ElementsManagerComponent, T>(
+    openElementsMangerModal(data: ColumnI): void {
+        const dialogRef = this._modalSvc.openModal<
             ElementsManagerComponent,
-            data
-        );
-        this.addElement(data);
+            ColumnI
+        >(ElementsManagerComponent, data);
+
+        dialogRef.afterClosed().subscribe((result) => {
+            if (result) {
+                this.addElement(data, result);
+            }
+        });
     }
 }

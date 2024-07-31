@@ -189,6 +189,9 @@ export class MicrositieListComponent implements OnInit, OnDestroy {
      * @param micrositie
      */
     goToDetail(micrositie?: MicrositieI) {
+        if (!micrositie) {
+            this._microsityService.micrositie = null;
+        }
         this._router.navigateByUrl('admin/modules/microsities/detail', {
             state: { id: micrositie?.id },
         });

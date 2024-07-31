@@ -16,7 +16,7 @@ export class RoleService {
     // -----------------------------------------------------------------------------------------------------
 
     /**
-     * Setter & getter for user
+     * Setter & getter for roles
      *
      * @param value
      */

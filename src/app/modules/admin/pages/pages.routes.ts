@@ -1,5 +1,6 @@
 import { inject } from '@angular/core';
 import { Router, Routes } from '@angular/router';
+import { ElementService } from 'app/shared/services/element.service';
 import { MicrosityService } from '../microsities/micrositie.service';
 import { LanguageService } from '../sitie/languages/language.service';
 import { SitieService } from '../sitie/sitie.service';
@@ -39,6 +40,13 @@ export default [
             sitie: () => inject(SitieService).find(),
             languages: () =>
                 inject(LanguageService).getAll({
+                    limit: 99999,
+                    page: 1,
+                    search: null,
+                    status: true,
+                }),
+            elements: () =>
+                inject(ElementService).getAll({
                     limit: 99999,
                     page: 1,
                     search: null,

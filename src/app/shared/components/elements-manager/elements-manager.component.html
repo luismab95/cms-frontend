@@ -22,7 +22,8 @@
             <!-- Search -->
             <mat-form-field class="fuse-mat-dense fuse-mat-rounded min-w-64 md:min-w-120" [subscriptSizing]="'dynamic'">
                 <mat-icon class="icon-size-5" matPrefix [svgIcon]="'heroicons_solid:magnifying-glass'"></mat-icon>
-                <input matInput [autocomplete]="'off'" [placeholder]="'Buscar elemento'" />
+                <input matInput [formControl]="searchInputControl" [autocomplete]="'off'"
+                    [placeholder]="'Buscar elemento'" />
             </mat-form-field>
         </div>
     </div>
@@ -34,42 +35,44 @@
 
             <div class="flex flex-auto overflow-hidden">
                 <div class="flex flex-auto flex-col sm:mb-18 overflow-y-auto">
-                    <!-- @if (
-                items &&
-                (items.folders.length > 0 || items.files.length > 0)
-                ) { -->
-                    <div class="py-4 flex flex-wrap justify-center items-center gap-4">
-                        <!-- Files -->
+                    @if (elements$ | async; as elements) {
+                    @if (elements.records.length > 0) {
+                    <div class="py-4 flex flex-wrap justify-center items-center gap-4 mt-3">
+                        <!-- elements -->
                         @for (
-                        file of files;
-                        track trackByFn($index, file)
+                        element of elements.records;
+                        track trackByFn($index, element)
                         ) {
-                        <a class="bg-card flex h-50 w-50 cursor-pointer flex-col rounded-2xl p-4 shadow">
+                        <a (click)="selectElememt(element)" [class.ring-2]="selectedElement?.id === element.id"
+                            class="bg-card flex h-50 w-50 cursor-pointer flex-col rounded-2xl p-4 shadow">
                             <div class="aspect-[9/6]">
                                 <div class="flex h-full items-center justify-center">
                                     <!-- Icons -->
-                                    <div class="relative w-40">
-                                        <img class="w-full object-cover rounded-md" [src]="file.url" />
+                                    <div class="relative w-40 text-center">
+                                        <mat-icon class="icon-size-16" [svgIcon]="element.icon"></mat-icon>
                                     </div>
                                 </div>
                             </div>
                             <div class="flex flex-auto flex-col justify-center text-center text-sm font-medium">
-                                <div class="truncate" [matTooltip]="file.name">
-                                    {{ file.name }}
+                                <div class="truncate" [matTooltip]="element.name">
+                                    {{ element.name }}
                                 </div>
                             </div>
                         </a>
                         }
                     </div>
-                    <!-- } @else { -->
-                    <!-- No items template -->
-                    <!-- <div class="flex flex-auto flex-col items-center justify-center bg-gray-100 dark:bg-transparent">
-                    <mat-icon class="icon-size-24" [svgIcon]="'heroicons_outline:folder-open'"></mat-icon>
-                    <div class="text-secondary mt-4 text-2xl font-semibold tracking-tight">
-                        ¡No hay imágenes!
+                    <div class="absolute bottom-12 w-full md:w-140 -left-6 z-10">
+                        <pagination [isLoading]="isLoading" [page]="elements.page" [limit]="10" [total]="elements.total"
+                            [pages]="elements.totalPage" (pageEvent)="getAll($event)"></pagination>
                     </div>
-                </div>
-                } -->
+
+                    }
+                    @else {
+                    <div class="border-t p-8 text-center text-4xl font-semibold tracking-tight sm:p-16">
+                        ¡No hay elementos!
+                    </div>
+                    }
+                    }
                 </div>
             </div>
             <!-- Actions -->
@@ -81,7 +84,8 @@
                         Cancelar
                     </button>
                     <!-- Save -->
-                    <button class="ml-2" mat-flat-button [color]="'primary'" [matTooltip]="'Guardar'">
+                    <button [disabled]="selectedElement === undefined" (click)="addElement()" class="ml-2"
+                        mat-flat-button [color]="'primary'" [matTooltip]="'Guardar'">
                         Agregar
                     </button>
                 </div>

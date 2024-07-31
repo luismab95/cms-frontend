@@ -3,11 +3,12 @@ import {
     ChangeDetectionStrategy,
     Component,
     ElementRef,
+    Input,
     OnDestroy,
-    OnInit,
     ViewChild,
     ViewEncapsulation,
 } from '@angular/core';
+import { ElementI } from 'app/shared/interfaces/grid.interface';
 import { Subject } from 'rxjs';
 
 @Component({
@@ -18,7 +19,8 @@ import { Subject } from 'rxjs';
     standalone: true,
     imports: [],
 })
-export class ElementsComponent implements OnInit, OnDestroy, AfterViewInit {
+export class ElementsComponent implements OnDestroy, AfterViewInit {
+    @Input() element: ElementI;
     @ViewChild('pluginContainer') pluginContainer: ElementRef<HTMLDivElement>;
     private _unsubscribeAll: Subject<any> = new Subject<any>();
 
@@ -30,11 +32,6 @@ export class ElementsComponent implements OnInit, OnDestroy, AfterViewInit {
     // -----------------------------------------------------------------------------------------------------
     // @ Lifecycle hooks
     // -----------------------------------------------------------------------------------------------------
-
-    /**
-     * On init
-     */
-    ngOnInit(): void {}
 
     /**
      * After Iiit
@@ -50,42 +47,20 @@ export class ElementsComponent implements OnInit, OnDestroy, AfterViewInit {
                 iframe.contentWindow.postMessage(
                     {
                         properties: {
-                            config: { go: 'https://chatgpt.com/' },
-                            text: {
-                                ref: 'lorem ipsum...',
-                            },
-                            css: `.modern-button {
-    display: inline-block;
-    padding: 12px 24px;
-    font-size: 16px;
-    font-weight: bold;
-    color: #fff;
-    text-align: center;
-    text-decoration: none;
-    border: none;
-    border-radius: 8px;
-    background-color: #4CAF50; /* Color de fondo */
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Sombra */
-    transition: background-color 0.3s ease, transform 0.2s ease-in-out;
-    cursor: pointer;
-}
-
-.modern-button:hover {
-    background-color: #45a049; /* Cambio de color al pasar el ratón */
-    transform: translateY(-2px); /* Efecto de elevación */
-}
-
-.modern-button:active {
-    transform: translateY(0);
-    box-shadow: none; /* Elimina la sombra al hacer clic */
-}`,
+                            config: this.element.config,
+                            text: this.element.text,
+                            css: this.element.css,
+                            uuid: this.element.uuid,
                         },
                     },
                     '*'
                 );
             };
             // Establecer la ruta al HTML del plugin después de configurar el evento load
-            iframe.setAttribute('src', '/plugins/test/test.html');
+            iframe.setAttribute(
+                'src',
+                `/plugins/${this.element.name.toLowerCase()}/${this.element.name.toLowerCase()}.html`
+            );
             // Agregar el iframe al contenedor del plugin
             this.pluginContainer.nativeElement.appendChild(iframe);
         } else {

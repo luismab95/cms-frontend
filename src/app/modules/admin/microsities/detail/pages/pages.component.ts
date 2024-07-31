@@ -93,6 +93,15 @@ export class MicrositiesPagesComponent implements OnInit {
             .subscribe((micrositie) => {
                 // Update the templates
                 this.micrositie = micrositie;
+                this._pageService
+                    .getAll({
+                        limit: 10,
+                        micrositieId: micrositie?.id,
+                        page: 1,
+                        search: null,
+                        status: true,
+                    })
+                    .subscribe();
                 // Mark for check
                 this._changeDetectorRef.markForCheck();
             });
