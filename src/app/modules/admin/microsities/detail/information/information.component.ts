@@ -24,6 +24,7 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { RouterLink } from '@angular/router';
 import { SitieService } from 'app/modules/admin/sitie/sitie.service';
+import { SitieI } from 'app/modules/admin/sitie/sitie.types';
 import { ToastrService } from 'ngx-toastr';
 import { Subject, takeUntil } from 'rxjs';
 import { MicrosityService } from '../../micrositie.service';
@@ -51,6 +52,7 @@ import { MicrositieI } from '../../micrositie.types';
     ],
 })
 export class MicrositiesInformationComponent implements OnInit {
+    sitie: SitieI;
     micrositie: MicrositieI;
     micrositieForm: UntypedFormGroup;
 
@@ -99,6 +101,7 @@ export class MicrositiesInformationComponent implements OnInit {
         this._sitieService.sitie$
             .pipe(takeUntil(this._unsubscribeAll))
             .subscribe((sitie) => {
+                this.sitie = sitie;
                 this.micrositieForm.get('sitieId').setValue(sitie.id);
 
                 // Mark for check
@@ -201,5 +204,12 @@ export class MicrositiesInformationComponent implements OnInit {
                     this._toastrService.error(response.error.message, 'Aviso');
                 },
             });
+    }
+
+    /**
+     * Visit micrositie
+     */
+    visit() {
+        window.open(`${this.sitie.domain}/${this.micrositie.path}`, '_blank');
     }
 }

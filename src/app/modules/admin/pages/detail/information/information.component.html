@@ -21,7 +21,7 @@
             <div class="sm:col-span-4">
                 <mat-form-field class="fuse-mat-emphasized-affix w-full" [subscriptSizing]="'dynamic'">
                     <mat-label>Ruta</mat-label>
-                    <div class="text-secondary" matPrefix>{{sitie.domain}}/</div>
+                    <div class="text-secondary" matPrefix>{{getDomain()}}</div>
                     <input [formControlName]="'path'" matInput />
                 </mat-form-field>
             </div>

@@ -23,7 +23,7 @@
             <!-- Dominio -->
             <div class="sm:col-span-4">
                 <mat-form-field class="w-full" [subscriptSizing]="'dynamic'">
-                    <mat-label>Dominio</mat-label>
+                    <mat-label>Url</mat-label>
                     <mat-icon class="icon-size-5" [svgIcon]="'heroicons_solid:globe-alt'" matPrefix></mat-icon>
                     <input [formControlName]="'domain'" matInput />
                     @if (sitieForm.get('domain').hasError('required')) {
@@ -50,6 +50,8 @@
                     Breve descripción del sitio.
                 </div>
             </div>
+
+
         </div>
 
         <!-- Divider -->
@@ -128,16 +130,25 @@
         <div class="mb-10 mt-11 border-t"></div>
 
         <!-- Actions -->
-        <div class="flex items-center justify-end">
-            <button (click)="cancel()" mat-stroked-button type="button">Cancelar</button>
-            <button class="ml-4" mat-flat-button type="button" [color]="'primary'" (click)="save()">
-                @if (!sitieForm.disabled) {
-                <span> Guardar</span>
-                }
-                @if (sitieForm.disabled) {
-                <mat-progress-spinner [diameter]="24" [mode]="'indeterminate'"></mat-progress-spinner>
-                }
-            </button>
+        <div class="flex items-center justify-between">
+            <div class="flex items-center justify-start">
+                <button (click)="visit()" [color]="'primary'" mat-stroked-button type="button">
+                    <mat-icon svgIcon="heroicons_outline:link"></mat-icon>
+                    <span class="ml-2">Visitar</span>
+                </button>
+            </div>
+            <div class="flex items-center justify-end">
+
+                <button (click)="cancel()" mat-stroked-button type="button">Cancelar</button>
+                <button class="ml-4" mat-flat-button type="button" [color]="'primary'" (click)="save()">
+                    @if (!sitieForm.disabled) {
+                    <span> Guardar</span>
+                    }
+                    @if (sitieForm.disabled) {
+                    <mat-progress-spinner [diameter]="24" [mode]="'indeterminate'"></mat-progress-spinner>
+                    }
+                </button>
+            </div>
         </div>
     </form>
 </div>

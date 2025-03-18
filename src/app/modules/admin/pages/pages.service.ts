@@ -77,7 +77,7 @@ export class PageService {
             .pipe(
                 tap((response) => {
                     this._pages.next(response.message);
-                    this._page.next(null);
+                    // this._page.next(null);
                 })
             );
     }
@@ -87,7 +87,7 @@ export class PageService {
      * @param pageId
      * @returns
      */
-    find(pageId: number): Observable<ResponseI<PageI>> {
+    find(pageId: number): Observable<ResponseI<PageI>> {        
         if (!pageId) return;
         return this._httpClient
             .get<ResponseI<PageI>>(`${this.url}/ms-cms/pages/${pageId}`)

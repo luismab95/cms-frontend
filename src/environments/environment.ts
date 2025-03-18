@@ -1,5 +1,5 @@
 export const environment = {
       production: false,
     apiUrl: 'http://0.0.0.0:3000',
-    secretKey: '416b32ad902898b308754311594655f9b723fb8d14fe592feb03bf69f872e393'
+    secretKey: 'da958366569e55dcd74ed1e75c37607d7bac73bb6e1cacb8232d972c7fbca26b'
      }

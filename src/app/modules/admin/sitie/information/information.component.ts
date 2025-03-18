@@ -133,6 +133,13 @@ export class SitieInformationComponent implements OnInit {
     // -----------------------------------------------------------------------------------------------------
 
     /**
+     * Visit action
+     */
+    visit() {
+        window.open(this.sitie().domain, '_blank');
+    }
+
+    /**
      * Save action
      */
     save() {

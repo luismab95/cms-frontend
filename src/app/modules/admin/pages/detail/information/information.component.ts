@@ -240,6 +240,15 @@ export class PagesInformationComponent implements OnInit {
      * Redirect to page
      */
     redirectPage() {
-        window.open(`http://${this.sitie.domain}/${this.page.path}`, '_blank');
+        window.open(`${this.getDomain()}${this.page.path}`, '_blank');
+    }
+
+    /**
+     * Get domain
+     */
+    getDomain() {
+        if (this.micrositie)
+            return `${this.sitie.domain}/${this.micrositie.path}/`;
+        return `${this.sitie.domain}/`;
     }
 }

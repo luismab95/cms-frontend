@@ -288,7 +288,15 @@ export class LayoutComponent implements OnInit, OnDestroy {
      * Update meta
      */
     updateMetaTags() {
-        this._titleService.setTitle(this.getParameter('COMPANY_NAME'));
+        const currentRoute = this._activatedRoute.snapshot.url
+            .map((segment) => segment.path)
+            .join('/');
+        let title = this.getParameter('COMPANY_NAME');
+        if (currentRoute === 'admin' || currentRoute === 'auth') {
+            title = `Admin - ${this.getParameter('COMPANY_NAME')}`;
+        }
+
+        this._titleService.setTitle(title);
         this._metaService.updateTag({
             name: 'description',
             content: this.getParameter('COMPANY_DESCRIPTION'),

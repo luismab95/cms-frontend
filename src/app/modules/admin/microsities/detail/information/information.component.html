@@ -76,16 +76,24 @@
         }
 
         <!-- Actions -->
-        <div class="flex items-center justify-end">
-            <button [routerLink]="['/admin/modules/microsities']" mat-stroked-button type="button">Cancelar</button>
-            <button class="ml-4" mat-flat-button type="button" [color]="'primary'" (click)="create()">
-                @if (!micrositieForm.disabled) {
-                <span> Guardar</span>
-                }
-                @if (micrositieForm.disabled) {
-                <mat-progress-spinner [diameter]="24" [mode]="'indeterminate'"></mat-progress-spinner>
-                }
-            </button>
+        <div class="flex items-center justify-between">
+            <div class="flex items-center justify-start">
+                <button (click)="visit()" [color]="'primary'" mat-stroked-button type="button">
+                    <mat-icon svgIcon="heroicons_outline:link"></mat-icon>
+                    <span class="ml-2">Visitar</span>
+                </button>
+            </div>
+            <div class="flex items-center justify-end">
+                <button [routerLink]="['/admin/modules/microsities']" mat-stroked-button type="button">Cancelar</button>
+                <button class="ml-4" mat-flat-button type="button" [color]="'primary'" (click)="create()">
+                    @if (!micrositieForm.disabled) {
+                    <span> Guardar</span>
+                    }
+                    @if (micrositieForm.disabled) {
+                    <mat-progress-spinner [diameter]="24" [mode]="'indeterminate'"></mat-progress-spinner>
+                    }
+                </button>
+            </div>
         </div>
     </form>
 </div>

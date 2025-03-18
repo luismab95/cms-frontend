@@ -116,16 +116,17 @@ export class PagesDrawerComponent implements OnInit {
         this._pageService.page$
             .pipe(takeUntil(this._unsubscribeAll))
             .subscribe((page) => {
-                if (page) {
-                    // Update the page
-                    this.page = page;
+                // Update the page
+                this.page = page;
 
-                    if (this.page.draft !== null) {
-                        this.confirmDraft();
-                    } else {
-                        this.loadPageData();
-                    }
+                if (this.page.draft !== null) {
+                    this.confirmDraft();
+                } else {
+                    this.loadPageData();
                 }
+
+                // Mark for check
+                this._changeDetectorRef.markForCheck();
             });
     }
 

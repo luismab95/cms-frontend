@@ -72,17 +72,19 @@ export class OtpComponent implements OnInit, OnChanges {
 
         this.otpInputConfig = {
             otpLength: Number(this.otpLong),
+            inputMode: 'text',
+            autoFocus: true,
         };
 
         switch (this.otpType) {
             case 'NUMBER':
-                this.otpInputConfig['pattern'] = this.patterNumber;
+                this.otpInputConfig.regexp = this.patterNumber;
                 break;
             case 'LETTER':
-                this.otpInputConfig['pattern'] = this.patterLetters;
+                this.otpInputConfig.regexp = this.patterLetters;
                 break;
             case 'COMBINED':
-                this.otpInputConfig['pattern'] = this.patterNumberLetters;
+                this.otpInputConfig.regexp = this.patterNumberLetters;
                 break;
         }
     }

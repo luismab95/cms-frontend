@@ -1,5 +1,5 @@
 import { Overlay } from '@angular/cdk/overlay';
-import { NgClass, NgTemplateOutlet } from '@angular/common';
+import { NgTemplateOutlet } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import {
     Component,
@@ -54,7 +54,6 @@ import { Subject, debounceTime, filter, map, takeUntil } from 'rxjs';
         NgTemplateOutlet,
         MatFormFieldModule,
         MatInputModule,
-        NgClass,
     ],
     providers: [
         {

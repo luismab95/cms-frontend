@@ -4,21 +4,26 @@ import {
     FuseNavigationService,
 } from '@fuse/components/navigation';
 import { FuseMockApiService } from '@fuse/lib/mock-api';
+import { NavigationService } from 'app/core/navigation/navigation.service';
 import { cloneDeep } from 'lodash-es';
 
 @Injectable({ providedIn: 'root' })
 export class SearchMockApi {
-    private readonly _defaultNavigation: FuseNavigationItem[] = [];
+    private _defaultNavigation: FuseNavigationItem[] = [];
 
     /**
      * Constructor
      */
     constructor(
         private _fuseMockApiService: FuseMockApiService,
+        private _navigationService: NavigationService,
         private _fuseNavigationService: FuseNavigationService
     ) {
         // Register Mock API handlers
-        this.registerHandlers();
+        this._navigationService.navigation$.subscribe((navigation) => {
+            this._defaultNavigation = navigation.compact;
+            this.registerHandlers();
+        });
     }
 
     // -----------------------------------------------------------------------------------------------------
@@ -70,7 +75,7 @@ export class SearchMockApi {
                     // Add to the results
                     results.push({
                         id: 'pages',
-                        label: 'Pages',
+                        label: 'Páginas',
                         results: pagesResults,
                     });
                 }

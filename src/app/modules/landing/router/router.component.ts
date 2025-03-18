@@ -51,6 +51,10 @@ export class LandingRouterComponent implements OnInit, OnDestroy {
     private _fuseMediaWatcherService = inject(FuseMediaWatcherService);
     private _unsubscribeAll: Subject<any> = new Subject<any>();
 
+    //TODO OBTENER PATH
+    // CARGAR DATA DEL SERVICIO
+    // CARGAR CSS
+
     /**
      * Constructor
      */
