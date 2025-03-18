@@ -1,0 +1,96 @@
+<div class="relative flex h-full w-full flex-col">
+    <!-- Dismiss button -->
+    <div class="absolute right-0 top-0 pr-4 pt-4 z-10">
+        <button mat-icon-button [matDialogClose]="undefined">
+            <mat-icon class="text-secondary" [svgIcon]="'heroicons_outline:x-mark'"></mat-icon>
+        </button>
+    </div>
+
+    <!-- Header -->
+    <div class="relative flex flex-0 border-b pb-8 pt-6 flex-col">
+
+        <!-- Title -->
+        <div>
+            <div class="text-3xl font-extrabold leading-none tracking-tight">
+                Administrador de elementos</div>
+            <div class="text-secondary mt-0.5 flex items-center font-medium">
+                Selecciona un elemento para agregarlo
+            </div>
+        </div>
+        <!-- Actions -->
+        <div class="mt-6 flex shrink-0 items-center ml-0 sm:ml-4">
+            <!-- Search -->
+            <mat-form-field class="fuse-mat-dense fuse-mat-rounded min-w-64 md:min-w-120" [subscriptSizing]="'dynamic'">
+                <mat-icon class="icon-size-5" matPrefix [svgIcon]="'heroicons_solid:magnifying-glass'"></mat-icon>
+                <input matInput [formControl]="searchInputControl" [autocomplete]="'off'"
+                    [placeholder]="'Buscar elemento'" />
+            </mat-form-field>
+        </div>
+    </div>
+
+    <!-- Main -->
+    <div class="flex flex-auto overflow-hidden">
+        <!-- Images list -->
+        <div class="flex flex-auto flex-col sm:mb-18 overflow-y-auto">
+
+            <div class="flex flex-auto overflow-hidden">
+                <div class="flex flex-auto flex-col sm:mb-18 overflow-y-auto">
+                    @if (elements$ | async; as elements) {
+                    @if (elements.records.length > 0) {
+                    <div class="py-4 flex flex-wrap justify-center items-center gap-4 mt-3">
+                        <!-- elements -->
+                        @for (
+                        element of elements.records;
+                        track trackByFn($index, element)
+                        ) {
+                        <a (click)="selectElememt(element)" [class.ring-2]="selectedElement?.id === element.id"
+                            class="bg-card flex h-50 w-50 cursor-pointer flex-col rounded-2xl p-4 shadow">
+                            <div class="aspect-[9/6]">
+                                <div class="flex h-full items-center justify-center">
+                                    <!-- Icons -->
+                                    <div class="relative w-40 text-center">
+                                        <mat-icon class="icon-size-16" [svgIcon]="element.icon"></mat-icon>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="flex flex-auto flex-col justify-center text-center text-sm font-medium">
+                                <div class="truncate" [matTooltip]="element.name">
+                                    {{ element.name }}
+                                </div>
+                            </div>
+                        </a>
+                        }
+                    </div>
+                    <div class="absolute bottom-12 w-full md:w-140 -left-6 z-10">
+                        <pagination [isLoading]="isLoading" [page]="elements.page" [limit]="10" [total]="elements.total"
+                            [pages]="elements.totalPage" (pageEvent)="getAll($event)"></pagination>
+                    </div>
+
+                    }
+                    @else {
+                    <div class="border-t p-8 text-center text-4xl font-semibold tracking-tight sm:p-16">
+                        ¡No hay elementos!
+                    </div>
+                    }
+                    }
+                </div>
+            </div>
+            <!-- Actions -->
+            <div class="absolute -bottom-6 w-full md:w-140 -left-6 z-10">
+                <div
+                    class="mt-10 flex items-center overflow-hidden justify-end border-t bg-gray-50 py-4 dark:bg-transparent pr-8">
+                    <!-- Cancel -->
+                    <button class="ml-auto" mat-button [matTooltip]="'Cancelar'" [mat-dialog-close]="false">
+                        Cancelar
+                    </button>
+                    <!-- Save -->
+                    <button [disabled]="selectedElement === undefined" (click)="addElement()" class="ml-2"
+                        mat-flat-button [color]="'primary'" [matTooltip]="'Guardar'">
+                        Agregar
+                    </button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>

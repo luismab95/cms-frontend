@@ -1,0 +1,61 @@
+<!-- ----------------------------------------------------------------------------------------------------- -->
+<!-- Empty layout -->
+<!-- ----------------------------------------------------------------------------------------------------- -->
+@if (layout === 'empty') {
+<empty-layout></empty-layout>
+}
+
+<!-- ----------------------------------------------------------------------------------------------------- -->
+<!-- Layouts with horizontal navigation -->
+<!-- ----------------------------------------------------------------------------------------------------- -->
+@if(parameters().length>0){
+<!-- Centered -->
+@if (layout === 'centered') {
+<centered-layout [parameters]="parameters()"></centered-layout>
+}
+
+<!-- Enterprise -->
+@if (layout === 'enterprise') {
+<enterprise-layout [parameters]="parameters()"></enterprise-layout>
+}
+
+<!-- Material -->
+@if (layout === 'material') {
+<material-layout [parameters]="parameters()"></material-layout>
+}
+
+<!-- Modern -->
+@if (layout === 'modern') {
+<modern-layout [parameters]="parameters()"></modern-layout>
+}
+
+<!-- ----------------------------------------------------------------------------------------------------- -->
+<!-- Layouts with vertical navigation -->
+<!-- ----------------------------------------------------------------------------------------------------- -->
+
+<!-- Classic -->
+@if (layout === 'classic') {
+<classic-layout [parameters]="parameters()"></classic-layout>
+}
+
+<!-- Classy -->
+@if (layout === 'classy') {
+<classy-layout [parameters]="parameters()"></classy-layout>
+}
+
+
+<!-- Dense -->
+@if (layout === 'dense') {
+<dense-layout [parameters]="parameters()"></dense-layout>
+}
+
+<!-- Futuristic -->
+@if (layout === 'futuristic') {
+<futuristic-layout [parameters]="parameters()"></futuristic-layout>
+}
+
+}
+<!-- ----------------------------------------------------------------------------------------------------- -->
+<!-- Settings drawer - Remove this to remove the drawer and its button -->
+<!-- ----------------------------------------------------------------------------------------------------- -->
+<!-- <settings></settings> -->

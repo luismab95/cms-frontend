@@ -1,0 +1,101 @@
+<div class="absolute inset-0 flex min-w-0 flex-col overflow-hidden">
+    <!-- Main -->
+    <div class="flex-auto">
+        <!-- Header -->
+        <div
+            class="relative flex flex-0 flex-col border-b px-6 py-8 sm:flex-row sm:items-center sm:justify-between md:px-8">
+            <!-- Title -->
+            <div>
+                <div class="text-4xl font-extrabold leading-none tracking-tight">
+                    Usuarios</div>
+                <div class="text-secondary mt-0.5 flex items-center font-medium">
+                    {{usersCount}} usuarios
+                </div>
+            </div>
+
+            <!-- Actions -->
+            <div class="mt-6 flex shrink-0 items-center sm:ml-4 sm:mt-0">
+                <!-- Search -->
+                <mat-form-field class="fuse-mat-dense fuse-mat-rounded min-w-64" [subscriptSizing]="'dynamic'">
+                    <mat-icon class="icon-size-5" matPrefix [svgIcon]="'heroicons_solid:magnifying-glass'"></mat-icon>
+                    <input matInput [formControl]="searchInputControl" [autocomplete]="'off'"
+                        [placeholder]="'Buscar usuarios'" />
+                </mat-form-field>
+                <!-- Add user button -->
+                <button (click)="openDetailsModal()" class="ml-4" mat-flat-button [color]="'primary'">
+                    <mat-icon [svgIcon]="'heroicons_outline:plus'"></mat-icon>
+                    <span class="ml-2 mr-1">Agregar</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Users list -->
+        <div class="flex flex-auto flex-col overflow-hidden sm:mb-18 sm:overflow-y-auto">
+            @if (users$ | async; as users) {
+            @if (users.records.length > 0) {
+            @for (
+            user of users.records;
+            track trackByFn(i, user);
+            let i = $index
+            ) {
+            <!-- Group -->
+            @if (
+            i === 0 ||
+            user.firstname.charAt(0) !==
+            users.records[i - 1].firstname.charAt(0)
+            ) {
+            <div
+                class="text-secondary sticky top-0 z-10 -mt-px border-b border-t bg-gray-50 px-6 py-1 font-medium uppercase dark:bg-gray-900 md:px-8">
+                {{ user.firstname.charAt(0) }}
+            </div>
+            }
+            <!-- User -->
+            <a class="z-20 flex cursor-pointer items-center border-b px-6 py-4 md:px-8">
+                <div class="flex h-10 w-10 flex-0 items-center justify-center overflow-hidden rounded-full">
+                    <div
+                        class="flex h-full w-full items-center justify-center rounded-full bg-gray-200 text-lg uppercase text-gray-600 dark:bg-gray-700 dark:text-gray-200">
+                        {{ user.firstname.charAt(0) }}{{ user.lastname.charAt(0) }}
+                    </div>
+                </div>
+                <div class="ml-4 min-w-0">
+                    <div class="truncate font-medium leading-5">
+                        {{ user.firstname }} {{user.lastname}}
+                    </div>
+                    <div class="text-secondary truncate leading-5">
+                        {{ user.email }}
+                    </div>
+                </div>
+
+                <div class="flex items-center sm:ml-auto">
+                    <div class="ml-4 sm:ml-0">
+                        <div class="bg-card w-40 text-justify font-medium border p-3 rounded-md shadow-sm">
+                            <span class="font-normal me-1 text-md">
+                                Rol:
+                            </span>
+                            <span class="font-semibold text-sm">
+                                {{ getRole(user.roleId) }}
+                            </span>
+                        </div>
+                    </div>
+                    <div class="flex items-center justify-between ml-2">
+                        <button (click)="openDetailsModal(user)" mat-icon-button>
+                            <mat-icon>more_vert</mat-icon>
+                        </button>
+                    </div>
+                </div>
+
+            </a>
+            }
+            <pagination [isLoading]="isLoading" [page]="users.page" [limit]="10" [total]="users.total"
+                [pages]="users.totalPage" (pageEvent)="getAll($event)"></pagination>
+            } @else {
+            <!-- No users -->
+            <div class="border-t p-8 text-center text-4xl font-semibold tracking-tight sm:p-16">
+                ¡No hay usuarios!
+            </div>
+            }
+            }
+
+        </div>
+    </div>
+</div>

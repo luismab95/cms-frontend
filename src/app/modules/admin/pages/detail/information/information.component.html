@@ -1,0 +1,89 @@
+<div class="w-full max-w-3xl">
+    <!-- Form -->
+    <form [formGroup]="pageForm">
+        <!-- Section -->
+        <div class="w-full">
+            <div class="text-xl">General</div>
+            <div class="text-secondary">
+                Información general de tu página.
+            </div>
+        </div>
+        <div class="mt-8 grid w-full gap-6 sm:grid-cols-4">
+            <!-- Name -->
+            <div class="sm:col-span-4">
+                <mat-form-field class="w-full" [subscriptSizing]="'dynamic'">
+                    <mat-label>Nombre</mat-label>
+                    <mat-icon class="icon-size-5" [svgIcon]="'mat_outline:text_fields'" matPrefix></mat-icon>
+                    <input [formControlName]="'name'" matInput />
+                </mat-form-field>
+            </div>
+            <!-- Path -->
+            <div class="sm:col-span-4">
+                <mat-form-field class="fuse-mat-emphasized-affix w-full" [subscriptSizing]="'dynamic'">
+                    <mat-label>Ruta</mat-label>
+                    <div class="text-secondary" matPrefix>{{sitie.domain}}/</div>
+                    <input [formControlName]="'path'" matInput />
+                </mat-form-field>
+            </div>
+        </div>
+
+        <!-- Divider -->
+        <div class="mb-10 mt-11 border-t"></div>
+
+        @if(page){
+        <!-- Section -->
+        <div class="w-full">
+            <div class="text-xl">Zona de peligro</div>
+            <div class="text-secondary">
+                Las opciones de esta sección son de administración de la página, ¡tenga cuidado!.
+            </div>
+        </div>
+        <div class="mt-8 grid w-full grid-cols-1 gap-6 border border-warn p-4 rounded-md">
+            <!--Desactivar -->
+            <div class="flex items-center justify-between">
+                <div class="flex-auto cursor-pointer" (click)="status.toggle()">
+                    <div class="font-medium leading-6">
+                        @if(pageForm.get('status').value ){
+                        Desactivar
+                        }@else {
+                        Activar
+                        }
+                    </div>
+                    <div class="text-secondary text-md">
+                        Deshabilita/Habilita la página.
+                    </div>
+                </div>
+                <mat-slide-toggle class="ml-2" [color]="'primary'" [formControlName]="'status'" #status>
+                </mat-slide-toggle>
+            </div>
+        </div>
+
+
+        <!-- Divider -->
+        <div class="mb-10 mt-11 border-t"></div>
+        }
+
+        <!-- Actions -->
+        <div class="flex items-center justify-between">
+            <div class="flex items-center justify-start">
+                @if(page){
+                <button (click)="redirectPage()" [color]="'primary'" mat-stroked-button type="button">
+                    <mat-icon svgIcon="heroicons_outline:link"></mat-icon>
+                    <span class="ml-2">Visitar</span>
+                </button>
+                }
+            </div>
+            <div class="flex items-center justify-end">
+                <button (click)="goToBack()" mat-stroked-button type="button">Cancelar</button>
+                <button (click)="new()" class="ml-4" mat-flat-button type="button" [color]="'primary'">
+                    @if (!pageForm.disabled) {
+                    <span> Guardar</span>
+                    }
+                    @if (pageForm.disabled) {
+                    <mat-progress-spinner [diameter]="24" [mode]="'indeterminate'"></mat-progress-spinner>
+                    }
+                </button>
+            </div>
+        </div>
+    </form>
+</div>

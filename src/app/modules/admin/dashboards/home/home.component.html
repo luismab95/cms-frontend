@@ -1,0 +1,434 @@
+<div class="flex min-w-0 flex-auto flex-col">
+    <!-- Header -->
+    <div class="bg-card">
+        <div class="mx-auto flex w-full max-w-screen-xl flex-col px-6 sm:px-8">
+            <div class="my-8 flex min-w-0 flex-auto flex-col sm:my-12 sm:flex-row sm:items-center">
+                <!-- Avatar and name -->
+                <div class="flex min-w-0 flex-auto items-center">
+                    <div
+                        class="ring-bg-card flex h-32 w-32 items-center justify-center overflow-hidden rounded-full ring-4">
+                        <div
+                            class="flex h-full w-full items-center justify-center overflow-hidden rounded bg-gray-200 text-8xl font-bold uppercase leading-none text-gray-600 dark:bg-gray-700 dark:text-gray-200">
+                            {{ user.firstname.charAt(0) }}{{ user.lastname.charAt(0) }}
+                        </div>
+                    </div>
+                    <div class="ml-4 flex min-w-0 flex-col">
+                        <div
+                            class="truncate text-2xl font-semibold leading-7 tracking-tight md:text-5xl md:leading-snug">
+                            Bienvenido, {{user.firstname}}
+                        </div>
+                        <div class="flex items-center">
+                            <mat-icon class="icon-size-5" [svgIcon]="'heroicons_solid:bell'"></mat-icon>
+                            <div class="text-secondary ml-1.5 truncate leading-6">
+                                Tienes 15 tareas nuevas.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Actions -->
+                <div class="mt-6 flex items-center space-x-3 sm:ml-2 sm:mt-0">
+                    <button mat-flat-button [color]="'primary'" [routerLink]="['/admin/security/settings']">
+                        <mat-icon class="icon-size-5" [svgIcon]="'heroicons_solid:wrench-screwdriver'"></mat-icon>
+                        <span class="ml-2">Ajustes</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main -->
+    <div class="-mt-px flex-auto border-t pt-4 sm:pt-6">
+        <div class="mx-auto w-full max-w-screen-xl">
+            <!-- Tabs -->
+            <mat-tab-group class="sm:px-2" mat-stretch-tabs="false" [animationDuration]="'0'">
+                <!-- Home -->
+                <mat-tab label="Inicio">
+                    <ng-template matTabContent>
+                        <div class="grid w-full min-w-0 grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-4">
+                            <!-- Pages -->
+                            <div class="bg-card flex flex-auto flex-col overflow-hidden rounded-2xl p-6 shadow">
+                                <div class="flex items-start justify-between">
+                                    <div class="truncate text-lg font-medium leading-6 tracking-tight">
+                                        Páginas
+                                    </div>
+                                </div>
+                                <div class="mt-2 flex flex-col items-center">
+                                    <div
+                                        class="text-7xl font-bold leading-none tracking-tight text-blue-500 sm:text-8xl">
+                                        21
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- Microsities -->
+                            <div class="bg-card flex flex-auto flex-col overflow-hidden rounded-2xl p-6 shadow">
+                                <div class="flex items-start justify-between">
+                                    <div class="truncate text-lg font-medium leading-6 tracking-tight">
+                                        Micrositios
+                                    </div>
+                                </div>
+                                <div class="mt-2 flex flex-col items-center">
+                                    <div
+                                        class="text-7xl font-bold leading-none tracking-tight text-red-500 sm:text-8xl">
+                                        17
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- News -->
+                            <div class="bg-card flex flex-auto flex-col overflow-hidden rounded-2xl p-6 shadow">
+                                <div class="flex items-start justify-between">
+                                    <div class="truncate text-lg font-medium leading-6 tracking-tight">
+                                        Noticias
+                                    </div>
+                                </div>
+                                <div class="mt-2 flex flex-col items-center">
+                                    <div
+                                        class="text-7xl font-bold leading-none tracking-tight text-amber-500 sm:text-8xl">
+                                        24
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- Others -->
+                            <div class="bg-card flex flex-auto flex-col overflow-hidden rounded-2xl p-6 shadow">
+                                <div class="flex items-start justify-between">
+                                    <div class="truncate text-lg font-medium leading-6 tracking-tight">
+                                        Otros
+                                    </div>
+                                </div>
+                                <div class="mt-2 flex flex-col items-center">
+                                    <div
+                                        class="text-7xl font-bold leading-none tracking-tight text-green-500 sm:text-8xl">
+                                        38
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- Visit Sitie -->
+                            <div
+                                class="bg-card flex flex-auto flex-col overflow-hidden rounded-2xl p-6 shadow sm:col-span-2 md:col-span-4">
+                                <div class="flex flex-col items-start justify-between sm:flex-row">
+                                    <div class="truncate text-lg font-medium leading-6 tracking-tight">
+                                        Visitas semanales
+                                    </div>
+                                    <div class="mt-3 sm:ml-2 sm:mt-0">
+                                        <mat-button-toggle-group value="this-week"
+                                            #githubIssuesWeekSelector="matButtonToggleGroup">
+                                            <mat-button-toggle value="last-week">La semana pasada</mat-button-toggle>
+                                            <mat-button-toggle value="this-week">Esta semana</mat-button-toggle>
+                                        </mat-button-toggle-group>
+                                    </div>
+                                </div>
+                                <div class="mt-8 grid w-full grid-flow-row grid-cols-1 gap-6 sm:mt-4 lg:grid-cols-2">
+                                    <!-- New vs. Closed -->
+                                    <div class="flex flex-auto flex-col">
+                                        <div class="text-secondary font-medium">
+
+                                        </div>
+                                        <div class="flex flex-auto flex-col">
+                                            <apx-chart class="h-80 w-full flex-auto" [chart]="
+                                                    chartGithubIssues.chart
+                                                " [colors]="
+                                                    chartGithubIssues.colors
+                                                " [dataLabels]="
+                                                    chartGithubIssues.dataLabels
+                                                " [grid]="chartGithubIssues.grid" [labels]="
+                                                    chartGithubIssues.labels
+                                                " [legend]="
+                                                    chartGithubIssues.legend
+                                                " [plotOptions]="
+                                                    chartGithubIssues.plotOptions
+                                                " [series]="
+                                                    chartGithubIssues.series[
+                                                        githubIssuesWeekSelector
+                                                            .value
+                                                    ]
+                                                " [states]="
+                                                    chartGithubIssues.states
+                                                " [stroke]="
+                                                    chartGithubIssues.stroke
+                                                " [tooltip]="
+                                                    chartGithubIssues.tooltip
+                                                " [xaxis]="
+                                                    chartGithubIssues.xaxis
+                                                " [yaxis]="
+                                                    chartGithubIssues.yaxis
+                                                "></apx-chart>
+                                        </div>
+                                    </div>
+                                    <!-- Overview -->
+                                    <div class="flex flex-col">
+                                        <div class="text-secondary font-medium">
+                                            Descripción general
+                                        </div>
+                                        <div class="mt-6 grid flex-auto grid-cols-4 gap-4">
+                                            <!-- Sitie -->
+                                            <div
+                                                class="col-span-2 flex flex-col items-center justify-center rounded-2xl bg-indigo-50 px-1 py-8 text-indigo-800 dark:bg-white dark:bg-opacity-5 dark:text-indigo-400">
+                                                <div
+                                                    class="text-5xl font-semibold leading-none tracking-tight sm:text-7xl">
+                                                    {{
+                                                    data.githubIssues
+                                                    .overview[
+                                                    githubIssuesWeekSelector
+                                                    .value
+                                                    ]['new-issues']
+                                                    }}
+                                                </div>
+                                                <div class="mt-1 text-sm font-medium sm:text-lg">
+                                                    Sitio
+                                                </div>
+                                            </div>
+                                            <!-- Pages -->
+                                            <div
+                                                class="col-span-2 flex flex-col items-center justify-center rounded-2xl bg-green-50 px-1 py-8 text-green-800 dark:bg-white dark:bg-opacity-5 dark:text-green-500">
+                                                <div
+                                                    class="text-5xl font-semibold leading-none tracking-tight sm:text-7xl">
+                                                    {{
+                                                    data.githubIssues
+                                                    .overview[
+                                                    githubIssuesWeekSelector
+                                                    .value
+                                                    ]['closed-issues']
+                                                    }}
+                                                </div>
+                                                <div class="mt-1 text-sm font-medium sm:text-lg">
+                                                    Páginas
+                                                </div>
+                                            </div>
+                                            <!-- Microsities -->
+                                            <div
+                                                class="text-secondary col-span-2 flex flex-col items-center justify-center rounded-2xl bg-gray-100 px-1 py-8 dark:bg-white dark:bg-opacity-5 sm:col-span-2">
+                                                <div class="text-5xl font-semibold leading-none tracking-tight">
+                                                    {{
+                                                    data.githubIssues
+                                                    .overview[
+                                                    githubIssuesWeekSelector
+                                                    .value
+                                                    ]['fixed']
+                                                    }}
+                                                </div>
+                                                <div class="mt-1 text-center text-sm font-medium">
+                                                    Micrositios
+                                                </div>
+                                            </div>
+                                            <!-- News -->
+                                            <div
+                                                class="text-secondary col-span-2 flex flex-col items-center justify-center rounded-2xl bg-gray-100 px-1 py-8 dark:bg-white dark:bg-opacity-5 sm:col-span-1">
+                                                <div class="text-5xl font-semibold leading-none tracking-tight">
+                                                    {{
+                                                    data.githubIssues
+                                                    .overview[
+                                                    githubIssuesWeekSelector
+                                                    .value
+                                                    ]['wont-fix']
+                                                    }}
+                                                </div>
+                                                <div class="mt-1 text-center text-sm font-medium">
+                                                    Noticias
+                                                </div>
+                                            </div>
+                                            <!-- Others -->
+                                            <div
+                                                class="text-secondary col-span-2 flex flex-col items-center justify-center rounded-2xl bg-gray-100 px-1 py-8 dark:bg-white dark:bg-opacity-5 sm:col-span-1">
+                                                <div class="text-5xl font-semibold leading-none tracking-tight">
+                                                    {{
+                                                    data.githubIssues
+                                                    .overview[
+                                                    githubIssuesWeekSelector
+                                                    .value
+                                                    ]['re-opened']
+                                                    }}
+                                                </div>
+                                                <div class="mt-1 text-center text-sm font-medium">
+                                                    Otros
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- Visitors overview -->
+                            <div
+                                class="bg-card dark flex flex-auto flex-col overflow-hidden rounded-2xl shadow sm:col-span-4 lg:col-span-4">
+                                <div class="ml-10 mr-6 mt-10 flex items-center justify-between sm:mr-10">
+                                    <div class="flex flex-col">
+                                        <div class="mr-4 text-2xl font-semibold leading-7 tracking-tight md:text-3xl">
+                                            Visitas del sitio
+                                        </div>
+                                        <div class="text-secondary font-medium">
+                                            Número de visitantes
+                                        </div>
+                                    </div>
+                                    <div class="ml-2">
+                                        <mat-button-toggle-group class="hidden space-x-1 border-none sm:inline-flex"
+                                            value="this-year" #visitorsYearSelector="matButtonToggleGroup">
+                                            <mat-button-toggle
+                                                class="overflow-hidden rounded-full border-none px-1.5 font-medium"
+                                                value="last-year">El año pasado
+                                            </mat-button-toggle>
+                                            <mat-button-toggle
+                                                class="overflow-hidden rounded-full border-none px-1.5 font-medium"
+                                                value="this-year">Este año
+                                            </mat-button-toggle>
+                                        </mat-button-toggle-group>
+                                        <div class="sm:hidden">
+                                            <button mat-icon-button [matMenuTriggerFor]="visitorsMenu">
+                                                <mat-icon [svgIcon]="'heroicons_outline:ellipsis-vertical'"></mat-icon>
+                                            </button>
+                                            <mat-menu #visitorsMenu="matMenu">
+                                                <button mat-menu-item>Este año</button>
+                                                <button mat-menu-item>El año pasado</button>
+                                            </mat-menu>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="flex h-80 flex-auto flex-col">
+                                    <apx-chart class="h-full w-full flex-auto" [chart]="chartVisitors.chart"
+                                        [colors]="chartVisitors.colors" [dataLabels]="chartVisitors.dataLabels"
+                                        [fill]="chartVisitors.fill" [grid]="chartVisitors.grid"
+                                        [series]="chartVisitors.series[visitorsYearSelector.value]"
+                                        [stroke]="chartVisitors.stroke" [tooltip]="chartVisitors.tooltip"
+                                        [xaxis]="chartVisitors.xaxis" [yaxis]="chartVisitors.yaxis"></apx-chart>
+                                </div>
+                            </div>
+                        </div>
+                    </ng-template>
+                </mat-tab>
+
+                <!-- Visit -->
+                <mat-tab label="Visitas">
+                    <ng-template matTabContent>
+                        <div class="grid w-full min-w-0 grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-4">
+                            <!-- Visitors vs. Page Views -->
+                            <div
+                                class="bg-card flex flex-auto flex-col overflow-hidden rounded-2xl shadow sm:col-span-6 lg:col-span-6">
+                                <div class="m-6 mb-0 flex items-start justify-between">
+                                    <div class="truncate text-lg font-medium leading-6 tracking-tight">
+                                        Visitantes frente a visitas a las páginas
+                                    </div>
+                                    <div class="ml-2">
+                                        <button class="bg-hover h-6 min-h-6 rounded-full px-2" mat-button
+                                            [matMenuTriggerFor]="conversionMenu">
+                                            <span class="text-secondary text-sm font-medium">30 días</span>
+                                        </button>
+                                        <mat-menu #conversionMenu="matMenu">
+                                            <button mat-menu-item>30 días</button>
+                                            <button mat-menu-item>3 meses</button>
+                                            <button mat-menu-item>9 meses</button>
+                                        </mat-menu>
+                                    </div>
+                                </div>
+
+                                <div class="mt-3 flex h-80 flex-auto flex-col">
+                                    <apx-chart class="h-full w-full flex-auto" [chart]="chartVisitorsVsPageViews.chart"
+                                        [colors]="chartVisitorsVsPageViews.colors"
+                                        [dataLabels]="chartVisitorsVsPageViews.dataLabels"
+                                        [grid]="chartVisitorsVsPageViews.grid"
+                                        [legend]="chartVisitorsVsPageViews.legend"
+                                        [series]="chartVisitorsVsPageViews.series"
+                                        [stroke]="chartVisitorsVsPageViews.stroke"
+                                        [tooltip]="chartVisitorsVsPageViews.tooltip"
+                                        [xaxis]="chartVisitorsVsPageViews.xaxis"
+                                        [yaxis]="chartVisitorsVsPageViews.yaxis"></apx-chart>
+                                </div>
+                            </div>
+                            <!-- Top 10 pages -->
+                            <div class="mt-4 w-full">
+                                <div class="text-2xl font-semibold leading-6 tracking-tight">
+                                    Top 10 páginas
+                                </div>
+                                <div class="text-secondary font-medium tracking-tight">
+                                    Páginas más visitadas.
+                                </div>
+                            </div>
+                            <div
+                                class="bg-card flex flex-auto flex-col overflow-hidden rounded-2xl p-6 shadow sm:col-span-6">
+                                <div class="mt-2 flex flex-auto flex-col overflow-x-auto">
+                                    <table class="min-w-240 overflow-y-visible" mat-table
+                                        [dataSource]="data.budgetDetails.rows">
+                                        <!-- Page -->
+                                        <ng-container matColumnDef="type">
+                                            <th mat-header-cell *matHeaderCellDef>
+                                                Página
+                                            </th>
+                                            <td mat-cell *matCellDef="let budget">
+                                                <span class="flex items-center">
+                                                    <span class="ml-3 leading-4">{{ budget.type }}</span>
+                                                </span>
+                                            </td>
+                                        </ng-container>
+
+                                        <!-- Description -->
+                                        <ng-container matColumnDef="total">
+                                            <th mat-header-cell *matHeaderCellDef>
+                                                Descripción
+                                            </th>
+                                            <td mat-cell *matCellDef="let budget">
+                                                <span class="text-right font-medium">
+                                                    {{
+                                                    budget.total
+                                                    | currency: 'USD'
+                                                    }}
+                                                </span>
+                                            </td>
+                                        </ng-container>
+
+                                        <!-- Language -->
+                                        <ng-container matColumnDef="expensesPercentage">
+                                            <th mat-header-cell *matHeaderCellDef>
+                                                Idioma
+                                            </th>
+                                            <td mat-cell *matCellDef="let budget">
+                                                <span class="text-right font-medium">
+                                                    {{
+                                                    budget.total
+                                                    | currency: 'USD'
+                                                    }}
+                                                </span>
+                                            </td>
+                                        </ng-container>
+
+                                        <!-- Path -->
+                                        <ng-container matColumnDef="expensesAmount">
+                                            <th mat-header-cell *matHeaderCellDef>
+                                                Enlace
+                                            </th>
+                                            <td mat-cell *matCellDef="let budget">
+                                                {{
+                                                budget.expensesAmount
+                                                | currency: 'USD'
+                                                }}
+                                            </td>
+                                        </ng-container>
+
+                                        <!-- Visitas -->
+                                        <ng-container matColumnDef="remainingAmount">
+                                            <th mat-header-cell *matHeaderCellDef>
+                                                # Visitas
+                                            </th>
+                                            <td mat-cell *matCellDef="let budget">
+                                                {{
+                                                budget.remainingAmount
+                                                | currency: 'USD'
+                                                }}
+                                            </td>
+                                        </ng-container>
+
+                                        <tr mat-header-row *matHeaderRowDef="
+                                                data.budgetDetails.columns
+                                            "></tr>
+                                        <tr mat-row *matRowDef="
+                                                let row;
+                                                columns: data.budgetDetails
+                                                    .columns
+                                            "></tr>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </ng-template>
+                </mat-tab>
+
+
+            </mat-tab-group>
+        </div>
+    </div>
+</div>

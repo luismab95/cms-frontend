@@ -1,0 +1,94 @@
+<div class="w-full max-w-3xl">
+
+    <!-- Form -->
+    <form [formGroup]="securityForm">
+        <!-- Section -->
+        <div class="w-full">
+            <div class="text-xl">Cambia tu contraseña</div>
+            <div class="text-secondary">
+                ¡Ingresa una nueva contraseña. Asegúrate de que sea segura!.
+            </div>
+        </div>
+        <div class="mt-8 grid w-full gap-6 sm:grid-cols-4">
+
+            <!-- New password -->
+            <div class="sm:col-span-4">
+                <mat-form-field class="w-full" [subscriptSizing]="'dynamic'">
+                    <mat-label>Nueva contraseña</mat-label>
+                    <mat-icon class="icon-size-5" [svgIcon]="'heroicons_solid:key'" matPrefix></mat-icon>
+                    <input [formControlName]="'password'" type="text" matInput />
+                </mat-form-field>
+                @if (securityForm.get('password').hasError('required')) {
+                <mat-error>Se requiere contraseña </mat-error>
+                }
+                @if (securityForm.get('password').hasError('pattern')) {
+                <mat-error>
+                    Contraseña: debe tener un mínimo de
+                    {{ this.longPwd }} caracteres, una letra minúscula@if(this.mayusPwd){,
+                    una letra mayuscula}@if(this.numberPwd){, un dígito}
+                    @if(this.specialPwd){, un caracter especial}.
+                </mat-error>
+                }
+            </div>
+        </div>
+
+        <!-- Divider -->
+        <div class="my-10 border-t"></div>
+
+        <!-- Section -->
+        <div class="w-full">
+            <div class="text-xl">Preferencias de seguridad</div>
+            <div class="text-secondary">
+                Mantenga su cuenta más segura con las siguientes preferencias.
+            </div>
+        </div>
+        <div class="mt-8 grid w-full gap-6 sm:grid-cols-4">
+            <!-- 2-step auth -->
+            <div class="flex items-center justify-between sm:col-span-4">
+                <div class="flex-auto cursor-pointer" (click)="twoStepToggle.toggle()">
+                    <div class="font-medium leading-6">
+                        Habilitar la autenticación de 2 pasos
+                    </div>
+                    <div class="text-secondary text-md">
+                        Le protege contra el robo de contraseñas solicitando una
+                        código de autenticación vía correo electrónico en cada inicio de sesión.
+                    </div>
+                </div>
+                <mat-slide-toggle class="ml-4" [color]="'primary'" [formControlName]="'twoFactorAuth'" #twoStepToggle>
+                </mat-slide-toggle>
+            </div>
+            <!-- Ask to change password -->
+            <!-- <div class="flex items-center justify-between sm:col-span-4">
+                <div class="flex-auto cursor-pointer" (click)="askPasswordChangeToggle.toggle()">
+                    <div class="font-medium leading-6">
+                        Solicite cambiar la contraseña cada 6 meses
+                    </div>
+                    <div class="text-secondary text-md">
+                        Una forma sencilla pero eficaz de protegerse contra
+                        fugas de datos y robo de contraseñas.
+                    </div>
+                </div>
+                <mat-slide-toggle class="ml-4" [color]="'primary'" [formControlName]="'askPasswordChange'"
+                    #askPasswordChangeToggle>
+                </mat-slide-toggle>
+            </div> -->
+        </div>
+
+        <!-- Divider -->
+        <div class="my-10 border-t"></div>
+
+        <!-- Actions -->
+        <div class="flex items-center justify-end">
+            <button (click)="cancel()" mat-stroked-button type="button">Cancelar</button>
+            <button class="ml-4" mat-flat-button type="button" [color]="'primary'" [disabled]="securityForm.disabled"
+                (click)="save()">
+                @if (!securityForm.disabled) {
+                <span> Guardar</span>
+                }
+                @if (securityForm.disabled) {
+                <mat-progress-spinner [diameter]="24" [mode]="'indeterminate'"></mat-progress-spinner>
+                }
+            </button>
+        </div>
+    </form>
+</div>

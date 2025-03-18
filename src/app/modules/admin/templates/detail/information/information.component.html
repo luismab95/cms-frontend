@@ -1,0 +1,91 @@
+<div class="w-full max-w-3xl">
+    <!-- Form -->
+    <form [formGroup]="templateForm">
+        <!-- Section -->
+        <div class="w-full">
+            <div class="text-xl">General</div>
+            <div class="text-secondary">
+                Información general de tu plantilla.
+            </div>
+        </div>
+        <div class="mt-8 grid w-full gap-6 sm:grid-cols-4">
+            <!-- Name -->
+            <div class="sm:col-span-4">
+                <mat-form-field class="w-full" [subscriptSizing]="'dynamic'">
+                    <mat-label>Nombre</mat-label>
+                    <mat-icon class="icon-size-5" [svgIcon]="'mat_outline:text_fields'" matPrefix></mat-icon>
+                    <input [formControlName]="'name'" matInput />
+                    @if (templateForm.get('name').hasError('required')) {
+                    <mat-error>Se requiere nombre. </mat-error>
+                    }
+                </mat-form-field>
+            </div>
+
+            <!-- Description -->
+            <div class="sm:col-span-4">
+                <mat-form-field class="w-full" [subscriptSizing]="'dynamic'">
+                    <mat-label>Descripción</mat-label>
+                    <textarea matInput [formControlName]="'description'" rows="5"></textarea>
+                    @if (templateForm.get('description').hasError('required')) {
+                    <mat-error>Se requiere descripción. </mat-error>
+                    }
+                    @if (templateForm.get('description').hasError('maxlength')) {
+                    <mat-error>Descripción permite un máximo de 255 caracteres. </mat-error>
+                    }
+                </mat-form-field>
+                <div class="text-hint mt-1 text-md">
+                    Breve descripción de tu plantilla.
+                </div>
+            </div>
+        </div>
+
+        <!-- Divider -->
+        <div class="my-10 border-t"></div>
+
+        @if(template){
+        <!-- Section -->
+        <div class="w-full">
+            <div class="text-xl">Zona de peligro</div>
+            <div class="text-secondary">
+                Las opciones de esta sección son de administración de la plantilla, ¡tenga cuidado!.
+            </div>
+        </div>
+        <div class="mt-8 grid w-full grid-cols-1 gap-6 border border-warn p-4 rounded-md">
+            <!--Desactivar -->
+            <div class="flex items-center justify-between">
+                <div class="flex-auto cursor-pointer" (click)="status.toggle()">
+                    <div class="font-medium leading-6">
+                        @if(templateForm.get('status').value ){
+                        Desactivar
+                        }@else {
+                        Activar
+                        }
+                    </div>
+                    <div class="text-secondary text-md">
+                        Deshabilita/Habilita la plantilla.
+                    </div>
+                </div>
+                <mat-slide-toggle class="ml-2" [color]="'primary'" [formControlName]="'status'" #status>
+                </mat-slide-toggle>
+            </div>
+        </div>
+
+
+        <!-- Divider -->
+        <div class="mb-10 mt-11 border-t"></div>
+        }
+
+        <!-- Actions -->
+        <div class="flex items-center justify-end">
+            <button [routerLink]="['/admin/modules/templates']" mat-stroked-button type="button">Cancelar</button>
+            <button class="ml-4" mat-flat-button type="button" [color]="'primary'" (click)="newTemplate()">
+                @if (!templateForm.disabled) {
+                <span> Guardar</span>
+                }
+                @if (templateForm.disabled) {
+                <mat-progress-spinner [diameter]="24" [mode]="'indeterminate'"></mat-progress-spinner>
+                }
+            </button>
+        </div>
+    </form>
+</div>

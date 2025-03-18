@@ -1,0 +1,149 @@
+@if(file){
+<div class="flex w-full flex-col">
+    <!-- Header -->
+    <div class="relative h-40 w-full bg-accent-100 px-8 dark:bg-accent-700 sm:h-48 sm:px-12">
+        <!-- Close button -->
+        <div class="mx-auto flex w-full max-w-3xl items-center justify-end pt-6">
+            <a mat-icon-button [matTooltip]="'Cerrar'" [mat-dialog-close]="false">
+                <mat-icon class="text-dark" [svgIcon]="'heroicons_outline:x-mark'"></mat-icon>
+            </a>
+        </div>
+    </div>
+    <!-- File -->
+    <div class="relative flex flex-auto flex-col items-center p-6 pt-0 sm:p-12 sm:pt-0">
+        <div class="w-full max-w-3xl">
+            <!-- Avatar and actions -->
+            <div class="-mt-16 flex flex-auto items-end">
+                <!-- Avatar -->
+                <div
+                    class="ring-bg-card flex h-32 w-32 items-center justify-center overflow-hidden rounded-full ring-4">
+                    <div
+                        class="flex h-full w-full items-center justify-center overflow-hidden rounded bg-gray-200 text-8xl font-bold uppercase leading-none text-gray-600 dark:bg-gray-700 dark:text-gray-200">
+                        @if(file.mimeType.includes('image')){
+                        <img class="h-full w-full object-cover" [src]="file.url" alt="image">
+                        }@else {
+                        <mat-icon class="icon-size-12" [svgIcon]="'heroicons_outline:document'"></mat-icon>
+                        }
+                    </div>
+                </div>
+                <!-- Actions -->
+                <div class="mb-1 ml-auto flex items-center">
+                    @if(!editMode) {
+                    <button mat-stroked-button (click)="toggleEditMode(true)">
+                        <mat-icon class="icon-size-5" [svgIcon]="'heroicons_solid:pencil-square'"></mat-icon>
+                        <span class="ml-2">Editar</span>
+                    </button>
+                    }
+                </div>
+            </div>
+
+            <!-- Name -->
+            <div [matTooltip]="file.name" class="mt-3 truncate text-4xl font-bold">
+                {{ file.name }}
+            </div>
+
+            <div class="mt-8 text-lg font-medium">Información</div>
+            <div class="mt-4 flex flex-col divide-y border-b border-t font-medium">
+                <div class="flex items-center justify-between py-3">
+                    <div class="text-secondary">Archivo</div>
+                    <div>{{ file.filename }}</div>
+                </div>
+                <div class="flex items-center justify-between py-3">
+                    <div class="text-secondary">Tipo</div>
+                    <div>{{ file.mimeType }}</div>
+                </div>
+                <div class="flex items-center justify-between py-3">
+                    <div class="text-secondary w-10">Url</div>
+                    <div [matTooltip]="file.path" class="truncate">{{file.path}}</div>
+                </div>
+                <div class="flex items-center justify-between py-3">
+                    <div class="text-secondary">Tamaño (MB)</div>
+                    <div>{{ file.size }}</div>
+                </div>
+            </div>
+
+            <!-- Description -->
+            <div class="mt-8 flex items-center justify-between">
+                <div class="text-lg font-medium">Descripción</div>
+            </div>
+            <div class="mt-2 flex border-t">
+                @if(!editMode) {
+                <div class="py-3">
+                    @if (file.description) {
+                    <div>{{ file.description }}</div>
+                    }
+                    @if (!file.description) {
+                    <div (click)="toggleEditMode()" class="text-secondary italic">
+                        Haga clic aquí para agregar una descripción </div>
+                    }
+                </div>
+                }@else {
+                <!-- Descripción -->
+                <div class="w-full">
+                    <ng-container *ngTemplateOutlet="fileTemplateForm;"></ng-container>
+                </div>
+                }
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="absolute bottom-0 left-0 w-full">
+        <div class="flex items-center justify-between border-t bg-gray-50 p-4 dark:bg-transparent">
+            @if(!editMode) {
+            <button (click)="deleteFile()" class="flex-auto mx-2" mat-stroked-button>
+                @if (!fileForm.disabled) {
+                <span> @if(!file.status){
+                    Activar
+                    }@else {
+                    Inactivar
+                    }</span>
+                }
+                @if (fileForm.disabled) {
+                <mat-progress-spinner [diameter]="24" [mode]="'indeterminate'"></mat-progress-spinner>
+                }
+            </button>
+            <div class="w-10"></div>
+            <button (click)="downloadFile()" class="flex-auto mx-2" mat-flat-button [color]="'primary'">
+                @if (!fileForm.disabled) {
+                <span> Descargar</span>
+                }
+                @if (fileForm.disabled) {
+                <mat-progress-spinner [diameter]="24" [mode]="'indeterminate'"></mat-progress-spinner>
+                }
+            </button>
+            }@else {
+            <button (click)="toggleEditMode()" class="flex-auto mx-2" mat-stroked-button>Cancelar</button>
+            <div class="w-10"></div>
+            <button (click)="updateFile()" class="flex-auto mx-2" mat-flat-button [color]="'primary'">
+                @if (!fileForm.disabled) {
+                <span> Guardar</span>
+                }
+                @if (fileForm.disabled) {
+                <mat-progress-spinner [diameter]="24" [mode]="'indeterminate'"></mat-progress-spinner>
+                }
+            </button>
+            }
+        </div>
+    </div>
+</div>
+}
+
+<ng-template #fileTemplateForm>
+    <form class="mt-8" [formGroup]="fileForm">
+        <mat-form-field class="w-full" [subscriptSizing]="'dynamic'">
+            <textarea matInput [formControlName]="'description'" rows="5">
+            </textarea>
+            @if (fileForm.get('description').hasError('required')) {
+            <mat-error>Se requiere descripción. </mat-error>
+            }
+            @if (fileForm.get('description').hasError('maxlength')) {
+            <mat-error>Descripción permite un máximo de 255 caracteres. </mat-error>
+            }
+        </mat-form-field>
+        <div class="text-hint mt-1 text-md">
+            Breve descripción del archivo.
+        </div>
+    </form>
+</ng-template>

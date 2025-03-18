@@ -1,0 +1,284 @@
+<div class="w-full max-w-3xl">
+    <div class="flex flex-col">
+        <!-- Theme -->
+        <div class="w-full">
+            <div class="text-xl">Tema</div>
+            <div class="text-secondary">
+                Configura el tema de tu aplicación.
+            </div>
+        </div>
+        <div class="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3">
+            @for (theme of config.themes; track theme) {
+            <div class="bg-hover flex cursor-pointer items-center justify-center rounded-full px-4 py-3 ring-inset ring-primary"
+                [class.ring-2]="webForm.get('theme')?.value === theme.id" [ngClass]="theme.id"
+                (click)="setTheme(theme.id)">
+                <div class="h-3 w-3 flex-0 rounded-full bg-primary"></div>
+                <div class="ml-2.5 truncate font-medium leading-5"
+                    [class.text-secondary]="webForm.get('theme')?.value  !== theme.id">
+                    {{ theme.name }}
+                </div>
+            </div>
+            }
+        </div>
+
+        <!-- Divider -->
+        <div class="mb-10 mt-11 border-t"></div>
+
+        <!-- Layout -->
+        <div class="w-full">
+            <div class="text-xl">Diseño</div>
+            <div class="text-secondary">
+                Configura el diseño de tu aplicación.
+            </div>
+        </div>
+        <div class="mt-6 flex flex-wrap gap-2">
+
+            <!-- Classic -->
+            <div class="w-full md:w-1/4 flex cursor-pointer flex-col" (click)="setLayout('classic')">
+                <div class="flex h-20 overflow-hidden rounded-md border-2 hover:opacity-80"
+                    [class.border-primary]="webForm.get('layout')?.value === 'classic'">
+                    <div class="w-8 bg-gray-100 dark:bg-gray-800">
+                        <div class="mx-1.5 mt-3 space-y-1">
+                            <div class="h-1 rounded-sm bg-gray-300 dark:bg-gray-700"></div>
+                            <div class="h-1 rounded-sm bg-gray-300 dark:bg-gray-700"></div>
+                            <div class="h-1 rounded-sm bg-gray-300 dark:bg-gray-700"></div>
+                            <div class="h-1 rounded-sm bg-gray-300 dark:bg-gray-700"></div>
+                            <div class="h-1 rounded-sm bg-gray-300 dark:bg-gray-700"></div>
+                        </div>
+                    </div>
+                    <div class="flex flex-auto flex-col border-l">
+                        <div class="h-3 bg-gray-100 dark:bg-gray-800">
+                            <div class="mr-1.5 flex h-full items-center justify-end">
+                                <div class="ml-1 h-1 w-1 rounded-full bg-gray-300 dark:bg-gray-700"></div>
+                                <div class="ml-1 h-1 w-1 rounded-full bg-gray-300 dark:bg-gray-700"></div>
+                                <div class="ml-1 h-1 w-1 rounded-full bg-gray-300 dark:bg-gray-700"></div>
+                            </div>
+                        </div>
+                        <div class="flex flex-auto border-t bg-gray-50 dark:bg-gray-900"></div>
+                    </div>
+                </div>
+                <div class="text-secondary mt-2 text-center text-md font-medium"
+                    [class.text-primary]="webForm.get('layout')?.value  === 'classic'">
+                    Classic
+                </div>
+            </div>
+
+            <!-- Classy -->
+            <div class="w-full md:w-1/4 flex cursor-pointer flex-col" (click)="setLayout('classy')">
+                <div class="flex h-20 overflow-hidden rounded-md border-2 hover:opacity-80"
+                    [class.border-primary]="webForm.get('layout')?.value  === 'classy'">
+                    <div class="w-8 bg-gray-100 dark:bg-gray-800">
+                        <div class="mx-1 mt-1 flex items-center">
+                            <div class="h-1 w-1 rounded-full bg-gray-300 dark:bg-gray-700"></div>
+                            <div class="ml-auto h-1 w-1 rounded-full bg-gray-300 dark:bg-gray-700"></div>
+                            <div class="ml-0.5 h-1 w-1 rounded-full bg-gray-300 dark:bg-gray-700"></div>
+                        </div>
+                        <div class="mx-auto mt-2.5 h-4 w-4 rounded-full bg-gray-300 dark:bg-gray-700"></div>
+                        <div class="mx-1 mt-2 space-y-1">
+                            <div class="h-1 rounded-sm bg-gray-300 dark:bg-gray-700"></div>
+                            <div class="h-1 rounded-sm bg-gray-300 dark:bg-gray-700"></div>
+                            <div class="h-1 rounded-sm bg-gray-300 dark:bg-gray-700"></div>
+                            <div class="h-1 rounded-sm bg-gray-300 dark:bg-gray-700"></div>
+                        </div>
+                    </div>
+                    <div class="flex flex-auto flex-col border-l">
+                        <div class="h-3 bg-gray-100 dark:bg-gray-800">
+                            <div class="mr-2 flex h-full items-center justify-end">
+                                <div class="h-1 w-1 rounded-full bg-gray-300 dark:bg-gray-700"></div>
+                            </div>
+                        </div>
+                        <div class="flex flex-auto border-t bg-gray-50 dark:bg-gray-900"></div>
+                    </div>
+                </div>
+                <div class="text-secondary mt-2 text-center text-md font-medium"
+                    [class.text-primary]="webForm.get('layout')?.value  === 'classy'">
+                    Classy
+                </div>
+            </div>
+
+            <!-- Dense -->
+            <div class="w-full md:w-1/4 flex cursor-pointer flex-col" (click)="setLayout('dense')">
+                <div class="flex h-20 overflow-hidden rounded-md border-2 hover:opacity-80"
+                    [class.border-primary]="webForm.get('layout')?.value  === 'dense'">
+                    <div class="w-4 bg-gray-100 dark:bg-gray-800">
+                        <div class="mx-auto mt-2 h-2 w-2 rounded-sm bg-gray-300 dark:bg-gray-700"></div>
+                        <div class="mt-2 flex w-full flex-col items-center space-y-1">
+                            <div class="h-2 w-2 rounded-sm bg-gray-300 dark:bg-gray-700"></div>
+                            <div class="h-2 w-2 rounded-sm bg-gray-300 dark:bg-gray-700"></div>
+                            <div class="h-2 w-2 rounded-sm bg-gray-300 dark:bg-gray-700"></div>
+                        </div>
+                    </div>
+                    <div class="flex flex-auto flex-col border-l">
+                        <div class="h-3 bg-gray-100 dark:bg-gray-800">
+                            <div class="mr-1.5 flex h-full items-center justify-end">
+                                <div class="ml-1 h-1 w-1 rounded-full bg-gray-300 dark:bg-gray-700"></div>
+                                <div class="ml-1 h-1 w-1 rounded-full bg-gray-300 dark:bg-gray-700"></div>
+                                <div class="ml-1 h-1 w-1 rounded-full bg-gray-300 dark:bg-gray-700"></div>
+                            </div>
+                        </div>
+                        <div class="flex flex-auto border-t bg-gray-50 dark:bg-gray-900"></div>
+                    </div>
+                </div>
+                <div class="text-secondary mt-2 text-center text-md font-medium"
+                    [class.text-primary]="webForm.get('layout')?.value  === 'dense'">
+                    Dense
+                </div>
+            </div>
+
+            <!-- Futuristic -->
+            <div class="w-full md:w-1/4  flex cursor-pointer flex-col" (click)="setLayout('futuristic')">
+                <div class="flex h-20 overflow-hidden rounded-md border-2 hover:opacity-80"
+                    [class.border-primary]="webForm.get('layout')?.value  === 'futuristic'">
+                    <div class="w-8 bg-gray-100 dark:bg-gray-800">
+                        <div class="flex h-full flex-auto flex-col space-y-1 px-1.5 py-3">
+                            <div class="h-1 rounded-sm bg-gray-300 dark:bg-gray-700"></div>
+                            <div class="h-1 rounded-sm bg-gray-300 dark:bg-gray-700"></div>
+                            <div class="h-1 rounded-sm bg-gray-300 dark:bg-gray-700"></div>
+                            <div class="flex-auto"></div>
+                            <div class="h-1 rounded-sm bg-gray-300 dark:bg-gray-700"></div>
+                        </div>
+                    </div>
+                    <div class="flex flex-auto flex-col border-l">
+                        <div class="h-3 bg-gray-100 dark:bg-gray-800">
+                            <div class="mr-1.5 flex h-full items-center justify-end">
+                                <div class="ml-1 h-1 w-1 rounded-full bg-gray-300 dark:bg-gray-700"></div>
+                                <div class="ml-1 h-1 w-1 rounded-full bg-gray-300 dark:bg-gray-700"></div>
+                                <div class="ml-1 h-1 w-1 rounded-full bg-gray-300 dark:bg-gray-700"></div>
+                            </div>
+                        </div>
+                        <div class="flex flex-auto border-t bg-gray-50 dark:bg-gray-900"></div>
+                    </div>
+                </div>
+                <div class="text-secondary mt-2 text-center text-md font-medium"
+                    [class.text-primary]="webForm.get('layout')?.value  === 'futuristic'">
+                    Futuristic
+                </div>
+            </div>
+
+            <!-- Centered -->
+            <div class="w-full md:w-1/4  flex cursor-pointer flex-col" (click)="setLayout('centered')">
+                <div class="flex h-20 overflow-hidden rounded-md border-2 hover:opacity-80"
+                    [class.border-primary]="webForm.get('layout')?.value  === 'centered'">
+                    <div class="mx-2 my-1 flex flex-auto flex-col overflow-hidden rounded-md border">
+                        <div class="flex h-3 items-center bg-gray-100 dark:bg-gray-800">
+                            <div class="ml-1.5 flex">
+                                <div class="h-1 w-1 rounded-full bg-gray-300 dark:bg-gray-700"></div>
+                                <div class="ml-1 h-1 w-3 rounded-full bg-gray-300 dark:bg-gray-700"></div>
+                                <div class="ml-1 h-1 w-3 rounded-full bg-gray-300 dark:bg-gray-700"></div>
+                                <div class="ml-1 h-1 w-3 rounded-full bg-gray-300 dark:bg-gray-700"></div>
+                            </div>
+                            <div class="ml-auto mr-1.5 flex items-center justify-end">
+                                <div class="ml-1 h-1 w-1 rounded-full bg-gray-300 dark:bg-gray-700"></div>
+                                <div class="ml-1 h-1 w-1 rounded-full bg-gray-300 dark:bg-gray-700"></div>
+                            </div>
+                        </div>
+                        <div class="flex flex-auto border-t bg-gray-50 dark:bg-gray-900"></div>
+                    </div>
+                </div>
+                <div class="text-secondary mt-2 text-center text-md font-medium"
+                    [class.text-primary]="webForm.get('layout')?.value  === 'centered'">
+                    Centered
+                </div>
+            </div>
+
+            <!-- Enterprise -->
+            <div class="w-full md:w-1/4  flex cursor-pointer flex-col" (click)="setLayout('enterprise')">
+                <div class="flex h-20 flex-col overflow-hidden rounded-md border-2 hover:opacity-80"
+                    [class.border-primary]="webForm.get('layout')?.value  === 'enterprise'">
+                    <div class="flex h-3 items-center bg-gray-100 px-2 dark:bg-gray-800">
+                        <div class="h-2 w-2 rounded-full bg-gray-300 dark:bg-gray-700"></div>
+                        <div class="ml-auto flex items-center justify-end space-x-1">
+                            <div class="h-1 w-1 rounded-full bg-gray-300 dark:bg-gray-700"></div>
+                            <div class="h-1 w-1 rounded-full bg-gray-300 dark:bg-gray-700"></div>
+                            <div class="h-1 w-1 rounded-full bg-gray-300 dark:bg-gray-700"></div>
+                        </div>
+                    </div>
+                    <div class="flex h-3 items-center space-x-1 border-b border-t bg-gray-100 px-2 dark:bg-gray-800">
+                        <div class="h-1 w-3 rounded-full bg-gray-300 dark:bg-gray-700"></div>
+                        <div class="h-1 w-3 rounded-full bg-gray-300 dark:bg-gray-700"></div>
+                        <div class="h-1 w-3 rounded-full bg-gray-300 dark:bg-gray-700"></div>
+                        <div class="h-1 w-3 rounded-full bg-gray-300 dark:bg-gray-700"></div>
+                    </div>
+                    <div class="mx-2 my-1 flex flex-auto flex-col overflow-hidden rounded border">
+                        <div class="flex flex-auto bg-gray-50 dark:bg-gray-900"></div>
+                    </div>
+                </div>
+                <div class="text-secondary mt-2 text-center text-md font-medium"
+                    [class.text-primary]="webForm.get('layout')?.value === 'enterprise'">
+                    Enterprise
+                </div>
+            </div>
+
+            <!-- Material -->
+            <div class="w-full md:w-1/4  flex cursor-pointer flex-col" (click)="setLayout('material')">
+                <div class="flex h-20 flex-col overflow-hidden rounded-md border-2 hover:opacity-80"
+                    [class.border-primary]="webForm.get('layout')?.value  === 'material'">
+                    <div class="mx-2 my-1 flex flex-auto flex-col overflow-hidden rounded border">
+                        <div class="flex h-4 items-center bg-gray-100 px-2 dark:bg-gray-800">
+                            <div class="h-2 w-2 rounded-full bg-gray-300 dark:bg-gray-700"></div>
+                            <div class="ml-auto flex items-center justify-end space-x-1">
+                                <div class="h-1 w-1 rounded-full bg-gray-300 dark:bg-gray-700"></div>
+                                <div class="h-1 w-1 rounded-full bg-gray-300 dark:bg-gray-700"></div>
+                                <div class="h-1 w-1 rounded-full bg-gray-300 dark:bg-gray-700"></div>
+                            </div>
+                        </div>
+                        <div class="flex h-2 items-center space-x-1 bg-gray-100 px-2 dark:bg-gray-800">
+                            <div class="h-1 w-3 rounded-full bg-gray-300 dark:bg-gray-700"></div>
+                            <div class="h-1 w-3 rounded-full bg-gray-300 dark:bg-gray-700"></div>
+                            <div class="h-1 w-3 rounded-full bg-gray-300 dark:bg-gray-700"></div>
+                            <div class="h-1 w-3 rounded-full bg-gray-300 dark:bg-gray-700"></div>
+                        </div>
+                        <div class="flex flex-auto border-t bg-gray-50 dark:bg-gray-900"></div>
+                    </div>
+                </div>
+                <div class="text-secondary mt-2 text-center text-md font-medium"
+                    [class.text-primary]="webForm.get('layout')?.value  === 'material'">
+                    Material
+                </div>
+            </div>
+
+            <!-- Modern -->
+            <div class="w-full md:w-1/4  flex cursor-pointer flex-col" (click)="setLayout('modern')">
+                <div class="flex h-20 flex-col overflow-hidden rounded-md border-2 hover:opacity-80"
+                    [class.border-primary]="webForm.get('layout')?.value  === 'modern'">
+                    <div class="flex h-4 items-center border-b bg-gray-100 px-2 dark:bg-gray-800">
+                        <div class="h-2 w-2 rounded-full bg-gray-300 dark:bg-gray-700"></div>
+                        <div class="ml-2 flex h-3 items-center space-x-1">
+                            <div class="h-1 w-3 rounded-full bg-gray-300 dark:bg-gray-700"></div>
+                            <div class="h-1 w-3 rounded-full bg-gray-300 dark:bg-gray-700"></div>
+                            <div class="h-1 w-3 rounded-full bg-gray-300 dark:bg-gray-700"></div>
+                        </div>
+                        <div class="ml-auto flex items-center justify-end space-x-1">
+                            <div class="h-1 w-1 rounded-full bg-gray-300 dark:bg-gray-700"></div>
+                            <div class="h-1 w-1 rounded-full bg-gray-300 dark:bg-gray-700"></div>
+                        </div>
+                    </div>
+                    <div class="flex flex-auto flex-col">
+                        <div class="flex flex-auto bg-gray-50 dark:bg-gray-900"></div>
+                    </div>
+                </div>
+                <div class="text-secondary mt-2 text-center text-md font-medium"
+                    [class.text-primary]="webForm.get('layout')?.value  === 'modern'">
+                    Modern
+                </div>
+            </div>
+        </div>
+
+        <!-- Divider -->
+        <div class="mb-10 mt-11 border-t"></div>
+
+        <!-- Actions -->
+        <div class="flex items-center justify-end">
+            <button (click)="cancel()" mat-stroked-button type="button">Cancelar</button>
+            <button class="ml-4" mat-flat-button type="button" [color]="'primary'" [disabled]="webForm.disabled"
+                (click)="save()">
+                @if (!webForm.disabled) {
+                <span> Guardar</span>
+                }
+                @if (webForm.disabled) {
+                <mat-progress-spinner [diameter]="24" [mode]="'indeterminate'"></mat-progress-spinner>
+                }
+            </button>
+        </div>
+    </div>
+</div>

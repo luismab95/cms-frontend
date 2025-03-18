@@ -1,0 +1,92 @@
+<div class="absolute inset-0 flex min-w-0 flex-col overflow-hidden">
+    <!-- Main -->
+    <div class="flex flex-auto flex-col">
+        <!-- Header -->
+        <div
+            class="bg-card flex flex-col items-start border-b p-6 dark:bg-transparent sm:flex-row sm:items-center sm:justify-between sm:py-12 md:px-8">
+            <!-- Title -->
+            <div>
+                <div class="text-4xl font-extrabold leading-none tracking-tight">
+                    Administrador de archivos
+                </div>
+                <div class="text-secondary mt-0.5 flex items-center font-medium">
+                    {{ filesCount }} archivos
+                </div>
+            </div>
+            <!-- Actions -->
+            <div class="mt-6 flex shrink-0 items-center sm:ml-4 sm:mt-0">
+                <!-- Search -->
+                <mat-form-field class="fuse-mat-dense fuse-mat-rounded min-w-64" [subscriptSizing]="'dynamic'">
+                    <mat-icon class="icon-size-5" matPrefix [svgIcon]="'heroicons_solid:magnifying-glass'"></mat-icon>
+                    <input matInput [formControl]="searchInputControl" [autocomplete]="'off'"
+                        [placeholder]="'Buscar archivos'" />
+                </mat-form-field>
+                <!-- Upload button -->
+                <button (click)="uploadFile.click()" class="ml-4" mat-flat-button [color]="'primary'">
+                    <mat-icon [svgIcon]="'heroicons_outline:cloud-arrow-up'"></mat-icon>
+                    <span class="ml-2 mr-1">Subir archivo</span>
+                </button>
+                <input #uploadFile class="hidden" (change)="uploadImage($event)" required="" type="file" />
+            </div>
+        </div>
+
+        <!-- Items list -->
+        @if (files$ | async; as files) {
+        @if (files.records.length > 0) {
+        <div class="flex flex-wrap gap-4 p-6 md:p-8">
+            @for (
+            file of files.records;
+            track trackByFn(i, file);
+            let i = $index
+            ) {
+            <!-- Files -->
+            <div class="-m-2 mt-2 flex flex-wrap">
+                <a class="bg-card m-2 flex h-40 w-40 cursor-pointer flex-col rounded-2xl p-4 shadow"
+                    (click)="openDetailsModal(file)">
+                    <div class="aspect-[9/6]">
+                        <div class="flex h-full items-center justify-center">
+                            <!-- Icons -->
+                            <div class="relative">
+                                <mat-icon class="text-hint opacity-50 icon-size-14"
+                                    [svgIcon]="'heroicons_solid:document'"></mat-icon>
+                                <div [matTooltip]="file.mimeType.toUpperCase()"
+                                    class="bg-default truncate w-20 absolute bottom-0 left-0 rounded px-1.5 text-sm font-semibold leading-5 text-white"
+                                    [class.bg-red-600]="
+                                    file.mimeType.toUpperCase().includes('APPLICATION') 
+                                " [class.bg-blue-600]="
+                                    file.mimeType.toUpperCase().includes('AUDIO') 
+                                " [class.bg-green-600]="
+                                    file.mimeType.toUpperCase().includes('VIDEO ')  
+                                " [class.bg-gray-600]="
+                                    file.mimeType.toUpperCase().includes('TEXT') 
+                                " [class.bg-amber-600]="
+                                    file.mimeType.toUpperCase().includes('IMAGE') 
+                                ">
+                                    {{ file.mimeType.toUpperCase() }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex flex-auto flex-col justify-center text-center text-sm font-medium">
+                        <div class="truncate" [matTooltip]="file.name">
+                            {{ file.name }}
+                        </div>
+                    </div>
+                </a>
+            </div>
+            }
+        </div>
+        <pagination [isLoading]="isLoading" [page]="files.page" [limit]="10" [total]="files.total"
+            [pages]="files.totalPage" (pageEvent)="getAll($event)"></pagination>
+        } @else {
+        <!-- No items template -->
+        <div class="flex flex-auto flex-col items-center justify-center bg-gray-100 dark:bg-transparent">
+            <mat-icon class="icon-size-24" [svgIcon]="'heroicons_outline:folder-open'"></mat-icon>
+            <div class="text-secondary mt-4 text-2xl font-semibold tracking-tight">
+                ¡No hay archivos!
+            </div>
+        </div>
+        }
+        }
+    </div>
+</div>

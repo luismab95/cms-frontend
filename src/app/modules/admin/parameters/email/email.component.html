@@ -1,0 +1,146 @@
+<div class="w-full max-w-3xl">
+
+
+    <!-- Form -->
+    <form [formGroup]="emailForm">
+        <!-- Section -->
+        <div class="w-full">
+            <div class="text-xl">General</div>
+            <div class="text-secondary">
+                Administra las creedenciales de tu servicio de envio de correos electrónicos.
+            </div>
+        </div>
+        <div class="mt-8 grid w-full gap-6 sm:grid-cols-4">
+            <!-- Host -->
+            <div class="sm:col-span-3">
+                <mat-form-field class="w-full" [subscriptSizing]="'dynamic'">
+                    <mat-label>Host</mat-label>
+                    <mat-icon class="icon-size-5" [svgIcon]="'heroicons_solid:building-office-2'" matPrefix></mat-icon>
+                    <input [formControlName]="'host'" matInput />
+                    @if (emailForm.get('host').hasError('required')) {
+                    <mat-error>Se requiere host </mat-error>
+                    }
+                </mat-form-field>
+            </div>
+
+            <!-- Port -->
+            <div class="sm:col-span-1">
+                <mat-form-field class="w-full" [subscriptSizing]="'dynamic'">
+                    <mat-label>Puerto</mat-label>
+                    <input [formControlName]="'port'" matInput />
+                    @if (emailForm.get('port').hasError('required')) {
+                    <mat-error>Se requiere puerto </mat-error>
+                    }
+                    @if (emailForm.get('port').hasError('pattern')) {
+                    <mat-error>Puerto no válido </mat-error>
+                    }
+                </mat-form-field>
+            </div>
+
+            <!-- Username -->
+            <div class="sm:col-span-4">
+                <mat-form-field class="w-full" [subscriptSizing]="'dynamic'">
+                    <mat-label>Usuario</mat-label>
+                    <mat-icon class="icon-size-5" [svgIcon]="'heroicons_solid:user'" matPrefix></mat-icon>
+                    <input [formControlName]="'username'" matInput />
+                    @if (emailForm.get('username').hasError('required')) {
+                    <mat-error>Se requiere usuario </mat-error>
+                    }
+                </mat-form-field>
+            </div>
+
+            <!-- Password -->
+            <div class="sm:col-span-4">
+                <mat-form-field class="w-full" [subscriptSizing]="'dynamic'">
+                    <mat-label>Contraseña</mat-label>
+                    <input #passwordField type="password" [formControlName]="'password'" matInput />
+                    <button (click)="passwordField.type === 'password'
+                        ? (passwordField.type = 'text')
+                        : (passwordField.type = 'password')" mat-icon-button>
+                        <mat-icon class=" icon-size-5" [svgIcon]="'heroicons_solid:eye'" matSuffix></mat-icon>
+                    </button>
+                    @if (emailForm.get('password').hasError('required')) {
+                    <mat-error>Se requiere contraseña</mat-error>
+                    }
+                </mat-form-field>
+            </div>
+
+            <!-- Email -->
+            <div class="sm:col-span-4">
+                <mat-form-field class="w-full" [subscriptSizing]="'dynamic'">
+                    <mat-label>Correo electrónico para envios</mat-label>
+                    <mat-icon class="icon-size-5" [svgIcon]="'heroicons_solid:envelope'" matPrefix></mat-icon>
+                    <input [formControlName]="'email'" matInput />
+                    @if (emailForm.get('email').hasError('required')) {
+                    <mat-error>Se requiere dirección de correo electrónico para envios </mat-error>
+                    }
+                    @if (emailForm.get('email').hasError('email')) {
+                    <mat-error>Dirección de correo electrónico no válido </mat-error>
+                    }
+                </mat-form-field>
+            </div>
+
+            <!-- Secure -->
+            <div class="sm:col-span-4">
+                <div class="flex items-center justify-between">
+                    <div class="flex-auto cursor-pointer" (click)="secure.toggle()">
+                        <div class="font-medium leading-6">Protocolo seguro</div>
+                        <div class="text-secondary text-md">
+                            Habilita/Deshabilita el protocolo seguro
+                        </div>
+                    </div>
+                    <mat-slide-toggle class="ml-2" [color]="'primary'" [formControlName]="'secure'" #secure>
+                    </mat-slide-toggle>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Divider -->
+        <div class="my-10 border-t"></div>
+
+        <!-- Section -->
+        <div class="w-full">
+            <div class="text-xl">Prueba</div>
+            <div class="text-secondary">
+                Pon a prueba el servicio de envio de correos electrónicos.
+            </div>
+        </div>
+        <div class="mt-8 grid w-full gap-6 sm:grid-cols-4">
+            <!-- Email -->
+            <div class="sm:col-span-4">
+                <mat-form-field class="w-full" [subscriptSizing]="'dynamic'">
+                    <mat-label>Correo electrónico para prueba</mat-label>
+                    <mat-icon class="icon-size-5" [svgIcon]="'heroicons_solid:envelope'" matPrefix></mat-icon>
+                    <input [formControl]="emailTestControl" matInput [placeholder]="'Ingrese su correo electrónico'" />
+                    @if (emailTestControl.hasError('required')) {
+                    <mat-error>Se requiere dirección de correo electrónico para prueba </mat-error>
+                    }
+                    @if (emailTestControl.hasError('email')) {
+                    <mat-error>Dirección de correo electrónico no válido </mat-error>
+                    }
+                    <button (click)="testEmail()" [disabled]="emailTestControl.invalid" mat-icon-button>
+                        <mat-icon class="icon-size-5" [svgIcon]="'mat_solid:send'" matSuffix></mat-icon>
+                    </button>
+                </mat-form-field>
+            </div>
+        </div>
+
+        <!-- Divider -->
+        <div class="mb-10 mt-11 border-t"></div>
+
+        <!-- Actions -->
+        <div class="flex items-center justify-end">
+            <button (click)="cancel()" mat-stroked-button type="button">Cancelar</button>
+            <button class="ml-4" mat-flat-button type="button" [color]="'primary'" [disabled]="emailForm.disabled"
+                (click)="save()">
+                @if (!emailForm.disabled) {
+                <span> Guardar</span>
+                }
+                @if (emailForm.disabled) {
+                <mat-progress-spinner [diameter]="24" [mode]="'indeterminate'"></mat-progress-spinner>
+                }
+            </button>
+        </div>
+    </form>
+</div>

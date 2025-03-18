@@ -1,0 +1,142 @@
+<div class="w-full max-w-3xl">
+
+    <!-- Form -->
+    <form [formGroup]="companyForm">
+        <!-- Section -->
+        <div class="w-full">
+            <div class="text-xl">General</div>
+            <div class="text-secondary">
+                La siguiente información se muestra públicamente, ¡tenga cuidado!
+            </div>
+        </div>
+        <div class="mt-8 grid w-full gap-6 sm:grid-cols-4">
+            <!-- Name -->
+            <div class="sm:col-span-4">
+                <mat-form-field class="w-full" [subscriptSizing]="'dynamic'">
+                    <mat-label>Nombre</mat-label>
+                    <mat-icon class="icon-size-5" [svgIcon]="'heroicons_solid:building-office-2'" matPrefix></mat-icon>
+                    <input [formControlName]="'name'" matInput />
+                    @if (companyForm.get('name').hasError('required')) {
+                    <mat-error>Se requiere nombre </mat-error>
+                    }
+                </mat-form-field>
+            </div>
+
+            <!-- Stactics -->
+            <div class="sm:col-span-4">
+                <mat-form-field class="w-full" [subscriptSizing]="'dynamic'">
+                    <mat-label>Dirección de estáticos</mat-label>
+                    <mat-icon class="icon-size-5" [svgIcon]="'heroicons_solid:link'" matPrefix></mat-icon>
+                    <input [formControlName]="'urlStatics'" matInput />
+                    @if (companyForm.get('urlStatics').hasError('required')) {
+                    <mat-error>Se requiere dirección de estáticos </mat-error>
+                    }
+                </mat-form-field>
+            </div>
+
+            <!-- Description -->
+            <div class="sm:col-span-4">
+                <mat-form-field class="w-full" [subscriptSizing]="'dynamic'">
+                    <mat-label>Descripción</mat-label>
+                    <textarea matInput [formControlName]="'description'" cdkTextareaAutosize
+                        [cdkAutosizeMinRows]="5"></textarea>
+                    @if (companyForm.get('description').hasError('required')) {
+                    <mat-error>Se requiere descripción </mat-error>
+                    }
+                </mat-form-field>
+                <div class="text-hint mt-1 text-md">
+                    Breve descripción de tu compañia..
+                </div>
+            </div>
+
+
+        </div>
+
+        <!-- Divider -->
+        <div class="my-10 border-t"></div>
+
+        <!-- Section -->
+        <div class="w-full">
+            <div class="text-xl">Contacto</div>
+            <div class="text-secondary">
+                Datos de contacto de la compañia.
+            </div>
+        </div>
+        <div class="mt-8 grid w-full gap-6 sm:grid-cols-4">
+            <!-- Email -->
+            <div class="sm:col-span-2">
+                <mat-form-field class="w-full" [subscriptSizing]="'dynamic'">
+                    <mat-label>Correo electrónico</mat-label>
+                    <mat-icon class="icon-size-5" [svgIcon]="'heroicons_solid:envelope'" matPrefix></mat-icon>
+                    <input [formControlName]="'email'" matInput />
+                    @if (companyForm.get('email').hasError('required')) {
+                    <mat-error>Se requiere dirección de correo electrónico </mat-error>
+                    }
+                    @if (companyForm.get('email').hasError('email')) {
+                    <mat-error>
+                        Por favor, introduce una dirección de correo electrónico válida.
+                    </mat-error>
+                    }
+                </mat-form-field>
+            </div>
+
+            <!-- Phone -->
+            <div class="sm:col-span-2">
+                <mat-form-field class="w-full" [subscriptSizing]="'dynamic'">
+                    <mat-label>Teléfono</mat-label>
+                    <mat-icon class="icon-size-5" [svgIcon]="'heroicons_solid:phone'" matPrefix></mat-icon>
+                    <input [formControlName]="'phone'" matInput />
+                    @if (companyForm.get('phone').hasError('required')) {
+                    <mat-error>Se requiere teléfono </mat-error>
+                    }
+                </mat-form-field>
+            </div>
+
+            <!-- Country -->
+            <div class="sm:col-span-2">
+                <mat-form-field class="w-full" [subscriptSizing]="'dynamic'">
+                    <mat-label>País</mat-label>
+                    <mat-icon class="icon-size-5" [svgIcon]="'heroicons_solid:flag'" matPrefix></mat-icon>
+                    <input [formControlName]="'country'" matInput />
+                    @if (companyForm.get('country').hasError('required')) {
+                    <mat-error>Se requiere país </mat-error>
+                    }
+                </mat-form-field>
+            </div>
+
+            <!-- Language -->
+            <div class="sm:col-span-2">
+                <div class="sm:col-span-4">
+                    <mat-form-field class="w-full" [subscriptSizing]="'dynamic'">
+                        <mat-label>Sitio web</mat-label>
+                        <mat-icon class="icon-size-5" [svgIcon]="'heroicons_solid:globe-alt'" matPrefix></mat-icon>
+                        <input [formControlName]="'website'" matInput />
+                        @if (companyForm.get('website').hasError('required')) {
+                        <mat-error>Se requiere sitio web </mat-error>
+                        }
+                        @if (companyForm.get('website').hasError('pattern')) {
+                        <mat-error>Sitio web no válido</mat-error>
+                        }
+                    </mat-form-field>
+                </div>
+            </div>
+        </div>
+
+        <!-- Divider -->
+        <div class="mb-10 mt-11 border-t"></div>
+
+        <!-- Actions -->
+        <div class="flex items-center justify-end">
+            <button (click)="cancel()" mat-stroked-button type="button">Cancelar</button>
+            <button class="ml-4" mat-flat-button type="button" [color]="'primary'" [disabled]="companyForm.disabled"
+                (click)="save()">
+                @if (!companyForm.disabled) {
+                <span> Guardar</span>
+                }
+                @if (companyForm.disabled) {
+                <mat-progress-spinner [diameter]="24" [mode]="'indeterminate'"></mat-progress-spinner>
+                }
+            </button>
+        </div>
+    </form>
+</div>

@@ -1,0 +1,24 @@
+<!-- HTML -->
+<button id="buttonContent" class="button-plugin"></button>
+<!-- JS -->
+<script>
+    window.addEventListener('message', event => {
+        const data = event.data;
+        if (data.properties !== undefined) {
+            // Load data
+            document.getElementById('buttonContent').innerText = data.properties.text.ref;
+
+            // Load events
+            document.getElementById('buttonContent').addEventListener('click', function () {
+                // parent.location.href = data.properties.config.go;
+                window.open(data.properties.config.go, '_blank');
+            });
+
+            // Load CSS
+            const styleElement = document.createElement('style');
+            styleElement.id = data.properties.uuid;
+            styleElement.textContent = data.properties.css;
+            document.head.appendChild(styleElement);
+        }
+    });
+</script>

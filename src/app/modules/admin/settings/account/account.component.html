@@ -1,0 +1,151 @@
+<div class="w-full max-w-3xl">
+
+    <!-- Form -->
+    <form [formGroup]="accountForm">
+        <!-- Section -->
+        <div class="w-full">
+            <div class="text-xl">Perfil</div>
+            <div class="text-secondary">
+                La siguiente información se muestra públicamente, ¡tenga cuidado!.
+            </div>
+        </div>
+        <div class="mt-8 grid w-full gap-6 sm:grid-cols-4">
+            <!-- Name -->
+            <div class="sm:col-span-2">
+                <mat-form-field class="w-full" [subscriptSizing]="'dynamic'">
+                    <mat-label>Nombres</mat-label>
+                    <mat-icon class="icon-size-5" [svgIcon]="'mat_solid:text_fields'" matPrefix></mat-icon>
+                    <input [formControlName]="'firstname'" matInput />
+                    @if (accountForm.get('firstname').hasError('required')) {
+                    <mat-error>Se requiere apellidos. </mat-error>
+                    }
+                </mat-form-field>
+            </div>
+
+            <!-- Lastname -->
+            <div class="sm:col-span-2">
+                <mat-form-field class="w-full" [subscriptSizing]="'dynamic'">
+                    <mat-label>Apellidos</mat-label>
+                    <mat-icon class="icon-size-5" [svgIcon]="'mat_solid:text_fields'" matPrefix></mat-icon>
+                    <input [formControlName]="'lastname'" matInput />
+                    @if (accountForm.get('lastname').hasError('required')) {
+                    <mat-error>Se requiere apellidos. </mat-error>
+                    }
+                </mat-form-field>
+            </div>
+
+            <!-- Email -->
+            <div class="sm:col-span-2">
+                <mat-form-field class="w-full" [subscriptSizing]="'dynamic'">
+                    <mat-label>Correo electrónico</mat-label>
+                    <mat-icon class="icon-size-5" [svgIcon]="'heroicons_solid:envelope'" matPrefix></mat-icon>
+                    <input [formControlName]="'email'" matInput />
+                    @if (accountForm.get('email').hasError('required')) {
+                    <mat-error>Se requiere dirección de correo electrónico. </mat-error>
+                    }
+                    @if (accountForm.get('email').hasError('email')) {
+                    <mat-error>
+                        Por favor, introduce una dirección de correo electrónico válida.
+                    </mat-error>
+                    }
+                </mat-form-field>
+            </div>
+
+            <!-- Role -->
+            <div class="sm:col-span-2">
+                <mat-form-field class="w-full" [subscriptSizing]="'dynamic'">
+                    <mat-label>Rol</mat-label>
+                    <mat-icon class="icon-size-5" [svgIcon]="'mat_solid:perm_contact_calendar'" matPrefix></mat-icon>
+                    <mat-select [formControlName]="'roleId'" [panelClass]="'w-72 min-w-72 max-w-72 h-auto max-h-none'"
+                        disableOptionCentering #roleSelect="matSelect">
+                        <mat-select-trigger class="text-md">
+                            <span class="ml-1 font-medium">{{
+                                roles[0].name | titlecase
+                                }}</span>
+                        </mat-select-trigger>
+                        @for (role of roles; track role) {
+                        <mat-option class="h-auto py-4 leading-none" [value]="role.id">
+                            <div class="font-medium">
+                                {{ role.name }}
+                            </div>
+                            <div class="text-secondary mt-1.5 whitespace-normal text-sm leading-normal">
+                                {{ role.description }}
+                            </div>
+                        </mat-option>
+                        }
+                    </mat-select>
+                    @if (accountForm.get('roleId').hasError('required')) {
+                    <mat-error>Se requiere rol. </mat-error>
+                    }
+                </mat-form-field>
+            </div>
+
+        </div>
+
+        <!-- Divider -->
+        <div class="my-10 border-t"></div>
+
+        <!-- Section -->
+        <div class="w-full">
+            <div class="text-xl">Aspecto</div>
+            <div class="text-secondary">
+                Este ajuste solo se aplica a este navegador.
+            </div>
+        </div>
+        <div class="mt-6 flex flex-col md:flex-row justify-start gap-3">
+
+            <!-- Auto -->
+            <div class="w-full md:w-50 bg-hover flex cursor-pointer items-center rounded-full py-3 pl-5 pr-6 ring-inset ring-primary"
+                [class.ring-2]="config.scheme === 'auto' || config.scheme === null"
+                matTooltip="Establece automáticamente el esquema según la preferencia de esquema de color del sistema operativo del usuario mediante la consulta de medios 'prefer-color-scheme'."
+                (click)="setScheme('auto')">
+                <div class="flex items-center overflow-hidden rounded-full">
+                    <mat-icon class="icon-size-5" [svgIcon]="'heroicons_solid:bolt'"></mat-icon>
+                </div>
+                <div class="ml-2 flex items-center font-medium leading-5"
+                    [class.text-secondary]="config.scheme !== 'auto'">
+                    Usar tema del dispositivo
+                </div>
+            </div>
+            <!-- Dark -->
+            <div class="w-full md:w-50 bg-hover flex cursor-pointer items-center rounded-full py-3 pl-5 pr-6 ring-inset ring-primary"
+                [class.ring-2]="config.scheme === 'dark'" (click)="setScheme('dark')">
+                <div class="flex items-center overflow-hidden rounded-full">
+                    <mat-icon class="icon-size-5" [svgIcon]="'heroicons_solid:moon'"></mat-icon>
+                </div>
+                <div class="ml-2 flex items-center font-medium leading-5"
+                    [class.text-secondary]="config.scheme !== 'dark'">
+                    Oscuro
+                </div>
+            </div>
+            <!-- Light -->
+            <div class="w-full md:w-50 bg-hover flex cursor-pointer items-center rounded-full py-3 pl-5 pr-6 ring-inset ring-primary"
+                [class.ring-2]="config.scheme === 'light'" (click)="setScheme('light')">
+                <div class="flex items-center overflow-hidden rounded-full">
+                    <mat-icon class="icon-size-5" [svgIcon]="'heroicons_solid:sun'"></mat-icon>
+                </div>
+                <div class="ml-2 flex items-center font-medium leading-5"
+                    [class.text-secondary]="config.scheme !== 'light'">
+                    Claro
+                </div>
+            </div>
+        </div>
+
+        <!-- Divider -->
+        <div class="my-10 border-t"></div>
+
+        <!-- Actions -->
+        <div class="flex items-center justify-end">
+            <button (click)="cancel()" mat-stroked-button type="button">Cancelar</button>
+            <button class="ml-4" mat-flat-button type="button" [color]="'primary'" [disabled]="accountForm.disabled"
+                (click)="save()">
+                @if (!accountForm.disabled) {
+                <span> Guardar</span>
+                }
+                @if (accountForm.disabled) {
+                <mat-progress-spinner [diameter]="24" [mode]="'indeterminate'"></mat-progress-spinner>
+                }
+            </button>
+        </div>
+    </form>
+</div>

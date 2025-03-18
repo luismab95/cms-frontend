@@ -1,0 +1,101 @@
+<div class="w-full max-w-full bg-default">
+    <div class="flex min-w-0 flex-auto flex-col dark:bg-transparent absolute -top-0 w-full -left-0">
+        <div class="relative">
+            <div class="sticky top-0 left-0 right-0 w-full bg-card shadow-md p-3 z-10">
+                <div class="flex items-center flex-col md:flex-row justify-between">
+                    <div class="flex items-center justify-center">
+                        <button mat-icon-button (click)="toggleFullscreen()"
+                            [matTooltip]=" 'Alternar pantalla completa'">
+                            <mat-icon [svgIcon]="'heroicons_outline:arrows-pointing-out'"></mat-icon>
+                        </button>
+                        @if(autosave()){
+                        <div class="ml-2 italic text-secondary leading-6 animate-pulse">
+                            Guardando cambios en borrador</div>
+                        }
+                    </div>
+                    <div
+                        class="my-3 md:my-0 flex items-center overflow-hidden rounded-full bg-gray-200 p-0.5 dark:bg-gray-700">
+                        <button class="px-6" [ngClass]="{
+                            'bg-card pointer-events-none shadow': preview === 'mobile',
+                            'bg-transparent': preview !== 'mobile',
+                        }" mat-flat-button (click)="setPreview('mobile')" disableRipple>
+                            <mat-icon svgIcon="heroicons_outline:device-phone-mobile"></mat-icon>
+                        </button>
+                        <button class="px-6" [ngClass]="{
+                            'bg-card pointer-events-none shadow': preview === 'tablet',
+                            'bg-transparent': preview !== 'tablet',
+                        }" mat-flat-button (click)="setPreview('tablet')" disableRipple>
+                            <mat-icon svgIcon="heroicons_outline:device-tablet"></mat-icon>
+                        </button>
+                        <button class="px-6" [ngClass]="{
+                            'bg-card pointer-events-none shadow': preview === 'desktop',
+                            'bg-transparent': preview !== 'desktop',
+                        }" mat-flat-button (click)="setPreview('desktop')" disableRipple>
+                            <mat-icon svgIcon="heroicons_outline:computer-desktop"></mat-icon>
+                        </button>
+                    </div>
+                    <div class="flex items-center justify-end">
+                        <button (click)="goToBack()" mat-stroked-button type=" button">Cancelar</button>
+                        @if(preview === 'none'){
+                        <button class="ml-4" mat-flat-button type="button" [color]="'primary'" (click)="updatePage()">
+                            @if (!saveAction()) {
+                            <span> Guardar</span>
+                            }
+                            @if (saveAction()) {
+                            <mat-progress-spinner [diameter]="24" [mode]="'indeterminate'"></mat-progress-spinner>
+                            } </button>
+                        }@else {
+                        <button (click)="setPreview('none')" class="ml-4" mat-flat-button type="button"
+                            [color]="'primary'">
+                            Personalizar
+                        </button>
+                        }
+                    </div>
+
+                </div>
+            </div>
+
+            <div [ngClass]="{'rounded-lg shadow-lg border border-solid border-gray-300':previewMode,'w-full':preview === 'none' || preview === 'desktop','w-1/2':preview === 'tablet','w-1/4':preview === 'mobile', 'px-4 md:px-8':!previewMode}"
+                class="w-full mb-8 mt-4 z-0 mx-auto">
+                <!-- CONTENT GOES HERE -->
+                <div class="bg-card cursor-not-allowed h-40 rounded-2xl flex justify-center items-center">
+                    <span class="-rotate-45 text-xl text-center">
+                        ENCABEZADO
+                    </span>
+                </div>
+                <div [ngStyle]="getStyles()"
+                    [ngClass]="{'my-3 min-h-40 rounded-2xl border-2 border-dashed border-gray-300':!previewMode}"
+                    class="flex flex-col body">
+                    <!-- Options -->
+                    @if(!previewMode){
+                    <div class="text-xl font-semibold flex justify-between items-center px-2">
+                        Contenido
+                        <div>
+                            <button mat-icon-button [matMenuTriggerFor]="headerMenu">
+                                <mat-icon class="icon-size-5" [svgIcon]="'heroicons_mini:ellipsis-vertical'"></mat-icon>
+                            </button>
+                            <mat-menu #headerMenu="matMenu">
+                                <button (click)="addSection()" mat-menu-item>
+                                    <mat-icon [svgIcon]="'heroicons_outline:plus'"></mat-icon>
+                                    Nueva sección
+                                </button>
+                                <button (click)="openSettingsModal(page.data.body,'Contenido', 'body')" mat-menu-item>
+                                    <mat-icon [svgIcon]="'heroicons_outline:cog-6-tooth'"></mat-icon>
+                                    Configurar
+                                </button>
+                            </mat-menu>
+                        </div>
+                    </div>
+                    }
+                    <grid [grid]="body()" [previewType]="preview" [preview]="previewMode"
+                        (deleteSectionEvent)="setGrid($event)"></grid>
+                </div>
+                <div class="bg-card cursor-not-allowed h-40 rounded-2xl flex justify-center items-center">
+                    <span class="-rotate-45 text-xl text-center">
+                        PIE DE PÁGINA
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

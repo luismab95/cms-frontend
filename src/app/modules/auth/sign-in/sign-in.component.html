@@ -1,0 +1,83 @@
+<div class="flex min-w-0 flex-auto flex-col items-center sm:flex-row sm:justify-center md:items-start md:justify-start">
+    <div class="hidden md:block w-full h-full">
+        @if(parameters().length>0){
+        <auth [parameters]="parameters()"></auth>
+        }
+    </div>
+    <div
+        class="w-full px-4 py-8 sm:bg-card sm:w-auto sm:rounded-2xl sm:p-12 sm:shadow md:flex md:h-full md:justify-end md:rounded-none md:p-16 md:pt-24 md:shadow-none">
+        <div class="mx-auto w-full max-w-120 sm:mx-0 sm:w-120">
+            <!-- Logo -->
+            <div class="w-12">
+                <img [src]="getLogo()" alt="logo" />
+            </div>
+
+            <!-- Title -->
+            <div class="mt-8 text-4xl font-extrabold leading-tight tracking-tight">
+                Iniciar sesión
+            </div>
+
+            <!-- Alert -->
+            @if (showAlert) {
+            <fuse-alert class="mt-8" [appearance]="'outline'" [showIcon]="false" [type]="alert.type"
+                [@shake]="alert.type === 'error'">
+                {{ alert.message }}
+            </fuse-alert>
+            }
+
+            <!-- Sign in form -->
+            <form class="mt-8" [formGroup]="signInForm" #signInNgForm="ngForm">
+                <!-- Email field -->
+                <mat-form-field class="w-full">
+                    <mat-label>Dirección de correo electrónico</mat-label>
+                    <input id="email" matInput [formControlName]="'email'" />
+                    @if (signInForm.get('email').hasError('required')) {
+                    <mat-error>Se requiere dirección de correo electrónico. </mat-error>
+                    }
+                    @if (signInForm.get('email').hasError('email')) {
+                    <mat-error>
+                        Por favor, introduce una dirección de correo electrónico válida.
+                    </mat-error>
+                    }
+                </mat-form-field>
+
+                <!-- Password field -->
+                <mat-form-field class="w-full">
+                    <mat-label>Contraseña</mat-label>
+                    <input id="password" matInput type="password" [formControlName]="'password'" #passwordField />
+                    <button mat-icon-button type="button" (click)="
+                            passwordField.type === 'password'
+                                ? (passwordField.type = 'text')
+                                : (passwordField.type = 'password')
+                        " matSuffix>
+                        @if (passwordField.type === 'password') {
+                        <mat-icon class="icon-size-5" [svgIcon]="'heroicons_solid:eye'"></mat-icon>
+                        }
+                        @if (passwordField.type === 'text') {
+                        <mat-icon class="icon-size-5" [svgIcon]="'heroicons_solid:eye-slash'"></mat-icon>
+                        }
+                    </button>
+                    <mat-error>Se requiere contraseña. </mat-error>
+                </mat-form-field>
+
+                <!-- Actions -->
+                <div class="mt-1.5 inline-flex w-full items-center justify-center">
+                    <a class="text-md font-medium text-primary-500 hover:underline"
+                        [routerLink]="['/auth/forgot-password']">¿Has olvidado tu contraseña?
+                    </a>
+                </div>
+
+                <!-- Submit button -->
+                <button class="fuse-mat-button-large mt-6 w-full" mat-flat-button [color]="'primary'"
+                    [disabled]="signInForm.disabled" (click)="signIn()">
+                    @if (!signInForm.disabled) {
+                    <span> Iniciar sesión </span>
+                    }
+                    @if (signInForm.disabled) {
+                    <mat-progress-spinner [diameter]="24" [mode]="'indeterminate'"></mat-progress-spinner>
+                    }
+                </button>
+            </form>
+        </div>
+    </div>
+</div>

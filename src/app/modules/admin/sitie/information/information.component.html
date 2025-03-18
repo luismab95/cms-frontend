@@ -1,0 +1,143 @@
+<div class="w-full max-w-3xl">
+    <!-- Form -->
+    <form [formGroup]="sitieForm">
+        <!-- Section -->
+        <div class="w-full">
+            <div class="text-xl">General</div>
+            <div class="text-secondary">
+                Información básica del sitio.
+            </div>
+        </div>
+        <div class="mt-8 grid w-full gap-6 sm:grid-cols-4">
+            <!-- Nombre -->
+            <div class="sm:col-span-4">
+                <mat-form-field class="w-full" [subscriptSizing]="'dynamic'">
+                    <mat-label>Nombre</mat-label>
+                    <mat-icon class="icon-size-5" [svgIcon]="'heroicons_solid:document-text'" matPrefix></mat-icon>
+                    <input [formControlName]="'name'" matInput />
+                    @if (sitieForm.get('name').hasError('required')) {
+                    <mat-error>Se requiere nombre. </mat-error>
+                    }
+                </mat-form-field>
+            </div>
+            <!-- Dominio -->
+            <div class="sm:col-span-4">
+                <mat-form-field class="w-full" [subscriptSizing]="'dynamic'">
+                    <mat-label>Dominio</mat-label>
+                    <mat-icon class="icon-size-5" [svgIcon]="'heroicons_solid:globe-alt'" matPrefix></mat-icon>
+                    <input [formControlName]="'domain'" matInput />
+                    @if (sitieForm.get('domain').hasError('required')) {
+                    <mat-error>Se requiere dominio. </mat-error>
+                    }
+                    @if (sitieForm.get('domain').hasError('pattern')) {
+                    <mat-error>Dominio no válido. </mat-error>
+                    }
+                </mat-form-field>
+            </div>
+            <!-- Descripción -->
+            <div class="sm:col-span-4">
+                <mat-form-field class="w-full" [subscriptSizing]="'dynamic'">
+                    <mat-label>Descripción</mat-label>
+                    <textarea matInput [formControlName]="'description'" cdkTextareaAutosize rows="5"></textarea>
+                    @if (sitieForm.get('description').hasError('required')) {
+                    <mat-error>Se requiere descripción. </mat-error>
+                    }
+                    @if (sitieForm.get('description').hasError('maxlength')) {
+                    <mat-error>Descripción permite un máximo de 255 caracteres. </mat-error>
+                    }
+                </mat-form-field>
+                <div class="text-hint mt-1 text-md">
+                    Breve descripción del sitio.
+                </div>
+            </div>
+        </div>
+
+        <!-- Divider -->
+        <div class="my-10 border-t"></div>
+
+        <!-- Section -->
+        <div class="w-full">
+            <div class="text-xl">Diseño</div>
+            <div class="text-secondary">
+                Base prediseñada de estructuración de los contenidos del sitio.
+            </div>
+        </div>
+        <div class="mt-8 grid w-full gap-6 sm:grid-cols-4">
+
+            <!-- Template -->
+            <div class="sm:col-span-4">
+                <mat-form-field class="w-full" [subscriptSizing]="'dynamic'">
+                    <mat-label>Plantilla</mat-label>
+                    <mat-icon class="icon-size-5" [svgIcon]="'heroicons_solid:rectangle-group'" matPrefix></mat-icon>
+                    <mat-select [formControlName]="'templateId'">
+                        @for (template of templates; track template) {
+                        <mat-option [value]="template.id">{{template.name}}</mat-option>
+                        }
+                    </mat-select>
+                    @if (sitieForm.get('templateId').hasError('required')) {
+                    <mat-error>Se requiere plantilla. </mat-error>
+                    }
+                </mat-form-field>
+            </div>
+        </div>
+
+        <!-- Divider -->
+        <div class="mb-10 mt-11 border-t"></div>
+
+        <!-- Section -->
+        <div class="w-full">
+            <div class="text-xl">Zona de peligro</div>
+            <div class="text-secondary">
+                Las opciones de esta sección son de administración del sitio, ¡tenga cuidado!.
+            </div>
+        </div>
+        <div class="mt-8 grid w-full grid-cols-1 gap-6 border border-warn p-4 rounded-md">
+            <!--Desactivar -->
+            <div class="flex items-center justify-between">
+                <div class="flex-auto cursor-pointer" (click)="status.toggle()">
+                    <div class="font-medium leading-6">
+                        @if(sitieForm.get('status').value ){
+                        Desactivar
+                        }@else {
+                        Activar
+                        }
+                    </div>
+                    <div class="text-secondary text-md">
+                        Deshabilita/Habilita el sitio.
+                    </div>
+                </div>
+                <mat-slide-toggle class="ml-2" [color]="'primary'" [formControlName]="'status'" #status>
+                </mat-slide-toggle>
+            </div>
+            <!-- Divider -->
+            <div class="border-t"></div>
+            <!-- Mantenimiento -->
+            <div class="flex items-center justify-between">
+                <div class="flex-auto cursor-pointer" (click)="maintenance.toggle()">
+                    <div class="font-medium leading-6">En mantenimiento</div>
+                    <div class="text-secondary text-md">
+                        Deshabilita/Habilita el modo mantenimiento.
+                    </div>
+                </div>
+                <mat-slide-toggle class="ml-2" [color]="'primary'" [formControlName]="'maintenance'" #maintenance>
+                </mat-slide-toggle>
+            </div>
+        </div>
+
+        <!-- Divider -->
+        <div class="mb-10 mt-11 border-t"></div>
+
+        <!-- Actions -->
+        <div class="flex items-center justify-end">
+            <button (click)="cancel()" mat-stroked-button type="button">Cancelar</button>
+            <button class="ml-4" mat-flat-button type="button" [color]="'primary'" (click)="save()">
+                @if (!sitieForm.disabled) {
+                <span> Guardar</span>
+                }
+                @if (sitieForm.disabled) {
+                <mat-progress-spinner [diameter]="24" [mode]="'indeterminate'"></mat-progress-spinner>
+                }
+            </button>
+        </div>
+    </form>
+</div>

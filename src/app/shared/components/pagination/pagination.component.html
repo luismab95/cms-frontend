@@ -1,0 +1,10 @@
+<mat-paginator
+    class="z-10 border-b bg-gray-50 sm:absolute sm:inset-x-0 sm:bottom-0 sm:border-b-0 sm:border-t dark:bg-transparent"
+    [ngClass]="{ 'pointer-events-none': isLoading }"
+    [length]="total"
+    [pageIndex]="page - 1"
+    [pageSize]="limit"
+    [pageSizeOptions]="[10, 25, 50, 100]"
+    [showFirstLastButtons]="true"
+    (page)="changeEvent($event)"
+></mat-paginator>

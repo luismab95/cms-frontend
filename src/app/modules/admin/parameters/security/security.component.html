@@ -1,0 +1,175 @@
+<div class="w-full max-w-3xl">
+    <!-- Form -->
+    <form [formGroup]="securityForm">
+        <!-- Section -->
+        <div class="w-full">
+            <div class="text-xl">Sesiones</div>
+            <div class="text-secondary">
+                Actualiza tus políticas de sesiones.
+            </div>
+        </div>
+        <div class="mt-8 grid w-full gap-6 sm:grid-cols-4">
+            <!-- Attemps -->
+            <div class="sm:col-span-2">
+                <mat-form-field class="w-full" [subscriptSizing]="'dynamic'">
+                    <mat-label>Números de intentos para inicio de sesión</mat-label>
+                    <mat-icon class="icon-size-5" [svgIcon]="'mat_solid:block'" matPrefix></mat-icon>
+                    <input [formControlName]="'attemps'" matInput />
+                    @if (securityForm.get('attemps').hasError('required')) {
+                    <mat-error>Se requiere números de intentos para inicio de sesión </mat-error>
+                    }
+                    @if (securityForm.get('attemps').hasError('pattern')) {
+                    <mat-error>Valor no válido </mat-error>
+                    }
+                </mat-form-field>
+            </div>
+
+            <!-- Inactivity -->
+            <div class="sm:col-span-2">
+                <mat-form-field class="w-full" [subscriptSizing]="'dynamic'">
+                    <mat-label>Tiempo cierre de sesión por inactividad (minutos)</mat-label>
+                    <mat-icon class="icon-size-5" [svgIcon]="'mat_solid:access_time'" matPrefix></mat-icon>
+                    <input [formControlName]="'inactivity'" matInput />
+                    @if (securityForm.get('inactivity').hasError('required')) {
+                    <mat-error>Se requiere tiempo cierre de sesión por inactividad </mat-error>
+                    }
+                    @if (securityForm.get('inactivity').hasError('pattern')) {
+                    <mat-error>Valor no válido </mat-error>
+                    }
+                </mat-form-field>
+            </div>
+
+        </div>
+
+        <!-- Divider -->
+        <div class="my-10 border-t"></div>
+
+        <!-- Section -->
+        <div class="w-full">
+            <div class="text-xl">Verificación de usuarios - OTP</div>
+            <div class="text-secondary">
+                Actualiza tus políticas de verificación de usuarios - OTP.
+            </div>
+        </div>
+        <div class="mt-8 grid w-full gap-6 sm:grid-cols-4">
+            <!-- Long -->
+            <div class="sm:col-span-2">
+                <mat-form-field class="w-full" [subscriptSizing]="'dynamic'">
+                    <mat-label>Longitud de código de verificación OTP</mat-label>
+                    <mat-icon class="icon-size-5" [svgIcon]="'mat_solid:password'" matPrefix></mat-icon>
+                    <input [formControlName]="'otpLong'" matInput />
+                    @if (securityForm.get('otpLong').hasError('required')) {
+                    <mat-error>Se requiere longitud de código de verificación OTP </mat-error>
+                    }
+                    @if (securityForm.get('otpLong').hasError('pattern')) {
+                    <mat-error>Valor no válido </mat-error>
+                    }
+                </mat-form-field>
+            </div>
+
+            <!-- Type -->
+            <div class="sm:col-span-2">
+                <mat-form-field class="w-full" [subscriptSizing]="'dynamic'">
+                    <mat-label>Tipo de caracteres</mat-label>
+                    <mat-icon class="icon-size-5" [svgIcon]="'mat_solid:text_format'" matPrefix></mat-icon>
+                    <mat-select [formControlName]="'otpType'">
+                        <mat-option [value]="'NUMBER'">Númerico</mat-option>
+                        <mat-option [value]="'LETTER'">Letras</mat-option>
+                        <mat-option [value]="'COMBINED'">Combinado</mat-option>
+                    </mat-select>
+                    @if (securityForm.get('otpType').hasError('required')) {
+                    <mat-error>Se requiere tipo de caracteres </mat-error>
+                    }
+                </mat-form-field>
+            </div>
+
+        </div>
+
+        <!-- Divider -->
+        <div class="mb-10 mt-11 border-t"></div>
+
+        <!-- Section -->
+        <div class="w-full">
+            <div class="text-xl">Contraseñas</div>
+            <div class="text-secondary">
+                Actualiza tus políticas de contraseñas.
+            </div>
+        </div>
+        <div class="mt-8 grid w-full grid-cols-1 gap-6">
+            <!-- Long -->
+            <div class="sm:col-span-4">
+                <mat-form-field class="w-full" [subscriptSizing]="'dynamic'">
+                    <mat-label>Longitud mínima de contraseñas</mat-label>
+                    <mat-icon class="icon-size-5" [svgIcon]="'mat_solid:password'" matPrefix></mat-icon>
+                    <input [formControlName]="'pwdLong'" matInput />
+                    @if (securityForm.get('pwdLong').hasError('required')) {
+                    <mat-error>Se requiere longitud mínima de contraseñas </mat-error>
+                    }
+                    @if (securityForm.get('pwdLong').hasError('pattern')) {
+                    <mat-error>Valor no válido </mat-error>
+                    }
+                </mat-form-field>
+            </div>
+
+            <!-- Mayus -->
+            <div class="sm:col-span-4">
+                <div class="flex items-center justify-between">
+                    <div class="flex-auto cursor-pointer" (click)="pwdMayus.toggle()">
+                        <div class="font-medium leading-6">Permitir mayusculas</div>
+                        <div class="text-secondary text-md">
+                            Habilita/Deshabilita el uso de caracteres en mayusculas
+                        </div>
+                    </div>
+                    <mat-slide-toggle class="ml-2" [color]="'primary'" [formControlName]="'pwdMayus'" #pwdMayus>
+                    </mat-slide-toggle>
+                </div>
+            </div>
+
+            <!-- Number -->
+            <div class="sm:col-span-4">
+                <div class="flex items-center justify-between">
+                    <div class="flex-auto cursor-pointer" (click)="pwdNumber.toggle()">
+                        <div class="font-medium leading-6">Permitir números</div>
+                        <div class="text-secondary text-md">
+                            Habilita/Deshabilita el uso de caracteres numéricos
+                        </div>
+                    </div>
+                    <mat-slide-toggle class="ml-2" [color]="'primary'" [formControlName]="'pwdNumber'" #pwdNumber>
+                    </mat-slide-toggle>
+                </div>
+            </div>
+
+            <!-- Special -->
+            <div class="sm:col-span-4">
+                <div class="flex items-center justify-between">
+                    <div class="flex-auto cursor-pointer" (click)="pwdSpecial.toggle()">
+                        <div class="font-medium leading-6">Permitir caracteres especiales</div>
+                        <div class="text-secondary text-md">
+                            Habilita/Deshabilita el uso de caracteres especiales
+                        </div>
+                    </div>
+                    <mat-slide-toggle class="ml-2" [color]="'primary'" [formControlName]="'pwdSpecial'" #pwdSpecial>
+                    </mat-slide-toggle>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Divider -->
+        <div class="mb-10 mt-11 border-t"></div>
+
+        <!-- Actions -->
+        <div class="flex items-center justify-end">
+            <button (click)="cancel()" mat-stroked-button type="button">Cancelar</button>
+            <button class="ml-4" mat-flat-button type="button" [color]="'primary'" [disabled]="securityForm.disabled"
+                (click)="save()">
+                @if (!securityForm.disabled) {
+                <span> Guardar</span>
+                }
+                @if (securityForm.disabled) {
+                <mat-progress-spinner [diameter]="24" [mode]="'indeterminate'"></mat-progress-spinner>
+                }
+            </button>
+        </div>
+    </form>
+</div>
