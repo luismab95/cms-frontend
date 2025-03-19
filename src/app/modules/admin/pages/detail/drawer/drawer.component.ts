@@ -10,9 +10,12 @@ import {
     inject,
     signal,
 } from '@angular/core';
+import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
+import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
+import { MatSelectModule } from '@angular/material/select';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { Router } from '@angular/router';
 import { FuseConfirmationService } from '@fuse/services/confirmation';
@@ -20,6 +23,8 @@ import { MicrosityService } from 'app/modules/admin/microsities/micrositie.servi
 import { MicrositieI } from 'app/modules/admin/microsities/micrositie.types';
 import { ParameterI } from 'app/modules/admin/parameters/parameter.interface';
 import { ParameterService } from 'app/modules/admin/parameters/parameter.service';
+import { LanguageService } from 'app/modules/admin/sitie/languages/language.service';
+import { LanguageI } from 'app/modules/admin/sitie/languages/language.types';
 import { GridComponent } from 'app/shared/components/grid/grid.component';
 import { GridSettingsComponent } from 'app/shared/components/grid/settings/settings.component';
 import { PageElementsI, SectionI } from 'app/shared/interfaces/grid.interface';
@@ -44,7 +49,10 @@ import { PageI } from '../../pages.types';
         MatTooltipModule,
         GridComponent,
         MatMenuModule,
+        MatSelectModule,
+        MatFormFieldModule,
         NgStyle,
+        ReactiveFormsModule,
     ],
 })
 export class PagesDrawerComponent implements OnInit {
@@ -60,6 +68,9 @@ export class PagesDrawerComponent implements OnInit {
     autosave = signal<boolean>(false);
     saveAction = signal<boolean>(false);
     urlStatics: string;
+    languageControl: FormControl = new FormControl();
+    languages: LanguageI[] = [];
+    refreshLanguage = signal<boolean>(false);
 
     private _parameterService = inject(ParameterService);
     private _unsubscribeAll: Subject<any> = new Subject<any>();
@@ -74,6 +85,7 @@ export class PagesDrawerComponent implements OnInit {
         private _pageService: PageService,
         private _toastrService: ToastrService,
         private _fuseConfirmationService: FuseConfirmationService,
+        private _languageService: LanguageService,
         private _changeDetectorRef: ChangeDetectorRef
     ) {
         // autosave logic
@@ -99,6 +111,18 @@ export class PagesDrawerComponent implements OnInit {
                     'APP_STATICS_URL',
                     parameters
                 );
+                // Mark for check
+                this._changeDetectorRef.markForCheck();
+            });
+
+        // get languages
+        this._languageService.languages$
+            .pipe(takeUntil(this._unsubscribeAll))
+            .subscribe((languages) => {
+                // Update the template
+                this.languages = languages.records;
+                this.languageControl.setValue(this.languages[0].id);
+
                 // Mark for check
                 this._changeDetectorRef.markForCheck();
             });
@@ -128,6 +152,16 @@ export class PagesDrawerComponent implements OnInit {
                 // Mark for check
                 this._changeDetectorRef.markForCheck();
             });
+
+        this.languageControl.valueChanges
+            .pipe(takeUntil(this._unsubscribeAll))
+            .subscribe(() => {
+                this.refreshLanguage.set(true);
+                this._changeDetectorRef.markForCheck();
+                setTimeout(() => {
+                    this.refreshLanguage.set(false);
+                }, 100);
+            });
     }
 
     /**
@@ -150,11 +184,16 @@ export class PagesDrawerComponent implements OnInit {
      * Load template data from the server and update the component properties accordingly.
      */
     loadPageData() {
+        this.refreshLanguage.set(true);
         this.loadGridData();
         this.loadStyles();
 
         // Mark for check
         this._changeDetectorRef.markForCheck();
+
+        setTimeout(() => {
+            this.refreshLanguage.set(false);
+        }, 100);
     }
 
     /**
@@ -240,7 +279,7 @@ export class PagesDrawerComponent implements OnInit {
      * Load data
      */
     loadGridData() {
-        // Set header
+        // Set body
         this.setGrid(this.page.data.body.data);
     }
 
@@ -294,20 +333,23 @@ export class PagesDrawerComponent implements OnInit {
      * Add section to grid
      */
     addSection() {
+        const sectionUuid = generateRandomString(8);
+        const rowUuid = generateRandomString(8);
+        const columnUuid = generateRandomString(8);
         const newSection = {
-            uuid: generateRandomString(8),
-            css: '',
-            config: {},
+            uuid: sectionUuid,
+            css: `.grid-section-${sectionUuid}{}`,
+            config: { backgroundImage: '' },
             rows: [
                 {
-                    uuid: generateRandomString(8),
-                    css: {},
-                    config: {},
+                    uuid: rowUuid,
+                    css: `.grid-row-${rowUuid}{}`,
+                    config: { backgroundImage: '' },
                     columns: [
                         {
-                            uuid: generateRandomString(8),
-                            css: {},
-                            config: {},
+                            uuid: columnUuid,
+                            css: `.grid-column-${columnUuid}{}`,
+                            config: { backgroundImage: '' },
                             element: null,
                         },
                     ],
@@ -431,5 +473,15 @@ export class PagesDrawerComponent implements OnInit {
                     this._toastrService.error(response.error.message, 'Aviso');
                 },
             });
+    }
+
+    /**
+     * Get  language by id
+     * @returns
+     */
+    getLanguage() {
+        return this.languages.find(
+            (language) => language.id === this.languageControl.value
+        );
     }
 }

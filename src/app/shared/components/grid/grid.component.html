@@ -23,7 +23,7 @@
                         <mat-icon [svgIcon]="'heroicons_outline:plus'"></mat-icon>
                         Nueva fila
                     </button>
-                    <button (click)="openSettingsModal(section,'sección')" mat-menu-item>
+                    <button (click)="openSettingsModal(section,'sección',false)" mat-menu-item>
                         <mat-icon [svgIcon]="'heroicons_outline:cog-6-tooth'"></mat-icon>
                         Configurar
                     </button>
@@ -36,7 +36,7 @@
         </div>
         }
         <!-- Rows -->
-        <div class="rows" cdkDropList cdkDropListOrientation="vertical"
+        <div class="rows {{'grid-section-'+section.uuid}}" cdkDropList cdkDropListOrientation="vertical"
             (cdkDropListDropped)="drop($event,section.rows)">
             @for (row of section.rows; track trackByFn($index, row)) {
             <div cdkDragBoundary=".rows" cdkDrag [cdkDragDisabled]="preview"
@@ -61,7 +61,7 @@
                                 <mat-icon [svgIcon]="'heroicons_outline:plus'"></mat-icon>
                                 Nueva columna
                             </button>
-                            <button (click)="openSettingsModal(row,'fila')" mat-menu-item>
+                            <button (click)="openSettingsModal(row,'fila',false)" mat-menu-item>
                                 <mat-icon [svgIcon]="'heroicons_outline:cog-6-tooth'"></mat-icon>
                                 Configurar
                             </button>
@@ -76,7 +76,7 @@
                 <!-- Columns -->
                 <div cdkDropList cdkDropListOrientation="horizontal" (cdkDropListDropped)="drop($event,row.columns)"
                     [ngClass]="{'flex-row':previewType === 'desktop' || previewType === 'none','flex-col':previewType !== 'desktop' && previewType !== 'none'}"
-                    class="flex columns">
+                    class="flex columns {{'grid-row-'+row.uuid}}">
                     @for (column of row.columns; track trackByFn($index, column)) {
                     <div cdkDragBoundary=".columns" cdkDrag [cdkDragDisabled]="preview"
                         [ngClass]="{'w-full':previewType === 'mobile' || previewType === 'tablet','min-h-40 rounded-lg border border-dashed border-purple-300 mx-4 my-2': !preview}"
@@ -102,7 +102,7 @@
                                         Agregar elemento
                                     </button>
                                     }
-                                    <button (click)="openSettingsModal(column,'columna')" mat-menu-item>
+                                    <button (click)="openSettingsModal(column,'columna',false)" mat-menu-item>
                                         <mat-icon [svgIcon]="'heroicons_outline:cog-6-tooth'"></mat-icon>
                                         Configurar
                                     </button>
@@ -128,7 +128,8 @@
                                             [svgIcon]="'heroicons_mini:ellipsis-vertical'"></mat-icon>
                                     </button>
                                     <mat-menu #elementOptions="matMenu">
-                                        <button (click)="openSettingsModal(column)" mat-menu-item>
+                                        <button (click)="openSettingsModal(column.element, column.element.name,true)"
+                                            mat-menu-item>
                                             <mat-icon [svgIcon]="'heroicons_outline:cog-6-tooth'"></mat-icon>
                                             Configurar
                                         </button>
@@ -141,8 +142,12 @@
                             </div>
                             }
                             <!-- Element -->
-                            <div [ngClass]="{'flex items-center justify-center p-2': !preview}" class=" h-full w-full">
-                                <elements [element]="column.element"></elements>
+
+                            <div [ngClass]="{'flex items-center justify-center p-2': !preview}"
+                                class=" h-full w-full {{'grid-column-'+column.uuid}}">
+                                @if(!refreshElement()){
+                                <elements [languageId]="languageId" [element]="column.element"></elements>
+                                }
                             </div>
                         </div>
                         }

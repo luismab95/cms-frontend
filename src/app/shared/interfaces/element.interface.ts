@@ -18,4 +18,9 @@ export interface ElementCMSI {
     };
     status: boolean;
     type: TypeElementEnum[];
+    dataText?: ElementDataI[];
+}
+
+export interface ElementDataI {
+    [key: string]: string;
 }

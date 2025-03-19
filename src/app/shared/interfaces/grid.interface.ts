@@ -1,3 +1,5 @@
+import { ElementDataI } from './element.interface';
+
 export interface PageElementsI {
     css: string;
     data: SectionI[];
@@ -11,6 +13,7 @@ export interface ElementI {
     css: string;
     config: { [key: string]: any };
     text: { [key: string]: any };
+    dataText?: ElementDataI[];
 }
 
 export interface ColumnI {

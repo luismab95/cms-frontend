@@ -159,7 +159,7 @@ export class PageService {
      * @param pageId
      * @param page
      */
-    update(pageId: number, page: PageI): Observable<ResponseI<PageI>> {
+    update(pageId: number, page: PageI): Observable<ResponseI<PageI>> {        
         return this._httpClient
             .patch<
                 ResponseI<PageI>

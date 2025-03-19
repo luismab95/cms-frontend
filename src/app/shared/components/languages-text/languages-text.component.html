@@ -1,0 +1,26 @@
+<form [formGroup]="languageForm">
+    <mat-tab-group formArrayName="languages" mat-stretch-tabs="false" [animationDuration]="'0'">
+        @for (language of languagesFormArray.controls; track $index) {
+        <mat-tab [label]="getLanguageName(language['controls'].languageId.value)">
+            <ng-template matTabContent>
+                <div [formGroupName]="$index" class="p-3 -mt-4 grid w-full gap-6 sm:grid-cols-4">
+                    @for(control of getControls(language.controls); track $index){
+                    @if(control !== 'languageId'){
+                    <div class="sm:col-span-4">
+                        <mat-form-field class="w-full" [subscriptSizing]="'dynamic'">
+                            <mat-label>{{control | titlecase}}</mat-label>
+                            <mat-icon class="icon-size-5" [svgIcon]="'mat_outline:text_fields'" matPrefix></mat-icon>
+                            <input [formControlName]="control" matInput />
+                            @if (language['controls'][control].hasError('required')) {
+                            <mat-error>Se requiere {{control}}. </mat-error>
+                            }
+                        </mat-form-field>
+                    </div>
+                    }
+                    }
+                </div>
+            </ng-template>
+        </mat-tab>
+        }
+    </mat-tab-group>
+</form>

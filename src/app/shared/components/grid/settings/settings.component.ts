@@ -1,3 +1,4 @@
+import { LowerCasePipe } from '@angular/common';
 import {
     ChangeDetectionStrategy,
     ChangeDetectorRef,
@@ -7,7 +8,7 @@ import {
     ViewEncapsulation,
     inject,
 } from '@angular/core';
-import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { FormControl, FormGroup, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import {
     MAT_DIALOG_DATA,
@@ -18,13 +19,20 @@ import {
 import { MatIconModule } from '@angular/material/icon';
 import { MatTabsModule } from '@angular/material/tabs';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { FormlyFieldConfig, FormlyModule } from '@ngx-formly/core';
 import { ParameterI } from 'app/modules/admin/parameters/parameter.interface';
 import { ParameterService } from 'app/modules/admin/parameters/parameter.service';
+import {
+    ElementCMSI,
+    ElementDataI,
+} from 'app/shared/interfaces/element.interface';
+import { ElementService } from 'app/shared/services/element.service';
 import { findParameter } from 'app/shared/utils/parameter.utils';
 import * as _ from 'lodash';
 import { MonacoEditorModule } from 'ngx-monaco-editor-v2';
 import { Subject, takeUntil } from 'rxjs';
 import { ImagesManagerComponent } from '../../images-manager/images-manager.component';
+import { LangugesTextComponent } from '../../languages-text/languages-text.component';
 
 @Component({
     selector: 'grid-settings',
@@ -41,10 +49,16 @@ import { ImagesManagerComponent } from '../../images-manager/images-manager.comp
         MonacoEditorModule,
         ReactiveFormsModule,
         FormsModule,
+        LowerCasePipe,
+        LangugesTextComponent,
+        FormlyModule,
     ],
 })
 export class GridSettingsComponent implements OnInit, OnDestroy {
     title: string;
+    text: { [key: string]: string };
+    isElement: boolean = false;
+    dataText: ElementDataI[] = [];
     options = {
         theme: 'vs-dark',
         language: 'css',
@@ -53,6 +67,9 @@ export class GridSettingsComponent implements OnInit, OnDestroy {
     config: { [key: string]: any };
     cssControl: FormControl;
     urlStatics: string;
+    form = new FormGroup({});
+    fields: FormlyFieldConfig[] = [];
+    elements: ElementCMSI[] = [];
 
     private _parameterService = inject(ParameterService);
     private readonly _matDialog = inject(MAT_DIALOG_DATA);
@@ -64,6 +81,7 @@ export class GridSettingsComponent implements OnInit, OnDestroy {
      */
     constructor(
         public _matDialogRef: MatDialogRef<GridSettingsComponent>,
+        private _elementService: ElementService,
         private _changeDetectorRef: ChangeDetectorRef
     ) {
         this._parameterService.parameter$
@@ -73,6 +91,16 @@ export class GridSettingsComponent implements OnInit, OnDestroy {
                     'APP_STATICS_URL',
                     parameters
                 );
+                // Mark for check
+                this._changeDetectorRef.markForCheck();
+            });
+
+        this._elementService.elements$
+            .pipe(takeUntil(this._unsubscribeAll))
+            .subscribe((elements) => {
+                // Update the elements
+                this.elements = elements.records;
+
                 // Mark for check
                 this._changeDetectorRef.markForCheck();
             });
@@ -87,6 +115,12 @@ export class GridSettingsComponent implements OnInit, OnDestroy {
      */
     ngOnInit(): void {
         this.title = this._matDialog.title;
+        this.isElement = this._matDialog.isElement;
+        this.text = this._matDialog.text;
+        this.dataText = this._matDialog.dataText || [];
+
+        // Load form type
+        this.fields = this.getElementType() || [];
 
         // Load css
         this.cssControl = new FormControl(this._matDialog.css);
@@ -107,6 +141,14 @@ export class GridSettingsComponent implements OnInit, OnDestroy {
     // -----------------------------------------------------------------------------------------------------
     // @ Public methods
     // -----------------------------------------------------------------------------------------------------
+
+    /**
+     * Get element type
+     */
+    getElementType() {
+        return this.elements.find((element) => element.name === this.title)
+            .type as unknown as FormlyFieldConfig[];
+    }
 
     /**
      * Open modal images manager
@@ -134,6 +176,7 @@ export class GridSettingsComponent implements OnInit, OnDestroy {
         this._matDialogRef.close({
             config: this.config,
             css: this.cssControl.value,
+            dataText: this.dataText,
         });
     }
 
@@ -145,6 +188,14 @@ export class GridSettingsComponent implements OnInit, OnDestroy {
 
         // Mark for check
         this._changeDetectorRef.markForCheck();
+    }
+
+    /**
+     * Set data text
+     * @param dataText
+     */
+    setDataText(dataText: ElementDataI[]) {
+        this.dataText = dataText;
     }
 
     /**

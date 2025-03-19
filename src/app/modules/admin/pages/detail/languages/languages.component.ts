@@ -165,7 +165,7 @@ export class PagesLangugesComponent implements OnInit {
      * Set data to language form array
      * @param data
      */
-    patchLanguagesWithData(data: PageDetailReferenceI[]): void {
+    patchLanguagesWithData(data: PageDetailReferenceI[]): void {        
         data.forEach((language, index) => {
             const languageGroup = this._formBuilder.group({
                 alias: [language.alias.text],

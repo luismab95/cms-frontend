@@ -1,17 +1,20 @@
 <!-- HTML -->
-<button id="buttonContent" class="button-plugin"></button>
+<button id="buttonContent"></button>
 <!-- JS -->
 <script>
     window.addEventListener('message', event => {
         const data = event.data;
         if (data.properties !== undefined) {
+
             // Load data
-            document.getElementById('buttonContent').innerText = data.properties.text.ref;
+            document.getElementById('buttonContent').innerText = data.properties.text.etiqueta;
+
+            // Load class
+            document.getElementById('buttonContent').classList.add(data.properties.class);
 
             // Load events
             document.getElementById('buttonContent').addEventListener('click', function () {
-                // parent.location.href = data.properties.config.go;
-                window.open(data.properties.config.go, '_blank');
+                window.open(data.properties.config.goTo, '_blank');
             });
 
             // Load CSS

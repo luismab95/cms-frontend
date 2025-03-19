@@ -14,6 +14,7 @@ import {
     Input,
     OnInit,
     Output,
+    signal,
     ViewEncapsulation,
 } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
@@ -51,11 +52,15 @@ import { GridSettingsComponent } from './settings/settings.component';
 })
 export class GridComponent implements OnInit {
     @Input() preview: boolean = false;
+    @Input() languageId: number;
     @Input() previewType: string = 'none';
     @Input() grid: SectionI[] = [];
     @Output() deleteSectionEvent: EventEmitter<SectionI[]> = new EventEmitter<
         SectionI[]
     >();
+
+    refreshElement = signal<boolean>(false);
+
     private _unsubscribeAll: Subject<any> = new Subject<any>();
 
     /**
@@ -75,9 +80,7 @@ export class GridComponent implements OnInit {
      */
     ngOnInit(): void {
         // Load CSS
-        const styleElement = document.createElement('style');
-        styleElement.textContent = `.grid-section {} .grid-row {} .grid-col {}`;
-        document.head.appendChild(styleElement);
+        this.loadStyles();
     }
 
     /**
@@ -92,6 +95,31 @@ export class GridComponent implements OnInit {
     // -----------------------------------------------------------------------------------------------------
     // @ Public methods
     // -----------------------------------------------------------------------------------------------------
+
+    loadStyles() {
+        const styleElementToRemove = document.getElementById(
+            'dynamicSectionStyles'
+        );
+        if (styleElementToRemove) {
+            styleElementToRemove.remove();
+        }
+        const styleElement = document.createElement('style');
+        styleElement.id = 'dynamicSectionStyles';
+
+        this.grid.forEach((section) => {
+            styleElement.textContent += `${section.css}`;
+            section.rows.forEach((row) => {
+                styleElement.textContent += `${row.css}`;
+                row.columns.forEach((column) => {
+                    styleElement.textContent += `${column.css}`;
+                    if (column.element) {
+                        styleElement.textContent += `${column.element.css}`;
+                    }
+                });
+            });
+        });
+        document.head.appendChild(styleElement);
+    }
 
     /**
      * Track by function for ngFor loops
@@ -117,9 +145,10 @@ export class GridComponent implements OnInit {
      * @param row
      */
     addRow(section: SectionI) {
+        const rowUuid = generateRandomString(8);
         section.rows.push({
-            uuid: generateRandomString(8),
-            css: '',
+            uuid: rowUuid,
+            css: `.grid-row-${rowUuid}{}`,
             config: {},
             columns: [],
         });
@@ -130,9 +159,10 @@ export class GridComponent implements OnInit {
      * @param row
      */
     addColumn(row: RowI) {
+        const columnUuid = generateRandomString(8);
         row.columns.push({
-            uuid: generateRandomString(8),
-            css: '',
+            uuid: columnUuid,
+            css: `.grid-column-${columnUuid}{}`,
             config: {},
             element: null,
         });
@@ -143,10 +173,11 @@ export class GridComponent implements OnInit {
      * @param column
      */
     addElement(column: ColumnI, element: ElementCMSI) {
+        const elementUuid = generateRandomString(8);
         column.element = {
-            uuid: generateRandomString(8),
+            uuid: elementUuid,
             name: element.name,
-            css: element.css,
+            css: `.${element.css}-${elementUuid}{}`,
             config: element.config,
             text: element.text,
         };
@@ -195,13 +226,28 @@ export class GridComponent implements OnInit {
      *
      * @param data
      * @param item
+     * @param isElemnet
      */
-    openSettingsModal<T>(data: T, item: string): void {
+    openSettingsModal<T>(data: T, item: string, isElement: boolean): void {
         const dataModal = _.cloneDeep(data);
-        this._modalSvc.openModal<GridSettingsComponent, T>(
+        const dialogRef = this._modalSvc.openModal<GridSettingsComponent, T>(
             GridSettingsComponent,
-            { title: item, ...dataModal }
+            { title: item, ...dataModal, isElement }
         );
+
+        dialogRef.afterClosed().subscribe((result) => {
+            if (result !== null) {
+                this.refreshElement.set(true);
+                data['css'] = result.css;
+                data['config'] = result.config;
+                isElement && (data['dataText'] = result.dataText);
+                this.loadStyles();
+                this._changeDetectorRef.markForCheck();
+                setTimeout(() => {
+                    this.refreshElement.set(false);
+                }, 100);
+            }
+        });
     }
 
     /**

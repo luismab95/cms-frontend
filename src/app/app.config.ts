@@ -5,16 +5,27 @@ import { DateAdapter, MAT_DATE_FORMATS } from '@angular/material/core';
 import { provideAnimations } from '@angular/platform-browser/animations';
 import { provideRouter, withInMemoryScrolling } from '@angular/router';
 import { provideFuse } from '@fuse';
+import { FormlyModule } from '@ngx-formly/core';
+import { FormlyMaterialModule } from '@ngx-formly/material';
 import { appRoutes } from 'app/app.routes';
 import { provideAuth } from 'app/core/auth/auth.provider';
 import { provideIcons } from 'app/core/icons/icons.provider';
 import { MockApiService } from 'app/mock-api';
-import { MonacoEditorModule } from 'ngx-monaco-editor-v2';
+import {
+    MonacoEditorModule,
+    NgxMonacoEditorConfig,
+} from 'ngx-monaco-editor-v2';
 import { provideToastr } from 'ngx-toastr';
+
+export const monacoConfig: NgxMonacoEditorConfig = {
+    baseUrl: window.location.origin + '/assets/monaco/min/vs',
+};
 
 export const appConfig: ApplicationConfig = {
     providers: [
-        importProvidersFrom(MonacoEditorModule.forRoot()),
+        importProvidersFrom(MonacoEditorModule.forRoot(monacoConfig)),
+        importProvidersFrom(FormlyModule.forRoot()),
+        importProvidersFrom(FormlyMaterialModule),
         provideAnimations(),
         provideHttpClient(withFetch()),
         provideToastr({

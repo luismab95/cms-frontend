@@ -21,6 +21,7 @@ import { Subject } from 'rxjs';
 })
 export class ElementsComponent implements OnDestroy, AfterViewInit {
     @Input() element: ElementI;
+    @Input() languageId: number;
     @ViewChild('pluginContainer') pluginContainer: ElementRef<HTMLDivElement>;
     private _unsubscribeAll: Subject<any> = new Subject<any>();
 
@@ -44,13 +45,30 @@ export class ElementsComponent implements OnDestroy, AfterViewInit {
             iframe.style.height = '100%';
             // Configurar el evento load para el iframe
             iframe.onload = () => {
+                // load text languages
+                let componentText = this.element.text;
+
+                if (this.element.dataText.length > 0) {
+                    this.element.dataText.forEach((element) => {
+                        if (Number(element['languageId']) === this.languageId) {
+                            const { languageId, ...rest } = element;
+                            componentText = {
+                                ...rest,
+                            };
+                        }
+                    });
+                }
+
+                const className = this.element.css.split('{')[0];
+
                 iframe.contentWindow.postMessage(
                     {
                         properties: {
                             config: this.element.config,
-                            text: this.element.text,
+                            text: componentText,
                             css: this.element.css,
                             uuid: this.element.uuid,
+                            class: className.split('.')[1],
                         },
                     },
                     '*'

@@ -13,27 +13,51 @@
                             Guardando cambios en borrador</div>
                         }
                     </div>
-                    <div
-                        class="my-3 md:my-0 flex items-center overflow-hidden rounded-full bg-gray-200 p-0.5 dark:bg-gray-700">
-                        <button class="px-6" [ngClass]="{
-                            'bg-card pointer-events-none shadow': preview === 'mobile',
+                    <div class="flex items-center justify-center">
+                        <div
+                            class="my-3 md:my-0 flex items-center overflow-hidden rounded-full bg-gray-200 p-0.5 dark:bg-gray-700">
+
+                            <button class="px-6" [ngClass]="{
+                               'bg-card pointer-events-none shadow': preview === 'mobile',
                             'bg-transparent': preview !== 'mobile',
                         }" mat-flat-button (click)="setPreview('mobile')" disableRipple>
-                            <mat-icon svgIcon="heroicons_outline:device-phone-mobile"></mat-icon>
-                        </button>
-                        <button class="px-6" [ngClass]="{
+                                <mat-icon svgIcon="heroicons_outline:device-phone-mobile"></mat-icon>
+                            </button>
+                            <button class="px-6" [ngClass]="{
                             'bg-card pointer-events-none shadow': preview === 'tablet',
                             'bg-transparent': preview !== 'tablet',
                         }" mat-flat-button (click)="setPreview('tablet')" disableRipple>
-                            <mat-icon svgIcon="heroicons_outline:device-tablet"></mat-icon>
-                        </button>
-                        <button class="px-6" [ngClass]="{
+                                <mat-icon svgIcon="heroicons_outline:device-tablet"></mat-icon>
+                            </button>
+                            <button class="px-6" [ngClass]="{
                             'bg-card pointer-events-none shadow': preview === 'desktop',
                             'bg-transparent': preview !== 'desktop',
                         }" mat-flat-button (click)="setPreview('desktop')" disableRipple>
-                            <mat-icon svgIcon="heroicons_outline:computer-desktop"></mat-icon>
-                        </button>
+                                <mat-icon svgIcon="heroicons_outline:computer-desktop"></mat-icon>
+                            </button>
+                        </div>
+                        @if(previewMode){
+                        <div class="flex items-center justify-center ml-4">
+                            <mat-form-field class="w-22" [subscriptSizing]="'dynamic'">
+                                <mat-select [formControl]="languageControl">
+                                    @if(getLanguage()){
+                                    <mat-select-trigger>
+                                        <img [src]="urlStatics+getLanguage().icon" [alt]="getLanguage().name">
+                                    </mat-select-trigger>
+                                    }
+
+                                    @for(language of languages; track $index){
+                                    <mat-option [value]="language.id">
+                                        <img [src]="urlStatics+language.icon" [alt]="language.name">
+                                    </mat-option>
+                                    }
+                                </mat-select>
+                            </mat-form-field>
+                        </div>
+                        }
                     </div>
+
+
                     <div class="flex items-center justify-end">
                         <button (click)="goToBack()" mat-stroked-button type=" button">Cancelar</button>
                         @if(preview === 'none'){
@@ -87,8 +111,10 @@
                         </div>
                     </div>
                     }
-                    <grid [grid]="body()" [previewType]="preview" [preview]="previewMode"
-                        (deleteSectionEvent)="setGrid($event)"></grid>
+                    @if(!refreshLanguage()){
+                    <grid [languageId]="languageControl.value" [grid]="body()" [previewType]="preview"
+                        [preview]="previewMode" (deleteSectionEvent)="setGrid($event)"></grid>
+                    }
                 </div>
                 <div class="bg-card cursor-not-allowed h-40 rounded-2xl flex justify-center items-center">
                     <span class="-rotate-45 text-xl text-center">

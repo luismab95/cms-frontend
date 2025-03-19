@@ -3,11 +3,11 @@
     <div class="flex flex-row w-full justify-between items-start mb-3">
         <!-- Title -->
         <div class="truncate text-3xl w-3/4 font-bold mt-3">
-            Configurar {{title}}
+            Configurar {{title | lowercase}}
         </div>
         <!-- Close button -->
         <div class="w-1/4 flex justify-end">
-            <a mat-icon-button [matTooltip]="'Close'" [mat-dialog-close]="false">
+            <a mat-icon-button [matTooltip]="'Close'" [mat-dialog-close]="null">
                 <mat-icon class="text-dark" [svgIcon]="'heroicons_outline:x-mark'"></mat-icon>
             </a>
         </div>
@@ -16,7 +16,7 @@
         <mat-tab-group mat-stretch-tabs="false" [animationDuration]="'0'">
             <mat-tab label="Propiedades">
                 <ng-template matTabContent>
-
+                    @if(!isElement){
                     <div class="w-full py-2 flex flex-col items-start justify-between">
                         <mat-label>Imágen de fondo</mat-label>
                         <div class="relative w-full">
@@ -40,7 +40,13 @@
                             }
                         </div>
                     </div>
-
+                    }@else {
+                    <div class="w-full p-2 flex flex-col items-start justify-between">
+                        <form class="w-full" [formGroup]="form">
+                            <formly-form [form]="form" [fields]="fields" [model]="config"></formly-form>
+                        </form>
+                    </div>
+                    }
                 </ng-template>
             </mat-tab>
 
@@ -55,6 +61,14 @@
                         [options]="options"></ngx-monaco-editor>
                 </ng-template>
             </mat-tab>
+
+            @if(isElement){
+            <mat-tab label="Contenido">
+                <ng-template matTabContent>
+                    <languages-text [text]="text" [data]="dataText" (dataEvent)="setDataText($event)"></languages-text>
+                </ng-template>
+            </mat-tab>
+            }
         </mat-tab-group>
     </div>
 
@@ -64,11 +78,12 @@
         <div
             class="mt-10 flex items-center overflow-hidden justify-end border-t bg-gray-50 py-4 dark:bg-transparent pr-8">
             <!-- Cancel -->
-            <button class="ml-auto" mat-button [matTooltip]="'Cancelar'" [mat-dialog-close]="false">
+            <button class="ml-auto" mat-button [matTooltip]="'Cancelar'" [mat-dialog-close]="null">
                 Cancelar
             </button>
             <!-- Save -->
-            <button (click)="save()" class="ml-2" mat-flat-button [color]="'primary'" [matTooltip]="'Guardar'">
+            <button [disabled]="form.invalid" (click)="save()" class="ml-2" mat-flat-button [color]="'primary'"
+                [matTooltip]="'Guardar'">
                 Guardar
             </button>
         </div>
