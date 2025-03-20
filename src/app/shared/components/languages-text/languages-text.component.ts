@@ -55,6 +55,8 @@ export class LangugesTextComponent implements OnInit {
     >();
     languages: LanguageI[] = [];
     languageForm: UntypedFormGroup;
+    countText: number = 0;
+
     private _unsubscribeAll: Subject<any> = new Subject<any>();
 
     /**
@@ -89,18 +91,24 @@ export class LangugesTextComponent implements OnInit {
      * On init
      */
     ngOnInit(): void {
-        this.languages.forEach((language) => {
-            this.addLanguage(language);
-            if (this.data.length > 0) {
-                this.patchLanguagesWithData(this.data);
-            }
+        Object.keys(this.text).forEach((key) => {
+            this.countText++;
         });
 
-        this.languageForm.valueChanges
-            .pipe(takeUntil(this._unsubscribeAll))
-            .subscribe((value) => {
-                this.dataEvent.emit(value.languages);
+        if (this.countText > 0) {
+            this.languages.forEach((language) => {
+                this.addLanguage(language);
+                if (this.data.length > 0) {
+                    this.patchLanguagesWithData(this.data);
+                }
             });
+
+            this.languageForm.valueChanges
+                .pipe(takeUntil(this._unsubscribeAll))
+                .subscribe((value) => {
+                    this.dataEvent.emit(value.languages);
+                });
+        }
     }
 
     /**

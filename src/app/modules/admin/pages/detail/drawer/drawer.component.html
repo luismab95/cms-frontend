@@ -36,25 +36,9 @@
                                 <mat-icon svgIcon="heroicons_outline:computer-desktop"></mat-icon>
                             </button>
                         </div>
-                        @if(previewMode){
-                        <div class="flex items-center justify-center ml-4">
-                            <mat-form-field class="w-22" [subscriptSizing]="'dynamic'">
-                                <mat-select [formControl]="languageControl">
-                                    @if(getLanguage()){
-                                    <mat-select-trigger>
-                                        <img [src]="urlStatics+getLanguage().icon" [alt]="getLanguage().name">
-                                    </mat-select-trigger>
-                                    }
-
-                                    @for(language of languages; track $index){
-                                    <mat-option [value]="language.id">
-                                        <img [src]="urlStatics+language.icon" [alt]="language.name">
-                                    </mat-option>
-                                    }
-                                </mat-select>
-                            </mat-form-field>
+                        <div class="ml-4">
+                            <languages (languageEvent)="setLanguageId($event)"></languages>
                         </div>
-                        }
                     </div>
 
 
@@ -112,7 +96,7 @@
                     </div>
                     }
                     @if(!refreshLanguage()){
-                    <grid [languageId]="languageControl.value" [grid]="body()" [previewType]="preview"
+                    <grid [gridType]="'body'" [languageId]="languageId" [grid]="body()" [previewType]="preview"
                         [preview]="previewMode" (deleteSectionEvent)="setGrid($event)"></grid>
                     }
                 </div>

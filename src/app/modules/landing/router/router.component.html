@@ -1,12 +1,17 @@
-<div class="w-full h-full flex flex-col overflow-auto">
-    <div class="flex flex-col header overflow-hidden">
-        <grid [grid]="header()" [preview]="true" [previewType]="previewType()"></grid>
+@if(!loading()){
+<div class="w-full h-fulL">
+    <div class="w-full header">
+        <grid [gridType]="'header'" [languageId]="languageId" [grid]="header()" [preview]="true"
+            [previewType]="previewType()"></grid>
     </div>
-    <div class="flex flex-col body overflow-hidden bg-">
-        <grid [grid]="body()" [preview]="true" [previewType]="previewType()">
+    <div class="w-full body">
+        <grid [gridType]="'body'" [languageId]="languageId" [grid]="body()" [preview]="true"
+            [previewType]="previewType()">
         </grid>
     </div>
-    <div class="flex flex-col footer overflow-hidden">
-        <grid [grid]="footer()" [preview]="true" [previewType]="previewType()"></grid>
+    <div class="w-full footer">
+        <grid [gridType]="'footer'" [languageId]="languageId" [grid]="footer()" [preview]="true"
+            [previewType]="previewType()"></grid>
     </div>
 </div>
+}

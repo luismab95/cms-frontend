@@ -10,12 +10,10 @@ import {
     inject,
     signal,
 } from '@angular/core';
-import { FormControl, ReactiveFormsModule } from '@angular/forms';
+import { ReactiveFormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
-import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
-import { MatSelectModule } from '@angular/material/select';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { Router } from '@angular/router';
 import { FuseConfirmationService } from '@fuse/services/confirmation';
@@ -24,9 +22,9 @@ import { MicrositieI } from 'app/modules/admin/microsities/micrositie.types';
 import { ParameterI } from 'app/modules/admin/parameters/parameter.interface';
 import { ParameterService } from 'app/modules/admin/parameters/parameter.service';
 import { LanguageService } from 'app/modules/admin/sitie/languages/language.service';
-import { LanguageI } from 'app/modules/admin/sitie/languages/language.types';
 import { GridComponent } from 'app/shared/components/grid/grid.component';
 import { GridSettingsComponent } from 'app/shared/components/grid/settings/settings.component';
+import { LanguagesComponent } from 'app/shared/components/languages/languages.component';
 import { PageElementsI, SectionI } from 'app/shared/interfaces/grid.interface';
 import { ModalService } from 'app/shared/services/modal.service';
 import { validGrid } from 'app/shared/utils/grid.utils';
@@ -49,10 +47,9 @@ import { PageI } from '../../pages.types';
         MatTooltipModule,
         GridComponent,
         MatMenuModule,
-        MatSelectModule,
-        MatFormFieldModule,
         NgStyle,
         ReactiveFormsModule,
+        LanguagesComponent,
     ],
 })
 export class PagesDrawerComponent implements OnInit {
@@ -68,9 +65,8 @@ export class PagesDrawerComponent implements OnInit {
     autosave = signal<boolean>(false);
     saveAction = signal<boolean>(false);
     urlStatics: string;
-    languageControl: FormControl = new FormControl();
-    languages: LanguageI[] = [];
     refreshLanguage = signal<boolean>(false);
+    languageId: number;
 
     private _parameterService = inject(ParameterService);
     private _unsubscribeAll: Subject<any> = new Subject<any>();
@@ -107,21 +103,20 @@ export class PagesDrawerComponent implements OnInit {
         this._parameterService.parameter$
             .pipe(takeUntil(this._unsubscribeAll))
             .subscribe((parameters: ParameterI[]) => {
-                this.urlStatics = this.getParameter(
+                this.urlStatics = findParameter(
                     'APP_STATICS_URL',
                     parameters
-                );
+                ).value;
                 // Mark for check
                 this._changeDetectorRef.markForCheck();
             });
 
-        // get languages
+        // Get languages
         this._languageService.languages$
             .pipe(takeUntil(this._unsubscribeAll))
             .subscribe((languages) => {
                 // Update the template
-                this.languages = languages.records;
-                this.languageControl.setValue(this.languages[0].id);
+                this.languageId = languages.records[0].id;
 
                 // Mark for check
                 this._changeDetectorRef.markForCheck();
@@ -151,16 +146,6 @@ export class PagesDrawerComponent implements OnInit {
 
                 // Mark for check
                 this._changeDetectorRef.markForCheck();
-            });
-
-        this.languageControl.valueChanges
-            .pipe(takeUntil(this._unsubscribeAll))
-            .subscribe(() => {
-                this.refreshLanguage.set(true);
-                this._changeDetectorRef.markForCheck();
-                setTimeout(() => {
-                    this.refreshLanguage.set(false);
-                }, 100);
             });
     }
 
@@ -218,6 +203,11 @@ export class PagesDrawerComponent implements OnInit {
                     // Re-enable the save action
                     this.saveAction.set(false);
                     this.autosave.set(false);
+                    // Set the alert
+                    this._toastrService.info(
+                        'Guardando cambios en borrador',
+                        'Aviso'
+                    );
                 },
                 error: (response) => {
                     // Re-enable the save action
@@ -288,12 +278,12 @@ export class PagesDrawerComponent implements OnInit {
      */
     loadStyles() {
         // Load CSS
-        const styleElementToRemove = document.getElementById('dynamicStyles');
+        const styleElementToRemove = document.getElementById('body-dynamicStyles');
         if (styleElementToRemove) {
             styleElementToRemove.remove();
         }
         const styleElement = document.createElement('style');
-        styleElement.id = 'dynamicStyles';
+        styleElement.id = 'body-dynamicStyles';
         styleElement.textContent = `${this.page.data.body.css}`;
         document.head.appendChild(styleElement);
     }
@@ -410,16 +400,6 @@ export class PagesDrawerComponent implements OnInit {
     }
 
     /**
-     * Get parameter
-     * @param code
-     */
-    getParameter(code: string, parameters: ParameterI[]) {
-        if (parameters.length > 0) {
-            return findParameter(code, parameters).value;
-        }
-    }
-
-    /**
      *  Choose load data draft
      */
     confirmDraft() {
@@ -476,12 +456,18 @@ export class PagesDrawerComponent implements OnInit {
     }
 
     /**
-     * Get  language by id
-     * @returns
+     * Set language
+     * @param id
      */
-    getLanguage() {
-        return this.languages.find(
-            (language) => language.id === this.languageControl.value
-        );
+    setLanguageId(id: number) {
+        this.languageId = id;
+        this.refreshLanguage.set(true);
+
+        // Mark for check
+        this._changeDetectorRef.markForCheck();
+
+        setTimeout(() => {
+            this.refreshLanguage.set(false);
+        }, 100);
     }
 }

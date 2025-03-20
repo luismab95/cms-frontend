@@ -187,7 +187,7 @@ export const appRoutes: Route[] = [
 
     // 500 error
     {
-        path: '505-error',
+        path: '500-error',
         pathMatch: 'full',
         loadChildren: () =>
             import('app/modules/error/error-500/error-500.routes'),

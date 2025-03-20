@@ -3,7 +3,7 @@
     @for (section of grid; track trackByFn($index, section)) {
     <div cdkDragBoundary=".sections" cdkDrag [cdkDragDisabled]="preview"
         [ngClass]="{'min-h-40 rounded-lg border border-dashed border-sky-300 mx-4 my-2': !preview}"
-        class="flex flex-col grid-section">
+        class="flex flex-col {{'grid-section-'+section.uuid}}">
         <!-- Options -->
         @if(!preview){
         <div class="text-lg font-semibold flex justify-between items-center px-2">
@@ -35,13 +35,14 @@
             </div>
         </div>
         }
+
         <!-- Rows -->
-        <div class="rows {{'grid-section-'+section.uuid}}" cdkDropList cdkDropListOrientation="vertical"
+        <div class="rows" cdkDropList cdkDropListOrientation="vertical"
             (cdkDropListDropped)="drop($event,section.rows)">
             @for (row of section.rows; track trackByFn($index, row)) {
             <div cdkDragBoundary=".rows" cdkDrag [cdkDragDisabled]="preview"
                 [ngClass]="{'min-h-40 rounded-lg border border-dashed border-orange-300 mx-4 my-2': !preview}"
-                class="flex flex-col grid-row">
+                class="flex flex-col {{'grid-row-'+row.uuid}}">
 
                 <!-- Options -->
                 @if(!preview){
@@ -76,14 +77,14 @@
                 <!-- Columns -->
                 <div cdkDropList cdkDropListOrientation="horizontal" (cdkDropListDropped)="drop($event,row.columns)"
                     [ngClass]="{'flex-row':previewType === 'desktop' || previewType === 'none','flex-col':previewType !== 'desktop' && previewType !== 'none'}"
-                    class="flex columns {{'grid-row-'+row.uuid}}">
+                    class="flex columns">
                     @for (column of row.columns; track trackByFn($index, column)) {
                     <div cdkDragBoundary=".columns" cdkDrag [cdkDragDisabled]="preview"
-                        [ngClass]="{'w-full':previewType === 'mobile' || previewType === 'tablet','min-h-40 rounded-lg border border-dashed border-purple-300 mx-4 my-2': !preview}"
-                        class="relative grid-col">
+                        [ngClass]="{'w-full flex-row':previewType === 'mobile' || previewType === 'tablet','min-h-40 rounded-lg border border-dashed border-purple-300 mx-4 my-2': !preview}"
+                        class="flex-col {{'grid-column-'+column.uuid}}">
                         <!-- Options -->
                         @if(!preview){
-                        <div class="text-lg font-semibold flex justify-between items-center px-2">
+                        <div class="text-lg w-full font-semibold flex justify-between items-center px-2">
                             <button cdkDragHandle mat-icon-button>
                                 <mat-icon [matTooltip]="'Arrastrar y soltar'"
                                     [svgIcon]="'mat_solid:drag_indicator'"></mat-icon>
@@ -115,12 +116,11 @@
                         </div>
                         }
                         @if(column.element !== null){
-                        <div [ngClass]="{'min-h-40 rounded-lg border border-dashed border-pink-300 mx-4 my-2': !preview }"
-                            class="flex flex-col">
+                        <div [ngClass]="{'p-2 min-h-40 rounded-lg border border-dashed border-pink-300': !preview }"
+                            class="w-full">
                             <!-- Options -->
                             @if(!preview){
                             <div class="text-sm font-semibold flex justify-between items-center px-2">
-                                <div></div>
                                 Elemento {{column.element.name}}
                                 <div>
                                     <button mat-icon-button [matMenuTriggerFor]="elementOptions">
@@ -141,12 +141,12 @@
                                 </div>
                             </div>
                             }
-                            <!-- Element -->
 
-                            <div [ngClass]="{'flex items-center justify-center p-2': !preview}"
-                                class=" h-full w-full {{'grid-column-'+column.uuid}}">
+                            <!-- Element -->
+                            <div class="w-full h-auto" [ngClass]="{'flex items-center justify-center p-2': !preview}">
                                 @if(!refreshElement()){
-                                <elements [languageId]="languageId" [element]="column.element"></elements>
+                                <elements class="w-full h-auto" [languageId]="languageId" [element]="column.element">
+                                </elements>
                                 }
                             </div>
                         </div>

@@ -6,7 +6,12 @@ import {
 } from 'app/shared/interfaces/response.interface';
 import { environment } from 'environments/environment';
 import { Observable, ReplaySubject, tap } from 'rxjs';
-import { PageI, PagePaginationResquestI } from './pages.types';
+import {
+    GetPageI,
+    PageI,
+    PagePaginationResquestI,
+    PageRenderI,
+} from './pages.types';
 
 @Injectable({ providedIn: 'root' })
 export class PageService {
@@ -87,7 +92,7 @@ export class PageService {
      * @param pageId
      * @returns
      */
-    find(pageId: number): Observable<ResponseI<PageI>> {        
+    find(pageId: number): Observable<ResponseI<PageI>> {
         if (!pageId) return;
         return this._httpClient
             .get<ResponseI<PageI>>(`${this.url}/ms-cms/pages/${pageId}`)
@@ -159,7 +164,7 @@ export class PageService {
      * @param pageId
      * @param page
      */
-    update(pageId: number, page: PageI): Observable<ResponseI<PageI>> {        
+    update(pageId: number, page: PageI): Observable<ResponseI<PageI>> {
         return this._httpClient
             .patch<
                 ResponseI<PageI>
@@ -169,5 +174,21 @@ export class PageService {
                     this._page.next(response.message);
                 })
             );
+    }
+
+    /**
+     * Get  page for render
+     * @param params
+     * @returns
+     */
+    getPage(params: GetPageI): Observable<ResponseI<PageRenderI>> {
+        let queryParams: string = `?lang=${params.lang}&`;
+        if (params.page !== null) queryParams += `page=${params.page}&`;
+        if (params.micrositie !== null)
+            queryParams += `micrositie=${params.micrositie}&`;
+
+        return this._httpClient.get<ResponseI<PageRenderI>>(
+            `${this.url}/ms-cms/public/page${queryParams}`
+        );
     }
 }

@@ -1,5 +1,6 @@
 import { PageElementsI } from 'app/shared/interfaces/grid.interface';
 import { PaginationResquestI } from 'app/shared/interfaces/response.interface';
+import { TemplateI } from '../templates/templates.types';
 
 export declare enum ModeEnum {
     EDIT = 'edit',
@@ -45,6 +46,12 @@ export interface PageI {
     seoKeywordsRef?: string;
 }
 
+export interface PageRenderI extends PageI {
+    languageId: number;
+    languageCode: string;
+    template: TemplateI;
+}
+
 export interface UpdateDetailPageI {
     lang: number;
     references?: { ref: string; value: string }[];
@@ -52,4 +59,10 @@ export interface UpdateDetailPageI {
 
 export interface PagePaginationResquestI extends PaginationResquestI {
     micrositieId: number | null;
+}
+
+export interface GetPageI {
+    lang?: string;
+    page: string;
+    micrositie?: string;
 }

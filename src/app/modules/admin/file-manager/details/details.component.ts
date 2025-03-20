@@ -1,3 +1,4 @@
+import { ClipboardModule } from '@angular/cdk/clipboard';
 import { TextFieldModule } from '@angular/cdk/text-field';
 import { NgTemplateOutlet } from '@angular/common';
 import {
@@ -33,7 +34,6 @@ import { ToastrService } from 'ngx-toastr';
 import { Subject, takeUntil } from 'rxjs';
 import { FileManagerService } from '../file-manager.service';
 import { FileI } from '../file-manager.types';
-
 @Component({
     selector: 'file-manager-details',
     templateUrl: './details.component.html',
@@ -52,6 +52,7 @@ import { FileI } from '../file-manager.types';
         ReactiveFormsModule,
         FormsModule,
         MatProgressSpinnerModule,
+        ClipboardModule,
     ],
 })
 export class FileManagerDetailsComponent implements OnInit, OnDestroy {
@@ -237,5 +238,21 @@ export class FileManagerDetailsComponent implements OnInit, OnDestroy {
                 this._toastrService.error(response.error.message, 'Aviso');
             },
         });
+    }
+
+    /**
+     * Get file URL
+     */
+    getURL() {
+        return this.file.url;
+    }
+
+    /**
+     * Output copy event
+     * @param event
+     */
+    copyEvent(event: true) {
+        // Set the alert
+        this._toastrService.info('Url Copiada.', 'Aviso');
     }
 }

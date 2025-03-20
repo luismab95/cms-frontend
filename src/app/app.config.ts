@@ -3,7 +3,11 @@ import { ApplicationConfig, importProvidersFrom } from '@angular/core';
 import { LuxonDateAdapter } from '@angular/material-luxon-adapter';
 import { DateAdapter, MAT_DATE_FORMATS } from '@angular/material/core';
 import { provideAnimations } from '@angular/platform-browser/animations';
-import { provideRouter, withInMemoryScrolling } from '@angular/router';
+import {
+    provideRouter,
+    withInMemoryScrolling,
+    withRouterConfig,
+} from '@angular/router';
 import { provideFuse } from '@fuse';
 import { FormlyModule } from '@ngx-formly/core';
 import { FormlyMaterialModule } from '@ngx-formly/material';
@@ -37,6 +41,7 @@ export const appConfig: ApplicationConfig = {
         }),
         provideRouter(
             appRoutes,
+            withRouterConfig({ onSameUrlNavigation: 'reload' }),
             withInMemoryScrolling({ scrollPositionRestoration: 'enabled' })
         ),
 

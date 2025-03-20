@@ -18,8 +18,10 @@ import { RouterLink } from '@angular/router';
 import { FuseConfirmationService } from '@fuse/services/confirmation';
 import { ParameterI } from 'app/modules/admin/parameters/parameter.interface';
 import { ParameterService } from 'app/modules/admin/parameters/parameter.service';
+import { LanguageService } from 'app/modules/admin/sitie/languages/language.service';
 import { GridComponent } from 'app/shared/components/grid/grid.component';
 import { GridSettingsComponent } from 'app/shared/components/grid/settings/settings.component';
+import { LanguagesComponent } from 'app/shared/components/languages/languages.component';
 import { PageElementsI, SectionI } from 'app/shared/interfaces/grid.interface';
 import { ModalService } from 'app/shared/services/modal.service';
 import { validGrid } from 'app/shared/utils/grid.utils';
@@ -45,6 +47,7 @@ import { TemplateI } from '../../templates.types';
         GridComponent,
         MatMenuModule,
         NgStyle,
+        LanguagesComponent,
     ],
 })
 export class TemplatesDrawerComponent implements OnInit {
@@ -59,7 +62,9 @@ export class TemplatesDrawerComponent implements OnInit {
     autosaveTimer: any;
     autosave = signal<boolean>(false);
     saveAction = signal<boolean>(false);
+    refreshLanguage = signal<boolean>(false);
     urlStatics: string;
+    languageId: number;
 
     private _parameterService = inject(ParameterService);
     private _unsubscribeAll: Subject<any> = new Subject<any>();
@@ -72,7 +77,8 @@ export class TemplatesDrawerComponent implements OnInit {
         private _templateService: TemplateService,
         private _toastrService: ToastrService,
         private _changeDetectorRef: ChangeDetectorRef,
-        private _fuseConfirmationService: FuseConfirmationService
+        private _fuseConfirmationService: FuseConfirmationService,
+        private _languageService: LanguageService
     ) {
         // autosave logic
         this.autosaveTimer = setInterval(() => {
@@ -82,10 +88,21 @@ export class TemplatesDrawerComponent implements OnInit {
         this._parameterService.parameter$
             .pipe(takeUntil(this._unsubscribeAll))
             .subscribe((parameters: ParameterI[]) => {
-                this.urlStatics = this.getParameter(
+                this.urlStatics = findParameter(
                     'APP_STATICS_URL',
                     parameters
-                );
+                ).value;
+                // Mark for check
+                this._changeDetectorRef.markForCheck();
+            });
+
+        // Get languages
+        this._languageService.languages$
+            .pipe(takeUntil(this._unsubscribeAll))
+            .subscribe((languages) => {
+                // Update the template
+                this.languageId = languages.records[0].id;
+
                 // Mark for check
                 this._changeDetectorRef.markForCheck();
             });
@@ -163,6 +180,11 @@ export class TemplatesDrawerComponent implements OnInit {
                     // Re-enable the save action
                     this.saveAction.set(false);
                     this.autosave.set(false);
+                    // Set the alert
+                    this._toastrService.info(
+                        'Guardando cambios en borrador',
+                        'Aviso'
+                    );
                 },
                 error: (response) => {
                     // Re-enable the save action
@@ -246,12 +268,14 @@ export class TemplatesDrawerComponent implements OnInit {
      */
     loadStyles() {
         // Load CSS
-        const styleElementToRemove = document.getElementById('dynamicStyles');
+        const styleElementToRemove = document.getElementById(
+            'template-dynamicStyles'
+        );
         if (styleElementToRemove) {
             styleElementToRemove.remove();
         }
         const styleElement = document.createElement('style');
-        styleElement.id = 'dynamicStyles';
+        styleElement.id = 'template-dynamicStyles';
         styleElement.textContent = `${this.template.data.header.css} ${this.template.data.footer.css}`;
         document.head.appendChild(styleElement);
     }
@@ -278,20 +302,23 @@ export class TemplatesDrawerComponent implements OnInit {
      * @param item header | footer
      */
     addSection(item: 'header' | 'footer') {
+        const sectionUuid = generateRandomString(8);
+        const rowUuid = generateRandomString(8);
+        const columnUuid = generateRandomString(8);
         const newSection = {
-            uuid: generateRandomString(8),
-            css: '',
-            config: {},
+            uuid: sectionUuid,
+            css: `.grid-section-${sectionUuid}{}`,
+            config: { backgroundImage: '' },
             rows: [
                 {
-                    uuid: generateRandomString(8),
-                    css: {},
-                    config: {},
+                    uuid: rowUuid,
+                    css: `.grid-row-${rowUuid}{}`,
+                    config: { backgroundImage: '' },
                     columns: [
                         {
-                            uuid: generateRandomString(8),
-                            css: {},
-                            config: {},
+                            uuid: columnUuid,
+                            css: `.grid-column-${columnUuid}{}`,
+                            config: { backgroundImage: '' },
                             element: null,
                         },
                     ],
@@ -363,16 +390,6 @@ export class TemplatesDrawerComponent implements OnInit {
     }
 
     /**
-     * Get parameter
-     * @param code
-     */
-    getParameter(code: string, parameters: ParameterI[]) {
-        if (parameters.length > 0) {
-            return findParameter(code, parameters).value;
-        }
-    }
-
-    /**
      *  Choose load data draft
      */
     confirmDraft() {
@@ -426,5 +443,21 @@ export class TemplatesDrawerComponent implements OnInit {
                     this._toastrService.error(response.error.message, 'Aviso');
                 },
             });
+    }
+
+    /**
+     * Set language
+     * @param id
+     */
+    setLanguageId(id: number) {
+        this.languageId = id;
+        this.refreshLanguage.set(true);
+
+        // Mark for check
+        this._changeDetectorRef.markForCheck();
+
+        setTimeout(() => {
+            this.refreshLanguage.set(false);
+        }, 100);
     }
 }

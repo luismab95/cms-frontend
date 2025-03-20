@@ -1,3 +1,8 @@
+@if(countText === 0){
+<div class="w-full p-2 text-center text-gray-500">
+    No hay contenido para configurar.
+</div>
+}@else {
 <form [formGroup]="languageForm">
     <mat-tab-group formArrayName="languages" mat-stretch-tabs="false" [animationDuration]="'0'">
         @for (language of languagesFormArray.controls; track $index) {
@@ -10,7 +15,7 @@
                         <mat-form-field class="w-full" [subscriptSizing]="'dynamic'">
                             <mat-label>{{control | titlecase}}</mat-label>
                             <mat-icon class="icon-size-5" [svgIcon]="'mat_outline:text_fields'" matPrefix></mat-icon>
-                            <input [formControlName]="control" matInput />
+                            <textarea rows="5" [formControlName]="control" matInput></textarea>
                             @if (language['controls'][control].hasError('required')) {
                             <mat-error>Se requiere {{control}}. </mat-error>
                             }
@@ -24,3 +29,4 @@
         }
     </mat-tab-group>
 </form>
+}

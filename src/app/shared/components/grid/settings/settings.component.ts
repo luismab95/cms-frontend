@@ -8,7 +8,12 @@ import {
     ViewEncapsulation,
     inject,
 } from '@angular/core';
-import { FormControl, FormGroup, FormsModule, ReactiveFormsModule } from '@angular/forms';
+import {
+    FormControl,
+    FormGroup,
+    FormsModule,
+    ReactiveFormsModule,
+} from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import {
     MAT_DIALOG_DATA,
@@ -37,6 +42,14 @@ import { LangugesTextComponent } from '../../languages-text/languages-text.compo
 @Component({
     selector: 'grid-settings',
     templateUrl: './settings.component.html',
+    styles: [
+        `
+            formly-field-mat-input,
+            formly-field-mat-select {
+                width: 100% !important;
+            }
+        `,
+    ],
     encapsulation: ViewEncapsulation.None,
     changeDetection: ChangeDetectionStrategy.OnPush,
     standalone: true,
@@ -120,7 +133,7 @@ export class GridSettingsComponent implements OnInit, OnDestroy {
         this.dataText = this._matDialog.dataText || [];
 
         // Load form type
-        this.fields = this.getElementType() || [];
+        this.isElement && (this.fields = this.getElementType() || []);
 
         // Load css
         this.cssControl = new FormControl(this._matDialog.css);

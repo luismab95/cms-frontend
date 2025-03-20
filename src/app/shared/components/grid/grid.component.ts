@@ -52,6 +52,7 @@ import { GridSettingsComponent } from './settings/settings.component';
 })
 export class GridComponent implements OnInit {
     @Input() preview: boolean = false;
+    @Input() gridType: string = 'body';
     @Input() languageId: number;
     @Input() previewType: string = 'none';
     @Input() grid: SectionI[] = [];
@@ -98,13 +99,13 @@ export class GridComponent implements OnInit {
 
     loadStyles() {
         const styleElementToRemove = document.getElementById(
-            'dynamicSectionStyles'
+            `${this.gridType}-dynamicSectionStyles`
         );
         if (styleElementToRemove) {
             styleElementToRemove.remove();
         }
         const styleElement = document.createElement('style');
-        styleElement.id = 'dynamicSectionStyles';
+        styleElement.id = `${this.gridType}-dynamicSectionStyles`;
 
         this.grid.forEach((section) => {
             styleElement.textContent += `${section.css}`;
@@ -149,7 +150,7 @@ export class GridComponent implements OnInit {
         section.rows.push({
             uuid: rowUuid,
             css: `.grid-row-${rowUuid}{}`,
-            config: {},
+            config: { backgroundImage: '' },
             columns: [],
         });
     }
@@ -163,7 +164,7 @@ export class GridComponent implements OnInit {
         row.columns.push({
             uuid: columnUuid,
             css: `.grid-column-${columnUuid}{}`,
-            config: {},
+            config: { backgroundImage: '' },
             element: null,
         });
     }
