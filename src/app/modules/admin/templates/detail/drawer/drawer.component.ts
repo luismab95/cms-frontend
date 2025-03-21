@@ -18,14 +18,16 @@ import { RouterLink } from '@angular/router';
 import { FuseConfirmationService } from '@fuse/services/confirmation';
 import { ParameterI } from 'app/modules/admin/parameters/parameter.interface';
 import { ParameterService } from 'app/modules/admin/parameters/parameter.service';
-import { LanguageService } from 'app/modules/admin/sitie/languages/language.service';
 import { GridComponent } from 'app/shared/components/grid/grid.component';
 import { GridSettingsComponent } from 'app/shared/components/grid/settings/settings.component';
 import { LanguagesComponent } from 'app/shared/components/languages/languages.component';
+import { PermissionComponent } from 'app/shared/components/permission/permission.component';
 import { PageElementsI, SectionI } from 'app/shared/interfaces/grid.interface';
+import { LanguageService } from 'app/shared/services/language.service';
 import { ModalService } from 'app/shared/services/modal.service';
 import { validGrid } from 'app/shared/utils/grid.utils';
 import { findParameter } from 'app/shared/utils/parameter.utils';
+import { PermissionCode, validAction } from 'app/shared/utils/permission.utils';
 import { generateRandomString } from 'app/shared/utils/random.utils';
 import { ToastrService } from 'ngx-toastr';
 import { Subject, takeUntil } from 'rxjs';
@@ -48,6 +50,7 @@ import { TemplateI } from '../../templates.types';
         MatMenuModule,
         NgStyle,
         LanguagesComponent,
+        PermissionComponent,
     ],
 })
 export class TemplatesDrawerComponent implements OnInit {
@@ -65,6 +68,7 @@ export class TemplatesDrawerComponent implements OnInit {
     refreshLanguage = signal<boolean>(false);
     urlStatics: string;
     languageId: number;
+    permission = PermissionCode;
 
     private _parameterService = inject(ParameterService);
     private _unsubscribeAll: Subject<any> = new Subject<any>();
@@ -459,5 +463,12 @@ export class TemplatesDrawerComponent implements OnInit {
         setTimeout(() => {
             this.refreshLanguage.set(false);
         }, 100);
+    }
+
+    /**
+     * Valid render permission
+     */
+    validPermission(code: string) {
+        return validAction(code);
     }
 }

@@ -22,10 +22,12 @@ import { PageEvent } from '@angular/material/paginator';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { Router } from '@angular/router';
 import { PaginationComponent } from 'app/shared/components/pagination/pagination.component';
+import { PermissionComponent } from 'app/shared/components/permission/permission.component';
 import {
     PaginationResponseI,
     PaginationResquestI,
 } from 'app/shared/interfaces/response.interface';
+import { PermissionCode, validAction } from 'app/shared/utils/permission.utils';
 import { ToastrService } from 'ngx-toastr';
 import { Observable, Subject, debounceTime, takeUntil } from 'rxjs';
 import { MicrosityService } from './micrositie.service';
@@ -68,6 +70,7 @@ import { MicrositieI } from './micrositie.types';
         AsyncPipe,
         PaginationComponent,
         MatTooltipModule,
+        PermissionComponent,
     ],
 })
 export class MicrositieListComponent implements OnInit, OnDestroy {
@@ -75,7 +78,8 @@ export class MicrositieListComponent implements OnInit, OnDestroy {
     searchInputControl: UntypedFormControl = new UntypedFormControl();
     microsities$: Observable<PaginationResponseI<MicrositieI[]>>;
     isLoading: boolean = false;
-
+    permission = PermissionCode;
+    
     private _unsubscribeAll: Subject<any> = new Subject<any>();
 
     /**
@@ -174,13 +178,10 @@ export class MicrositieListComponent implements OnInit, OnDestroy {
     }
 
     /**
-     * Track by function for ngFor loops
-     *
-     * @param index
-     * @param item
+     * Valid render permission
      */
-    trackByFn(index: number, item: any): any {
-        return item.id || index;
+    validPermission(code: string) {
+        return validAction(code);
     }
 
     /**

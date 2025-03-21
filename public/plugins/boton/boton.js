@@ -14,14 +14,14 @@ function loadBotonPlugin(idPlugin) {
     if (data.properties !== undefined) {
         // Load data
         if (
-            data.properties.config.icon === '' ||
-            data.properties.config.icon === null ||
-            data.properties.config.icon === undefined
+            data.properties.config.image === '' ||
+            data.properties.config.image === null ||
+            data.properties.config.image === undefined
         ) {
             button.innerText = data.properties.text.etiqueta;
         } else {
             button.innerHTML = `
-                    <img style="width:15px; margin-right: 6px;" src="${data.properties.config.icon}" alt="${data.properties.text.etiqueta}">
+                    <img style="width:15px; margin-right: 6px;" src="${data.properties.urlStatics}${data.properties.config.image}" alt="${data.properties.text.etiqueta}">
                     ${data.properties.text.etiqueta}
                 `;
         }

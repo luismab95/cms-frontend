@@ -55,7 +55,10 @@ export class InactivityTimerService {
                 .pipe(takeUntil(this._activity$), takeUntil(this._unsubscribe$))
                 .subscribe(async () => {
                     const token = this._authService.accessToken;
-                    if (token) {
+                    const url = window.location.pathname;
+                    const urlSplit = url.split('/');
+
+                    if (token && urlSplit[1] == 'admin') {
                         const user = this.user;
                         await lastValueFrom(this._authService.logout(token));
                         this._authService.signOut();

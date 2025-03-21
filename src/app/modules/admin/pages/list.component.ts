@@ -22,7 +22,9 @@ import { fuseAnimations } from '@fuse/animations';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { Router } from '@angular/router';
 import { PaginationComponent } from 'app/shared/components/pagination/pagination.component';
+import { PermissionComponent } from 'app/shared/components/permission/permission.component';
 import { PaginationResponseI } from 'app/shared/interfaces/response.interface';
+import { PermissionCode, validAction } from 'app/shared/utils/permission.utils';
 import { ToastrService } from 'ngx-toastr';
 import { Observable, Subject, debounceTime, takeUntil } from 'rxjs';
 import { MicrosityService } from '../microsities/micrositie.service';
@@ -67,6 +69,7 @@ import { PageI, PagePaginationResquestI } from './pages.types';
         AsyncPipe,
         PaginationComponent,
         MatTooltipModule,
+        PermissionComponent,
     ],
 })
 export class PagesListComponent implements OnInit, OnDestroy {
@@ -74,6 +77,8 @@ export class PagesListComponent implements OnInit, OnDestroy {
     searchInputControl: UntypedFormControl = new UntypedFormControl();
     pages$: Observable<PaginationResponseI<PageI[]>>;
     isLoading: boolean = false;
+    permission = PermissionCode;
+
     private _unsubscribeAll: Subject<any> = new Subject<any>();
 
     /**
@@ -172,23 +177,21 @@ export class PagesListComponent implements OnInit, OnDestroy {
     }
 
     /**
-     * Track by function for ngFor loops
-     *
-     * @param index
-     * @param item
-     */
-    trackByFn(index: number, item: any): any {
-        return item.id || index;
-    }
-
-    /**
      * Go to detail page
      *
      * @param page
      */
     goToDetail(page?: PageI) {
+        this._pageService.page = null;
         this._router.navigateByUrl('admin/modules/pages/detail', {
             state: { id: page?.id },
         });
+    }
+
+    /**
+     * Valid render permission
+     */
+    validPermission(code: string) {
+        return validAction(code);
     }
 }

@@ -34,3 +34,13 @@ export class StorageUtils {
     }
   }
 }
+
+
+export function getLocalStorage(key: string): string | undefined {
+  if (isProduction) {
+    const hash = encryptStorage.hash(key);
+    return encryptStorage.getItem(hash);
+  } else {
+    return localStorage.getItem(key) ?? undefined;
+  }
+}

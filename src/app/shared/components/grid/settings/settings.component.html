@@ -12,24 +12,31 @@
             </a>
         </div>
     </div>
-    <div class="w-full h-full">
+
+    <!-- content -->
+    <div class="w-full h-full max-h-120 overflow-y-auto">
         <mat-tab-group mat-stretch-tabs="false" [animationDuration]="'0'">
 
             <mat-tab label="Estilos (CSS)">
                 <ng-template matTabContent>
-                    <div class="w-full py-2 flex items-center justify-between">
+                    @if(validPermission(permission.editDesignTemplate) || validPermission(permission.editDesignPage)){
+                        <div class="w-full py-2 flex items-center justify-between">
                         <span class="text-md italic text-secondary">Personaliza los estilos de tu {{title}}.</span>
                         <mat-icon [matTooltip]="'Ayuda'" class="icon-size-5 cursor-pointer"
                             [svgIcon]="'mat_solid:help'"></mat-icon>
                     </div>
                     <ngx-monaco-editor [formControl]="cssControl" class="h-160 md:h-160"
                         [options]="options"></ngx-monaco-editor>
+                    }@else{
+                    <permission></permission>
+                    }
                 </ng-template>
             </mat-tab>
 
             <mat-tab label="Propiedades">
                 <ng-template matTabContent>
-                    @if(!isElement){
+                    @if(validPermission(permission.editContentPage) || validPermission(permission.editContentTemplate)){
+                        @if(!isElement){
                     <div class="w-full py-2 flex flex-col items-start justify-between">
                         <mat-label>Imágen de fondo</mat-label>
                         <div class="relative w-full">
@@ -55,15 +62,52 @@
                     </div>
                     }@else {
                     <div class="w-full p-2 flex flex-col items-start justify-between">
-                        @if(fields.length ===0){
+                        @if(fields.length ===0 && !validImagePropertie()){
                         <div class="w-full p-2 text-center text-gray-500">
                             No hay propiedades para configurar.
                         </div>
                         }
+
+                        <!-- IMAGE -->
+                        @if(validImagePropertie()){
+                        <div class="w-60 h-auto py-2 flex flex-col items-start justify-between mb-3">
+                            <mat-label>Imagen/Icono</mat-label>
+                            <div class="w-full mt-4 flex flex-col rounded-lg bg-gray-300">
+                                <div class="w-full h-52 p-4 shadow-lg rounded-t-lg flex items-center justify-center">
+                                    @if(config.image === ''){
+                                    <div
+                                        class="h-52 w-full bg-gray-300 rounded-lg flex justify-center items-center mt-3">
+                                        <span class="-rotate-45 text-md md:text-2xl text-center">
+                                            SIN IMÁGEN/ICONO
+                                        </span>
+                                    </div>
+                                    }@else{
+                                    <img class="w-full h-52 object-cover" [src]="getLogo()" alt="image" />
+                                    }
+                                </div>
+                                <div
+                                    class="p-1 rounded-b-lg h-auto flex flex-row justify-evenly items-center bg-default shadow-lg">
+                                    <button [matTooltip]="'Cargar imagen'" mat-icon-button
+                                        (click)="openImagesManager()">
+                                        <mat-icon [svgIcon]="'heroicons_outline:photo'"></mat-icon>
+                                    </button>
+                                    @if(config.image !== ''){
+                                    <button [matTooltip]="'Remover imagen'" mat-icon-button (click)="updateImage('')">
+                                        <mat-icon [svgIcon]="'heroicons_outline:trash'"></mat-icon>
+                                    </button> }
+                                </div>
+                            </div>
+                        </div>
+                        }
+
+                        <!-- FORMS -->
                         <form class="w-full" [formGroup]="form">
                             <formly-form class="w-full" [form]="form" [fields]="fields" [model]="config"></formly-form>
                         </form>
                     </div>
+                    }
+                    }@else{
+                    <permission></permission>
                     }
                 </ng-template>
             </mat-tab>
@@ -72,15 +116,18 @@
             @if(isElement){
             <mat-tab label="Contenido">
                 <ng-template matTabContent>
+                    @if(validPermission(permission.editContentPage) || validPermission(permission.editContentTemplate)){
                     <languages-text [text]="text" [data]="dataText" (dataEvent)="setDataText($event)"></languages-text>
+                    }@else{
+                    <permission></permission>
+                    }
                 </ng-template>
             </mat-tab>
             }
         </mat-tab-group>
     </div>
 
-
-    <!-- Actions -->
+    <!-- actions -->
     <div class="absolute -bottom-6 w-full md:w-140 -left-6 z-10">
         <div
             class="mt-10 flex items-center overflow-hidden justify-end border-t bg-gray-50 py-4 dark:bg-transparent pr-8">

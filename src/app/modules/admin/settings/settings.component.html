@@ -18,7 +18,7 @@
             </div>
             <!-- Panel links -->
             <div class="flex flex-col divide-y border-b border-t">
-                @for (panel of panels; track trackByFn($index, panel)) {
+                @for (panel of panels; track $index) {
                 <div class="flex cursor-pointer px-8 py-5" [ngClass]="{
                             'dark:hover:bg-hover hover:bg-gray-100':
                                 !selectedPanel || selectedPanel !== panel.id,
@@ -68,19 +68,25 @@
 
                 <!-- Load settings panel -->
                 <div class="mt-8">
+                    @if(validPermission(permission.vieProfile)){
+
                     @switch (selectedPanel) {
                     <!-- Account -->
                     @case ('account') {
-                    <settings-account [user]="user"></settings-account>
+                    <settings-account [edit]="validPermission(permission.editProfile)" [user]="user"></settings-account>
                     }
                     <!-- Security -->
                     @case ('security') {
-                    <settings-security [user]="user"></settings-security>
+                    <settings-security [edit]="validPermission(permission.editProfile)"
+                        [user]="user"></settings-security>
                     }
                     <!-- Notifications -->
                     <!-- @case ('notifications') {
                     <settings-notifications></settings-notifications>
                     } -->
+                    }
+                    }@else {
+                    <permission></permission>
                     }
                 </div>
             </div>

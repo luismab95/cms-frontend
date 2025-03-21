@@ -1,4 +1,5 @@
 <div class="w-full max-w-full bg-default">
+    @if(validPermission(permission.editContentTemplate) || validPermission(permission.editDesignTemplate)){
     <div class="flex min-w-0 flex-auto flex-col dark:bg-transparent absolute -top-0 w-full -left-0">
         <div class="relative">
             <div class="sticky top-0 left-0 right-0 w-full bg-card shadow-md p-3 z-10">
@@ -79,21 +80,25 @@
                                 <mat-icon class="icon-size-5" [svgIcon]="'heroicons_mini:ellipsis-vertical'"></mat-icon>
                             </button>
                             <mat-menu #headerMenu="matMenu">
-                                <button (click)="addSection('header')" mat-menu-item>
-                                    <mat-icon [svgIcon]="'heroicons_outline:plus'"></mat-icon>
-                                    Nueva sección
-                                </button>
                                 <button (click)="openSettingsModal(template.data.header,'Encabezado','header')"
                                     mat-menu-item>
                                     <mat-icon [svgIcon]="'heroicons_outline:cog-6-tooth'"></mat-icon>
                                     Configurar
                                 </button>
+                                @if( validPermission(permission.editDesignTemplate)){
+                                <button (click)="addSection('header')" mat-menu-item>
+                                    <mat-icon [svgIcon]="'heroicons_outline:plus'"></mat-icon>
+                                    Nueva sección
+                                </button>
+                                }
                             </mat-menu>
                         </div>
                     </div>
                     }
-                    <grid [languageId]="languageId" [gridType]="'header'" [grid]="header()" [previewType]="preview"
-                        [preview]="previewMode" (deleteSectionEvent)="setGrid($event,'header')"></grid>
+                    <grid [editContent]="validPermission(permission.editContentTemplate)"
+                        [editDesign]="validPermission(permission.editDesignTemplate)" [languageId]="languageId"
+                        [gridType]="'header'" [grid]="header()" [previewType]="preview" [preview]="previewMode"
+                        (deleteSectionEvent)="setGrid($event,'header')"></grid>
                 </div>
                 <div class="bg-card cursor-not-allowed h-160 my-3 rounded-2xl flex justify-center items-center">
                     <span class="-rotate-45 text-xl md:text-6xl text-center">
@@ -112,23 +117,32 @@
                                 <mat-icon class="icon-size-5" [svgIcon]="'heroicons_mini:ellipsis-vertical'"></mat-icon>
                             </button>
                             <mat-menu #footerMenu="matMenu">
-                                <button (click)="addSection('footer')" mat-menu-item>
-                                    <mat-icon [svgIcon]="'heroicons_outline:plus'"></mat-icon>
-                                    Nueva sección
-                                </button>
                                 <button (click)="openSettingsModal(template.data.footer,'Pie de página', 'footer')"
                                     mat-menu-item>
                                     <mat-icon [svgIcon]="'heroicons_outline:cog-6-tooth'"></mat-icon>
                                     Configurar
                                 </button>
+                                @if( validPermission(permission.editDesignTemplate)){
+
+                                <button (click)="addSection('footer')" mat-menu-item>
+                                    <mat-icon [svgIcon]="'heroicons_outline:plus'"></mat-icon>
+                                    Nueva sección
+                                </button>
+                                }
+
                             </mat-menu>
                         </div>
                     </div>
                     }
-                    <grid [languageId]="languageId" [gridType]="'footer'" [grid]="footer()" [previewType]="preview"
-                        [preview]="previewMode" (deleteSectionEvent)="setGrid($event,'footer')"></grid>
+                    <grid [editContent]="validPermission(permission.editContentTemplate)"
+                        [editDesign]="validPermission(permission.editDesignTemplate)" [languageId]="languageId"
+                        [gridType]="'footer'" [grid]="footer()" [previewType]="preview" [preview]="previewMode"
+                        (deleteSectionEvent)="setGrid($event,'footer')"></grid>
                 </div>
             </div>
         </div>
     </div>
+    } @else {
+    <permission></permission>
+    }
 </div>

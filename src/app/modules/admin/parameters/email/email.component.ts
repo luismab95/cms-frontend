@@ -55,6 +55,7 @@ import { ParameterService } from '../parameter.service';
 })
 export class ParametersEmailComponent implements OnInit {
     @Input() parameters: ParameterI[] = [];
+    @Input() edit: boolean;
     @Output() refreshParameters: EventEmitter<boolean> =
         new EventEmitter<boolean>();
 
@@ -95,6 +96,7 @@ export class ParametersEmailComponent implements OnInit {
         ]);
 
         this.emailForm.patchValue({ ...this.getEmailParameters() });
+        if (!this.edit) this.emailForm.disable();
     }
 
     /**

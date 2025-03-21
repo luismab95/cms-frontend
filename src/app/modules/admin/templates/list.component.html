@@ -13,16 +13,21 @@
         <!-- Actions -->
         <div class="mt-6 flex shrink-0 items-center sm:ml-4 sm:mt-0">
             <!-- Search -->
+            @if(validPermission(permission.listTemplate)){
+
             <mat-form-field class="fuse-mat-dense fuse-mat-rounded min-w-64" [subscriptSizing]="'dynamic'">
                 <mat-icon class="icon-size-5" matPrefix [svgIcon]="'heroicons_solid:magnifying-glass'"></mat-icon>
                 <input matInput [formControl]="searchInputControl" [autocomplete]="'off'"
                     [placeholder]="'Buscar plantillas'" />
             </mat-form-field>
+            }
+            @if(validPermission(permission.createTemplate)){
             <!-- Add product button -->
             <button class="ml-4" mat-flat-button [color]="'primary'" (click)="goToDetail()">
                 <mat-icon [svgIcon]="'heroicons_outline:plus'"></mat-icon>
                 <span class="ml-2 mr-1">Agregar</span>
             </button>
+            }
         </div>
     </div>
 
@@ -30,7 +35,7 @@
     <div class="flex flex-auto overflow-hidden">
         <!-- Templates list -->
         <div class="flex flex-auto flex-col overflow-hidden sm:mb-18 sm:overflow-y-auto">
-
+            @if(validPermission(permission.listTemplate)){
             <div class="grid">
                 <!-- Header -->
                 <div
@@ -51,7 +56,7 @@
                 @if (templates.records.length > 0) {
                 @for (
                 template of templates.records;
-                track trackByFn($index, template)
+                track $index
                 ) {
                 <div class="templates-grid grid items-center gap-4 border-b px-6 py-3 md:px-8">
                     <!-- # -->
@@ -100,6 +105,9 @@
                 }
                 }
             </div>
+            }@else {
+            <permission></permission>
+            }
         </div>
     </div>
 </div>

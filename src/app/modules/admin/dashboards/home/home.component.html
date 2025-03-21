@@ -18,10 +18,10 @@
                             Bienvenido, {{user.firstname}}
                         </div>
                         <div class="flex items-center">
-                            <mat-icon class="icon-size-5" [svgIcon]="'heroicons_solid:bell'"></mat-icon>
+                            <!-- <mat-icon class="icon-size-5" [svgIcon]="'heroicons_solid:bell'"></mat-icon>
                             <div class="text-secondary ml-1.5 truncate leading-6">
                                 Tienes 15 tareas nuevas.
-                            </div>
+                            </div> -->
                         </div>
                     </div>
                 </div>
@@ -44,6 +44,7 @@
                 <!-- Home -->
                 <mat-tab label="Inicio">
                     <ng-template matTabContent>
+                        @if(validPermission(permission.homePanel)){
                         <div class="grid w-full min-w-0 grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-4">
                             <!-- Pages -->
                             <div class="bg-card flex flex-auto flex-col overflow-hidden rounded-2xl p-6 shadow">
@@ -77,13 +78,13 @@
                             <div class="bg-card flex flex-auto flex-col overflow-hidden rounded-2xl p-6 shadow">
                                 <div class="flex items-start justify-between">
                                     <div class="truncate text-lg font-medium leading-6 tracking-tight">
-                                        Noticias
+                                        Plantillas
                                     </div>
                                 </div>
                                 <div class="mt-2 flex flex-col items-center">
                                     <div
                                         class="text-7xl font-bold leading-none tracking-tight text-amber-500 sm:text-8xl">
-                                        24
+                                        1
                                     </div>
                                 </div>
                             </div>
@@ -91,7 +92,7 @@
                             <div class="bg-card flex flex-auto flex-col overflow-hidden rounded-2xl p-6 shadow">
                                 <div class="flex items-start justify-between">
                                     <div class="truncate text-lg font-medium leading-6 tracking-tight">
-                                        Otros
+                                        Archivos
                                     </div>
                                 </div>
                                 <div class="mt-2 flex flex-col items-center">
@@ -124,44 +125,44 @@
                                         </div>
                                         <div class="flex flex-auto flex-col">
                                             <apx-chart class="h-80 w-full flex-auto" [chart]="
-                                                    chartGithubIssues.chart
-                                                " [colors]="
-                                                    chartGithubIssues.colors
-                                                " [dataLabels]="
-                                                    chartGithubIssues.dataLabels
-                                                " [grid]="chartGithubIssues.grid" [labels]="
-                                                    chartGithubIssues.labels
-                                                " [legend]="
-                                                    chartGithubIssues.legend
-                                                " [plotOptions]="
-                                                    chartGithubIssues.plotOptions
-                                                " [series]="
-                                                    chartGithubIssues.series[
-                                                        githubIssuesWeekSelector
-                                                            .value
-                                                    ]
-                                                " [states]="
-                                                    chartGithubIssues.states
-                                                " [stroke]="
-                                                    chartGithubIssues.stroke
-                                                " [tooltip]="
-                                                    chartGithubIssues.tooltip
-                                                " [xaxis]="
-                                                    chartGithubIssues.xaxis
-                                                " [yaxis]="
-                                                    chartGithubIssues.yaxis
-                                                "></apx-chart>
+                                                        chartGithubIssues.chart
+                                                    " [colors]="
+                                                        chartGithubIssues.colors
+                                                    " [dataLabels]="
+                                                        chartGithubIssues.dataLabels
+                                                    " [grid]="chartGithubIssues.grid" [labels]="
+                                                        chartGithubIssues.labels
+                                                    " [legend]="
+                                                        chartGithubIssues.legend
+                                                    " [plotOptions]="
+                                                        chartGithubIssues.plotOptions
+                                                    " [series]="
+                                                        chartGithubIssues.series[
+                                                            githubIssuesWeekSelector
+                                                                .value
+                                                        ]
+                                                    " [states]="
+                                                        chartGithubIssues.states
+                                                    " [stroke]="
+                                                        chartGithubIssues.stroke
+                                                    " [tooltip]="
+                                                        chartGithubIssues.tooltip
+                                                    " [xaxis]="
+                                                        chartGithubIssues.xaxis
+                                                    " [yaxis]="
+                                                        chartGithubIssues.yaxis
+                                                    "></apx-chart>
                                         </div>
                                     </div>
                                     <!-- Overview -->
                                     <div class="flex flex-col">
                                         <div class="text-secondary font-medium">
-                                            Descripción general
+                                            Visitas por
                                         </div>
                                         <div class="mt-6 grid flex-auto grid-cols-4 gap-4">
                                             <!-- Sitie -->
                                             <div
-                                                class="col-span-2 flex flex-col items-center justify-center rounded-2xl bg-indigo-50 px-1 py-8 text-indigo-800 dark:bg-white dark:bg-opacity-5 dark:text-indigo-400">
+                                                class="col-span-4 flex flex-col items-center justify-center rounded-2xl bg-indigo-50 px-1 py-8 text-indigo-800 dark:bg-white dark:bg-opacity-5 dark:text-indigo-400">
                                                 <div
                                                     class="text-5xl font-semibold leading-none tracking-tight sm:text-7xl">
                                                     {{
@@ -207,38 +208,6 @@
                                                 </div>
                                                 <div class="mt-1 text-center text-sm font-medium">
                                                     Micrositios
-                                                </div>
-                                            </div>
-                                            <!-- News -->
-                                            <div
-                                                class="text-secondary col-span-2 flex flex-col items-center justify-center rounded-2xl bg-gray-100 px-1 py-8 dark:bg-white dark:bg-opacity-5 sm:col-span-1">
-                                                <div class="text-5xl font-semibold leading-none tracking-tight">
-                                                    {{
-                                                    data.githubIssues
-                                                    .overview[
-                                                    githubIssuesWeekSelector
-                                                    .value
-                                                    ]['wont-fix']
-                                                    }}
-                                                </div>
-                                                <div class="mt-1 text-center text-sm font-medium">
-                                                    Noticias
-                                                </div>
-                                            </div>
-                                            <!-- Others -->
-                                            <div
-                                                class="text-secondary col-span-2 flex flex-col items-center justify-center rounded-2xl bg-gray-100 px-1 py-8 dark:bg-white dark:bg-opacity-5 sm:col-span-1">
-                                                <div class="text-5xl font-semibold leading-none tracking-tight">
-                                                    {{
-                                                    data.githubIssues
-                                                    .overview[
-                                                    githubIssuesWeekSelector
-                                                    .value
-                                                    ]['re-opened']
-                                                    }}
-                                                </div>
-                                                <div class="mt-1 text-center text-sm font-medium">
-                                                    Otros
                                                 </div>
                                             </div>
                                         </div>
@@ -290,12 +259,19 @@
                                 </div>
                             </div>
                         </div>
+                        }@else {
+                        <permission></permission>
+                        }
+
+
                     </ng-template>
                 </mat-tab>
 
                 <!-- Visit -->
                 <mat-tab label="Visitas">
                     <ng-template matTabContent>
+                        @if(validPermission(permission.visitPanel)){
+
                         <div class="grid w-full min-w-0 grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-4">
                             <!-- Visitors vs. Page Views -->
                             <div
@@ -424,6 +400,10 @@
                                 </div>
                             </div>
                         </div>
+                        }@else {
+                        <permission></permission>
+                        }
+
                     </ng-template>
                 </mat-tab>
 

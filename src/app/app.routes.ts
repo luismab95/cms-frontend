@@ -3,6 +3,7 @@ import { initialDataResolver } from 'app/app.resolvers';
 import { AuthGuard } from 'app/core/auth/guards/auth.guard';
 import { NoAuthGuard } from 'app/core/auth/guards/noAuth.guard';
 import { LayoutComponent } from 'app/layout/layout.component';
+import { MenuGuard } from './core/auth/guards/menu.guard';
 
 // @formatter:off
 /* eslint-disable max-len */
@@ -81,8 +82,8 @@ export const appRoutes: Route[] = [
     // Admin routes
     {
         path: 'admin',
-        canActivate: [AuthGuard],
-        canActivateChild: [AuthGuard],
+        canActivate: [AuthGuard, MenuGuard],
+        canActivateChild: [AuthGuard, MenuGuard],
         component: LayoutComponent,
         resolve: {
             initialData: initialDataResolver,

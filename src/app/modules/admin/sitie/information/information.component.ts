@@ -22,6 +22,8 @@ import { MatInputModule } from '@angular/material/input';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSelectModule } from '@angular/material/select';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
+import { PermissionComponent } from 'app/shared/components/permission/permission.component';
+import { PermissionCode, validAction } from 'app/shared/utils/permission.utils';
 import { ToastrService } from 'ngx-toastr';
 import { Subject, takeUntil } from 'rxjs';
 import { TemplateService } from '../../templates/templates.service';
@@ -47,12 +49,14 @@ import { SitieI } from '../sitie.types';
         MatOptionModule,
         MatSlideToggleModule,
         MatProgressSpinnerModule,
+        PermissionComponent,
     ],
 })
 export class SitieInformationComponent implements OnInit {
     sitieForm: UntypedFormGroup;
     sitie = signal<SitieI>(null);
     templates: TemplateI[] = [];
+    permission = PermissionCode;
     private _unsubscribeAll: Subject<any> = new Subject<any>();
 
     /**
@@ -180,5 +184,12 @@ export class SitieInformationComponent implements OnInit {
     cancel() {
         this.sitieForm.reset();
         this.sitieForm.patchValue({ ...this.sitie() });
+    }
+
+    /**
+     * Valid render permission
+     */
+    validPermission(code: string) {
+        return validAction(code);
     }
 }

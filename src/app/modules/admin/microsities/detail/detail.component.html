@@ -24,7 +24,7 @@
             </div>
             <!-- Panel links -->
             <div class="flex flex-col divide-y border-b border-t">
-                @for (panel of panels; track trackByFn($index, panel)) {
+                @for (panel of panels; track $index) {
                 <div class="flex cursor-pointer px-8 py-5" [ngClass]="{
                             'dark:hover:bg-hover hover:bg-gray-100':
                                 !selectedPanel || selectedPanel !== panel.id,
@@ -81,9 +81,13 @@
                     }
                     <!-- Pages -->
                     @case ('pages') {
-                    <microsities-pages [micrositie]="micrositie"></microsities-pages>
-                    }
+                    @if(validPermission(permission.viewMicrosite)){
 
+                    <microsities-pages [micrositie]="micrositie"></microsities-pages>
+                    }@else {
+                    <permission></permission>
+                    }
+                    }
                     }
                 </div>
             </div>

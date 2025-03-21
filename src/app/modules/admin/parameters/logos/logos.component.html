@@ -14,9 +14,11 @@
                 <mat-label>Autentificación</mat-label>
                 <div class="relative w-full">
                     <div class="absolute bottom-0 right-0 p-4">
-                        <button class="bg-gray-300" mat-icon-button (click)="authBackgroundLogo.click()">
+                        @if(edit){
+                        <button class="bg-gray-300" mat-icon-button (click)="emailLogo.click()">
                             <mat-icon class="text-white" [svgIcon]="'heroicons_outline:photo'"></mat-icon>
                         </button>
+                        }
                     </div>
                     <img class="w-full object-cover" [src]="getValue('authBackground')" />
                     <input #authBackgroundLogo class="hidden" accept="image/*"
@@ -41,9 +43,11 @@
                 <mat-label>Web</mat-label>
                 <div class="relative w-30">
                     <div class="absolute bottom-0 right-0 p-4">
-                        <button class="bg-gray-300" mat-icon-button (click)="iconLogo.click()">
-                            <mat-icon class="text-white" cl [svgIcon]="'heroicons_outline:photo'"></mat-icon>
+                        @if(edit){
+                        <button class="bg-gray-300" mat-icon-button (click)="emailLogo.click()">
+                            <mat-icon class="text-white" [svgIcon]="'heroicons_outline:photo'"></mat-icon>
                         </button>
+                        }
                     </div>
                     <img class="w-full object-cover" [src]="getValue('icon')" />
                     <input #iconLogo class="hidden" accept="image/*" (change)="removeImage($event,'icon')" required=""
@@ -67,9 +71,11 @@
                 <div class="relative w-60">
                     <mat-label>Principal</mat-label>
                     <div class="absolute bottom-0 right-0 p-4">
-                        <button class="bg-gray-300" mat-icon-button (click)="primaryLogo.click()">
+                        @if(edit){
+                        <button class="bg-gray-300" mat-icon-button (click)="emailLogo.click()">
                             <mat-icon class="text-white" [svgIcon]="'heroicons_outline:photo'"></mat-icon>
                         </button>
+                        }
                     </div>
                     <img class="w-full object-cover" [src]="getValue('primary')" />
                     <input #primaryLogo class="hidden" accept="image/*" (change)="removeImage($event,'primary')"
@@ -80,9 +86,11 @@
                 <div class="relative w-60">
                     <mat-label>Secundario</mat-label>
                     <div class="absolute bottom-0 right-0 p-4">
-                        <button class="bg-gray-300" mat-icon-button (click)="secondaryLogo.click()">
+                        @if(edit){
+                        <button class="bg-gray-300" mat-icon-button (click)="emailLogo.click()">
                             <mat-icon class="text-white" [svgIcon]="'heroicons_outline:photo'"></mat-icon>
                         </button>
+                        }
                     </div>
                     <img class="w-full object-cover" [src]="getValue('secondary')" />
                     <input #secondaryLogo class="hidden" accept="image/*" (change)="removeImage($event,'secondary')"
@@ -93,9 +101,11 @@
                 <div class="relative w-60">
                     <mat-label>Email</mat-label>
                     <div class="absolute bottom-0 right-0 p-4">
+                        @if(edit){
                         <button class="bg-gray-300" mat-icon-button (click)="emailLogo.click()">
                             <mat-icon class="text-white" [svgIcon]="'heroicons_outline:photo'"></mat-icon>
                         </button>
+                        }
                     </div>
                     <img class="w-full object-cover" [src]="getValue('email')" />
                     <input #emailLogo class="hidden" accept="image/*" (change)="removeImage($event,'email')" required=""
@@ -109,6 +119,7 @@
 
         <!-- Actions -->
         <div class="flex items-center justify-end">
+            @if(edit){
             <button (click)="cancel()" mat-stroked-button type="button">Cancelar</button>
             <button class="ml-4" mat-flat-button type="button" [color]="'primary'" [disabled]="logoForm.disabled"
                 (click)="save()">
@@ -119,6 +130,7 @@
                 <mat-progress-spinner [diameter]="24" [mode]="'indeterminate'"></mat-progress-spinner>
                 }
             </button>
+            }
         </div>
     </form>
 </div>

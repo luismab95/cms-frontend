@@ -1,82 +1,8 @@
-@if(language){
 <div class="flex w-full flex-col">
-    <!-- View mode -->
-    @if (!editMode) {
+
     <!-- Header -->
     <div class="relative h-40 w-full bg-accent-100 px-8 dark:bg-accent-700 sm:h-48 sm:px-12">
-        <!-- Background -->
-        <!-- <img class="absolute inset-0 h-full w-full object-cover" [src]="" /> -->
-
-        <!-- Cerrar button -->
-        <div class="mx-auto flex w-full max-w-3xl items-center justify-end pt-6">
-            <a mat-icon-button [matTooltip]="'Cerrar'" [mat-dialog-close]="false">
-                <mat-icon class="text-dark" [svgIcon]="'heroicons_outline:x-mark'"></mat-icon>
-            </a>
-        </div>
-    </div>
-
-    <!-- language -->
-    <div class="relative flex flex-auto flex-col items-center p-6 pt-0 sm:p-12 sm:pt-0">
-        <div class="w-full max-w-3xl">
-            <!-- Icon and actions -->
-            <div class="-mt-16 flex flex-auto items-end">
-                <!-- Icon -->
-                <div
-                    class="ring-bg-card flex h-32 w-32 items-center justify-center overflow-hidden rounded-full ring-4">
-                    @if (language.icon) {
-                    <img class="h-full w-full object-cover" [src]="getICon(language.icon)" />
-                    }
-                </div>
-                <!-- Actions -->
-                <div class="mb-1 ml-auto flex items-center">
-                    <button mat-stroked-button (click)="toggleEditMode(true)">
-                        <mat-icon class="icon-size-5" [svgIcon]="'heroicons_solid:pencil-square'"></mat-icon>
-                        <span class="ml-2">Editar</span>
-                    </button>
-                </div>
-            </div>
-
-            <!-- Name -->
-            <div class="mt-3 truncate text-4xl font-bold">
-                {{ language.name }}
-            </div>
-
-            <div class="mt-2 flex flex-wrap items-center">
-                <!-- Status -->
-                @if (language.status) {
-                <div
-                    class="mb-3 mr-3 flex items-center justify-center rounded-full bg-primary-400 px-3 py-1 leading-normal text-white dark:bg-gray-700 dark:text-gray-300">
-                    <span class="whitespace-nowrap text-sm font-medium">Activo</span>
-                </div>
-                }
-                @if (!language.status) {
-                <div
-                    class="mb-3 mr-3 flex items-center justify-center rounded-full bg-gray-400 px-3 py-1 leading-normal text-white dark:bg-gray-700 dark:text-gray-300">
-                    <span class="whitespace-nowrap text-sm font-medium">Inactivo</span>
-                </div> }
-
-            </div>
-
-            <div class="mt-4 flex flex-col space-y-8 border-t pt-6">
-                <!-- Code -->
-                @if (language.lang) {
-                <div class="flex sm:items-center">
-                    <mat-icon [svgIcon]="'heroicons_outline:language'"></mat-icon>
-                    <div class="ml-6 leading-6">
-                        {{ language.lang }}
-                    </div>
-                </div>
-                }
-            </div>
-        </div>
-    </div>
-    }
-
-    <!-- Edit mode -->
-    @if (editMode) {
-    <!-- Header -->
-    <div class="relative h-40 w-full bg-accent-100 px-8 dark:bg-accent-700 sm:h-48 sm:px-12">
-        <!-- Cerrar button -->
+        <!-- Close button -->
         <div class="mx-auto flex w-full max-w-3xl items-center justify-end pt-6">
             <a mat-icon-button [matTooltip]="'Cerrar'" [mat-dialog-close]="false">
                 <mat-icon class="text-dark" [svgIcon]="'heroicons_outline:x-mark'"></mat-icon>
@@ -87,82 +13,17 @@
     <!-- Language form -->
     <div class="relative flex flex-auto flex-col items-center px-6 sm:px-12">
         <div class="w-full max-w-3xl">
+            @if(validPermission(permission.viewLanguage)){
             <ng-container *ngTemplateOutlet="languageTemplateForm;"></ng-container>
+            }@else {
+            <permission [show]="true"></permission>
+            }
+
         </div>
     </div>
 
-    <!-- Actions -->
-    <div class="absolute bottom-0 w-full left-0">
-        <div class="flex items-center border-t bg-gray-50 p-4 dark:bg-transparent"> <!-- Delete -->
-            <button mat-button [color]="language.status ?'warn' : 'primary'" (click)="toggleLanguage()">
-                @if (!languageForm.disabled) {
-                <span> @if(!language.status){
-                    Activar
-                    }@else {
-                    Inactivar
-                    }</span>
-                }
-                @if (languageForm.disabled) {
-                <mat-progress-spinner [diameter]="24" [mode]="'indeterminate'"></mat-progress-spinner>
-                }
-            </button>
-            <!-- Cancel -->
-            <button class="ml-auto" mat-button [matTooltip]="'Cancelar'" (click)="toggleEditMode(false)">
-                Cancelar
-            </button>
-            <!-- Save -->
-            <button class="ml-2" mat-flat-button [color]="'primary'" [disabled]="languageForm.invalid"
-                [matTooltip]="'Guardar'" (click)="update()">
-                @if (!languageForm.disabled) {
-                <span> Guardar</span>
-                }
-                @if (languageForm.disabled) {
-                <mat-progress-spinner [diameter]="24" [mode]="'indeterminate'"></mat-progress-spinner>
-                }
-            </button>
-        </div>
-    </div>
-    }
-</div>
-}@else {
-<!-- Header -->
-<div class="relative h-40 w-full bg-accent-100 px-8 dark:bg-accent-700 sm:h-48 sm:px-12">
-    <!-- Cerrar button -->
-    <div class="mx-auto flex w-full max-w-3xl items-center justify-end pt-6">
-        <a mat-icon-button [matTooltip]="'Cerrar'" [mat-dialog-close]="false">
-            <mat-icon class="text-dark" [svgIcon]="'heroicons_outline:x-mark'"></mat-icon>
-        </a>
-    </div>
 </div>
 
-<!-- Language form -->
-<div class="relative flex flex-auto flex-col items-center px-6 sm:px-12">
-    <div class="w-full max-w-3xl">
-        <ng-container *ngTemplateOutlet="languageTemplateForm;"></ng-container>
-
-    </div>
-</div>
-
-<!-- Actions -->
-<div class="absolute bottom-0 w-full left-0">
-    <div class="flex items-center border-t bg-gray-50 p-4 dark:bg-transparent"> <!-- Delete -->
-        <!-- Cancel -->
-        <button class="ml-auto" mat-button [matTooltip]="'Cancelar'" [mat-dialog-close]="false">
-            Cancelar
-        </button>
-        <!-- Save -->
-        <button class="ml-2" mat-flat-button [color]="'primary'" [disabled]="languageForm.invalid"
-            [matTooltip]="'Guardar'" (click)="create()">
-            @if (!languageForm.disabled) {
-            <span> Guardar</span>
-            }
-            @if (languageForm.disabled) {
-            <mat-progress-spinner [diameter]="24" [mode]="'indeterminate'"></mat-progress-spinner>
-            }
-        </button>
-    </div>
-</div>
-}
 
 <ng-template #languageTemplateForm>
     <form [formGroup]="languageForm">
@@ -187,6 +48,50 @@
                 @if (languageForm.get('icon').value) {
                 <img class="h-full w-full object-cover" [src]="getICon(languageForm.get('icon').value)" />
                 }
+            </div>
+            <div class="mb-1 ml-auto flex items-center">
+                @if(language){
+                @if(validPermission(permission.toogleLanguage)){
+                <button mat-button [color]="language.status ?'warn' : 'primary'" (click)="toggleLanguage()">
+                    @if (!languageForm.disabled) {
+                    <span> @if(!language.status){
+                        Activar
+                        }@else {
+                        Inactivar
+                        }</span>
+                    }
+                    @if (languageForm.disabled) {
+                    <mat-progress-spinner [diameter]="24" [mode]="'indeterminate'"></mat-progress-spinner>
+                    }
+                </button>
+
+                @if(validPermission(permission.editLanguage)){
+                <!-- Save -->
+                <button class="ml-2" mat-flat-button [color]="'primary'" [disabled]="languageForm.invalid"
+                    [matTooltip]="'Guardar'" (click)="update()">
+                    @if (!languageForm.disabled) {
+                    <span> Guardar</span>
+                    }
+                    @if (languageForm.disabled) {
+                    <mat-progress-spinner [diameter]="24" [mode]="'indeterminate'"></mat-progress-spinner>
+                    }
+                </button>
+                }
+                }
+                }@else {
+                @if(validPermission(permission.createLanguage)){
+                <button class="ml-2" mat-flat-button [color]="'primary'" [disabled]="languageForm.invalid"
+                    [matTooltip]="'Guardar'" (click)="create()">
+                    @if (!languageForm.disabled) {
+                    <span> Guardar</span>
+                    }
+                    @if (languageForm.disabled) {
+                    <mat-progress-spinner [diameter]="24" [mode]="'indeterminate'"></mat-progress-spinner>
+                    }
+                </button>
+                }
+                }
+
             </div>
         </div>
 

@@ -18,7 +18,7 @@
             </div>
             <!-- Panel links -->
             <div class="flex flex-col divide-y border-b border-t">
-                @for (panel of panels; track trackByFn($index, panel)) {
+                @for (panel of panels; track $index) {
                 <div class="flex cursor-pointer px-8 py-5" [ngClass]="{
                             'dark:hover:bg-hover hover:bg-gray-100':
                                 !selectedPanel || selectedPanel !== panel.id,
@@ -67,35 +67,39 @@
                 </div>
 
                 <!-- Load settings panel -->
-                @if(parameters().length > 0){
 
+                @if(parameters().length > 0){
                 <div class="mt-8">
+                    @if(validPermission(permission.listParameter)){
                     @switch (selectedPanel) {
                     <!-- Company -->
                     @case ('company') {
-                    <parameters-company [parameters]="parameters()"
+                    <parameters-company [edit]="validPermission(permission.editParameter)" [parameters]="parameters()"
                         (refreshParameters)="getAllParameters()"></parameters-company>
                     }
                     <!-- Images -->
                     @case ('images') {
-                    <parameters-logos [parameters]="parameters()"
+                    <parameters-logos [edit]="validPermission(permission.editParameter)" [parameters]="parameters()"
                         (refreshParameters)="getAllParameters()"></parameters-logos>
                     }
                     <!-- Email -->
                     @case ('email') {
-                    <parameters-email [parameters]="parameters()"
+                    <parameters-email [edit]="validPermission(permission.editParameter)" [parameters]="parameters()"
                         (refreshParameters)="getAllParameters()"></parameters-email>
                     }
                     <!-- Security -->
                     @case ('security') {
-                    <parameters-security [parameters]="parameters()"
+                    <parameters-security [edit]="validPermission(permission.editParameter)" [parameters]="parameters()"
                         (refreshParameters)="getAllParameters()"></parameters-security>
                     }
                     <!-- Web -->
                     @case ('web') {
-                    <parameters-web [parameters]="parameters()"
+                    <parameters-web [edit]="validPermission(permission.editParameter)" [parameters]="parameters()"
                         (refreshParameters)="getAllParameters()"></parameters-web>
                     }
+                    }
+                    }@else {
+                    <permission></permission>
                     }
                 </div>
                 }

@@ -33,11 +33,13 @@ import {
 } from 'app/shared/interfaces/element.interface';
 import { ElementService } from 'app/shared/services/element.service';
 import { findParameter } from 'app/shared/utils/parameter.utils';
+import { PermissionCode, validAction } from 'app/shared/utils/permission.utils';
 import * as _ from 'lodash';
 import { MonacoEditorModule } from 'ngx-monaco-editor-v2';
 import { Subject, takeUntil } from 'rxjs';
 import { ImagesManagerComponent } from '../../images-manager/images-manager.component';
 import { LangugesTextComponent } from '../../languages-text/languages-text.component';
+import { PermissionComponent } from '../../permission/permission.component';
 
 @Component({
     selector: 'grid-settings',
@@ -65,6 +67,7 @@ import { LangugesTextComponent } from '../../languages-text/languages-text.compo
         LowerCasePipe,
         LangugesTextComponent,
         FormlyModule,
+        PermissionComponent,
     ],
 })
 export class GridSettingsComponent implements OnInit, OnDestroy {
@@ -83,6 +86,7 @@ export class GridSettingsComponent implements OnInit, OnDestroy {
     form = new FormGroup({});
     fields: FormlyFieldConfig[] = [];
     elements: ElementCMSI[] = [];
+    permission = PermissionCode;
 
     private _parameterService = inject(ParameterService);
     private readonly _matDialog = inject(MAT_DIALOG_DATA);
@@ -100,10 +104,10 @@ export class GridSettingsComponent implements OnInit, OnDestroy {
         this._parameterService.parameter$
             .pipe(takeUntil(this._unsubscribeAll))
             .subscribe((parameters: ParameterI[]) => {
-                this.urlStatics = this.getParameter(
+                this.urlStatics = findParameter(
                     'APP_STATICS_URL',
                     parameters
-                );
+                ).value;
                 // Mark for check
                 this._changeDetectorRef.markForCheck();
             });
@@ -197,7 +201,11 @@ export class GridSettingsComponent implements OnInit, OnDestroy {
      * Update image
      */
     updateImage(url: string) {
-        this.config.backgroundImage = url;
+        if (this.isElement) {
+            this.config.image = url;
+        } else {
+            this.config.backgroundImage = url;
+        }
 
         // Mark for check
         this._changeDetectorRef.markForCheck();
@@ -212,20 +220,32 @@ export class GridSettingsComponent implements OnInit, OnDestroy {
     }
 
     /**
-     * Get parameter
-     * @param code
-     */
-    getParameter(code: string, parameters: ParameterI[]) {
-        if (parameters.length > 0) {
-            return findParameter(code, parameters).value;
-        }
-    }
-
-    /**
      * Get logo
      * @returns
      */
     getLogo() {
-        return `${this.urlStatics}/${this.config.backgroundImage}`;
+        if (this.isElement) {
+            return `${this.urlStatics}/${this.config.image}`;
+        } else {
+            return `${this.urlStatics}/${this.config.backgroundImage}`;
+        }
+    }
+
+    /**
+     * Has valid image propertie
+     * @returns
+     */
+    validImagePropertie() {
+        if ('image' in this.config) {
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Valid render permission
+     */
+    validPermission(code: string) {
+        return validAction(code);
     }
 }

@@ -25,10 +25,10 @@ import { fuseAnimations } from '@fuse/animations';
 import { UserService } from 'app/core/user/user.service';
 import { UserI } from 'app/core/user/user.types';
 import { findParameter } from 'app/shared/utils/parameter.utils';
+import { ToastrService } from 'ngx-toastr';
 import { Subject, takeUntil } from 'rxjs';
 import { ParameterI } from '../../parameters/parameter.interface';
 import { ParameterService } from '../../parameters/parameter.service';
-import { ToastrService } from 'ngx-toastr';
 
 @Component({
     selector: 'settings-security',
@@ -50,6 +50,7 @@ import { ToastrService } from 'ngx-toastr';
 })
 export class SettingsSecurityComponent implements OnInit {
     @Input() user: UserI;
+    @Input() edit: boolean;
     securityForm: UntypedFormGroup;
     parameters = signal<ParameterI[]>([]);
     longPwd: number | undefined;
@@ -96,6 +97,7 @@ export class SettingsSecurityComponent implements OnInit {
         });
 
         this.securityForm.patchValue({ ...this.user });
+        if (!this.edit) this.securityForm.disable();
 
         this.getParameters();
     }

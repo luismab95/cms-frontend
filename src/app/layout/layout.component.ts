@@ -15,7 +15,6 @@ import { ActivatedRoute, NavigationEnd, Router } from '@angular/router';
 import { FuseConfig, FuseConfigService } from '@fuse/services/config';
 import { FuseMediaWatcherService } from '@fuse/services/media-watcher';
 import { FusePlatformService } from '@fuse/services/platform';
-import { FUSE_VERSION } from '@fuse/version';
 import { ParameterI } from 'app/modules/admin/parameters/parameter.interface';
 import { ParameterService } from 'app/modules/admin/parameters/parameter.service';
 import { findParameter } from 'app/shared/utils/parameter.utils';
@@ -125,6 +124,13 @@ export class LayoutComponent implements OnInit, OnDestroy {
                         options.scheme = this._cookieService.get('scheme');
                     }
 
+                    const url = window.location.pathname;
+                    const urlSplit = url.split('/');
+
+                    if (urlSplit[1] !== 'admin' && urlSplit[1] !== 'auth') {
+                        options.scheme = 'light';
+                    }
+
                     return options;
                 })
             )
@@ -162,11 +168,11 @@ export class LayoutComponent implements OnInit, OnDestroy {
             });
 
         // Set the app version
-        this._renderer2.setAttribute(
-            this._document.querySelector('[ng-version]'),
-            'fuse-version',
-            FUSE_VERSION
-        );
+        // this._renderer2.setAttribute(
+        //     this._document.querySelector('[ng-version]'),
+        //     'fuse-version',
+        //     FUSE_VERSION
+        // );
 
         // Set the OS name
         this._renderer2.addClass(

@@ -7,7 +7,7 @@ import {
 } from 'app/shared/interfaces/response.interface';
 import { environment } from 'environments/environment';
 import { Observable, ReplaySubject, tap } from 'rxjs';
-import { LanguageI } from './language.types';
+import { LanguageI } from '../interfaces/language.types';
 
 @Injectable({ providedIn: 'root' })
 export class LanguageService {

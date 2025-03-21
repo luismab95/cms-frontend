@@ -2,7 +2,7 @@ import { inject } from '@angular/core';
 import { Router, Routes } from '@angular/router';
 import { ElementService } from 'app/shared/services/element.service';
 import { MicrosityService } from '../microsities/micrositie.service';
-import { LanguageService } from '../sitie/languages/language.service';
+import { LanguageService } from '../../../shared/services/language.service';
 import { SitieService } from '../sitie/sitie.service';
 import { PagesDetailComponent } from './detail/detail.component';
 import { PagesListComponent } from './list.component';

@@ -23,12 +23,14 @@ import { MatSidenavModule } from '@angular/material/sidenav';
 import { UserService } from 'app/core/user/user.service';
 import { RoleI, UserI } from 'app/core/user/user.types';
 import { PaginationComponent } from 'app/shared/components/pagination/pagination.component';
+import { PermissionComponent } from 'app/shared/components/permission/permission.component';
 import {
     PaginationResponseI,
     PaginationResquestI,
 } from 'app/shared/interfaces/response.interface';
 import { ModalService } from 'app/shared/services/modal.service';
 import { RoleService } from 'app/shared/services/role.service';
+import { PermissionCode, validAction } from 'app/shared/utils/permission.utils';
 import { ToastrService } from 'ngx-toastr';
 import { Observable, Subject, debounceTime, takeUntil } from 'rxjs';
 import { UsersDetailsComponent } from './details/details.component';
@@ -52,6 +54,7 @@ import { UsersDetailsComponent } from './details/details.component';
         MatOptionModule,
         MatPaginatorModule,
         PaginationComponent,
+        PermissionComponent,
     ],
 })
 export class UsersListComponent implements OnInit, OnDestroy {
@@ -60,6 +63,7 @@ export class UsersListComponent implements OnInit, OnDestroy {
     users$: Observable<PaginationResponseI<UserI[]>>;
     roles: RoleI[] = [];
     isLoading: boolean = false;
+    permission = PermissionCode;
     private _unsubscribeAll: Subject<any> = new Subject<any>();
 
     /**
@@ -173,16 +177,6 @@ export class UsersListComponent implements OnInit, OnDestroy {
     }
 
     /**
-     * Track by function for ngFor loops
-     *
-     * @param index
-     * @param item
-     */
-    trackByFn(index: number, item: any): any {
-        return item.id || index;
-    }
-
-    /**
      * Open modal laguanges detail
      *
      * @param data
@@ -202,5 +196,22 @@ export class UsersListComponent implements OnInit, OnDestroy {
                 });
             }
         });
+    }
+
+    /**
+     * Valid render permission
+     */
+    validPermission(code: string) {
+        return validAction(code);
+    }
+
+    /**
+     * Track by function for ngFor loops
+     *
+     * @param index
+     * @param item
+     */
+    trackByFn(index: number, item: any): any {
+        return item.id || index;
     }
 }

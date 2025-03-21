@@ -1,5 +1,7 @@
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
+import { RouterStateSnapshot } from '@angular/router';
+import { FuseNavigationItem } from '@fuse/components/navigation';
 import { AuthUtils } from 'app/core/auth/auth.utils';
 import { ResponseI } from 'app/shared/interfaces/response.interface';
 import { StorageUtils } from 'app/shared/utils/storage.util';
@@ -135,9 +137,11 @@ export class AuthService {
     /**
      * Sign out
      */
-    signOut(): Observable<any> {
+    signOut(): Observable<boolean> {
         // Remove the access token from the local storage
-        localStorage.clear();
+        this._storageUtils.deleteKeyStorage('accessToken');
+        this._storageUtils.deleteKeyStorage('actions');
+        this._storageUtils.deleteKeyStorage('navigation');
 
         // Return the observable
         return of(true);
@@ -145,7 +149,7 @@ export class AuthService {
 
     /**
      * Check the authentication status
-     */
+     */ navigation;
     check(): Observable<boolean> {
         // Check the access token availability
         if (!this.accessToken) {
@@ -158,5 +162,29 @@ export class AuthService {
         }
 
         return of(true);
+    }
+
+    /**
+     * Check the authentication pages
+     */
+    checkMenu(route: RouterStateSnapshot): Observable<boolean> {
+        let findUrlNavigation: boolean = false;
+        const navigations = JSON.parse(
+            this._storageUtils.getLocalStorage('navigation') ?? '[]'
+        ) as FuseNavigationItem[];
+
+        if (navigations.length === 0) {
+            return of(true);
+        }
+
+        navigations.forEach((navigation: FuseNavigationItem) => {
+            navigation.children.forEach((child: FuseNavigationItem) => {
+                if (route.url.includes(child.link)) {
+                    findUrlNavigation = true;
+                }
+            });
+        });
+
+        return of(findUrlNavigation);
     }
 }

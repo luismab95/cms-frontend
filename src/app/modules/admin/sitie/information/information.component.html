@@ -137,6 +137,7 @@
                     <span class="ml-2">Visitar</span>
                 </button>
             </div>
+            @if(validPermission(permission.editSitie)){
             <div class="flex items-center justify-end">
 
                 <button (click)="cancel()" mat-stroked-button type="button">Cancelar</button>
@@ -149,6 +150,11 @@
                     }
                 </button>
             </div>
+            }@else {
+            <permission [show]="false"></permission>
+            }
         </div>
+
+
     </form>
 </div>

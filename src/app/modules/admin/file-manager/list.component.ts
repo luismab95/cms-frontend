@@ -22,12 +22,14 @@ import { PageEvent } from '@angular/material/paginator';
 import { MatDrawer, MatSidenavModule } from '@angular/material/sidenav';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { PaginationComponent } from 'app/shared/components/pagination/pagination.component';
+import { PermissionComponent } from 'app/shared/components/permission/permission.component';
 import {
     PaginationResponseI,
     PaginationResquestI,
 } from 'app/shared/interfaces/response.interface';
 import { FileService } from 'app/shared/services/file.service';
 import { ModalService } from 'app/shared/services/modal.service';
+import { PermissionCode, validAction } from 'app/shared/utils/permission.utils';
 import { ToastrService } from 'ngx-toastr';
 import { Observable, Subject, debounceTime, takeUntil } from 'rxjs';
 import { FileManagerDetailsComponent } from './details/details.component';
@@ -51,6 +53,7 @@ import { FileI } from './file-manager.types';
         PaginationComponent,
         ReactiveFormsModule,
         FormsModule,
+        PermissionComponent,
     ],
 })
 export class FileManagerListComponent implements OnInit, OnDestroy {
@@ -61,6 +64,7 @@ export class FileManagerListComponent implements OnInit, OnDestroy {
     filesCount: number = 0;
     isLoading: boolean = false;
     searchInputControl: UntypedFormControl = new UntypedFormControl();
+    permission = PermissionCode;
     private _fileService = inject(FileService);
     private _unsubscribeAll: Subject<any> = new Subject<any>();
 
@@ -182,16 +186,6 @@ export class FileManagerListComponent implements OnInit, OnDestroy {
     }
 
     /**
-     * Track by function for ngFor loops
-     *
-     * @param index
-     * @param item
-     */
-    trackByFn(index: number, item: any): any {
-        return item.id || index;
-    }
-
-    /**
      * Open modal files detail
      *
      * @param data
@@ -211,5 +205,12 @@ export class FileManagerListComponent implements OnInit, OnDestroy {
                 });
             }
         });
+    }
+
+    /**
+     * Valid render permission
+     */
+    validPermission(code: string) {
+        return validAction(code);
     }
 }

@@ -1,4 +1,5 @@
 import { TextFieldModule } from '@angular/cdk/text-field';
+import { NgTemplateOutlet } from '@angular/common';
 import {
     ChangeDetectionStrategy,
     ChangeDetectorRef,
@@ -20,6 +21,8 @@ import { MatInputModule } from '@angular/material/input';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { RouterLink } from '@angular/router';
+import { PermissionComponent } from 'app/shared/components/permission/permission.component';
+import { PermissionCode, validAction } from 'app/shared/utils/permission.utils';
 import { ToastrService } from 'ngx-toastr';
 import { Subject, takeUntil } from 'rxjs';
 import { TemplateService } from '../../templates.service';
@@ -42,11 +45,15 @@ import { TemplateDataMongoI, TemplateI } from '../../templates.types';
         MatSlideToggleModule,
         RouterLink,
         MatProgressSpinnerModule,
+        PermissionComponent,
+        NgTemplateOutlet,
     ],
 })
 export class TemplatesInformationComponent implements OnInit {
     template: TemplateI;
     templateForm: UntypedFormGroup;
+    permission = PermissionCode;
+
     private _unsubscribeAll: Subject<any> = new Subject<any>();
 
     /**
@@ -104,12 +111,7 @@ export class TemplatesInformationComponent implements OnInit {
     /**
      * Add template
      */
-    newTemplate() {
-        if (this.template) {
-            this.updateTemplate();
-            return;
-        }
-
+    create() {
         // Return if the form is invalid
         if (this.templateForm.invalid) {
             return;
@@ -120,8 +122,16 @@ export class TemplatesInformationComponent implements OnInit {
 
         // ADD data
         this.templateForm.value.data = {
-            header: { css: '.header{}', data: [], config: { backgroundImage: '' } },
-            footer: { css: '.footer{}', data: [], config: { backgroundImage: '' } },
+            header: {
+                css: '.header{}',
+                data: [],
+                config: { backgroundImage: '' },
+            },
+            footer: {
+                css: '.footer{}',
+                data: [],
+                config: { backgroundImage: '' },
+            },
         } as TemplateDataMongoI;
 
         //Delete status
@@ -156,7 +166,7 @@ export class TemplatesInformationComponent implements OnInit {
     /**
      * Update template
      */
-    updateTemplate() {
+    update() {
         // Return if the form is invalid
         if (this.templateForm.invalid) {
             return;
@@ -186,5 +196,12 @@ export class TemplatesInformationComponent implements OnInit {
                     this._toastrService.error(response.error.message, 'Aviso');
                 },
             });
+    }
+
+    /**
+     * Valid render permission
+     */
+    validPermission(code: string) {
+        return validAction(code);
     }
 }

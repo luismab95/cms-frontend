@@ -16,20 +16,27 @@
             <!-- Actions -->
             <div class="mt-6 flex shrink-0 items-center sm:ml-4 sm:mt-0">
                 <!-- Search -->
+                @if(validPermission(permission.listUser)){
+
                 <mat-form-field class="fuse-mat-dense fuse-mat-rounded min-w-64" [subscriptSizing]="'dynamic'">
                     <mat-icon class="icon-size-5" matPrefix [svgIcon]="'heroicons_solid:magnifying-glass'"></mat-icon>
                     <input matInput [formControl]="searchInputControl" [autocomplete]="'off'"
                         [placeholder]="'Buscar usuarios'" />
                 </mat-form-field>
+                }
                 <!-- Add user button -->
+                @if(validPermission(permission.createUser)){
+
                 <button (click)="openDetailsModal()" class="ml-4" mat-flat-button [color]="'primary'">
                     <mat-icon [svgIcon]="'heroicons_outline:plus'"></mat-icon>
                     <span class="ml-2 mr-1">Agregar</span>
                 </button>
+                }
             </div>
         </div>
 
         <!-- Users list -->
+        @if(validPermission(permission.listUser)){
         <div class="flex flex-auto flex-col overflow-hidden sm:mb-18 sm:overflow-y-auto">
             @if (users$ | async; as users) {
             @if (users.records.length > 0) {
@@ -97,5 +104,8 @@
             }
 
         </div>
+        }@else {
+        <permission></permission>
+        }
     </div>
 </div>

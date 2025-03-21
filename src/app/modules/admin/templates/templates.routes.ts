@@ -1,7 +1,7 @@
 import { inject } from '@angular/core';
 import { Router, Routes } from '@angular/router';
 import { ElementService } from 'app/shared/services/element.service';
-import { LanguageService } from '../sitie/languages/language.service';
+import { LanguageService } from '../../../shared/services/language.service';
 import { TemplatesDetailComponent } from './detail/detail.component';
 import { TemplatesListComponent } from './list.component';
 import { TemplateService } from './templates.service';

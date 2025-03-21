@@ -18,6 +18,8 @@ import { UserService } from 'app/core/user/user.service';
 import { UserI } from 'app/core/user/user.types';
 import { analytics } from 'app/mock-api/dashboards/analytics/data';
 import { HomeService } from 'app/modules/admin/dashboards/home/home.service';
+import { PermissionComponent } from 'app/shared/components/permission/permission.component';
+import { PermissionCode, validAction } from 'app/shared/utils/permission.utils';
 import { ApexOptions, NgApexchartsModule } from 'ng-apexcharts';
 import { Subject, takeUntil } from 'rxjs';
 
@@ -38,6 +40,7 @@ import { Subject, takeUntil } from 'rxjs';
         MatTableModule,
         RouterLink,
         CurrencyPipe,
+        PermissionComponent,
     ],
 })
 export class HomeComponent implements OnInit, OnDestroy {
@@ -54,6 +57,7 @@ export class HomeComponent implements OnInit, OnDestroy {
     data: any;
     dataA: any;
     selectedProject: string = 'ACME Corp. Backend App';
+    permission = PermissionCode;
     private _unsubscribeAll: Subject<any> = new Subject<any>();
 
     /**
@@ -660,5 +664,12 @@ export class HomeComponent implements OnInit, OnDestroy {
                 tickAmount: 5,
             },
         };
+    }
+
+    /**
+     * Valid render permission
+     */
+    validPermission(code: string) {
+        return validAction(code);
     }
 }

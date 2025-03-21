@@ -21,14 +21,16 @@ import { MicrosityService } from 'app/modules/admin/microsities/micrositie.servi
 import { MicrositieI } from 'app/modules/admin/microsities/micrositie.types';
 import { ParameterI } from 'app/modules/admin/parameters/parameter.interface';
 import { ParameterService } from 'app/modules/admin/parameters/parameter.service';
-import { LanguageService } from 'app/modules/admin/sitie/languages/language.service';
 import { GridComponent } from 'app/shared/components/grid/grid.component';
 import { GridSettingsComponent } from 'app/shared/components/grid/settings/settings.component';
 import { LanguagesComponent } from 'app/shared/components/languages/languages.component';
+import { PermissionComponent } from 'app/shared/components/permission/permission.component';
 import { PageElementsI, SectionI } from 'app/shared/interfaces/grid.interface';
+import { LanguageService } from 'app/shared/services/language.service';
 import { ModalService } from 'app/shared/services/modal.service';
 import { validGrid } from 'app/shared/utils/grid.utils';
 import { findParameter } from 'app/shared/utils/parameter.utils';
+import { PermissionCode, validAction } from 'app/shared/utils/permission.utils';
 import { generateRandomString } from 'app/shared/utils/random.utils';
 import { ToastrService } from 'ngx-toastr';
 import { Subject, takeUntil } from 'rxjs';
@@ -50,6 +52,7 @@ import { PageI } from '../../pages.types';
         NgStyle,
         ReactiveFormsModule,
         LanguagesComponent,
+        PermissionComponent,
     ],
 })
 export class PagesDrawerComponent implements OnInit {
@@ -67,6 +70,7 @@ export class PagesDrawerComponent implements OnInit {
     urlStatics: string;
     refreshLanguage = signal<boolean>(false);
     languageId: number;
+    permission = PermissionCode;
 
     private _parameterService = inject(ParameterService);
     private _unsubscribeAll: Subject<any> = new Subject<any>();
@@ -171,7 +175,7 @@ export class PagesDrawerComponent implements OnInit {
     loadPageData() {
         this.refreshLanguage.set(true);
         this.loadGridData();
-        this.loadStyles();
+        // this.loadStyles();
 
         // Mark for check
         this._changeDetectorRef.markForCheck();
@@ -278,7 +282,8 @@ export class PagesDrawerComponent implements OnInit {
      */
     loadStyles() {
         // Load CSS
-        const styleElementToRemove = document.getElementById('body-dynamicStyles');
+        const styleElementToRemove =
+            document.getElementById('body-dynamicStyles');
         if (styleElementToRemove) {
             styleElementToRemove.remove();
         }
@@ -317,6 +322,13 @@ export class PagesDrawerComponent implements OnInit {
         } else {
             this._router.navigateByUrl('/admin/modules/pages');
         }
+    }
+
+    /**
+     * Valid render permission
+     */
+    validPermission(code: string) {
+        return validAction(code);
     }
 
     /**

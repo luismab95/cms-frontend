@@ -10,10 +10,11 @@
         </div>
     </div>
     <!-- File -->
+    @if(validPermission(permission.viewFiles)){
     <div class="relative flex flex-auto flex-col items-center p-6 pt-0 sm:p-12 sm:pt-0">
         <div class="w-full max-w-3xl">
             <!-- Avatar and actions -->
-            <div class="-mt-16 flex flex-auto items-end">
+            <div class="-mt-16 flex flex-auto items-end ">
                 <!-- Avatar -->
                 <div
                     class="ring-bg-card flex h-32 w-32 items-center justify-center overflow-hidden rounded-full ring-4">
@@ -29,19 +30,52 @@
                 <!-- Actions -->
                 <div class="mb-1 ml-auto flex items-center">
                     @if(!editMode) {
+                    @if(validPermission(permission.toogleFiles)){
+                    <button (click)="deleteFile()" class="flex-auto mx-2" color="warn" mat-button>
+                        @if (!fileForm.disabled) {
+                        <span> @if(!file.status){
+                            Activar
+                            }@else {
+                            Inactivar
+                            }</span>
+                        }
+                        @if (fileForm.disabled) {
+                        <mat-progress-spinner [diameter]="24" [mode]="'indeterminate'"></mat-progress-spinner>
+                        }
+                    </button>
+                    }
+                    @if(validPermission(permission.editFiles)){
                     <button mat-stroked-button (click)="toggleEditMode(true)">
                         <mat-icon class="icon-size-5" [svgIcon]="'heroicons_solid:pencil-square'"></mat-icon>
                         <span class="ml-2">Editar</span>
                     </button>
                     }
+                    }@else {
+                    <button (click)="toggleEditMode()" class="flex-auto mx-2" mat-stroked-button>Cancelar</button>
+                    <button (click)="updateFile()" class="flex-auto mx-2" mat-flat-button [color]="'primary'">
+                        @if (!fileForm.disabled) {
+                        <span> Guardar</span>
+                        }
+                        @if (fileForm.disabled) {
+                        <mat-progress-spinner [diameter]="24" [mode]="'indeterminate'"></mat-progress-spinner>
+                        }
+                    </button>
+                    }
                 </div>
             </div>
 
+
             <!-- Name -->
-            <div [matTooltip]="file.name" class="mt-3 truncate text-4xl font-bold">
-                {{ file.name }}
+            <div class="mt-3 flex items-center truncate text-4xl font-bold">
+                <mat-icon (click)="downloadFile()" [matTooltip]="'Descargar'" class="mr-1 cursor-pointer"
+                    [svgIcon]="'mat_outline:file_download'"></mat-icon>
+                <span [matTooltip]="file.name">
+                    {{ file.name }}
+                </span>
+
             </div>
 
+            @if(!editMode){
             <div class="mt-8 text-lg font-medium">Información</div>
             <div class="mt-4 flex flex-col divide-y border-b border-t font-medium">
                 <div class="flex items-center justify-between py-3">
@@ -62,7 +96,7 @@
                     <div>{{ file.size }}</div>
                 </div>
             </div>
-
+            }
             <!-- Description -->
             <div class="mt-8 flex items-center justify-between">
                 <div class="text-lg font-medium">Descripción</div>
@@ -85,49 +119,12 @@
                 </div>
                 }
             </div>
-
         </div>
     </div>
+    }@else {
+    <permission></permission>
+    }
 
-    <!-- Actions -->
-    <div class="absolute bottom-0 left-0 w-full">
-        <div class="flex items-center justify-between border-t bg-gray-50 p-4 dark:bg-transparent">
-            @if(!editMode) {
-            <button (click)="deleteFile()" class="flex-auto mx-2" mat-stroked-button>
-                @if (!fileForm.disabled) {
-                <span> @if(!file.status){
-                    Activar
-                    }@else {
-                    Inactivar
-                    }</span>
-                }
-                @if (fileForm.disabled) {
-                <mat-progress-spinner [diameter]="24" [mode]="'indeterminate'"></mat-progress-spinner>
-                }
-            </button>
-            <div class="w-10"></div>
-            <button (click)="downloadFile()" class="flex-auto mx-2" mat-flat-button [color]="'primary'">
-                @if (!fileForm.disabled) {
-                <span> Descargar</span>
-                }
-                @if (fileForm.disabled) {
-                <mat-progress-spinner [diameter]="24" [mode]="'indeterminate'"></mat-progress-spinner>
-                }
-            </button>
-            }@else {
-            <button (click)="toggleEditMode()" class="flex-auto mx-2" mat-stroked-button>Cancelar</button>
-            <div class="w-10"></div>
-            <button (click)="updateFile()" class="flex-auto mx-2" mat-flat-button [color]="'primary'">
-                @if (!fileForm.disabled) {
-                <span> Guardar</span>
-                }
-                @if (fileForm.disabled) {
-                <mat-progress-spinner [diameter]="24" [mode]="'indeterminate'"></mat-progress-spinner>
-                }
-            </button>
-            }
-        </div>
-    </div>
 </div>
 }
 

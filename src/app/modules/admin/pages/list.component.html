@@ -14,16 +14,20 @@
         <!-- Actions -->
         <div class="mt-6 flex shrink-0 items-center sm:ml-4 sm:mt-0">
             <!-- Search -->
+            @if(validPermission(permission.listPage)){
             <mat-form-field class="fuse-mat-dense fuse-mat-rounded min-w-64" [subscriptSizing]="'dynamic'">
                 <mat-icon class="icon-size-5" matPrefix [svgIcon]="'heroicons_solid:magnifying-glass'"></mat-icon>
                 <input matInput [formControl]="searchInputControl" [autocomplete]="'off'"
                     [placeholder]="'Buscar páginas'" />
             </mat-form-field>
+            }
+            @if(validPermission(permission.createPage)){
             <!-- Add page button -->
             <button (click)="goToDetail()" class="ml-4" mat-flat-button [color]="'primary'">
                 <mat-icon [svgIcon]="'heroicons_outline:plus'"></mat-icon>
                 <span class="ml-2 mr-1">Agregar</span>
             </button>
+            }
         </div>
     </div>
 
@@ -31,7 +35,7 @@
     <div class="flex flex-auto overflow-hidden">
         <!-- Products list -->
         <div class="flex flex-auto flex-col overflow-hidden sm:mb-18 sm:overflow-y-auto">
-
+            @if(validPermission(permission.listPage)){
             <div class="grid">
                 <!-- Header -->
                 <div
@@ -52,7 +56,7 @@
                 @if (pages.records.length > 0) {
                 @for (
                 page of pages.records;
-                track trackByFn($index, page)
+                track $index
                 ) {
                 <div class="pages-grid grid items-center gap-4 border-b px-6 py-3 md:px-8">
 
@@ -104,6 +108,9 @@
                 }
                 }
             </div>
+            }@else {
+            <permission></permission>
+            }
         </div>
     </div>
 </div>

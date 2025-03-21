@@ -1,4 +1,25 @@
 <div class="w-full max-w-3xl">
+
+    @if(page){
+    @if(validPermission(permission.viewPage)){
+    <ng-container *ngTemplateOutlet="pageTemplateForm;"></ng-container>
+    }@else {
+    <permission></permission>
+    }
+    }@else {
+    @if(validPermission(permission.createPage)){
+    <ng-container *ngTemplateOutlet="pageTemplateForm;"></ng-container>
+    }@else {
+    <permission></permission>
+    }
+    }
+
+</div>
+
+
+
+<ng-template #pageTemplateForm>
+
     <!-- Form -->
     <form [formGroup]="pageForm">
         <!-- Section -->
@@ -74,8 +95,12 @@
                 }
             </div>
             <div class="flex items-center justify-end">
+
                 <button (click)="goToBack()" mat-stroked-button type="button">Cancelar</button>
-                <button (click)="new()" class="ml-4" mat-flat-button type="button" [color]="'primary'">
+
+                @if(page){
+                @if(validPermission(permission.editPage)){
+                <button (click)="update()" class="ml-4" mat-flat-button type="button" [color]="'primary'">
                     @if (!pageForm.disabled) {
                     <span> Guardar</span>
                     }
@@ -83,7 +108,21 @@
                     <mat-progress-spinner [diameter]="24" [mode]="'indeterminate'"></mat-progress-spinner>
                     }
                 </button>
+                }
+                }@else {
+                @if(validPermission(permission.createPage)){
+                <button (click)="create()" class="ml-4" mat-flat-button type="button" [color]="'primary'">
+                    @if (!pageForm.disabled) {
+                    <span> Guardar</span>
+                    }
+                    @if (pageForm.disabled) {
+                    <mat-progress-spinner [diameter]="24" [mode]="'indeterminate'"></mat-progress-spinner>
+                    }
+                </button>
+                }
+                }
+
             </div>
         </div>
     </form>
-</div>
+</ng-template>

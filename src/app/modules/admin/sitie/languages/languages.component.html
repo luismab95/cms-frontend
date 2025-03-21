@@ -17,16 +17,22 @@
             <!-- Actions -->
             <div class="mt-6 flex shrink-0 items-center sm:ml-4 sm:mt-0">
                 <!-- Search -->
+                @if(validPermission(permission.listLanguage)){
+
                 <mat-form-field class="fuse-mat-dense fuse-mat-rounded min-w-64" [subscriptSizing]="'dynamic'">
                     <mat-icon class="icon-size-5" matPrefix [svgIcon]="'heroicons_solid:magnifying-glass'"></mat-icon>
                     <input matInput [formControl]="searchInputControl" [autocomplete]="'off'"
                         [placeholder]="'Buscar idiomas'" />
                 </mat-form-field>
+                }
+                @if(validPermission(permission.createLanguage)){
+
                 <!-- Add language button -->
                 <button class="ml-4" mat-flat-button [color]="'primary'" (click)="openDetailsModal()">
                     <mat-icon [svgIcon]="'heroicons_outline:plus'"></mat-icon>
                     <span class="hidden md:block ml-2 mr-1">Agregar</span>
                 </button>
+                }
             </div>
         </div>
 
@@ -34,6 +40,7 @@
         <div class="flex flex-auto overflow-hidden bg-card h-160">
             <!-- Languages list -->
             <div class="flex flex-auto flex-col overflow-hidden sm:mb-18 sm:overflow-y-auto">
+                @if(validPermission(permission.listLanguage)){
 
                 <div class="grid">
                     <!-- Header -->
@@ -51,12 +58,13 @@
                         <div class="hidden lg:block"></div>
                         <div></div>
                     </div>
+
                     <!-- Rows -->
                     @if (languages$ | async; as languages) {
                     @if (languages.records.length > 0) {
                     @for (
                     language of languages.records;
-                    track trackByFn($index, language)
+                    track $index
                     ) {
                     <div class="languages-grid grid items-center gap-4 border-b px-6 py-3 md:px-8 bg-card">
                         <!-- # -->
@@ -113,6 +121,9 @@
                     }
                     }
                 </div>
+                }@else {
+                <permission></permission>
+                }
             </div>
         </div>
     </div>

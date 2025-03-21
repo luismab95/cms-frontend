@@ -18,19 +18,21 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
 import { PaginationComponent } from 'app/shared/components/pagination/pagination.component';
+import { PermissionComponent } from 'app/shared/components/permission/permission.component';
 import {
     PaginationResponseI,
     PaginationResquestI,
 } from 'app/shared/interfaces/response.interface';
 import { ModalService } from 'app/shared/services/modal.service';
 import { findParameter } from 'app/shared/utils/parameter.utils';
+import { PermissionCode, validAction } from 'app/shared/utils/permission.utils';
 import { ToastrService } from 'ngx-toastr';
 import { Observable, Subject, debounceTime, takeUntil } from 'rxjs';
+import { LanguageI } from '../../../../shared/interfaces/language.types';
+import { LanguageService } from '../../../../shared/services/language.service';
 import { ParameterI } from '../../parameters/parameter.interface';
 import { ParameterService } from '../../parameters/parameter.service';
 import { SitieLanguagesDetailsComponent } from './details/details.component';
-import { LanguageService } from './language.service';
-import { LanguageI } from './language.types';
 
 @Component({
     selector: 'sitie-languages',
@@ -70,6 +72,7 @@ import { LanguageI } from './language.types';
         UpperCasePipe,
         PaginationComponent,
         AsyncPipe,
+        PermissionComponent,
     ],
 })
 export class SitieLanguagesComponent implements OnInit {
@@ -77,6 +80,7 @@ export class SitieLanguagesComponent implements OnInit {
     languages$: Observable<PaginationResponseI<LanguageI[]>>;
     isLoading: boolean = false;
     urlStatics: string;
+    permission = PermissionCode;
     searchInputControl: UntypedFormControl = new UntypedFormControl();
     private _parameterService = inject(ParameterService);
     private _unsubscribeAll: Subject<any> = new Subject<any>();
@@ -93,10 +97,10 @@ export class SitieLanguagesComponent implements OnInit {
         this._parameterService.parameter$
             .pipe(takeUntil(this._unsubscribeAll))
             .subscribe((parameters: ParameterI[]) => {
-                this.urlStatics = this.getParameter(
+                this.urlStatics = findParameter(
                     'APP_STATICS_URL',
                     parameters
-                );
+                ).value;
                 // Mark for check
                 this._changeDetectorRef.markForCheck();
             });
@@ -184,16 +188,6 @@ export class SitieLanguagesComponent implements OnInit {
     }
 
     /**
-     * Track by function for ngFor loops
-     *
-     * @param index
-     * @param item
-     */
-    trackByFn(index: number, item: any): any {
-        return item.id || index;
-    }
-
-    /**
      * Open modal laguanges detail
      *
      * @param data
@@ -216,13 +210,10 @@ export class SitieLanguagesComponent implements OnInit {
     }
 
     /**
-     * Get parameter
-     * @param code
+     * Valid render permission
      */
-    getParameter(code: string, parameters: ParameterI[]) {
-        if (parameters.length > 0) {
-            return findParameter(code, parameters).value;
-        }
+    validPermission(code: string) {
+        return validAction(code);
     }
 
     /**

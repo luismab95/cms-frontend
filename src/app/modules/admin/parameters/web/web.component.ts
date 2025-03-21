@@ -43,6 +43,7 @@ import { ParameterService } from '../parameter.service';
 })
 export class ParametersWebComponent implements OnInit {
     @Input() parameters: ParameterI[] = [];
+    @Input() edit: boolean;
     @Output() refreshParameters: EventEmitter<boolean> =
         new EventEmitter<boolean>();
 
@@ -85,6 +86,7 @@ export class ParametersWebComponent implements OnInit {
         });
 
         this.webForm.patchValue({ ...this.getSecurityParameters() });
+        if (!this.edit) this.webForm.disable();
     }
 
     /**

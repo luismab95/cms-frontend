@@ -24,7 +24,9 @@ import {
     PagePaginationResquestI,
 } from 'app/modules/admin/pages/pages.types';
 import { PaginationComponent } from 'app/shared/components/pagination/pagination.component';
+import { PermissionComponent } from 'app/shared/components/permission/permission.component';
 import { PaginationResponseI } from 'app/shared/interfaces/response.interface';
+import { PermissionCode, validAction } from 'app/shared/utils/permission.utils';
 import { ToastrService } from 'ngx-toastr';
 import { Observable, Subject, debounceTime, takeUntil } from 'rxjs';
 import { MicrosityService } from '../../micrositie.service';
@@ -67,6 +69,7 @@ import { MicrositieI } from '../../micrositie.types';
         AsyncPipe,
         PaginationComponent,
         MatTooltipModule,
+        PermissionComponent,
     ],
 })
 export class MicrositiesPagesComponent implements OnInit {
@@ -75,6 +78,8 @@ export class MicrositiesPagesComponent implements OnInit {
     pages$: Observable<PaginationResponseI<PageI[]>>;
     isLoading: boolean = false;
     micrositie: MicrositieI;
+    permission = PermissionCode;
+
     private _unsubscribeAll: Subject<any> = new Subject<any>();
 
     /**
@@ -185,23 +190,21 @@ export class MicrositiesPagesComponent implements OnInit {
     }
 
     /**
-     * Track by function for ngFor loops
-     *
-     * @param index
-     * @param item
-     */
-    trackByFn(index: number, item: any): any {
-        return item.id || index;
-    }
-
-    /**
      * Go to detail page
      *
      * @param page
      */
     goToDetail(page?: PageI) {
+        this._pageService.page = null;
         this._router.navigateByUrl('admin/modules/pages/detail', {
             state: { id: page?.id, micrositieId: this.micrositie.id },
         });
+    }
+
+    /**
+     * Valid render permission
+     */
+    validPermission(code: string) {
+        return validAction(code);
     }
 }

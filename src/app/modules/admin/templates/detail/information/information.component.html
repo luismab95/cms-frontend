@@ -1,4 +1,23 @@
 <div class="w-full max-w-3xl">
+
+    @if(template){
+    @if(validPermission(permission.viewTemplate)){
+    <ng-container *ngTemplateOutlet="templateTemplateForm;"></ng-container>
+    }@else {
+    <permission></permission>
+    }
+    }@else {
+    @if(validPermission(permission.createTemplate)){
+    <ng-container *ngTemplateOutlet="templateTemplateForm;"></ng-container>
+    }@else {
+    <permission></permission>
+    }
+    }
+
+</div>
+
+<ng-template #templateTemplateForm>
+
     <!-- Form -->
     <form [formGroup]="templateForm">
         <!-- Section -->
@@ -78,7 +97,9 @@
         <!-- Actions -->
         <div class="flex items-center justify-end">
             <button [routerLink]="['/admin/modules/templates']" mat-stroked-button type="button">Cancelar</button>
-            <button class="ml-4" mat-flat-button type="button" [color]="'primary'" (click)="newTemplate()">
+            @if(template){
+            @if(validPermission(permission.editTemplate)){
+            <button class="ml-4" mat-flat-button type="button" [color]="'primary'" (click)="update()">
                 @if (!templateForm.disabled) {
                 <span> Guardar</span>
                 }
@@ -86,6 +107,19 @@
                 <mat-progress-spinner [diameter]="24" [mode]="'indeterminate'"></mat-progress-spinner>
                 }
             </button>
+            }
+            }@else {
+            @if(validPermission(permission.createTemplate)){
+            <button class="ml-4" mat-flat-button type="button" [color]="'primary'" (click)="create()">
+                @if (!templateForm.disabled) {
+                <span> Guardar</span>
+                }
+                @if (templateForm.disabled) {
+                <mat-progress-spinner [diameter]="24" [mode]="'indeterminate'"></mat-progress-spinner>
+                }
+            </button>
+            }
+            }
         </div>
     </form>
-</div>
+</ng-template>

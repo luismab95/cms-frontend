@@ -79,6 +79,8 @@
 
         <!-- Actions -->
         <div class="flex items-center justify-end">
+            @if(edit){
+
             <button (click)="cancel()" mat-stroked-button type="button">Cancelar</button>
             <button class="ml-4" mat-flat-button type="button" [color]="'primary'" [disabled]="securityForm.disabled"
                 (click)="save()">
@@ -89,6 +91,7 @@
                 <mat-progress-spinner [diameter]="24" [mode]="'indeterminate'"></mat-progress-spinner>
                 }
             </button>
+            }
         </div>
     </form>
 </div>

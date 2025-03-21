@@ -52,6 +52,7 @@ import { ParameterService } from '../parameter.service';
 })
 export class ParametersCompanyComponent implements OnInit {
     @Input() parameters: ParameterI[] = [];
+    @Input() edit: boolean;
     @Output() refreshParameters: EventEmitter<boolean> =
         new EventEmitter<boolean>();
 
@@ -95,6 +96,7 @@ export class ParametersCompanyComponent implements OnInit {
         });
 
         this.companyForm.patchValue({ ...this.getCompanyParameters() });
+        if (!this.edit) this.companyForm.disable();
     }
 
     /**

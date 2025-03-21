@@ -32,7 +32,9 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { FuseConfirmationService } from '@fuse/services/confirmation';
 import { UserService } from 'app/core/user/user.service';
 import { RoleI, UserI } from 'app/core/user/user.types';
+import { PermissionComponent } from 'app/shared/components/permission/permission.component';
 import { RoleService } from 'app/shared/services/role.service';
+import { PermissionCode, validAction } from 'app/shared/utils/permission.utils';
 import { ToastrService } from 'ngx-toastr';
 import { Subject, takeUntil } from 'rxjs';
 
@@ -57,6 +59,7 @@ import { Subject, takeUntil } from 'rxjs';
         MatSlideToggleModule,
         MatProgressSpinnerModule,
         NgTemplateOutlet,
+        PermissionComponent,
     ],
 })
 export class UsersDetailsComponent implements OnInit, OnDestroy {
@@ -64,6 +67,8 @@ export class UsersDetailsComponent implements OnInit, OnDestroy {
     roles: RoleI[];
     editMode: boolean = false;
     userForm: UntypedFormGroup;
+    permission = PermissionCode;
+
     private readonly _matDialog = inject(MAT_DIALOG_DATA);
     private _userService = inject(UserService);
     private _roleService = inject(RoleService);
@@ -287,12 +292,9 @@ export class UsersDetailsComponent implements OnInit, OnDestroy {
     }
 
     /**
-     * Track by function for ngFor loops
-     *
-     * @param index
-     * @param item
+     * Valid render permission
      */
-    trackByFn(index: number, item: any): any {
-        return item.id || index;
+    validPermission(code: string) {
+        return validAction(code);
     }
 }

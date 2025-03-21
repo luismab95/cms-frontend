@@ -2,6 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import {
     AfterViewInit,
     ChangeDetectionStrategy,
+    ChangeDetectorRef,
     Component,
     ElementRef,
     inject,
@@ -10,8 +11,11 @@ import {
     ViewChild,
     ViewEncapsulation,
 } from '@angular/core';
+import { ParameterI } from 'app/modules/admin/parameters/parameter.interface';
+import { ParameterService } from 'app/modules/admin/parameters/parameter.service';
 import { ElementI } from 'app/shared/interfaces/grid.interface';
-import { lastValueFrom, Subject } from 'rxjs';
+import { findParameter } from 'app/shared/utils/parameter.utils';
+import { lastValueFrom, Subject, takeUntil } from 'rxjs';
 
 @Component({
     selector: 'elements',
@@ -26,13 +30,28 @@ export class ElementsComponent implements OnDestroy, AfterViewInit {
     @Input() languageId: number;
     @ViewChild('pluginContainer') pluginContainer: ElementRef<HTMLDivElement>;
 
+    urlStatics: string;
     private _httpClient = inject(HttpClient);
     private _unsubscribeAll: Subject<any> = new Subject<any>();
 
     /**
      * Constructor
      */
-    constructor() {}
+    constructor(
+        private readonly _parameterService: ParameterService,
+        private _changeDetectorRef: ChangeDetectorRef
+    ) {
+        this._parameterService.parameter$
+            .pipe(takeUntil(this._unsubscribeAll))
+            .subscribe((parameters: ParameterI[]) => {
+                this.urlStatics = findParameter(
+                    'APP_STATICS_URL',
+                    parameters
+                ).value;
+                // Mark for check
+                this._changeDetectorRef.markForCheck();
+            });
+    }
 
     // -----------------------------------------------------------------------------------------------------
     // @ Lifecycle hooks
@@ -86,6 +105,7 @@ export class ElementsComponent implements OnDestroy, AfterViewInit {
                         uuid: this.element.uuid,
                         class: className.split('.')[1],
                         data: dataService,
+                        urlStatics: this.urlStatics,
                     },
                 })
             );

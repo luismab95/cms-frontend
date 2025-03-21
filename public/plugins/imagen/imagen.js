@@ -12,7 +12,7 @@ function loadImagenPlugin(idPlugin) {
 
     if (data.properties !== undefined) {
         // Load data
-        imagen.style.backgroundImage = `url('${data.properties.config.image}')`;
+        imagen.style.backgroundImage = `url('${data.properties.urlStatics}${data.properties.config.image}')`;
         imagen.style.backgroundSize = 'cover';
         imagen.style.backgroundPosition = 'center';
         imagen.title = data.properties.text.alt;

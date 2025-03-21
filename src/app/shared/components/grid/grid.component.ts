@@ -52,6 +52,8 @@ import { GridSettingsComponent } from './settings/settings.component';
 })
 export class GridComponent implements OnInit {
     @Input() preview: boolean = false;
+    @Input() editContent: boolean = false;
+    @Input() editDesign: boolean = false;
     @Input() gridType: string = 'body';
     @Input() languageId: number;
     @Input() previewType: string = 'none';

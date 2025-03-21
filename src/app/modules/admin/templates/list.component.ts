@@ -22,10 +22,12 @@ import { fuseAnimations } from '@fuse/animations';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { Router } from '@angular/router';
 import { PaginationComponent } from 'app/shared/components/pagination/pagination.component';
+import { PermissionComponent } from 'app/shared/components/permission/permission.component';
 import {
     PaginationResponseI,
     PaginationResquestI,
 } from 'app/shared/interfaces/response.interface';
+import { PermissionCode, validAction } from 'app/shared/utils/permission.utils';
 import { ToastrService } from 'ngx-toastr';
 import { Observable, Subject, debounceTime, takeUntil } from 'rxjs';
 import { TemplateService } from './templates.service';
@@ -69,6 +71,7 @@ import { TemplateI } from './templates.types';
         AsyncPipe,
         PaginationComponent,
         MatTooltipModule,
+        PermissionComponent,
     ],
 })
 export class TemplatesListComponent implements OnInit, OnDestroy {
@@ -76,6 +79,8 @@ export class TemplatesListComponent implements OnInit, OnDestroy {
     searchInputControl: UntypedFormControl = new UntypedFormControl();
     templates$: Observable<PaginationResponseI<TemplateI[]>>;
     isLoading: boolean = false;
+    permission = PermissionCode;
+
     private _unsubscribeAll: Subject<any> = new Subject<any>();
 
     /**
@@ -170,16 +175,6 @@ export class TemplatesListComponent implements OnInit, OnDestroy {
     }
 
     /**
-     * Track by function for ngFor loops
-     *
-     * @param index
-     * @param item
-     */
-    trackByFn(index: number, item: any): any {
-        return item.id || index;
-    }
-
-    /**
      * Go to detail page
      *
      * @param template
@@ -189,5 +184,12 @@ export class TemplatesListComponent implements OnInit, OnDestroy {
         this._router.navigateByUrl('admin/modules/templates/detail', {
             state: { id: template?.id },
         });
+    }
+
+    /**
+     * Valid render permission
+     */
+    validPermission(code: string) {
+        return validAction(code);
     }
 }

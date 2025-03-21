@@ -47,6 +47,7 @@ export class PagesDetailComponent implements OnInit, OnDestroy {
     selectedPanel: string = 'information';
     page = signal<PageI>(null);
     micrositie = signal<MicrositieI>(null);
+
     private _unsubscribeAll: Subject<any> = new Subject<any>();
 
     /**
@@ -164,16 +165,6 @@ export class PagesDetailComponent implements OnInit, OnDestroy {
      */
     getPanelInfo(id: string): any {
         return this.panels.find((panel) => panel.id === id);
-    }
-
-    /**
-     * Track by function for ngFor loops
-     *
-     * @param index
-     * @param item
-     */
-    trackByFn(index: number, item: any): any {
-        return item.id || index;
     }
 
     /**

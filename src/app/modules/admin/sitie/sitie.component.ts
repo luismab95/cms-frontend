@@ -13,7 +13,9 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatDrawer, MatSidenavModule } from '@angular/material/sidenav';
 import { FuseMediaWatcherService } from '@fuse/services/media-watcher';
+import { PermissionCode, validAction } from 'app/shared/utils/permission.utils';
 import { Subject, takeUntil } from 'rxjs';
+import { PermissionComponent } from '../../../shared/components/permission/permission.component';
 import { SitieInformationComponent } from './information/information.component';
 import { SitieLanguagesComponent } from './languages/languages.component';
 import { SitieService } from './sitie.service';
@@ -32,6 +34,7 @@ import { SitieI } from './sitie.types';
         NgClass,
         SitieInformationComponent,
         SitieLanguagesComponent,
+        PermissionComponent,
     ],
 })
 export class SitieComponent implements OnInit, OnDestroy {
@@ -41,6 +44,7 @@ export class SitieComponent implements OnInit, OnDestroy {
     panels: any[] = [];
     selectedPanel: string = 'information';
     sitie = signal<SitieI>(null);
+    permission = PermissionCode;
     private _unsubscribeAll: Subject<any> = new Subject<any>();
 
     /**
@@ -141,12 +145,9 @@ export class SitieComponent implements OnInit, OnDestroy {
     }
 
     /**
-     * Track by function for ngFor loops
-     *
-     * @param index
-     * @param item
+     * Valid render permission
      */
-    trackByFn(index: number, item: any): any {
-        return item.id || index;
+    validPermission(code: string) {
+        return validAction(code);
     }
 }

@@ -15,6 +15,8 @@ import { MatDrawer, MatSidenavModule } from '@angular/material/sidenav';
 import { FuseMediaWatcherService } from '@fuse/services/media-watcher';
 import { UserService } from 'app/core/user/user.service';
 import { UserI } from 'app/core/user/user.types';
+import { PermissionComponent } from 'app/shared/components/permission/permission.component';
+import { PermissionCode, validAction } from 'app/shared/utils/permission.utils';
 import { Subject, takeUntil } from 'rxjs';
 import { SettingsAccountComponent } from './account/account.component';
 import { SettingsSecurityComponent } from './security/security.component';
@@ -32,6 +34,8 @@ import { SettingsSecurityComponent } from './security/security.component';
         NgClass,
         SettingsAccountComponent,
         SettingsSecurityComponent,
+        // SettingsNotificationsComponent,
+        PermissionComponent,
     ],
 })
 export class SettingsComponent implements OnInit, OnDestroy {
@@ -41,6 +45,8 @@ export class SettingsComponent implements OnInit, OnDestroy {
     panels: any[] = [];
     selectedPanel: string = 'account';
     user: UserI;
+    permission = PermissionCode;
+
     private _userService = inject(UserService);
     private _unsubscribeAll: Subject<any> = new Subject<any>();
 
@@ -150,12 +156,9 @@ export class SettingsComponent implements OnInit, OnDestroy {
     }
 
     /**
-     * Track by function for ngFor loops
-     *
-     * @param index
-     * @param item
+     * Valid render permission
      */
-    trackByFn(index: number, item: any): any {
-        return item.id || index;
+    validPermission(code: string) {
+        return validAction(code);
     }
 }

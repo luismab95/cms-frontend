@@ -1,4 +1,5 @@
 import { TextFieldModule } from '@angular/cdk/text-field';
+import { NgTemplateOutlet } from '@angular/common';
 import {
     ChangeDetectionStrategy,
     ChangeDetectorRef,
@@ -22,13 +23,15 @@ import { MatInputModule } from '@angular/material/input';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSelectModule } from '@angular/material/select';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
-import { RouterLink } from '@angular/router';
 import { SitieService } from 'app/modules/admin/sitie/sitie.service';
 import { SitieI } from 'app/modules/admin/sitie/sitie.types';
+import { PermissionComponent } from 'app/shared/components/permission/permission.component';
+import { PermissionCode, validAction } from 'app/shared/utils/permission.utils';
 import { ToastrService } from 'ngx-toastr';
 import { Subject, takeUntil } from 'rxjs';
 import { MicrosityService } from '../../micrositie.service';
 import { MicrositieI } from '../../micrositie.types';
+import { RouterLink } from '@angular/router';
 
 @Component({
     selector: 'microsities-information',
@@ -46,16 +49,18 @@ import { MicrositieI } from '../../micrositie.types';
         MatSelectModule,
         MatOptionModule,
         MatButtonModule,
-        RouterLink,
         MatSlideToggleModule,
         MatProgressSpinnerModule,
+        NgTemplateOutlet,
+        PermissionComponent,
+        RouterLink
     ],
 })
 export class MicrositiesInformationComponent implements OnInit {
     sitie: SitieI;
     micrositie: MicrositieI;
     micrositieForm: UntypedFormGroup;
-
+    permission = PermissionCode;
     private _sitieService = inject(SitieService);
     private _unsubscribeAll: Subject<any> = new Subject<any>();
 
@@ -126,11 +131,6 @@ export class MicrositiesInformationComponent implements OnInit {
      * Add micrositie
      */
     create() {
-        if (this.micrositie) {
-            this.update();
-            return;
-        }
-
         // Return if the form is invalid
         if (this.micrositieForm.invalid) {
             return;
@@ -211,5 +211,12 @@ export class MicrositiesInformationComponent implements OnInit {
      */
     visit() {
         window.open(`${this.sitie.domain}/${this.micrositie.path}`, '_blank');
+    }
+
+    /**
+     * Valid render permission
+     */
+    validPermission(code: string) {
+        return validAction(code);
     }
 }

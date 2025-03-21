@@ -23,10 +23,13 @@ import { MicrosityService } from 'app/modules/admin/microsities/micrositie.servi
 import { MicrositieI } from 'app/modules/admin/microsities/micrositie.types';
 import { SitieService } from 'app/modules/admin/sitie/sitie.service';
 import { SitieI } from 'app/modules/admin/sitie/sitie.types';
+import { PermissionCode, validAction } from 'app/shared/utils/permission.utils';
 import { ToastrService } from 'ngx-toastr';
 import { Subject, takeUntil } from 'rxjs';
 import { PageService } from '../../pages.service';
 import { PageDataMongoI, PageI } from '../../pages.types';
+import { NgTemplateOutlet } from '@angular/common';
+import { PermissionComponent } from 'app/shared/components/permission/permission.component';
 
 @Component({
     selector: 'pages-information',
@@ -43,6 +46,8 @@ import { PageDataMongoI, PageI } from '../../pages.types';
         MatButtonModule,
         MatSlideToggleModule,
         MatProgressSpinnerModule,
+        NgTemplateOutlet,
+        PermissionComponent
     ],
 })
 export class PagesInformationComponent implements OnInit {
@@ -50,6 +55,8 @@ export class PagesInformationComponent implements OnInit {
     sitie: SitieI;
     micrositie: MicrositieI;
     pageForm: UntypedFormGroup;
+    permission = PermissionCode;
+
     private _unsubscribeAll: Subject<any> = new Subject<any>();
 
     /**
@@ -130,12 +137,7 @@ export class PagesInformationComponent implements OnInit {
     /**
      * Add page
      */
-    new() {
-        if (this.page) {
-            this.update();
-            return;
-        }
-
+    create() {
         // Return if the form is invalid
         if (this.pageForm.invalid) {
             return;
@@ -250,5 +252,12 @@ export class PagesInformationComponent implements OnInit {
         if (this.micrositie)
             return `${this.sitie.domain}/${this.micrositie.path}/`;
         return `${this.sitie.domain}/`;
+    }
+
+    /**
+     * Valid render permission
+     */
+    validPermission(code: string) {
+        return validAction(code);
     }
 }

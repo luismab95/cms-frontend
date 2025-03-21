@@ -28,14 +28,16 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { FuseConfirmationService } from '@fuse/services/confirmation';
 import { ParameterI } from 'app/modules/admin/parameters/parameter.interface';
 import { ParameterService } from 'app/modules/admin/parameters/parameter.service';
+import { PermissionComponent } from 'app/shared/components/permission/permission.component';
 import { FileService } from 'app/shared/services/file.service';
 import { findParameter } from 'app/shared/utils/parameter.utils';
+import { PermissionCode, validAction } from 'app/shared/utils/permission.utils';
 import { ToastrService } from 'ngx-toastr';
 import { Subject, takeUntil } from 'rxjs';
+import { LanguageI } from '../../../../../shared/interfaces/language.types';
+import { LanguageService } from '../../../../../shared/services/language.service';
 import { SitieService } from '../../sitie.service';
 import { SitieI } from '../../sitie.types';
-import { LanguageService } from '../language.service';
-import { LanguageI } from '../language.types';
 
 @Component({
     selector: 'sitie-languages-details',
@@ -53,6 +55,7 @@ import { LanguageI } from '../language.types';
         MatInputModule,
         MatDialogModule,
         NgTemplateOutlet,
+        PermissionComponent,
     ],
 })
 export class SitieLanguagesDetailsComponent implements OnInit, OnDestroy {
@@ -61,7 +64,7 @@ export class SitieLanguagesDetailsComponent implements OnInit, OnDestroy {
     language: LanguageI;
     sitie: SitieI;
     urlStatics: string;
-
+    permission = PermissionCode;
     private readonly _matDialog = inject(MAT_DIALOG_DATA);
     private _parameterService = inject(ParameterService);
     private _fileService = inject(FileService);
@@ -82,10 +85,10 @@ export class SitieLanguagesDetailsComponent implements OnInit, OnDestroy {
         this._parameterService.parameter$
             .pipe(takeUntil(this._unsubscribeAll))
             .subscribe((parameters: ParameterI[]) => {
-                this.urlStatics = this.getParameter(
+                this.urlStatics = findParameter(
                     'APP_STATICS_URL',
                     parameters
-                );
+                ).value;
                 // Mark for check
                 this._changeDetectorRef.markForCheck();
             });
@@ -252,7 +255,37 @@ export class SitieLanguagesDetailsComponent implements OnInit, OnDestroy {
     }
 
     /**
-     * Toggle the language
+     * Confirm create language
+     */
+    confirmCreateLang(): void {
+        // Open the confirmation dialog
+        const confirmation = this._fuseConfirmationService.open({
+            title: `Agregar idioma`,
+            message: `¿Estás seguro de que deseas agregar este idioma? Al confirmar, se traducirán todas las referencias registradas en tus páginas.`,
+            actions: {
+                confirm: {
+                    label: 'Aceptar',
+                    color: 'primary',
+                },
+                cancel: {
+                    label: 'Cancelar',
+                },
+            },
+        });
+
+        // Subscribe to the confirmation dialog closed action
+        confirmation.afterClosed().subscribe((result) => {
+            // If the confirm button pressed...
+            console.log(result);
+
+            if (result === 'confirmed') {
+                this.create();
+            }
+        });
+    }
+
+    /**
+     * Toggle status language
      */
     toggleLanguage(): void {
         // Open the confirmation dialog
@@ -280,13 +313,10 @@ export class SitieLanguagesDetailsComponent implements OnInit, OnDestroy {
     }
 
     /**
-     * Get parameter
-     * @param code
+     * Valid render permission
      */
-    getParameter(code: string, parameters: ParameterI[]) {
-        if (parameters.length > 0) {
-            return findParameter(code, parameters).value;
-        }
+    validPermission(code: string) {
+        return validAction(code);
     }
 
     /**

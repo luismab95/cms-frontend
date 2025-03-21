@@ -1,5 +1,18 @@
 <div class="w-full max-w-3xl">
     <!-- Form -->
+    @if(micrositie){
+    <ng-container *ngTemplateOutlet="micrositieTemplateForm"></ng-container>
+    }@else {
+    @if(validPermission(permission.createMicrosite)){
+    <ng-container *ngTemplateOutlet="micrositieTemplateForm"></ng-container>
+    }@else {
+    <permission></permission>
+    }
+    }
+
+</div>
+
+<ng-template #micrositieTemplateForm>
     <form [formGroup]="micrositieForm">
         <!-- Section -->
         <div class="w-full">
@@ -78,13 +91,26 @@
         <!-- Actions -->
         <div class="flex items-center justify-between">
             <div class="flex items-center justify-start">
+                @if(micrositie){
                 <button (click)="visit()" [color]="'primary'" mat-stroked-button type="button">
                     <mat-icon svgIcon="heroicons_outline:link"></mat-icon>
                     <span class="ml-2">Visitar</span>
                 </button>
+                }
             </div>
             <div class="flex items-center justify-end">
                 <button [routerLink]="['/admin/modules/microsities']" mat-stroked-button type="button">Cancelar</button>
+                @if(micrositie){
+                @if(validPermission(permission.editMicrosite)){
+                <button class="ml-4" mat-flat-button type="button" [color]="'primary'" (click)="update()">
+                    @if (!micrositieForm.disabled) {
+                    <span> Guardar</span>
+                    }
+                    @if (micrositieForm.disabled) {
+                    <mat-progress-spinner [diameter]="24" [mode]="'indeterminate'"></mat-progress-spinner>
+                    }
+                </button>}
+                }@else {
                 <button class="ml-4" mat-flat-button type="button" [color]="'primary'" (click)="create()">
                     @if (!micrositieForm.disabled) {
                     <span> Guardar</span>
@@ -93,7 +119,10 @@
                     <mat-progress-spinner [diameter]="24" [mode]="'indeterminate'"></mat-progress-spinner>
                     }
                 </button>
+                }
+
+
             </div>
         </div>
     </form>
-</div>
+</ng-template>

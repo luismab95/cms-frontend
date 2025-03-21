@@ -24,8 +24,8 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatTabsModule } from '@angular/material/tabs';
-import { LanguageService } from 'app/modules/admin/sitie/languages/language.service';
-import { LanguageI } from 'app/modules/admin/sitie/languages/language.types';
+import { LanguageService } from 'app/shared/services/language.service';
+import { LanguageI } from 'app/shared/interfaces/language.types';
 import { ElementDataI } from 'app/shared/interfaces/element.interface';
 import { Subject, takeUntil } from 'rxjs';
 

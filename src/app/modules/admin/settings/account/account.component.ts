@@ -54,6 +54,7 @@ import { Subject, takeUntil } from 'rxjs';
 })
 export class SettingsAccountComponent implements OnInit {
     @Input() user: UserI;
+    @Input() edit: boolean;
     accountForm: UntypedFormGroup;
     config: FuseConfig;
     roles: RoleI[];
@@ -103,6 +104,7 @@ export class SettingsAccountComponent implements OnInit {
         });
 
         this.accountForm.patchValue({ ...this.user, roleId: this.roles[0].id });
+        if (!this.edit) this.accountForm.disable();
 
         // Subscribe to config changes
         this._fuseConfigService.config$

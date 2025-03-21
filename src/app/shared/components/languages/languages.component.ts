@@ -15,8 +15,8 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatMenuModule } from '@angular/material/menu';
 import { ParameterI } from 'app/modules/admin/parameters/parameter.interface';
 import { ParameterService } from 'app/modules/admin/parameters/parameter.service';
-import { LanguageService } from 'app/modules/admin/sitie/languages/language.service';
-import { LanguageI } from 'app/modules/admin/sitie/languages/language.types';
+import { LanguageService } from 'app/shared/services/language.service';
+import { LanguageI } from 'app/shared/interfaces/language.types';
 import { findParameter } from 'app/shared/utils/parameter.utils';
 import { Subject, takeUntil } from 'rxjs';
 

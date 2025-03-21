@@ -23,8 +23,10 @@ import { MatTabsModule } from '@angular/material/tabs';
 import { Router } from '@angular/router';
 import { MicrosityService } from 'app/modules/admin/microsities/micrositie.service';
 import { MicrositieI } from 'app/modules/admin/microsities/micrositie.types';
-import { LanguageService } from 'app/modules/admin/sitie/languages/language.service';
-import { LanguageI } from 'app/modules/admin/sitie/languages/language.types';
+import { PermissionComponent } from 'app/shared/components/permission/permission.component';
+import { LanguageI } from 'app/shared/interfaces/language.types';
+import { LanguageService } from 'app/shared/services/language.service';
+import { PermissionCode, validAction } from 'app/shared/utils/permission.utils';
 import { ToastrService } from 'ngx-toastr';
 import { Subject, takeUntil } from 'rxjs';
 import { PageService } from '../../pages.service';
@@ -46,6 +48,7 @@ import { PageDetailReferenceI, PageI } from '../../pages.types';
         MatButtonModule,
         MatTabsModule,
         MatProgressSpinnerModule,
+        PermissionComponent,
     ],
 })
 export class PagesLangugesComponent implements OnInit {
@@ -53,6 +56,8 @@ export class PagesLangugesComponent implements OnInit {
     micrositie: MicrositieI;
     languages: LanguageI[] = [];
     languageForm: UntypedFormGroup;
+    permission = PermissionCode;
+
     private _unsubscribeAll: Subject<any> = new Subject<any>();
 
     /**
@@ -165,7 +170,7 @@ export class PagesLangugesComponent implements OnInit {
      * Set data to language form array
      * @param data
      */
-    patchLanguagesWithData(data: PageDetailReferenceI[]): void {        
+    patchLanguagesWithData(data: PageDetailReferenceI[]): void {
         data.forEach((language, index) => {
             const languageGroup = this._formBuilder.group({
                 alias: [language.alias.text],
@@ -255,5 +260,12 @@ export class PagesLangugesComponent implements OnInit {
      */
     getLanguageName(id: number) {
         return this.languages.find((language) => language.id === id)?.name;
+    }
+
+    /**
+     * Valid render permission
+     */
+    validPermission(code: string) {
+        return validAction(code);
     }
 }

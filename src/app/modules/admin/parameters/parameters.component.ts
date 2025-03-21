@@ -14,6 +14,8 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatDrawer, MatSidenavModule } from '@angular/material/sidenav';
 import { FuseMediaWatcherService } from '@fuse/services/media-watcher';
+import { PermissionComponent } from 'app/shared/components/permission/permission.component';
+import { PermissionCode, validAction } from 'app/shared/utils/permission.utils';
 import { Subject, takeUntil } from 'rxjs';
 import { ParametersCompanyComponent } from './company/company.component';
 import { ParametersEmailComponent } from './email/email.component';
@@ -39,6 +41,7 @@ import { ParametersWebComponent } from './web/web.component';
         ParametersSecurityComponent,
         ParametersCompanyComponent,
         ParametersWebComponent,
+        PermissionComponent,
     ],
 })
 export class ParametersComponent implements OnInit, OnDestroy {
@@ -48,6 +51,8 @@ export class ParametersComponent implements OnInit, OnDestroy {
     panels: any[] = [];
     parameters = signal<ParameterI[]>([]);
     selectedPanel: string = 'company';
+    permission = PermissionCode;
+
     private _parameterService = inject(ParameterService);
     private _unsubscribeAll: Subject<any> = new Subject<any>();
 
@@ -174,12 +179,9 @@ export class ParametersComponent implements OnInit, OnDestroy {
     }
 
     /**
-     * Track by function for ngFor loops
-     *
-     * @param index
-     * @param item
+     * Valid render permission
      */
-    trackByFn(index: number, item: any): any {
-        return item.id || index;
+    validPermission(code: string) {
+        return validAction(code);
     }
 }

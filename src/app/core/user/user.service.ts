@@ -11,6 +11,7 @@ import {
     PaginationResquestI,
     ResponseI,
 } from 'app/shared/interfaces/response.interface';
+import { StorageUtils } from 'app/shared/utils/storage.util';
 import { environment } from 'environments/environment';
 import { Observable, ReplaySubject, tap } from 'rxjs';
 import { NavigationService } from '../navigation/navigation.service';
@@ -28,6 +29,7 @@ export class UserService {
     private _permission: ReplaySubject<PermissionI> =
         new ReplaySubject<PermissionI>(1);
     private _navigationService = inject(NavigationService);
+    private _storageUtils = inject(StorageUtils);
 
     // -----------------------------------------------------------------------------------------------------
     // @ Accessors
@@ -150,6 +152,16 @@ export class UserService {
                     };
                     this._navigationService._navigation.next(navigation);
                     this._permission.next(response.message.permission);
+                    this._storageUtils.saveLocalStorage(
+                        'actions',
+                        JSON.stringify(
+                            response.message.permission.scope[0].action
+                        )
+                    );
+                    this._storageUtils.saveLocalStorage(
+                        'navigation',
+                        JSON.stringify(response.message.navigation)
+                    );
                 })
             );
     }

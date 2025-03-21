@@ -53,6 +53,7 @@ import { ParameterService } from '../parameter.service';
 })
 export class ParametersLogosComponent implements OnInit {
     @Input() parameters: ParameterI[] = [];
+    @Input() edit: boolean;
     @Output() refreshParameters: EventEmitter<boolean> =
         new EventEmitter<boolean>();
 
@@ -88,6 +89,7 @@ export class ParametersLogosComponent implements OnInit {
         });
 
         this.logoForm.patchValue({ ...this.getCompanyParameters() });
+        if (!this.edit) this.logoForm.disable();
     }
 
     /**

@@ -29,7 +29,9 @@ import { MatInputModule } from '@angular/material/input';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { FuseConfirmationService } from '@fuse/services/confirmation';
+import { PermissionComponent } from 'app/shared/components/permission/permission.component';
 import { FileService } from 'app/shared/services/file.service';
+import { PermissionCode, validAction } from 'app/shared/utils/permission.utils';
 import { ToastrService } from 'ngx-toastr';
 import { Subject, takeUntil } from 'rxjs';
 import { FileManagerService } from '../file-manager.service';
@@ -53,12 +55,14 @@ import { FileI } from '../file-manager.types';
         FormsModule,
         MatProgressSpinnerModule,
         ClipboardModule,
+        PermissionComponent,
     ],
 })
 export class FileManagerDetailsComponent implements OnInit, OnDestroy {
     file: FileI;
     editMode: boolean = false;
     fileForm: UntypedFormGroup;
+    permission = PermissionCode;
 
     private _fileManagerService = inject(FileManagerService);
     private _fileService = inject(FileService);
@@ -254,5 +258,12 @@ export class FileManagerDetailsComponent implements OnInit, OnDestroy {
     copyEvent(event: true) {
         // Set the alert
         this._toastrService.info('Url Copiada.', 'Aviso');
+    }
+
+    /**
+     * Valid render permission
+     */
+    validPermission(code: string) {
+        return validAction(code);
     }
 }

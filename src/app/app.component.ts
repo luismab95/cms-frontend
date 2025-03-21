@@ -1,7 +1,7 @@
 import { Component, HostListener } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
-import { InactivityTimerService } from './shared/services/inactivity.service';
 import { LoaderComponent } from './shared/components/loader/loader.component';
+import { InactivityTimerService } from './shared/services/inactivity.service';
 
 @Component({
     selector: 'app-root',
