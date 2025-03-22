@@ -44,6 +44,7 @@ export interface PageI {
     aliasRef?: string;
     descriptionRef?: string;
     seoKeywordsRef?: string;
+    review?: boolean;
 }
 
 export interface PageRenderI extends PageI {

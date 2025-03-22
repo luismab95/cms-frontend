@@ -194,10 +194,9 @@ export class LandingRouterComponent implements OnInit, OnDestroy {
                 error: (err) => {
                     if (err.status === 503) {
                         this._router.navigateByUrl('/maintenance');
-                    }
-                    if (err.status === 404) {
+                    } else if (err.status === 404) {
                         this._router.navigateByUrl('/404-not-found');
-                    }
+                    } else this._router.navigateByUrl('/500-error');
                 },
             });
     }

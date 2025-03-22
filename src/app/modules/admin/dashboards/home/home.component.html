@@ -56,7 +56,7 @@
                                 <div class="mt-2 flex flex-col items-center">
                                     <div
                                         class="text-7xl font-bold leading-none tracking-tight text-blue-500 sm:text-8xl">
-                                        21
+                                        {{countElements.pages}}
                                     </div>
                                 </div>
                             </div>
@@ -70,11 +70,11 @@
                                 <div class="mt-2 flex flex-col items-center">
                                     <div
                                         class="text-7xl font-bold leading-none tracking-tight text-red-500 sm:text-8xl">
-                                        17
+                                        {{countElements.microsities}}
                                     </div>
                                 </div>
                             </div>
-                            <!-- News -->
+                            <!-- Templates -->
                             <div class="bg-card flex flex-auto flex-col overflow-hidden rounded-2xl p-6 shadow">
                                 <div class="flex items-start justify-between">
                                     <div class="truncate text-lg font-medium leading-6 tracking-tight">
@@ -84,11 +84,12 @@
                                 <div class="mt-2 flex flex-col items-center">
                                     <div
                                         class="text-7xl font-bold leading-none tracking-tight text-amber-500 sm:text-8xl">
-                                        1
+                                        {{countElements.templates}}
                                     </div>
                                 </div>
                             </div>
-                            <!-- Others -->
+
+                            <!-- Files -->
                             <div class="bg-card flex flex-auto flex-col overflow-hidden rounded-2xl p-6 shadow">
                                 <div class="flex items-start justify-between">
                                     <div class="truncate text-lg font-medium leading-6 tracking-tight">
@@ -98,10 +99,11 @@
                                 <div class="mt-2 flex flex-col items-center">
                                     <div
                                         class="text-7xl font-bold leading-none tracking-tight text-green-500 sm:text-8xl">
-                                        38
+                                        {{countElements.files}}
                                     </div>
                                 </div>
                             </div>
+
                             <!-- Visit Sitie -->
                             <div
                                 class="bg-card flex flex-auto flex-col overflow-hidden rounded-2xl p-6 shadow sm:col-span-2 md:col-span-4">
@@ -110,10 +112,10 @@
                                         Visitas semanales
                                     </div>
                                     <div class="mt-3 sm:ml-2 sm:mt-0">
-                                        <mat-button-toggle-group value="this-week"
-                                            #githubIssuesWeekSelector="matButtonToggleGroup">
-                                            <mat-button-toggle value="last-week">La semana pasada</mat-button-toggle>
-                                            <mat-button-toggle value="this-week">Esta semana</mat-button-toggle>
+                                        <mat-button-toggle-group value="thisWeek"
+                                            #weekVisitButton="matButtonToggleGroup">
+                                            <mat-button-toggle value="lastWeek">La semana pasada</mat-button-toggle>
+                                            <mat-button-toggle value="thisWeek">Esta semana</mat-button-toggle>
                                         </mat-button-toggle-group>
                                     </div>
                                 </div>
@@ -124,38 +126,18 @@
 
                                         </div>
                                         <div class="flex flex-auto flex-col">
-                                            <apx-chart class="h-80 w-full flex-auto" [chart]="
-                                                        chartGithubIssues.chart
-                                                    " [colors]="
-                                                        chartGithubIssues.colors
-                                                    " [dataLabels]="
-                                                        chartGithubIssues.dataLabels
-                                                    " [grid]="chartGithubIssues.grid" [labels]="
-                                                        chartGithubIssues.labels
-                                                    " [legend]="
-                                                        chartGithubIssues.legend
-                                                    " [plotOptions]="
-                                                        chartGithubIssues.plotOptions
-                                                    " [series]="
-                                                        chartGithubIssues.series[
-                                                            githubIssuesWeekSelector
-                                                                .value
-                                                        ]
-                                                    " [states]="
-                                                        chartGithubIssues.states
-                                                    " [stroke]="
-                                                        chartGithubIssues.stroke
-                                                    " [tooltip]="
-                                                        chartGithubIssues.tooltip
-                                                    " [xaxis]="
-                                                        chartGithubIssues.xaxis
-                                                    " [yaxis]="
-                                                        chartGithubIssues.yaxis
-                                                    "></apx-chart>
+                                            <apx-chart class="h-80 w-full flex-auto" [chart]="weekVisit.chart"
+                                                [colors]="weekVisit.colors" [dataLabels]="weekVisit.dataLabels"
+                                                [grid]="weekVisit.grid" [labels]="weekVisit.labels"
+                                                [legend]="weekVisit.legend" [plotOptions]="weekVisit.plotOptions"
+                                                [series]="weekVisit.series[weekVisitButton.value]"
+                                                [stroke]="weekVisit.stroke" [tooltip]="weekVisit.tooltip"
+                                                [xaxis]="weekVisit.xaxis" [yaxis]=" weekVisit.yaxis">
+                                            </apx-chart>
                                         </div>
                                     </div>
                                     <!-- Overview -->
-                                    <div class="flex flex-col">
+                                    <div class=" flex flex-col">
                                         <div class="text-secondary font-medium">
                                             Visitas por
                                         </div>
@@ -165,13 +147,7 @@
                                                 class="col-span-4 flex flex-col items-center justify-center rounded-2xl bg-indigo-50 px-1 py-8 text-indigo-800 dark:bg-white dark:bg-opacity-5 dark:text-indigo-400">
                                                 <div
                                                     class="text-5xl font-semibold leading-none tracking-tight sm:text-7xl">
-                                                    {{
-                                                    data.githubIssues
-                                                    .overview[
-                                                    githubIssuesWeekSelector
-                                                    .value
-                                                    ]['new-issues']
-                                                    }}
+                                                    {{ dataServiceWeek[weekVisitButton.value].sitie }}
                                                 </div>
                                                 <div class="mt-1 text-sm font-medium sm:text-lg">
                                                     Sitio
@@ -182,13 +158,7 @@
                                                 class="col-span-2 flex flex-col items-center justify-center rounded-2xl bg-green-50 px-1 py-8 text-green-800 dark:bg-white dark:bg-opacity-5 dark:text-green-500">
                                                 <div
                                                     class="text-5xl font-semibold leading-none tracking-tight sm:text-7xl">
-                                                    {{
-                                                    data.githubIssues
-                                                    .overview[
-                                                    githubIssuesWeekSelector
-                                                    .value
-                                                    ]['closed-issues']
-                                                    }}
+                                                    {{ dataServiceWeek[weekVisitButton.value].page }}
                                                 </div>
                                                 <div class="mt-1 text-sm font-medium sm:text-lg">
                                                     Páginas
@@ -198,13 +168,8 @@
                                             <div
                                                 class="text-secondary col-span-2 flex flex-col items-center justify-center rounded-2xl bg-gray-100 px-1 py-8 dark:bg-white dark:bg-opacity-5 sm:col-span-2">
                                                 <div class="text-5xl font-semibold leading-none tracking-tight">
-                                                    {{
-                                                    data.githubIssues
-                                                    .overview[
-                                                    githubIssuesWeekSelector
-                                                    .value
-                                                    ]['fixed']
-                                                    }}
+                                                    {{ dataServiceWeek[weekVisitButton.value].micrositie }}
+
                                                 </div>
                                                 <div class="mt-1 text-center text-sm font-medium">
                                                     Micrositios
@@ -214,6 +179,7 @@
                                     </div>
                                 </div>
                             </div>
+
                             <!-- Visitors overview -->
                             <div
                                 class="bg-card dark flex flex-auto flex-col overflow-hidden rounded-2xl shadow sm:col-span-4 lg:col-span-4">
@@ -228,14 +194,14 @@
                                     </div>
                                     <div class="ml-2">
                                         <mat-button-toggle-group class="hidden space-x-1 border-none sm:inline-flex"
-                                            value="this-year" #visitorsYearSelector="matButtonToggleGroup">
+                                            value="thisYear" #yearVisitButton="matButtonToggleGroup">
                                             <mat-button-toggle
                                                 class="overflow-hidden rounded-full border-none px-1.5 font-medium"
-                                                value="last-year">El año pasado
+                                                value="lastYear">El año pasado
                                             </mat-button-toggle>
                                             <mat-button-toggle
                                                 class="overflow-hidden rounded-full border-none px-1.5 font-medium"
-                                                value="this-year">Este año
+                                                value="thisYear">Este año
                                             </mat-button-toggle>
                                         </mat-button-toggle-group>
                                         <div class="sm:hidden">
@@ -250,20 +216,18 @@
                                     </div>
                                 </div>
                                 <div class="flex h-80 flex-auto flex-col">
-                                    <apx-chart class="h-full w-full flex-auto" [chart]="chartVisitors.chart"
-                                        [colors]="chartVisitors.colors" [dataLabels]="chartVisitors.dataLabels"
-                                        [fill]="chartVisitors.fill" [grid]="chartVisitors.grid"
-                                        [series]="chartVisitors.series[visitorsYearSelector.value]"
-                                        [stroke]="chartVisitors.stroke" [tooltip]="chartVisitors.tooltip"
-                                        [xaxis]="chartVisitors.xaxis" [yaxis]="chartVisitors.yaxis"></apx-chart>
+                                    <apx-chart class="h-full w-full flex-auto" [chart]="yearVisit.chart"
+                                        [colors]="yearVisit.colors" [dataLabels]="yearVisit.dataLabels"
+                                        [fill]="yearVisit.fill" [grid]="yearVisit.grid"
+                                        [series]="yearVisit.series[yearVisitButton.value]" [stroke]="yearVisit.stroke"
+                                        [tooltip]="yearVisit.tooltip" [xaxis]="yearVisit.xaxis"
+                                        [yaxis]="yearVisit.yaxis"></apx-chart>
                                 </div>
                             </div>
                         </div>
                         }@else {
                         <permission></permission>
                         }
-
-
                     </ng-template>
                 </mat-tab>
 
@@ -280,32 +244,28 @@
                                     <div class="truncate text-lg font-medium leading-6 tracking-tight">
                                         Visitantes frente a visitas a las páginas
                                     </div>
-                                    <div class="ml-2">
-                                        <button class="bg-hover h-6 min-h-6 rounded-full px-2" mat-button
-                                            [matMenuTriggerFor]="conversionMenu">
-                                            <span class="text-secondary text-sm font-medium">30 días</span>
-                                        </button>
-                                        <mat-menu #conversionMenu="matMenu">
-                                            <button mat-menu-item>30 días</button>
-                                            <button mat-menu-item>3 meses</button>
-                                            <button mat-menu-item>9 meses</button>
-                                        </mat-menu>
+                                    <div class="mt-3 sm:ml-2 sm:mt-0">
+                                        <mat-button-toggle-group value="thisYear"
+                                            #visitVsPagesButton="matButtonToggleGroup">
+                                            <mat-button-toggle value="lastYear">El año anterior</mat-button-toggle>
+                                            <mat-button-toggle value="thisYear">Este año</mat-button-toggle>
+                                        </mat-button-toggle-group>
                                     </div>
                                 </div>
 
                                 <div class="mt-3 flex h-80 flex-auto flex-col">
-                                    <apx-chart class="h-full w-full flex-auto" [chart]="chartVisitorsVsPageViews.chart"
-                                        [colors]="chartVisitorsVsPageViews.colors"
-                                        [dataLabels]="chartVisitorsVsPageViews.dataLabels"
-                                        [grid]="chartVisitorsVsPageViews.grid"
-                                        [legend]="chartVisitorsVsPageViews.legend"
-                                        [series]="chartVisitorsVsPageViews.series"
-                                        [stroke]="chartVisitorsVsPageViews.stroke"
-                                        [tooltip]="chartVisitorsVsPageViews.tooltip"
-                                        [xaxis]="chartVisitorsVsPageViews.xaxis"
-                                        [yaxis]="chartVisitorsVsPageViews.yaxis"></apx-chart>
+                                    <apx-chart class="h-full w-full flex-auto" [chart]="visitiVsPageVisit.chart"
+                                        [colors]="visitiVsPageVisit.colors" [dataLabels]="visitiVsPageVisit.dataLabels"
+                                        [grid]="visitiVsPageVisit.grid" [legend]="visitiVsPageVisit.legend"
+                                        [series]="visitiVsPageVisit.series[visitVsPagesButton.value]"
+                                        [stroke]="visitiVsPageVisit.stroke" [tooltip]="visitiVsPageVisit.tooltip"
+                                        [xaxis]="visitiVsPageVisit.xaxis" [yaxis]="visitiVsPageVisit.yaxis">
+                                    </apx-chart>
                                 </div>
                             </div>
+
+
+
                             <!-- Top 10 pages -->
                             <div class="mt-4 w-full">
                                 <div class="text-2xl font-semibold leading-6 tracking-tight">
@@ -315,87 +275,73 @@
                                     Páginas más visitadas.
                                 </div>
                             </div>
+                            <!-- Table -->
                             <div
                                 class="bg-card flex flex-auto flex-col overflow-hidden rounded-2xl p-6 shadow sm:col-span-6">
                                 <div class="mt-2 flex flex-auto flex-col overflow-x-auto">
                                     <table class="min-w-240 overflow-y-visible" mat-table
-                                        [dataSource]="data.budgetDetails.rows">
+                                        [dataSource]="dataServiceTop10">
                                         <!-- Page -->
-                                        <ng-container matColumnDef="type">
+                                        <ng-container matColumnDef="name">
                                             <th mat-header-cell *matHeaderCellDef>
                                                 Página
                                             </th>
-                                            <td mat-cell *matCellDef="let budget">
+                                            <td mat-cell *matCellDef="let page">
                                                 <span class="flex items-center">
-                                                    <span class="ml-3 leading-4">{{ budget.type }}</span>
-                                                </span>
-                                            </td>
-                                        </ng-container>
-
-                                        <!-- Description -->
-                                        <ng-container matColumnDef="total">
-                                            <th mat-header-cell *matHeaderCellDef>
-                                                Descripción
-                                            </th>
-                                            <td mat-cell *matCellDef="let budget">
-                                                <span class="text-right font-medium">
-                                                    {{
-                                                    budget.total
-                                                    | currency: 'USD'
-                                                    }}
+                                                    <span class="ml-3 leading-4">{{ page.name }}</span>
                                                 </span>
                                             </td>
                                         </ng-container>
 
                                         <!-- Language -->
-                                        <ng-container matColumnDef="expensesPercentage">
+                                        <ng-container matColumnDef="lang">
                                             <th mat-header-cell *matHeaderCellDef>
                                                 Idioma
                                             </th>
-                                            <td mat-cell *matCellDef="let budget">
+                                            <td mat-cell *matCellDef="let page">
                                                 <span class="text-right font-medium">
-                                                    {{
-                                                    budget.total
-                                                    | currency: 'USD'
-                                                    }}
+                                                    {{ page.lang}}
+                                                </span>
+                                            </td>
+                                        </ng-container>
+
+                                        <!-- Micrositie -->
+                                        <ng-container matColumnDef="micrositie">
+                                            <th mat-header-cell *matHeaderCellDef>
+                                                Micrositio
+                                            </th>
+                                            <td mat-cell *matCellDef="let page">
+                                                <span class="text-right font-medium">
+                                                    {{ page.micrositie !== null ? page.micrositie : 'Ninguno' }}
                                                 </span>
                                             </td>
                                         </ng-container>
 
                                         <!-- Path -->
-                                        <ng-container matColumnDef="expensesAmount">
+                                        <ng-container matColumnDef="path">
                                             <th mat-header-cell *matHeaderCellDef>
                                                 Enlace
                                             </th>
-                                            <td mat-cell *matCellDef="let budget">
-                                                {{
-                                                budget.expensesAmount
-                                                | currency: 'USD'
-                                                }}
+                                            <td mat-cell *matCellDef="let page">
+                                                <mat-icon [matTooltip]="'Copiar url'"
+                                                    (cdkCopyToClipboardCopied)="copyEvent($event)"
+                                                    [cdkCopyToClipboard]="page.path" class="cursor-pointer"
+                                                    svgIcon="mat_outline:content_copy"></mat-icon>
                                             </td>
                                         </ng-container>
 
                                         <!-- Visitas -->
-                                        <ng-container matColumnDef="remainingAmount">
+                                        <ng-container matColumnDef="visits">
                                             <th mat-header-cell *matHeaderCellDef>
                                                 # Visitas
                                             </th>
-                                            <td mat-cell *matCellDef="let budget">
-                                                {{
-                                                budget.remainingAmount
-                                                | currency: 'USD'
-                                                }}
+                                            <td mat-cell *matCellDef="let page">
+                                                {{ page.visits }}
                                             </td>
                                         </ng-container>
 
-                                        <tr mat-header-row *matHeaderRowDef="
-                                                data.budgetDetails.columns
-                                            "></tr>
-                                        <tr mat-row *matRowDef="
-                                                let row;
-                                                columns: data.budgetDetails
-                                                    .columns
-                                            "></tr>
+                                        <tr mat-header-row *matHeaderRowDef="top10PagesColumns"></tr>
+                                        <tr mat-row *matRowDef="let row;columns: top10PagesColumns"></tr>
                                     </table>
                                 </div>
                             </div>
@@ -406,8 +352,6 @@
 
                     </ng-template>
                 </mat-tab>
-
-
             </mat-tab-group>
         </div>
     </div>

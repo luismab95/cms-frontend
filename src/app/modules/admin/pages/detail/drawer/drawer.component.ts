@@ -25,6 +25,7 @@ import { GridComponent } from 'app/shared/components/grid/grid.component';
 import { GridSettingsComponent } from 'app/shared/components/grid/settings/settings.component';
 import { LanguagesComponent } from 'app/shared/components/languages/languages.component';
 import { PermissionComponent } from 'app/shared/components/permission/permission.component';
+import { ReviewModeComponent } from 'app/shared/components/review-mode/review-mode.component';
 import { PageElementsI, SectionI } from 'app/shared/interfaces/grid.interface';
 import { LanguageService } from 'app/shared/services/language.service';
 import { ModalService } from 'app/shared/services/modal.service';
@@ -53,6 +54,7 @@ import { PageI } from '../../pages.types';
         ReactiveFormsModule,
         LanguagesComponent,
         PermissionComponent,
+        ReviewModeComponent,
     ],
 })
 export class PagesDrawerComponent implements OnInit {
@@ -189,6 +191,10 @@ export class PagesDrawerComponent implements OnInit {
      * Update draft page
      */
     updateDraft() {
+        if (this.page.review) {
+            return;
+        }
+
         // Disable the save action
         this.saveAction.set(true);
         this.autosave.set(true);
@@ -222,6 +228,35 @@ export class PagesDrawerComponent implements OnInit {
                     this._toastrService.error(response.error.message, 'Aviso');
                 },
             });
+    }
+
+    /**
+     *  Confirm update page
+     */
+    confirmUpdatePage() {
+        // Open the confirmation dialog
+        const confirmation = this._fuseConfirmationService.open({
+            title: `Editar página`,
+            message: `¿Estas seguro/a que deseas editar la página? No podras volver a editar la página hasta que los cambios sean aprobados por un revisor.`,
+            actions: {
+                confirm: {
+                    label: 'Editar',
+                    color: 'primary',
+                },
+                cancel: {
+                    label: 'Cancelar',
+                },
+            },
+        });
+
+        // Subscribe to the confirmation dialog closed action
+        confirmation.afterClosed().subscribe((result) => {
+            // If the confirm button pressed...
+            if (result === 'confirmed') {
+                this.updatePage();
+            } else {
+            }
+        });
     }
 
     /**

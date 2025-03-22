@@ -1,3 +1,6 @@
+@if(page.review){
+<review-mode></review-mode>
+}@else {
 <div class="w-full max-w-full bg-default">
     @if(validPermission(permission.editContentPage) || validPermission(permission.editDesignPage)){
     <div class="flex min-w-0 flex-auto flex-col dark:bg-transparent absolute -top-0 w-full -left-0">
@@ -19,21 +22,21 @@
                             class="my-3 md:my-0 flex items-center overflow-hidden rounded-full bg-gray-200 p-0.5 dark:bg-gray-700">
 
                             <button class="px-6" [ngClass]="{
-                               'bg-card pointer-events-none shadow': preview === 'mobile',
-                            'bg-transparent': preview !== 'mobile',
-                        }" mat-flat-button (click)="setPreview('mobile')" disableRipple>
+                                   'bg-card pointer-events-none shadow': preview === 'mobile',
+                                'bg-transparent': preview !== 'mobile',
+                            }" mat-flat-button (click)="setPreview('mobile')" disableRipple>
                                 <mat-icon svgIcon="heroicons_outline:device-phone-mobile"></mat-icon>
                             </button>
                             <button class="px-6" [ngClass]="{
-                            'bg-card pointer-events-none shadow': preview === 'tablet',
-                            'bg-transparent': preview !== 'tablet',
-                        }" mat-flat-button (click)="setPreview('tablet')" disableRipple>
+                                'bg-card pointer-events-none shadow': preview === 'tablet',
+                                'bg-transparent': preview !== 'tablet',
+                            }" mat-flat-button (click)="setPreview('tablet')" disableRipple>
                                 <mat-icon svgIcon="heroicons_outline:device-tablet"></mat-icon>
                             </button>
                             <button class="px-6" [ngClass]="{
-                            'bg-card pointer-events-none shadow': preview === 'desktop',
-                            'bg-transparent': preview !== 'desktop',
-                        }" mat-flat-button (click)="setPreview('desktop')" disableRipple>
+                                'bg-card pointer-events-none shadow': preview === 'desktop',
+                                'bg-transparent': preview !== 'desktop',
+                            }" mat-flat-button (click)="setPreview('desktop')" disableRipple>
                                 <mat-icon svgIcon="heroicons_outline:computer-desktop"></mat-icon>
                             </button>
                         </div>
@@ -46,7 +49,7 @@
                     <div class="flex items-center justify-end">
                         <button (click)="goToBack()" mat-stroked-button type=" button">Cancelar</button>
                         @if(preview === 'none'){
-                        <button class="ml-4" mat-flat-button type="button" [color]="'primary'" (click)="updatePage()">
+                        <button class="ml-4" mat-flat-button type="button" [color]="'primary'" (click)="confirmUpdatePage()">
                             @if (!saveAction()) {
                             <span> Guardar</span>
                             }
@@ -117,3 +120,4 @@
     <permission></permission>
     }
 </div>
+}

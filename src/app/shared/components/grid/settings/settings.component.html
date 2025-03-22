@@ -14,16 +14,16 @@
     </div>
 
     <!-- content -->
-    <div class="w-full h-full max-h-120 overflow-y-auto">
+    <div class="w-full h-full overflow-y-auto">
         <mat-tab-group mat-stretch-tabs="false" [animationDuration]="'0'">
 
             <mat-tab label="Estilos (CSS)">
                 <ng-template matTabContent>
                     @if(validPermission(permission.editDesignTemplate) || validPermission(permission.editDesignPage)){
-                        <div class="w-full py-2 flex items-center justify-between">
+                    <div class="w-full py-2 flex items-center justify-between">
                         <span class="text-md italic text-secondary">Personaliza los estilos de tu {{title}}.</span>
-                        <mat-icon [matTooltip]="'Ayuda'" class="icon-size-5 cursor-pointer"
-                            [svgIcon]="'mat_solid:help'"></mat-icon>
+                        <!-- <mat-icon [matTooltip]="'Ayuda'" class="icon-size-5 cursor-pointer"
+                            [svgIcon]="'mat_solid:help'"></mat-icon> -->
                     </div>
                     <ngx-monaco-editor [formControl]="cssControl" class="h-160 md:h-160"
                         [options]="options"></ngx-monaco-editor>
@@ -36,7 +36,7 @@
             <mat-tab label="Propiedades">
                 <ng-template matTabContent>
                     @if(validPermission(permission.editContentPage) || validPermission(permission.editContentTemplate)){
-                        @if(!isElement){
+                    @if(!isElement){
                     <div class="w-full py-2 flex flex-col items-start justify-between">
                         <mat-label>Imágen de fondo</mat-label>
                         <div class="relative w-full">
