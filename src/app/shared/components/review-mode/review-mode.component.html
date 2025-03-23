@@ -1,6 +1,23 @@
+@if(!lastChangeReject){
 <div class="p-4 my-2 w-full">
   <fuse-alert [type]="'error'" [appearance]="'border'">
     <span fuseAlertTitle>Error </span>
     No puedes editar esta página debido a que esta en modo de revisión.
   </fuse-alert>
 </div>
+}@else{
+<div class="py-4 my-2 w-full">
+  <fuse-alert [type]="'error'" [appearance]="'border'">
+    <span fuseAlertTitle>Los ultimos cambios realizados en la página fueron rechazados por un
+      revisor, por favor revisa los cambios y vuelve a enviarlos.</span>
+    <div class="mt-2" fuseAlertTitle>Observación:</div>
+
+    <p class="w-full mt-2 max-h-40 overflow-y-auto text-justify">{{comment}}</p>
+
+    <div class="flex w-full justify-end mt-4">
+      <button mat-button color="warn" (click)="deleteChanges()" type=" button">Descartar cambios</button>
+    </div>
+
+  </fuse-alert>
+</div>
+}

@@ -1,4 +1,11 @@
-import { Component, ViewEncapsulation } from '@angular/core';
+import {
+    Component,
+    EventEmitter,
+    Input,
+    Output,
+    ViewEncapsulation,
+} from '@angular/core';
+import { MatButtonModule } from '@angular/material/button';
 import { FuseAlertComponent } from '@fuse/components/alert';
 
 @Component({
@@ -6,9 +13,14 @@ import { FuseAlertComponent } from '@fuse/components/alert';
     templateUrl: './review-mode.component.html',
     encapsulation: ViewEncapsulation.None,
     standalone: true,
-    imports: [FuseAlertComponent],
+    imports: [FuseAlertComponent, MatButtonModule],
 })
 export class ReviewModeComponent {
+    @Input() lastChangeReject: boolean = false;
+    @Input() comment: string = 'false';
+    @Output() deleteChangeEvent: EventEmitter<boolean> =
+        new EventEmitter<boolean>();
+
     /**
      * Constructor
      */
@@ -17,4 +29,11 @@ export class ReviewModeComponent {
     // -----------------------------------------------------------------------------------------------------
     // @ Private methods
     // -----------------------------------------------------------------------------------------------------
+
+    /**
+     * Delete changes
+     */
+    deleteChanges() {
+        this.deleteChangeEvent.emit(true);
+    }
 }

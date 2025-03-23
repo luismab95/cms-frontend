@@ -137,6 +137,13 @@ export const appRoutes: Route[] = [
                                 'app/modules/admin/file-manager/file-manager.routes'
                             ),
                     },
+                    {
+                        path: 'review-pages',
+                        loadChildren: () =>
+                            import(
+                                'app/modules/admin/review/review.routes'
+                            ),
+                    },
                 ],
             },
             // Security

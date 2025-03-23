@@ -65,6 +65,7 @@ export class PagesDrawerComponent implements OnInit {
     micrositie: MicrositieI;
     preview: string = 'none';
     previewMode: boolean = false;
+    reviewChanges = signal<boolean>(false);
     body = signal<SectionI[]>([]);
     autosaveTimer: any;
     autosave = signal<boolean>(false);
@@ -143,6 +144,11 @@ export class PagesDrawerComponent implements OnInit {
             .subscribe((page) => {
                 // Update the page
                 this.page = page;
+                if (this.page.lastChangeReject) {
+                    this.reviewChanges.set(true);
+                } else {
+                    this.reviewChanges.set(false);
+                }
 
                 if (this.page.draft !== null) {
                     this.confirmDraft();
@@ -170,6 +176,13 @@ export class PagesDrawerComponent implements OnInit {
     // -----------------------------------------------------------------------------------------------------
     // @ Public methods
     // -----------------------------------------------------------------------------------------------------
+    /**
+     * Set review data
+     */
+    setReviewData() {
+        this.reviewChanges.set(false);
+        this.loadPageData();
+    }
 
     /**
      * Load template data from the server and update the component properties accordingly.
@@ -177,7 +190,7 @@ export class PagesDrawerComponent implements OnInit {
     loadPageData() {
         this.refreshLanguage.set(true);
         this.loadGridData();
-        // this.loadStyles();
+        this.loadStyles();
 
         // Mark for check
         this._changeDetectorRef.markForCheck();
@@ -274,14 +287,18 @@ export class PagesDrawerComponent implements OnInit {
 
         // Disable the save action
         this.saveAction.set(true);
-
-        //Set data page elements
-        this.page.data.body.data = this.body();
+        const key = this.reviewChanges() ? 'dataReview' : 'data';
 
         this._pageService
             .update(this.page.id, {
                 name: this.page.name,
-                data: this.page.data,
+                data: {
+                    body: {
+                        data: this.body(),
+                        css: this.page[key].body.css,
+                        config: this.page[key].body.config,
+                    },
+                },
             })
             .pipe(takeUntil(this._unsubscribeAll))
             .subscribe({
@@ -309,7 +326,8 @@ export class PagesDrawerComponent implements OnInit {
      */
     loadGridData() {
         // Set body
-        this.setGrid(this.page.data.body.data);
+        const key = this.reviewChanges() ? 'dataReview' : 'data';
+        this.setGrid(this.page[key].body.data);
     }
 
     /**
@@ -317,6 +335,7 @@ export class PagesDrawerComponent implements OnInit {
      */
     loadStyles() {
         // Load CSS
+        const key = this.reviewChanges() ? 'dataReview' : 'data';
         const styleElementToRemove =
             document.getElementById('body-dynamicStyles');
         if (styleElementToRemove) {
@@ -324,7 +343,7 @@ export class PagesDrawerComponent implements OnInit {
         }
         const styleElement = document.createElement('style');
         styleElement.id = 'body-dynamicStyles';
-        styleElement.textContent = `${this.page.data.body.css}`;
+        styleElement.textContent = `${this.page[key].body.css}`;
         document.head.appendChild(styleElement);
     }
 
@@ -415,16 +434,17 @@ export class PagesDrawerComponent implements OnInit {
      * @param data
      * @param item
      */
-    openSettingsModal(data: PageElementsI, item: string): void {
+    openSettingsModal(item: string): void {
+        const key = this.reviewChanges() ? 'dataReview' : 'data';
         const dialogRef = this._modalSvc.openModal<
             GridSettingsComponent,
             PageElementsI
-        >(GridSettingsComponent, { title: item, ...data });
+        >(GridSettingsComponent, { title: item, ...this.page[key].body });
 
         dialogRef.afterClosed().subscribe((result) => {
             if (result) {
-                this.page.data.body.css = result.css;
-                this.page.data.body.config = result.config;
+                this.page[key].body.css = result.css;
+                this.page[key].body.config = result.config;
                 this.loadStyles();
                 // Mark for check
                 this._changeDetectorRef.markForCheck();
@@ -437,10 +457,11 @@ export class PagesDrawerComponent implements OnInit {
      * @returns
      */
     getStyles() {
+        const key = this.reviewChanges() ? 'dataReview' : 'data';
         let styles = {};
-        if (this.page.data.body.config.backgroundImage !== '') {
+        if (this.page[key].body.config.backgroundImage !== '') {
             styles = {
-                'background-image': `url('${this.urlStatics}/${this.page.data.body.config.backgroundImage}')`,
+                'background-image': `url('${this.urlStatics}/${this.page[key].body.config.backgroundImage}')`,
             };
         }
         return styles;

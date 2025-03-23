@@ -1,0 +1,75 @@
+<div class="flex w-full flex-col relative h-full">
+    <!-- Header -->
+    <div class="flex flex-row w-full justify-between items-start mb-3">
+        <!-- Title -->
+        <div class="truncate text-3xl w-3/4 font-bold mt-3">
+            Aprobar / Rechazar
+        </div>
+        <!-- Close button -->
+        <div class="w-1/4 flex justify-end">
+            <a mat-icon-button [matTooltip]="'Cerrar'" [mat-dialog-close]="null">
+                <mat-icon class="text-dark" [svgIcon]="'heroicons_outline:x-mark'"></mat-icon>
+            </a>
+        </div>
+    </div>
+
+    <!-- content -->
+    <div class="w-full h-full overflow-y-auto">
+        <form [formGroup]="form">
+
+            <!-- ACTION -->
+            <div class="mt-8">
+                <mat-form-field class="w-full" [subscriptSizing]="'dynamic'">
+                    <mat-label>Acción</mat-label>
+                    <mat-icon class="icon-size-5" [svgIcon]="'mat_outline:reviews'" matPrefix></mat-icon>
+                    <mat-select selected [formControlName]="'status'" disableOptionCentering #roleSelect="matSelect">
+                        @for (action of actions; track $index) {
+                        <mat-option class="h-auto py-4 leading-none" [value]="action.value">
+                            <div class="font-medium">
+                                {{action.name}}
+                            </div>
+
+                        </mat-option>
+                        }
+                    </mat-select>
+                    @if (form.get('status').hasError('required')) {
+                    <mat-error>Selecciona una acción. </mat-error>
+                    }
+                </mat-form-field>
+            </div>
+
+            <!-- COOMENT -->
+            <div class="mt-8">
+                <mat-form-field class="w-full" [subscriptSizing]="'dynamic'">
+                    <mat-label>Observación</mat-label>
+                    <mat-icon class="icon-size-5" [svgIcon]="'mat_outline:text_fields'" matPrefix></mat-icon>
+                    <textarea rows="10" [formControlName]="'comment'" matInput></textarea>
+                    @if (form.get('comment').hasError('required')) {
+                    <mat-error>Se requiere observación. </mat-error>
+                    }
+                    @if (form.get('comment').hasError('maxlength')) {
+                    <mat-error>El comentario no puede exceder los 500 caracteres. </mat-error>
+                    }
+                </mat-form-field>
+            </div>
+        </form>
+
+    </div>
+
+    <!-- actions -->
+    <div class="absolute -bottom-6 w-full md:w-140 -left-6 z-10">
+        <div
+            class="mt-10 flex items-center overflow-hidden justify-end border-t bg-gray-50 py-4 dark:bg-transparent pr-8">
+            <!-- Cancel -->
+            <button class="ml-auto" mat-button [matTooltip]="'Cancelar'" [mat-dialog-close]="null">
+                Cancelar
+            </button>
+            <!-- Save -->
+            <button [disabled]="form.invalid" (click)="save()" class="ml-2" mat-flat-button [color]="'primary'"
+                [matTooltip]="'Guardar'">
+                Enviar
+            </button>
+        </div>
+    </div>
+
+</div>

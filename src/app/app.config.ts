@@ -14,7 +14,6 @@ import { FormlyMaterialModule } from '@ngx-formly/material';
 import { appRoutes } from 'app/app.routes';
 import { provideAuth } from 'app/core/auth/auth.provider';
 import { provideIcons } from 'app/core/icons/icons.provider';
-import { MockApiService } from 'app/mock-api';
 import {
     MonacoEditorModule,
     NgxMonacoEditorConfig,
@@ -69,10 +68,6 @@ export const appConfig: ApplicationConfig = {
         provideAuth(),
         provideIcons(),
         provideFuse({
-            mockApi: {
-                delay: 0,
-                service: MockApiService,
-            },
             fuse: {
                 layout: 'classy',
                 scheme: 'light',

@@ -19,14 +19,14 @@
         }
         @for (
         resultSet of resultSets;
-        track trackByFn($index, resultSet)
+        track $index
         ) {
         <mat-optgroup class="mt-2 flex items-center px-2">
             <span class="text-secondary text-sm font-semibold tracking-wider">{{ resultSet.label.toUpperCase() }}</span>
         </mat-optgroup>
         @for (
         result of resultSet.results;
-        track trackByFn($index, result)
+        track $index
         ) {
         <mat-option class="group relative mb-1 rounded-md px-6 py-0 text-md dark:hover:bg-hover hover:bg-gray-100"
             [routerLink]="result.link" [value]="result.value">
@@ -62,7 +62,7 @@
             ¡No se han encontrado resultados!
         </mat-option>
         }
-        @for (resultSet of resultSets; track trackByFn($index, resultSet)) {
+        @for (resultSet of resultSets; track $index) {
         <mat-optgroup class="mt-2 flex items-center px-2">
             <span class="text-secondary text-sm font-semibold tracking-wider">{{ resultSet.label.toUpperCase() }}</span>
         </mat-optgroup>

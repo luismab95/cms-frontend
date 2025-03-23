@@ -1,5 +1,5 @@
 import { inject } from '@angular/core';
-import { NotificationsService } from 'app/layout/common/notifications/notifications.service';
+import { NotificationsService } from 'app/shared/services/notifications.service';
 import { forkJoin } from 'rxjs';
 import { UserService } from './core/user/user.service';
 

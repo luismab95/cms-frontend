@@ -82,7 +82,6 @@ export class PageService {
             .pipe(
                 tap((response) => {
                     this._pages.next(response.message);
-                    // this._page.next(null);
                 })
             );
     }

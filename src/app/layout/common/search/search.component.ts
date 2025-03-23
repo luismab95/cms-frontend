@@ -34,6 +34,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { RouterLink } from '@angular/router';
 import { fuseAnimations } from '@fuse/animations/public-api';
+import { SearchService } from 'app/shared/services/search.service';
 import { Subject, debounceTime, filter, map, takeUntil } from 'rxjs';
 
 @Component({
@@ -74,6 +75,9 @@ export class SearchComponent implements OnChanges, OnInit, OnDestroy {
     opened: boolean = false;
     resultSets: any[];
     searchControl: UntypedFormControl = new UntypedFormControl();
+
+    private readonly _searchService = inject(SearchService);
+
     private _matAutocomplete: MatAutocomplete;
     private _unsubscribeAll: Subject<any> = new Subject<any>();
 
@@ -172,15 +176,8 @@ export class SearchComponent implements OnChanges, OnInit, OnDestroy {
                 filter((value) => value && value.length >= this.minLength)
             )
             .subscribe((value) => {
-                this._httpClient
-                    .post('api/common/search', { query: value })
-                    .subscribe((resultSets: any) => {
-                        // Store the result sets
-                        this.resultSets = resultSets;
-
-                        // Execute the event
-                        this.search.next(resultSets);
-                    });
+                this.resultSets = this._searchService.search(value);
+                this.search.next(this.resultSets);
             });
     }
 

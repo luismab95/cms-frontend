@@ -5,10 +5,10 @@ import {
 } from '@fuse/components/navigation';
 import { FuseMockApiService } from '@fuse/lib/mock-api';
 import { NavigationService } from 'app/core/navigation/navigation.service';
-import { cloneDeep } from 'lodash-es';
+import { cloneDeep } from 'lodash';
 
 @Injectable({ providedIn: 'root' })
-export class SearchMockApi {
+export class SearchService {
     private _defaultNavigation: FuseNavigationItem[] = [];
 
     /**
@@ -22,7 +22,6 @@ export class SearchMockApi {
         // Register Mock API handlers
         this._navigationService.navigation$.subscribe((navigation) => {
             this._defaultNavigation = navigation.compact;
-            this.registerHandlers();
         });
     }
 
@@ -30,9 +29,9 @@ export class SearchMockApi {
     // @ Public methods
     // -----------------------------------------------------------------------------------------------------
 
-    /**
-     * Register Mock API handlers
-     */
+    // /**
+    //  * Register DATA API handlers
+    //  */
     registerHandlers(): void {
         // Get the flat navigation and store it
         const flatNavigation = this._fuseNavigationService.getFlatNavigation(
@@ -83,5 +82,41 @@ export class SearchMockApi {
                 // Return the response
                 return [200, results];
             });
+    }
+
+    search(value: string) {
+        const flatNavigation = this._fuseNavigationService.getFlatNavigation(
+            this._defaultNavigation
+        );
+
+        const query = cloneDeep(value.toLowerCase());
+
+        // Filter the navigation
+        const pagesResults = cloneDeep(flatNavigation).filter(
+            (page) =>
+                page.title?.toLowerCase().includes(query) ||
+                (page.subtitle && page.subtitle.includes(query))
+        );
+
+        // Prepare the results array
+        const results = [];
+
+        // If there are page results...
+        if (pagesResults.length > 0) {
+            // Normalize the results
+            pagesResults.forEach((result: any) => {
+                // Add the page title as the value
+                result.value = result.title;
+            });
+
+            // Add to the results
+            results.push({
+                id: 'pages',
+                label: 'Páginas',
+                results: pagesResults,
+            });
+        }
+
+        return results;
     }
 }

@@ -45,6 +45,8 @@ export interface PageI {
     descriptionRef?: string;
     seoKeywordsRef?: string;
     review?: boolean;
+    lastChangeReject?: boolean;
+    commentReject?: string;
 }
 
 export interface PageRenderI extends PageI {
