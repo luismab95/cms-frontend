@@ -27,7 +27,7 @@ import { fuseAnimations } from '@fuse/animations';
 import { FuseConfig, FuseConfigService, Scheme } from '@fuse/services/config';
 import { UserService } from 'app/core/user/user.service';
 import { RoleI, UserI } from 'app/core/user/user.types';
-import { CookieService } from 'ngx-cookie-service';
+import { StorageUtils } from 'app/shared/utils/storage.util';
 import { ToastrService } from 'ngx-toastr';
 import { Subject, takeUntil } from 'rxjs';
 
@@ -60,7 +60,6 @@ export class SettingsAccountComponent implements OnInit {
     roles: RoleI[];
     currentSchema: Scheme;
 
-    private _cookieService = inject(CookieService);
     private _userService = inject(UserService);
     private _unsubscribeAll: Subject<any> = new Subject<any>();
 
@@ -71,7 +70,8 @@ export class SettingsAccountComponent implements OnInit {
         private _formBuilder: UntypedFormBuilder,
         private _fuseConfigService: FuseConfigService,
         private _changeDetectorRef: ChangeDetectorRef,
-        private _toastrService: ToastrService
+        private _toastrService: ToastrService,
+        private _storageService: StorageUtils
     ) {}
 
     // -----------------------------------------------------------------------------------------------------
@@ -83,7 +83,9 @@ export class SettingsAccountComponent implements OnInit {
      */
     ngOnInit(): void {
         // Set schema
-        this.currentSchema = this._cookieService.get('scheme') as Scheme;
+        this.currentSchema = this._storageService.getLocalStorage(
+            'scheme'
+        ) as Scheme;
 
         // Subscribe to role changes
         this._userService.role$
@@ -112,9 +114,7 @@ export class SettingsAccountComponent implements OnInit {
             .subscribe((config: FuseConfig) => {
                 // Store the config
                 this.config = config;
-                this.config.scheme = this._cookieService.get(
-                    'scheme'
-                ) as Scheme;
+                this.config.scheme = this.currentSchema;
             });
     }
 
@@ -149,7 +149,7 @@ export class SettingsAccountComponent implements OnInit {
     setScheme(scheme: Scheme): void {
         const expireDate = new Date();
         expireDate.setFullYear(expireDate.getFullYear() + 1);
-        this._cookieService.set('scheme', scheme, { expires: expireDate });
+        this._storageService.saveLocalStorage('scheme', scheme);
         this._fuseConfigService.config = { scheme };
     }
 

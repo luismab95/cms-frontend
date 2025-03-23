@@ -34,7 +34,6 @@ import { SettingsSecurityComponent } from './security/security.component';
         NgClass,
         SettingsAccountComponent,
         SettingsSecurityComponent,
-        // SettingsNotificationsComponent,
         PermissionComponent,
     ],
 })

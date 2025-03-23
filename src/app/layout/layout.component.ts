@@ -18,7 +18,7 @@ import { FusePlatformService } from '@fuse/services/platform';
 import { ParameterI } from 'app/modules/admin/parameters/parameter.interface';
 import { ParameterService } from 'app/modules/admin/parameters/parameter.service';
 import { findParameter } from 'app/shared/utils/parameter.utils';
-import { CookieService } from 'ngx-cookie-service';
+import { StorageUtils } from 'app/shared/utils/storage.util';
 import { Subject, combineLatest, filter, map, takeUntil } from 'rxjs';
 import { EmptyLayoutComponent } from './layouts/empty/empty.component';
 import { CenteredLayoutComponent } from './layouts/horizontal/centered/centered.component';
@@ -56,7 +56,7 @@ export class LayoutComponent implements OnInit, OnDestroy {
     parameters = signal<ParameterI[]>([]);
 
     private _parameterService = inject(ParameterService);
-    private _cookieService = inject(CookieService);
+    private _storageService = inject(StorageUtils);
     private _unsubscribeAll: Subject<any> = new Subject<any>();
 
     /**
@@ -112,8 +112,10 @@ export class LayoutComponent implements OnInit, OnDestroy {
                     };
 
                     // If the scheme is set to 'auto'...
-                    const schema = this._cookieService.get('scheme');
-                    if (schema === '' || schema === 'auto') {
+                    const scheme =
+                        this._storageService.getLocalStorage('scheme');
+
+                    if (!scheme || scheme === '') {
                         // Decide the scheme using the media query
                         options.scheme = mql.breakpoints[
                             '(prefers-color-scheme: dark)'
@@ -121,7 +123,7 @@ export class LayoutComponent implements OnInit, OnDestroy {
                             ? 'dark'
                             : 'light';
                     } else {
-                        options.scheme = this._cookieService.get('scheme');
+                        options.scheme = scheme;
                     }
 
                     const url = window.location.pathname;

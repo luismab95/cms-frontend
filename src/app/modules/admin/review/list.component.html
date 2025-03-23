@@ -6,7 +6,7 @@
         <!-- Title -->
         <div>
             <div class="text-4xl font-extrabold leading-none tracking-tight">
-                Revisión de páginas</div>
+                Revisar páginas</div>
             <div class="text-secondary mt-0.5 flex items-center font-medium">
                 {{pagesCount}} página(s) por revisar
             </div>
@@ -14,7 +14,7 @@
         <!-- Actions -->
         <div class="mt-6 flex shrink-0 items-center sm:ml-4 sm:mt-0">
             <!-- Search -->
-            @if(validPermission(permission.listPage)){
+            @if(validPermission(permission.listReviewPages)){
             <mat-form-field class="fuse-mat-dense fuse-mat-rounded min-w-64" [subscriptSizing]="'dynamic'">
                 <mat-icon class="icon-size-5" matPrefix [svgIcon]="'heroicons_solid:magnifying-glass'"></mat-icon>
                 <input matInput [formControl]="searchInputControl" [autocomplete]="'off'"
@@ -28,7 +28,7 @@
     <div class="flex flex-auto overflow-hidden">
         <!-- Products list -->
         <div class="flex flex-auto flex-col overflow-hidden sm:mb-18 sm:overflow-y-auto">
-            @if(validPermission(permission.listPage)){
+            @if(validPermission(permission.listReviewPages)){
             <div class="grid">
                 <!-- Header -->
                 <div

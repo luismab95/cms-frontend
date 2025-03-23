@@ -1,7 +1,7 @@
 <div class="flex w-full min-w-0 flex-col sm:absolute sm:inset-0 sm:overflow-x-hidden overflow-y-auto">
 
     <div class="w-full max-w-full bg-default">
-        @if(validPermission(permission.editContentPage) || validPermission(permission.editDesignPage)){
+        @if(validPermission(permission.viewReviewPages)){
         <div class="flex min-w-0 flex-auto flex-col dark:bg-transparent absolute -top-0 w-full -left-0">
             <div class="relative">
                 <div class="sticky top-0 left-0 right-0 w-full bg-card shadow-md p-3 z-10">
@@ -45,7 +45,8 @@
 
                         <div class="flex items-center justify-end">
                             <button (click)="goToBack()" mat-stroked-button type=" button">Cancelar</button>
-                            <button (click)="openReviewModal()" class="ml-4" mat-flat-button type="button" [color]="'primary'">
+                            <button (click)="openReviewModal()" class="ml-4" mat-flat-button type="button"
+                                [color]="'primary'">
                                 @if (!saveAction()) {
                                 <span> Revisar </span>
                                 }
@@ -71,9 +72,8 @@
                         [ngClass]="{'my-3 min-h-40 rounded-2xl border-2 border-dashed border-gray-300':!previewMode}"
                         class="flex flex-col body">
 
-                        <grid [editContent]="validPermission(permission.editContentPage)"
-                            [editDesign]="validPermission(permission.editDesignPage)" [gridType]="'body'"
-                            [languageId]="languageId" [grid]="body()" [previewType]="preview" [preview]="previewMode"
+                        <grid [editContent]="false" [editDesign]="false" [gridType]="'body'" [languageId]="languageId"
+                            [grid]="body()" [previewType]="preview" [preview]="previewMode"
                             (deleteSectionEvent)="setGrid($event)"></grid>
 
                     </div>

@@ -36,6 +36,9 @@
                     <mat-label>Nombre</mat-label>
                     <mat-icon class="icon-size-5" [svgIcon]="'mat_outline:text_fields'" matPrefix></mat-icon>
                     <input [formControlName]="'name'" matInput />
+                    @if (pageForm.get('name').hasError('required')) {
+                    <mat-error>Nombre es obligatorio. </mat-error>
+                    }
                 </mat-form-field>
             </div>
             <!-- Path -->
@@ -44,6 +47,9 @@
                     <mat-label>Ruta</mat-label>
                     <div class="text-secondary" matPrefix>{{getDomain()}}</div>
                     <input [formControlName]="'path'" matInput />
+                    @if (pageForm.get('path').hasError('required')) {
+                    <mat-error>Ruta es obligatorio. </mat-error>
+                    }
                 </mat-form-field>
             </div>
         </div>

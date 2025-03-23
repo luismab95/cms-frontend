@@ -23,6 +23,7 @@ import { PermissionCode, validAction } from 'app/shared/utils/permission.utils';
 import { ApexOptions, NgApexchartsModule } from 'ng-apexcharts';
 import { ToastrService } from 'ngx-toastr';
 import { Subject, takeUntil } from 'rxjs';
+import { NotificationsService } from '../../../../shared/services/notifications.service';
 import {
     CountElementsI,
     Top10PagesI,
@@ -57,6 +58,7 @@ import {
 })
 export class HomeComponent implements OnInit, OnDestroy {
     user: UserI;
+    unreadNotify: number = 0;
     weekVisit: ApexOptions = {};
     yearVisit: ApexOptions = {};
     visitiVsPageVisit: ApexOptions = {};
@@ -82,6 +84,7 @@ export class HomeComponent implements OnInit, OnDestroy {
     constructor(
         private _homeService: HomeService,
         private _userService: UserService,
+        private _notificationsService: NotificationsService,
         private _toastrService: ToastrService
     ) {}
 
@@ -134,6 +137,12 @@ export class HomeComponent implements OnInit, OnDestroy {
                 this.visitiVsPageVisit = visitVsPages(
                     this.dataServiceVisitVsPages
                 );
+            });
+
+        this._notificationsService.notifications$
+            .pipe(takeUntil(this._unsubscribeAll))
+            .subscribe((notifications) => {
+                this.unreadNotify = notifications.length;
             });
     }
 

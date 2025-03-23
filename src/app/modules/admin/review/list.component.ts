@@ -189,7 +189,6 @@ export class ReviewListComponent implements OnInit, OnDestroy {
      * Valid render permission
      */
     validPermission(code: string) {
-        return true;
         return validAction(code);
     }
 }

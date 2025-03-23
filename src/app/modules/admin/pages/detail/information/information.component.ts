@@ -1,3 +1,4 @@
+import { NgTemplateOutlet } from '@angular/common';
 import {
     ChangeDetectionStrategy,
     ChangeDetectorRef,
@@ -23,13 +24,12 @@ import { MicrosityService } from 'app/modules/admin/microsities/micrositie.servi
 import { MicrositieI } from 'app/modules/admin/microsities/micrositie.types';
 import { SitieService } from 'app/modules/admin/sitie/sitie.service';
 import { SitieI } from 'app/modules/admin/sitie/sitie.types';
+import { PermissionComponent } from 'app/shared/components/permission/permission.component';
 import { PermissionCode, validAction } from 'app/shared/utils/permission.utils';
 import { ToastrService } from 'ngx-toastr';
 import { Subject, takeUntil } from 'rxjs';
 import { PageService } from '../../pages.service';
 import { PageDataMongoI, PageI } from '../../pages.types';
-import { NgTemplateOutlet } from '@angular/common';
-import { PermissionComponent } from 'app/shared/components/permission/permission.component';
 
 @Component({
     selector: 'pages-information',
@@ -47,7 +47,7 @@ import { PermissionComponent } from 'app/shared/components/permission/permission
         MatSlideToggleModule,
         MatProgressSpinnerModule,
         NgTemplateOutlet,
-        PermissionComponent
+        PermissionComponent,
     ],
 })
 export class PagesInformationComponent implements OnInit {
@@ -249,8 +249,10 @@ export class PagesInformationComponent implements OnInit {
      * Get domain
      */
     getDomain() {
-        if (this.micrositie)
-            return `${this.sitie.domain}/${this.micrositie.path}/`;
+        if (this.micrositie) {
+            const micrositiePath = this.micrositie.path.split('/')[0];
+            return `${this.sitie.domain}/${micrositiePath}/`;
+        }
         return `${this.sitie.domain}/`;
     }
 

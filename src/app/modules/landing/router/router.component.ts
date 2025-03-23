@@ -154,9 +154,9 @@ export class LandingRouterComponent implements OnInit, OnDestroy {
                 this.lang = urlSplit[1];
                 break;
             case 4:
-                this.page = urlSplit[2];
+                this.page = urlSplit[3];
                 this.lang = urlSplit[1];
-                this.micrositie = urlSplit[3];
+                this.micrositie = urlSplit[2];
         }
 
         this._pageService

@@ -40,6 +40,9 @@ export enum PermissionCode {
     editTemplate = 'g7pqWe97',
     editContentTemplate = 'pBCHggtI',
     editDesignTemplate = 'P8zRlKsM',
+    listReviewPages = 'g6U5KJ1n',
+    viewReviewPages = 'pHsaJvoS',
+    toogleStatusReviewPage = 'SlzdPrIk',
 }
 
 /**

@@ -24,6 +24,8 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { PermissionComponent } from 'app/shared/components/permission/permission.component';
+import { PermissionCode, validAction } from 'app/shared/utils/permission.utils';
 import { Subject } from 'rxjs';
 
 @Component({
@@ -40,10 +42,12 @@ import { Subject } from 'rxjs';
         MatSelectModule,
         MatInputModule,
         ReactiveFormsModule,
+        PermissionComponent,
     ],
     changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ModalReviewComponent implements OnInit, OnDestroy {
+    permission = PermissionCode;
     form = new FormGroup({});
     actions: { value: string; name: string }[] = [
         { value: 'approved', name: 'Aprobar' },
@@ -95,5 +99,12 @@ export class ModalReviewComponent implements OnInit, OnDestroy {
      */
     save() {
         this._matDialogRef.close(this.form.value);
+    }
+
+    /**
+     * Valid render permission
+     */
+    validPermission(code: string) {
+        return validAction(code);
     }
 }

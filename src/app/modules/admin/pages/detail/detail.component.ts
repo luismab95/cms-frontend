@@ -98,9 +98,9 @@ export class PagesDetailComponent implements OnInit, OnDestroy {
                     this.panels.push({
                         id: 'languages',
                         icon: 'heroicons_outline:language',
-                        title: 'Idiomas',
+                        title: 'Seo',
                         description:
-                            'Administra la información de tu página en los diferentes idiomas del sitio.',
+                            'Administra la información de los meta tags de página en los diferentes idiomas del sitio.',
                     });
                     this.panels.push({
                         id: 'drawer',

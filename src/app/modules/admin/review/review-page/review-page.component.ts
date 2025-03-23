@@ -200,7 +200,6 @@ export class PagesReviewPageComponent implements OnInit {
      * Valid render permission
      */
     validPermission(code: string) {
-        return true;
         return validAction(code);
     }
 
