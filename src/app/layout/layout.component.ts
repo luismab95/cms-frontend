@@ -1,14 +1,15 @@
-import { DOCUMENT } from '@angular/common';
+
 import {
-    ChangeDetectorRef,
-    Component,
-    Inject,
-    OnDestroy,
-    OnInit,
-    Renderer2,
-    ViewEncapsulation,
-    inject,
-    signal,
+  ChangeDetectorRef,
+  Component,
+  Inject,
+  OnDestroy,
+  OnInit,
+  Renderer2,
+  ViewEncapsulation,
+  inject,
+  signal,
+  DOCUMENT
 } from '@angular/core';
 import { Meta, Title } from '@angular/platform-browser';
 import { ActivatedRoute, NavigationEnd, Router } from '@angular/router';
