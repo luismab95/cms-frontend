@@ -121,6 +121,7 @@ export class ParametersLogosComponent implements OnInit {
      * @param value
      */
     uploadImage(code: string, value: string): void {
+        
         this.logoForm.get(code).setValue(value);
 
         // Mark for check

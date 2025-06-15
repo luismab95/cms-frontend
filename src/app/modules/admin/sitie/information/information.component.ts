@@ -108,7 +108,7 @@ export class SitieInformationComponent implements OnInit {
                 [
                     Validators.required,
                     Validators.pattern(
-                        /^[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}(\/.*)?$/
+                        /^https?:\/\/[a-zA-Z0-9.-]+(:\d+)?(\/.*)?$/
                     ),
                 ],
             ],
