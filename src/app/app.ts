@@ -4,7 +4,7 @@ import { InactivityTimerService } from './shared/services/inactivity.service';
 import { LoaderComponent } from './shared/components/loader/loader';
 
 @Component({
-  imports: [RouterOutlet, LoaderComponent],
+  imports: [RouterOutlet],
   selector: 'app-root',
   styleUrl: './app.css',
   templateUrl: './app.html',

@@ -1,4 +1,4 @@
-import { ApexOptions } from 'ng-apexcharts';
+import { ApexAxisChartSeries, ApexNonAxisChartSeries, ApexOptions } from 'ng-apexcharts';
 
 export interface CountElementsI {
   pages: number;
@@ -19,11 +19,20 @@ export interface WeekVisitDataI {
   data: number[];
 }
 
+export interface ApexOptionsI extends Omit<ApexOptions, 'series'> {
+  series?: {
+    thisWeek: ApexAxisChartSeries | ApexNonAxisChartSeries;
+    lastWeek: ApexAxisChartSeries | ApexNonAxisChartSeries;
+    thisYear: ApexAxisChartSeries | ApexNonAxisChartSeries;
+    lastYear: ApexAxisChartSeries | ApexNonAxisChartSeries;
+  };
+}
+
 export const weekVisit = (data: WeekVisitI) =>
   ({
     chart: {
       fontFamily: 'inherit',
-      foreColor: 'inherit',
+      foreColor: '#64748B',
       height: '100%',
       type: 'line',
       toolbar: {
@@ -33,7 +42,10 @@ export const weekVisit = (data: WeekVisitI) =>
         enabled: false,
       },
     },
-    colors: ['#64748B', '#94A3B8'],
+
+    // Tailwind: indigo-500 / indigo-300
+    colors: ['#6366F1', '#A5B4FC'],
+
     dataLabels: {
       enabled: true,
       enabledOnSeries: [0],
@@ -41,18 +53,24 @@ export const weekVisit = (data: WeekVisitI) =>
         borderWidth: 0,
       },
     },
+
+    // Tailwind: slate-200
     grid: {
-      borderColor: 'var(--fuse-border)',
+      borderColor: '#E2E8F0',
     },
-    labels: ['Lunes', 'Martes', 'Miercoles', 'Jueves', 'Viernes', 'Sabado', 'Domingo'],
+
+    labels: ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'],
+
     legend: {
       show: false,
     },
+
     plotOptions: {
       bar: {
         columnWidth: '50%',
       },
     },
+
     series: {
       thisWeek: [
         {
@@ -69,39 +87,48 @@ export const weekVisit = (data: WeekVisitI) =>
         },
       ],
     },
+
     stroke: {
       width: [3, 0],
     },
+
     tooltip: {
       followCursor: true,
       theme: 'dark',
     },
+
     xaxis: {
       axisBorder: {
         show: false,
       },
+
+      // Tailwind: slate-200
       axisTicks: {
-        color: 'var(--fuse-border)',
+        color: '#E2E8F0',
       },
+
       labels: {
         style: {
-          colors: 'var(--fuse-text-secondary)',
+          // Tailwind: slate-500
+          colors: '#64748B',
         },
       },
+
       tooltip: {
         enabled: false,
       },
     },
+
     yaxis: {
       labels: {
         offsetX: -16,
         style: {
-          colors: 'var(--fuse-text-secondary)',
+          // Tailwind: slate-500
+          colors: '#64748B',
         },
       },
     },
-  }) as unknown as ApexOptions;
-
+  }) as unknown as ApexOptionsI;
 export interface YearVisitI {
   lastYear: YearVisitDataI[];
   thisYear: YearVisitDataI[];
@@ -122,7 +149,7 @@ export const yearVisit = (data: YearVisitI) =>
         },
       },
       fontFamily: 'inherit',
-      foreColor: 'inherit',
+      foreColor: '#64748B',
       width: '100%',
       height: '100%',
       type: 'area',
@@ -133,16 +160,26 @@ export const yearVisit = (data: YearVisitI) =>
         enabled: false,
       },
     },
-    colors: ['#818CF8'],
+    // indigo-500
+    colors: ['#6366F1'],
     dataLabels: {
       enabled: false,
     },
+    // Relleno Indigo suave
     fill: {
-      colors: ['#312E81'],
+      type: 'gradient',
+      gradient: {
+        shadeIntensity: 1,
+        opacityFrom: 0.25,
+        opacityTo: 0.02,
+        stops: [0, 100],
+      },
     },
+    // slate-200 / slate-100
     grid: {
       show: true,
-      borderColor: '#334155',
+      borderColor: '#E2E8F0',
+      strokeDashArray: 0,
       padding: {
         top: 10,
         bottom: -40,
@@ -155,10 +192,16 @@ export const yearVisit = (data: YearVisitI) =>
           show: true,
         },
       },
+      yaxis: {
+        lines: {
+          show: true,
+        },
+      },
     },
     series: data,
     stroke: {
       width: 2,
+      curve: 'smooth',
     },
     tooltip: {
       followCursor: true,
@@ -177,20 +220,21 @@ export const yearVisit = (data: YearVisitI) =>
       axisTicks: {
         show: false,
       },
+      // Crosshair sutil
       crosshairs: {
         stroke: {
-          color: '#475569',
-          dashArray: 0,
-          width: 2,
+          color: '#C7D2FE', // indigo-200
+          dashArray: 4,
+          width: 1,
         },
       },
       labels: {
         offsetY: -20,
         style: {
-          colors: '#CBD5E1',
+          colors: '#94A3B8', // slate-400
         },
       },
-      tickAmount: 20,
+      tickAmount: 10,
       tooltip: {
         enabled: false,
       },
@@ -208,7 +252,7 @@ export const yearVisit = (data: YearVisitI) =>
       tickAmount: 5,
       show: false,
     },
-  }) as unknown as ApexOptions;
+  }) as unknown as ApexOptionsI;
 
 export const visitVsPages = (data: YearVisitI) =>
   ({
@@ -286,7 +330,7 @@ export const visitVsPages = (data: YearVisitI) =>
       show: false,
       tickAmount: 5,
     },
-  }) as unknown as ApexOptions;
+  }) as unknown as ApexOptionsI;
 
 export interface Top10PagesI {
   name: string;

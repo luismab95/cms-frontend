@@ -1,51 +1,531 @@
-<div class="flex min-w-0 flex-auto flex-col">
-  <!-- Header -->
-  <div class="bg-card">
-    <div class="mx-auto flex w-full max-w-7xl flex-col px-6 sm:px-8">
-      <div class="my-8 flex min-w-0 flex-auto flex-col sm:my-12 sm:flex-row sm:items-center">
-        <!-- Avatar and name -->
-        <div class="flex min-w-0 flex-auto items-center">
+<div class="w-full min-h-screen bg-slate-50 px-6 pb-6 py-2 mx-auto max-w-7xl">
+  <div class="flex flex-col w-full space-y-8">
+    <!-- 1. Encabezado de perfil y métricas ejecutivas en vivo -->
+    <section class="relative overflow-hidden rounded-xl bg-white p-6 shadow-sm">
+      <div
+        class="absolute -right-20 -top-20 h-64 w-64 rounded-full bg-indigo-600/5 blur-3xl pointer-events-none"
+      ></div>
+      <div class="relative z-10 flex flex-col gap-6 xl:flex-row xl:items-center xl:justify-between">
+        <!-- Identidad de Usuario y Estado Global -->
+        <div class="flex items-center gap-4">
           <div
-            class="ring-bg-card flex h-32 w-32 items-center justify-center overflow-hidden rounded-full ring-4"
+            class="relative flex h-16 w-16 shrink-0 items-center justify-center rounded-xl bg-indigo-100 text-2xl leading-9 font-bold text-slate-900 shadow-sm"
           >
-            <div
-              class="flex h-full w-full items-center justify-center overflow-hidden rounded bg-gray-200 text-8xl font-bold uppercase leading-none text-gray-600 dark:bg-gray-700 dark:text-gray-200"
+            {{ user()?.firstname.charAt(0) }}{{ user()?.lastname.charAt(0) }}
+            <span
+              class="absolute -bottom-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-white"
             >
-              {{ user.firstname.charAt(0) }}{{ user.lastname.charAt(0) }}
+              <span class="h-2.5 w-2.5 rounded-full bg-emerald-600 animate-pulse"></span>
+            </span>
+          </div>
+          <div class="flex flex-col min-w-0">
+            <div class="flex items-center gap-2 flex-wrap">
+              <h2 class="text-3xl leading-9 text-slate-900 font-bold">
+                Hola, {{ user()?.firstname }}
+              </h2>
+            </div>
+            <div class="flex items-center gap-2 mt-1">
+              <p class="text-xs leading-4 text-slate-500 font-medium">
+                Tienes
+                <span class="font-bold text-indigo-900"> {{ unreadNotify() }} </span> notificaciones
+                nuevas.
+              </p>
             </div>
           </div>
-          <div class="ml-4 flex min-w-0 flex-col">
-            <div
-              class="truncate text-2xl font-semibold leading-7 tracking-tight md:text-5xl md:leading-snug"
-            >
-              Bienvenido, {{ user.firstname }}
+        </div>
+
+        <!-- Botonera Ejecutiva -->
+        <div class="flex items-center gap-2 flex-wrap">
+          <button
+            class="cursor-pointer w-full flex justify-center items-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-semibold text-white bg-indigo-500 hover:bg-indigo-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 active:transform active:scale-[0.99] transition duration-150 ease-in-out disabled:cursor-not-allowed disabled:bg-indigo-300"
+            type="button"
+            [routerLink]="'admin/security/settings'"
+          >
+            <span class="flex items-center justify-center gap-2">
+              <i class="fa-solid fa-gears"></i>
+              <span>Ajustes</span>
+            </span>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    @if (validPermission(permission.homePanel)) {
+      <!-- 2. Fila Modular de Cards Informativos (KPIs Principales) -->
+      <section class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+        <!-- Card 1: Páginas del CMS -->
+        <div
+          class="flex flex-col justify-between rounded-xl bg-white p-6 shadow-sm hover:shadow-md transition-shadow"
+        >
+          <div class="flex items-start justify-between">
+            <div class="flex flex-col">
+              <span
+                class="text-[11px] leading-4 font-semibold uppercase tracking-wider text-slate-500"
+                >Páginas</span
+              >
+              <span class="mt-2 text-4xl leading-12 text-indigo-600 font-extrabold">{{
+                countElements()?.pages
+              }}</span>
             </div>
-            <div class="flex items-center">
-              <i class="fa-solid fa-bell"></i>
-              <div class="text-secondary ml-1.5 truncate leading-6">
-                Tienes {{ unreadNotify }} notificaciones nuevas.
+            <div
+              class="flex h-11 w-11 items-center justify-center rounded-lg bg-indigo-100 text-indigo-600"
+            >
+              <i class="fa-solid fa-book-open"></i>
+            </div>
+          </div>
+          <div class="mt-4 space-y-2.5">
+            <button
+              [routerLink]="'admin/content/pages'"
+              class="group flex w-full cursor-pointer items-center justify-between rounded-lg border border-indigo-200 bg-white px-4 py-2.5 text-[13px] leading-4.5 font-semibold text-indigo-600 transition-all hover:border-indigo-300 hover:bg-indigo-50"
+            >
+              <span>Administrar páginas</span>
+              <i
+                class="fa-solid fa-arrow-right text-xs transition-transform duration-200 group-hover:translate-x-1"
+              ></i>
+            </button>
+          </div>
+        </div>
+        <!-- Card 2: Micrositios -->
+        <div
+          class="flex flex-col justify-between rounded-xl bg-white p-6 shadow-sm hover:shadow-md transition-shadow"
+        >
+          <div class="flex items-start justify-between">
+            <div class="flex flex-col">
+              <span
+                class="text-[11px] leading-4 font-semibold uppercase tracking-wider text-slate-500"
+                >Micrositios</span
+              >
+              <span class="mt-2 text-4xl leading-12 text-red-600 font-extrabold">{{
+                countElements()?.microsities
+              }}</span>
+            </div>
+            <div
+              class="flex h-11 w-11 items-center justify-center rounded-lg bg-red-100 text-red-600"
+            >
+              <i class="fa-solid fa-sitemap"></i>
+            </div>
+          </div>
+          <div class="mt-4 space-y-2.5">
+            <button
+              [routerLink]="'admin/content/microsities'"
+              class="group flex w-full cursor-pointer items-center justify-between rounded-lg border border-red-200 bg-white px-4 py-2.5 text-[13px] leading-4.5 font-semibold text-red-600 transition-all hover:border-red-300 hover:bg-red-50"
+            >
+              <span>Gestionar micrositios</span>
+              <i
+                class="fa-solid fa-arrow-right text-xs transition-transform duration-200 group-hover:translate-x-1"
+              ></i>
+            </button>
+          </div>
+        </div>
+        <!-- Card 3: Plantillas del sistema -->
+        <div
+          class="flex flex-col justify-between rounded-xl bg-white p-6 shadow-sm hover:shadow-md transition-shadow"
+        >
+          <div class="flex items-start justify-between">
+            <div class="flex flex-col">
+              <span
+                class="text-[11px] leading-4 font-semibold uppercase tracking-wider text-slate-500"
+                >Plantillas</span
+              >
+              <span class="mt-2 text-4xl leading-12 text-amber-900 font-extrabold">{{
+                countElements()?.templates
+              }}</span>
+            </div>
+            <div
+              class="flex h-11 w-11 items-center justify-center rounded-lg bg-amber-200 text-amber-500"
+            >
+              <i class="fa-solid fa-window-restore"></i>
+            </div>
+          </div>
+          <div class="mt-4 space-y-2.5">
+            <button
+              [routerLink]="'admin/content/templates'"
+              class="group flex w-full cursor-pointer items-center justify-between rounded-lg border border-amber-200 bg-white px-4 py-2.5 text-[13px] leading-4.5 font-semibold text-amber-600 transition-all hover:border-amber-300 hover:bg-amber-50"
+            >
+              <span>Administrar plantillas</span>
+              <i
+                class="fa-solid fa-arrow-right text-xs transition-transform duration-200 group-hover:translate-x-1"
+              ></i>
+            </button>
+          </div>
+        </div>
+        <!-- Card 4: Gestión de Archivos -->
+        <div
+          class="flex flex-col justify-between rounded-xl bg-white p-6 shadow-sm hover:shadow-md transition-shadow"
+        >
+          <div class="flex items-start justify-between">
+            <div class="flex flex-col">
+              <span
+                class="text-[11px] leading-4 font-semibold uppercase tracking-wider text-slate-500"
+                >Archivos</span
+              >
+              <span class="mt-2 text-4xl leading-12 text-emerald-600 font-extrabold">{{
+                countElements()?.files
+              }}</span>
+            </div>
+            <div
+              class="flex h-11 w-11 items-center justify-center rounded-lg bg-emerald-600/10 text-emerald-600"
+            >
+              <i class="fa-solid fa-box-archive"></i>
+            </div>
+          </div>
+          <div class="mt-4 space-y-2.5">
+            <button
+              [routerLink]="'admin/content/file-manager'"
+              class="group flex w-full cursor-pointer items-center justify-between rounded-lg border border-emerald-200 bg-white px-4 py-2.5 text-[13px] leading-4.5 font-semibold text-emerald-600 transition-all hover:border-emerald-300 hover:bg-emerald-50"
+            >
+              <span>Explorar archivos</span>
+              <i
+                class="fa-solid fa-arrow-right text-xs transition-transform duration-200 group-hover:translate-x-1"
+              ></i>
+            </button>
+          </div>
+        </div>
+      </section>
+    } @else {
+      <permission-component />
+    }
+
+    @if (validPermission(permission.visitPanel)) {
+      <!-- 3. Sección de Gráficos de Visitas & Rendimiento -->
+      <section class="grid grid-cols-1 gap-6 lg:grid-cols-12">
+        <!-- Gráfico Principal: Visitas semanales -->
+        <div class="flex flex-col rounded-xl bg-white p-6 shadow-sm lg:col-span-8 justify-between">
+          <div>
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4">
+              <div>
+                <h3 class="text-xl leading-7 text-slate-900 font-bold">Visitas semanales</h3>
+                <p class="text-xs leading-4 text-slate-500">
+                  Número de visitas por días de la semana.
+                </p>
+              </div>
+              <!-- Segmented Controls de temporalidad -->
+              <div class="inline-flex rounded-full bg-slate-50 p-1">
+                <button
+                  [class.bg-white]="weekVisitButton() === 'lastWeek'"
+                  [class.font-semibold]="weekVisitButton() === 'lastWeek'"
+                  [class.shadow-sm]="weekVisitButton() === 'lastWeek'"
+                  [class.text-slate-900!]="weekVisitButton() === 'lastWeek'"
+                  (click)="weekVisitButton.set('lastWeek')"
+                  class="cursor-pointer rounded-full px-3 py-1 text-[11px] leading-4 text-slate-500 hover:text-slate-900"
+                >
+                  La semana pasada
+                </button>
+                <button
+                  [class.bg-white]="weekVisitButton() === 'thisWeek'"
+                  [class.font-semibold]="weekVisitButton() === 'thisWeek'"
+                  [class.shadow-sm]="weekVisitButton() === 'thisWeek'"
+                  [class.text-slate-900!]="weekVisitButton() === 'thisWeek'"
+                  (click)="weekVisitButton.set('thisWeek')"
+                  class="cursor-pointer rounded-full px-3 py-1 text-[11px] leading-4 text-slate-500 hover:text-slate-900"
+                >
+                  Esta semana
+                </button>
+              </div>
+            </div>
+          </div>
+          <!-- Gráfico-->
+          <div class="relative w-full h-full pt-4">
+            <apx-chart
+              [chart]="weekVisit().chart"
+              [colors]="weekVisit().colors"
+              [dataLabels]="weekVisit().dataLabels"
+              [grid]="weekVisit().grid"
+              [labels]="weekVisit().labels"
+              [legend]="weekVisit().legend"
+              [plotOptions]="weekVisit().plotOptions"
+              [series]="weekVisit().series![weekVisitButton()]"
+              [stroke]="weekVisit().stroke"
+              [tooltip]="weekVisit().tooltip"
+              [xaxis]="weekVisit().xaxis"
+              [yaxis]="weekVisit().yaxis"
+            >
+            </apx-chart>
+          </div>
+        </div>
+        <!--   Visitas por -->
+        <div class="flex flex-col justify-between rounded-xl bg-white p-6 shadow-sm lg:col-span-4">
+          <div>
+            <div class="flex items-center justify-between pb-3">
+              <h3 class="text-xl leading-7 text-slate-900 font-bold">Visitas por</h3>
+              <i class="fa-solid fa-laptop text-slate-500"></i>
+            </div>
+            <p class="text-xs leading-4 text-slate-500 pb-4">Distribución de tráfico</p>
+            <div class="space-y-4">
+              <!-- Sitie -->
+              <div class="space-y-1.5">
+                <div class="flex items-center justify-between text-[13px] leading-4.5">
+                  <div class="flex items-center gap-2">
+                    <i class="fa-solid fa-globe text-indigo-600"></i>
+                    <span class="text-slate-900 font-semibold">Sitios</span>
+                  </div>
+                  <div class="flex items-center gap-2">
+                    @let percentageSitie =
+                      (dataServiceWeek()![weekVisitButton()]!.sitie * 100) / totalVisitWeek();
+                    <span class="font-bold text-slate-900"> {{ percentageSitie }}%</span>
+                  </div>
+                </div>
+                <div class="h-2 w-full overflow-hidden rounded-full bg-slate-200">
+                  <div
+                    class="h-full rounded-full bg-indigo-600"
+                    [style.width]="percentageSitie + '%'"
+                  ></div>
+                </div>
+              </div>
+              <!-- Microsities -->
+              <div class="space-y-1.5">
+                <div class="flex items-center justify-between text-[13px] leading-4.5">
+                  <div class="flex items-center gap-2">
+                    <i class="fa-solid fa-sitemap text-emerald-500"></i>
+                    <span class="text-slate-900 font-semibold">Micrositios</span>
+                  </div>
+                  <div class="flex items-center gap-2">
+                    @let percentageMicrositie =
+                      (dataServiceWeek()![weekVisitButton()]!.micrositie * 100) / totalVisitWeek();
+                    <span class="font-bold text-slate-900"> {{ percentageMicrositie }}%</span>
+                  </div>
+                </div>
+                <div class="h-2 w-full overflow-hidden rounded-full bg-slate-200">
+                  <div
+                    class="h-full rounded-full bg-emerald-400"
+                    [style.width]="percentageMicrositie + '%'"
+                  ></div>
+                </div>
+              </div>
+              <!-- Pages -->
+              <div class="space-y-1.5">
+                <div class="flex items-center justify-between text-[13px] leading-4.5">
+                  <div class="flex items-center gap-2">
+                    <i class="fa-solid fa-book-open text-slate-500"></i>
+                    <span class="text-slate-900 font-semibold">Páginas</span>
+                  </div>
+                  <div class="flex items-center gap-2">
+                    @let percentagePages =
+                      (dataServiceWeek()![weekVisitButton()]!.page * 100) / totalVisitWeek();
+                    <span class="font-bold text-slate-900"> {{ percentagePages }}%</span>
+                  </div>
+                </div>
+                <div class="h-2 w-full overflow-hidden rounded-full bg-slate-200">
+                  <div
+                    class="h-full rounded-full bg-slate-500"
+                    [style.width]="percentagePages + '%'"
+                  ></div>
+                </div>
               </div>
             </div>
           </div>
         </div>
-        <!-- Actions -->
-        <div class="mt-6 flex items-center space-x-3 sm:ml-2 sm:mt-0">
+      </section>
+
+      <!-- 4. Sección de Gráficos de Visitas por año -->
+      <section class="grid grid-cols-1 gap-6 lg:grid-cols-12">
+        <!-- Gráfico Principal: Visitas anuales -->
+        <div class="flex flex-col rounded-xl bg-white p-6 shadow-sm lg:col-span-12 justify-between">
+          <div>
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4">
+              <div>
+                <h3 class="text-xl leading-7 text-slate-900 font-bold">Visitas anuales</h3>
+                <p class="text-xs leading-4 text-slate-500">Número de visitantes en el año.</p>
+              </div>
+              <!-- Segmented Controls de temporalidad -->
+              <div class="inline-flex rounded-full bg-slate-50 p-1">
+                <button
+                  [class.bg-white]="yearVisitButton() === 'lastYear'"
+                  [class.font-semibold]="yearVisitButton() === 'lastYear'"
+                  [class.shadow-sm]="yearVisitButton() === 'lastYear'"
+                  [class.text-slate-900!]="yearVisitButton() === 'lastYear'"
+                  (click)="yearVisitButton.set('lastYear')"
+                  class="cursor-pointer rounded-full px-3 py-1 text-[11px] leading-4 text-slate-500 hover:text-slate-900"
+                >
+                  El año anterior
+                </button>
+                <button
+                  [class.bg-white]="yearVisitButton() === 'thisYear'"
+                  [class.font-semibold]="yearVisitButton() === 'thisYear'"
+                  [class.shadow-sm]="yearVisitButton() === 'thisYear'"
+                  [class.text-slate-900!]="yearVisitButton() === 'thisYear'"
+                  (click)="yearVisitButton.set('thisYear')"
+                  class="cursor-pointer rounded-full px-3 py-1 text-[11px] leading-4 text-slate-500 hover:text-slate-900"
+                >
+                  Este año
+                </button>
+              </div>
+            </div>
+          </div>
+          <!-- Gráfico-->
+          <div class="relative w-full h-full pt-4">
+            <apx-chart
+              [chart]="yearVisit().chart"
+              [colors]="yearVisit().colors"
+              [dataLabels]="yearVisit().dataLabels"
+              [fill]="yearVisit().fill"
+              [grid]="yearVisit().grid"
+              [series]="yearVisit().series![yearVisitButton()]"
+              [stroke]="yearVisit().stroke"
+              [tooltip]="yearVisit().tooltip"
+              [xaxis]="yearVisit().xaxis"
+              [yaxis]="yearVisit().yaxis"
+            ></apx-chart>
+          </div>
+        </div>
+      </section>
+
+      <!-- 5. Páginas más visitadas: Tarjetas de Podio / Top 3 -->
+      <section class="space-y-4">
+        <div class="flex items-center justify-between">
+          <div>
+            <h3 class="text-2xl leading-9 font-bold text-slate-900">Páginas más visitadas</h3>
+            <p class="text-xs leading-4 text-slate-500">Top de páginas con más visitas</p>
+          </div>
           <button
-            class="cursor-pointer w-full flex justify-center items-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-semibold text-white bg-indigo-500 hover:bg-indigo-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 active:transform active:scale-[0.99] transition duration-150 ease-in-out disabled:cursor-not-allowed disabled:bg-indigo-300"
-            [routerLink]="['/admin/security/settings']"
+            [routerLink]="'admin/content/pages'"
+            class="cursor-pointer inline-flex items-center gap-1 text-[13px] leading-4.5 font-semibold text-indigo-600 hover:underline"
           >
-            <i class="fa-solid fa-gears"></i>
-            <span class="ml-2">Ajustes</span>
+            <span>Gestionar todas las páginas</span>
+            <i class="fa-solid fa-arrow-right"></i>
           </button>
         </div>
-      </div>
-    </div>
-  </div>
+        <!-- Grid de tarjetas podio Top 3 -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+          @for (item of top3Pages(); track item.path; let i = $index) {
+            <div
+              class="group flex flex-col justify-between overflow-hidden rounded-xl bg-white shadow-sm hover:shadow-md transition-shadow"
+            >
+              <div>
+                <div class="relative h-52 w-full overflow-hidden bg-slate-100">
+                  <iframe
+                    class="h-full w-full object-cover group-hover:scale-105 transition-transform duration-300"
+                    [src]="getPath(item.path)"
+                    frameborder="0"
+                  ></iframe>
+                  <div
+                    class="absolute left-3 top-3 inline-flex items-center gap-1 rounded-md bg-slate-900/90 px-2 py-1 text-white text-[11px] leading-4 backdrop-blur-sm"
+                  >
+                    @if (i === 0) {
+                      <i class="fa-solid fa-ranking-star text-emerald-400"></i>
+                    }
+                    #{{ i + 1 }} Top Visitas
+                  </div>
+                  <span
+                    class="absolute right-3 top-3 rounded-full bg-emerald-600 px-2 py-0.5 text-[10px] font-semibold text-white"
+                  >
+                    {{ item.lang }}
+                  </span>
+                </div>
+                <div class="p-4 space-y-2">
+                  <h4
+                    class="text-base leading-6 font-bold text-slate-900 group-hover:text-indigo-600 transition-colors"
+                  >
+                    {{ item.name }}
+                  </h4>
+                  <p class="text-xs leading-4 text-slate-500 truncate">{{ item.path }}</p>
+                  <div class="flex items-center justify-between pt-2">
+                    <div>
+                      <span class="text-[11px] leading-4 text-slate-500 block"></span>
+                      <span class="text-base leading-6 font-bold text-slate-900"></span>
+                    </div>
+                    <div class="text-right">
+                      <span class="text-[11px] leading-4 text-slate-500 block">Visitas</span>
+                      <span class="text-base leading-6 font-semibold text-emerald-600">{{
+                        item.visits
+                      }}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="p-4 pt-0">
+                <button
+                  [routerLink]="'admin/content/pages'"
+                  class="cursor-pointer w-full flex items-center justify-center gap-1.5 rounded-lg bg-slate-50 py-2 text-[13px] leading-4.5 font-semibold text-slate-900 hover:bg-slate-100 transition-colors"
+                >
+                  <i class="fa-solid fa-pen-ruler text-indigo-600"></i>
+                  Editar contenido
+                </button>
+              </div>
+            </div>
+          }
+        </div>
+      </section>
 
-  <!-- Main -->
-  <div class="-mt-px flex-auto border-t pt-4 sm:pt-6">
-    <div class="mx-auto w-full max-w-7xl">
-      <!-- Tabs -->
-    </div>
+      <!-- 6 Tabla Enriquecida de Ranking y Gestión -->
+      <section class="overflow-hidden rounded-xl bg-white shadow-sm">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-6 pb-4">
+          <div>
+            <h4 class="text-xl leading-7 font-bold text-slate-900">Ranking Detallado de Páginas</h4>
+            <p class="text-xs leading-4 text-slate-500">Top 10 páginas más visitadas.</p>
+          </div>
+        </div>
+        <div class="w-full overflow-x-auto p-8">
+          <table class="w-full text-left text-xs leading-4">
+            <thead
+              class="bg-slate-50 text-slate-500 text-[11px] leading-4 uppercase tracking-wider"
+            >
+              <tr>
+                <th class="py-3 px-4 font-semibold">Pos.</th>
+                <th class="py-3 px-4 font-semibold">Página</th>
+                <th class="py-3 px-4 font-semibold">Idioma</th>
+                <th class="py-3 px-4 font-semibold">Micrositio</th>
+                <th class="py-3 px-4 font-semibold">Visitas</th>
+                <th class="py-3 px-4 font-semibold text-right">Acciones</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y-0">
+              @for (item of dataServiceTop10(); track item.lang; let i = $index) {
+                <tr class="hover:bg-slate-50/50 transition-colors">
+                  <td class="py-4 px-4 whitespace-nowrap">
+                    <div class="flex items-center gap-1.5">
+                      <span class="font-bold text-slate-900">{{ i + 1 }}</span>
+                    </div>
+                  </td>
+                  <td class="py-4 px-4">
+                    <div class="flex flex-col min-w-50">
+                      <span class="text-base leading-6 font-semibold text-slate-900">{{
+                        item.name
+                      }}</span>
+                      <span class="text-xs leading-4 text-slate-500 truncate">{{ item.path }}</span>
+                    </div>
+                  </td>
+                  <td class="py-4 px-4 whitespace-nowrap">
+                    <div class="flex flex-col">
+                      <span class="text-base leading-6 font-nbrmal text-slate-900">{{
+                        item.lang
+                      }}</span>
+                    </div>
+                  </td>
+                  <td class="py-4 px-4 whitespace-nowrap">
+                    <span
+                      class="inline-flex rounded-full bg-indigo-600/10 px-2 py-0.5 font-semibold text-indigo-600"
+                    >
+                      {{ item.micrositie !== null ? item.micrositie : 'Ninguno' }}</span
+                    >
+                  </td>
+                  <td class="py-4 px-4 whitespace-nowrap">
+                    <div class="flex flex-col">
+                      <span class="text-base leading-6 font-bold text-slate-900">{{
+                        item.visits
+                      }}</span>
+                    </div>
+                  </td>
+                  <td class="py-4 px-4 whitespace-nowrap text-right">
+                    <div class="inline-flex items-center gap-1">
+                      <button
+                        (cdkCopyToClipboardCopied)="copyEvent()"
+                        [cdkCopyToClipboard]="item.path"
+                        aria-label="Copiar URL"
+                        class="cursor-pointer p-1.5 rounded-lg text-slate-500 hover:bg-slate-100 hover:text-slate-900 transition-colors"
+                      >
+                        <i class="fa-solid fa-copy"></i>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </section>
+    } @else {
+      <permission-component />
+    }
   </div>
 </div>

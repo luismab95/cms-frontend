@@ -1,26 +1,20 @@
-import {
-  ChangeDetectorRef,
-  Component,
-  inject,
-  OnDestroy,
-  OnInit,
-  signal,
-} from '@angular/core';
+import { ChangeDetectorRef, Component, inject, OnDestroy, OnInit, signal } from '@angular/core';
+import { RouterOutlet } from '@angular/router';
 import { Notifications } from 'app/core/common/notifications/notifications';
 import { User } from 'app/core/common/user/user';
 import { ParameterI } from 'app/core/interfaces/parameter.interface';
 import { VerticalNavigation } from 'app/core/common/navigation/navigation';
 import { Search } from 'app/core/common/search/search';
-import { Subject, takeUntil } from 'rxjs';
 import { ParameterService } from 'app/core/services/parameter.service';
-import { RouterOutlet } from '@angular/router';
-import { NgClass } from '@angular/common';
 import { NavigationService } from 'app/core/services/navigation.service';
+import { LoaderComponent } from 'app/shared/components/loader/loader';
+import { LoadingBarComponent } from 'app/shared/components/loading-bar/loading-bar';
+import { Subject, takeUntil } from 'rxjs';
 
 @Component({
   selector: 'panel-layout',
   templateUrl: './panel.html',
-  imports: [Notifications, User, VerticalNavigation, Search, RouterOutlet, NgClass],
+  imports: [Notifications, User, VerticalNavigation, Search, RouterOutlet, LoaderComponent,LoadingBarComponent],
 })
 export class PanelLayout implements OnInit, OnDestroy {
   parameters = signal<ParameterI[]>([]);

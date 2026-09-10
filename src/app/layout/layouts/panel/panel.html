@@ -1,11 +1,14 @@
-<!-- Loading bar -->
-<!-- <fuse-loading-bar></fuse-loading-bar> -->
+<!-- screen loader  -->
+<loader-component />
 
 <!-- Navigation -->
 <navigation-component />
 
 <!-- Wrapper -->
 <div [class.pl-65]="isOpen()">
+  <!-- Loading bar -->
+  <loading-bar-component />
+
   <header
     [class.left-65!]="isOpen()"
     class="fixed top-0 right-0 h-17 left-0 bg-white/95 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)] z-40 flex items-center justify-between px-6"
@@ -31,8 +34,8 @@
     </div>
   </header>
 
-  <main class="w-full pt-17 min-h-screen bg-[#f8f9ff] px-6 py-6 mx-auto">
-    <div class="flex flex-col w-full space-y-8">
+  <main class="w-full pt-17 min-h-screen bg-[#f8f9ff] mx-auto px-6 py-6 overflow-x-hidden">
+    <div class="flex flex-col w-full space-y-3">
       @if (true) {
         <router-outlet />
       }

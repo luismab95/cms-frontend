@@ -59,4 +59,20 @@ export class LoaderComponent implements OnInit {
   getLogo() {
     return `${this.getParameter('APP_STATICS_URL')}/${this.getParameter('LOGO_PRIMARY')}`;
   }
+
+   /**
+   * Get company parameters
+   * @param code
+   * @returns
+   */
+  getCompanyInfo(code: string) {
+    return findParameter(code, this.parameters());
+  }
+
+  /**
+   * Getter for current year
+   */
+  get currentYear(): number {
+    return new Date().getFullYear();
+  }
 }

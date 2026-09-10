@@ -1,4 +1,3 @@
-import { NgTemplateOutlet } from '@angular/common';
 import { TemplatePortal } from '@angular/cdk/portal';
 import { Overlay, OverlayRef } from '@angular/cdk/overlay';
 import {
@@ -21,7 +20,7 @@ import { Subject, takeUntil } from 'rxjs';
 @Component({
   selector: 'user-component',
   templateUrl: './user.html',
-  imports: [NgTemplateOutlet, RouterLink],
+  imports: [RouterLink],
 })
 export class User implements OnInit, OnDestroy {
   @ViewChild('userOrigin') private _userOrigin!: ElementRef<HTMLElement>;
@@ -139,7 +138,6 @@ export class User implements OnInit, OnDestroy {
     // Create the overlay
     this._overlayRef = this._overlay.create({
       hasBackdrop: true,
-      backdropClass: 'fuse-backdrop-on-mobile',
       scrollStrategy: this._overlay.scrollStrategies.block(),
       positionStrategy: this._overlay
         .position()

@@ -355,3 +355,48 @@ ngx-otp-input {
     width: auto;
   }
 }
+
+
+/* scroll */
+/* Global modern scrollbar */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e1 transparent;
+}
+
+*::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+*::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 999px;
+  transition: background 0.2s ease;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background: #818cf8;
+}
+
+*::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+/* loader */
+@keyframes wave-progress {
+  0% {
+    transform: translateX(-100%);
+  }
+
+  100% {
+    transform: translateX(100%);
+  }
+}
+.wave-line {
+  animation: wave-progress 2s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}

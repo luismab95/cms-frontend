@@ -17,5 +17,204 @@
 
 <!-- Notifications panel -->
 <ng-template #notificationsPanel>
- 
+  <div
+    class="bg-white rounded-2xl shadow-2xl border border-slate-200/80 overflow-hidden transition-all w-full max-h-150 overflow-y-auto scrollbar-thin"
+  >
+    <div class="sticky top-0 z-30 p-4 border-b border-slate-100 bg-white/95 backdrop-blur-md">
+      <!-- Título -->
+      <div class="flex items-center justify-between mb-3">
+        <div class="flex items-center gap-2">
+          <h3 class="font-bold text-slate-900 text-sm">Notificaciones</h3>
+          <span class="bg-indigo-100 text-indigo-700 text-xs font-bold px-2 py-0.5 rounded-full">
+            3 Nuevas
+          </span>
+        </div>
+        <div class="flex items-center gap-1">
+          <button
+            disabled
+            class="text-xs font-medium text-slate-500 hover:text-indigo-600 p-1.5 rounded hover:bg-slate-100 transition"
+            type="button"
+          >
+            <i class="fa-regular fa-bell fa-xl"></i>
+          </button>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-1.5 flex-wrap">
+        <!-- Todas -->
+        <button
+          class="cursor-pointer px-2.5 py-1 text-xs font-semibold rounded-lg bg-indigo-600 text-white shadow-sm"
+          type="button"
+        >
+          Todas (3)
+        </button>
+        <!-- Pendientes -->
+        <button
+          class="cursor-pointer px-2.5 py-1 text-xs font-semibold rounded-lg bg-slate-200/80 text-slate-700 hover:bg-slate-300/80 transition"
+          type="button"
+        >
+          Pendientes (1)
+        </button>
+        <!-- Rechazadas -->
+        <button
+          class="cursor-pointer px-2.5 py-1 text-xs font-semibold rounded-lg bg-slate-200/80 text-slate-700 hover:bg-slate-300/80 transition"
+          type="button"
+        >
+          Rechazadas (1)
+        </button>
+        <!-- Aprobadas -->
+        <button
+          class="cursor-pointer px-2.5 py-1 text-xs font-semibold rounded-lg bg-slate-200/80 text-slate-700 hover:bg-slate-300/80 transition"
+          type="button"
+        >
+          Aprobadas (2)
+        </button>
+      </div>
+    </div>
+    <div class="divide-y divide-slate-100">
+      <div class="p-4 hover:bg-slate-50/40 transition bg-slate-50/15 flex gap-3 group">
+        <!-- Icono -->
+        <div class="shrink-0 pt-0.5">
+          <span
+            class="w-8 h-8 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center border border-rose-200 shadow-sm"
+          >
+            <i class="fa-solid fa-xmark"></i>
+          </span>
+        </div>
+        <!-- Contenido -->
+        <div class="flex-1 min-w-0">
+          <!-- Título + tiempo -->
+          <div class="flex items-center justify-between gap-2">
+            <span class="text-xs font-bold text-rose-700 uppercase tracking-wide">
+              Cambios Rechazados
+            </span>
+            <span class="text-[11px] text-slate-400 font-medium whitespace-nowrap">
+              Hace 12 min
+            </span>
+          </div>
+          <!-- Página -->
+          <p class="text-sm font-bold text-slate-900 mt-0.5 truncate">
+            Página principal:
+            <span class="text-slate-800"> Default page </span>
+          </p>
+          <!-- Descripción -->
+          <p class="text-xs text-slate-600 mt-1">
+            Rechazado por
+            <strong class="text-slate-800 font-semibold"> Laura Valdés </strong>
+            (Editora Jefe).
+          </p>
+          <!-- Motivo -->
+          <div class="mt-1.5 bg-white p-2 rounded-lg border border-rose-100 text-xs text-slate-600">
+            <span class="font-semibold text-rose-600"> Motivo: </span>
+            Falta metadescripción SEO y atributos ALT en 3 imágenes del banner
+          </div>
+          <!-- Acción -->
+          <div class="mt-2.5 flex items-center justify-end gap-3">
+            <button
+              class="cursor-pointer text-xs font-bold text-rose-600 hover:text-rose-800 inline-flex items-center gap-1 transition"
+              type="button"
+            >
+              <span> Editar cambios </span>
+              <i class="fa-regular fa-pen-to-square"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="p-4 hover:bg-slate-50 bg-slate-50/15 transition flex gap-3 group">
+        <!-- Icono -->
+        <div class="shrink-0 pt-0.5">
+          <span
+            class="w-8 h-8 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center border border-emerald-200 shadow-sm"
+          >
+            <i class="fa-solid fa-check"></i>
+          </span>
+        </div>
+        <!-- Contenido -->
+        <div class="flex-1 min-w-0">
+          <!-- Título + tiempo -->
+          <div class="flex items-center justify-between gap-2">
+            <span class="text-xs font-bold text-emerald-700 uppercase tracking-wide">
+              Publicación Aprobada
+            </span>
+            <span class="text-[11px] text-slate-400 font-medium whitespace-nowrap">
+              Hace 45 min
+            </span>
+          </div>
+          <!-- Página -->
+          <p class="text-sm font-bold text-slate-900 mt-0.5 truncate">
+            Página institucional:
+            <span class="text-slate-800"> Default page </span>
+          </p>
+          <!-- Descripción -->
+          <p class="text-xs text-slate-600 mt-1">
+            Aprobado por
+            <strong class="text-slate-800 font-semibold"> Laura Valdés </strong>
+            (Editora Jefe).
+          </p>
+          <!-- Acción -->
+          <div class="mt-2.5 flex items-center justify-end gap-3">
+            <button
+              class="cursor-pointer text-xs font-bold text-emerald-600 hover:text-emerald-800 inline-flex items-center gap-1 transition"
+              type="button"
+            >
+              <span> Ver en vivo </span>
+              <i class="fa-solid fa-arrow-up-right-from-square"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="p-4 hover:bg-slate-50 bg-slate-50/15 transition flex gap-3 group">
+        <!-- Icono -->
+        <div class="shrink-0 pt-0.5">
+          <span
+            class="w-8 h-8 rounded-full bg-yellow-100 text-yellow-700 flex items-center justify-center border border-yellow-200 shadow-sm"
+          >
+            <i class="fa-solid fa-exclamation"></i>
+          </span>
+        </div>
+
+        <!-- Contenido -->
+        <div class="flex-1 min-w-0">
+          <!-- Título + tiempo -->
+          <div class="flex items-center justify-between gap-2">
+            <span class="text-xs font-bold text-yellow-700 uppercase tracking-wide">
+              Micrositio Aprobado
+            </span>
+
+            <span class="text-[11px] text-slate-400 font-medium whitespace-nowrap">
+              Hace 2 horas
+            </span>
+          </div>
+
+          <!-- Ecosistema -->
+          <p class="text-sm font-bold text-slate-900 mt-0.5 truncate">
+            Ecosistema:
+
+            <span class="text-slate-800"> Default micrositie </span>
+          </p>
+
+         <!-- Descripción -->
+          <p class="text-xs text-slate-600 mt-1">
+            Cambios por
+            <strong class="text-slate-800 font-semibold"> Laura Valdés </strong>
+            (Editora Jefe).
+          </p>
+
+          <!-- Acción -->
+          <div class="mt-2.5 flex items-center justify-end gap-3">
+            <button
+              class="cursor-pointer text-xs font-bold text-yellow-600 hover:text-yellow-800 inline-flex items-center gap-1 transition"
+              type="button"
+            >
+              <span> Revisar cambios </span>
+
+              <i class="fa-regular fa-comments"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 </ng-template>

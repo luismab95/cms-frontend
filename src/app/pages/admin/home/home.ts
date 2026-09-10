@@ -1,135 +1,130 @@
+import { DomSanitizer } from '@angular/platform-browser';
 import { ClipboardModule } from '@angular/cdk/clipboard';
-import { Component, inject, OnDestroy, OnInit } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { ApexOptions, NgApexchartsModule } from 'ng-apexcharts';
 import { PermissionCode, validAction } from 'app/shared/utils/permission.utils';
-import { ApexOptions } from 'ng-apexcharts';
-import { Subject, takeUntil } from 'rxjs';
 import {
-  CountElementsI,
-  Top10PagesI,
+  ApexOptionsI,
   visitVsPages,
   weekVisit,
-  WeekVisitI,
   yearVisit,
-  YearVisitI,
 } from 'app/core/interfaces/home.interface';
-import { ToastrService } from '@iqx-limited/ngx-toastr';
-import { UserI } from 'app/core/interfaces/user.interface';
 import { HomeService } from 'app/core/services/home.service';
 import { UserService } from 'app/core/services/user.service';
 import { NotificationsService } from 'app/core/services/notifications.service';
+import { PermissionComponent } from 'app/shared/components/permission/permission';
+import { ToastrService } from '@iqx-limited/ngx-toastr';
 
 @Component({
   selector: 'home',
   templateUrl: './home.html',
-  imports: [RouterLink, ClipboardModule],
+  imports: [RouterLink, ClipboardModule, NgApexchartsModule, PermissionComponent],
 })
-export class Home implements OnInit, OnDestroy {
-  user!: UserI;
-  unreadNotify: number = 0;
-  weekVisit: ApexOptions = {};
-  yearVisit: ApexOptions = {};
-  visitiVsPageVisit: ApexOptions = {};
-  countElements!: CountElementsI;
-  dataServiceWeek!: WeekVisitI;
-  dataServiceYear!: YearVisitI;
-  dataServiceVisitVsPages!: YearVisitI;
-  dataServiceTop10!: Top10PagesI[];
-  top10PagesColumns: string[] = ['name', 'micrositie', 'lang', 'path', 'visits'];
-  permission = PermissionCode;
+export class Home {
+  weekVisitButton = signal<'lastWeek' | 'thisWeek'>('thisWeek');
+  yearVisitButton = signal<'lastYear' | 'thisYear'>('thisYear');
 
-  private _unsubscribeAll: Subject<any> = new Subject<any>();
+  private readonly _notificationsService = inject(NotificationsService);
+  private readonly _homeService = inject(HomeService);
+  private readonly _userService = inject(UserService);
+  private readonly _toastrService = inject(ToastrService);
 
-  private _notificationsService = inject(NotificationsService);
-  private _homeService = inject(HomeService);
-  private _userService = inject(UserService);
-  private _toastrService = inject(ToastrService);
+  readonly permission = PermissionCode;
 
-  /**
-   * Constructor
-   */
-  constructor() {}
+  // --------------------------------------------------------------------------
+  // Signals
+  // --------------------------------------------------------------------------
 
-  // -----------------------------------------------------------------------------------------------------
-  // @ Lifecycle hooks
-  // -----------------------------------------------------------------------------------------------------
+  readonly user = toSignal(this._userService.userLogin$, {
+    initialValue: null,
+  });
 
-  /**
-   * On init
-   */
-  ngOnInit(): void {
-    // Subscribe to the user service
-    this._userService.userLogin$
-      .pipe(takeUntil(this._unsubscribeAll))
-      .subscribe((userLogin: UserI) => {
-        this.user = userLogin;
-      });
+  readonly countElements = toSignal(this._homeService.countElements$, {
+    initialValue: null,
+  });
 
-    // Subscribe to the home service
-    this._homeService.countElements$
-      .pipe(takeUntil(this._unsubscribeAll))
-      .subscribe((countElements) => {
-        this.countElements = countElements;
-      });
+  readonly dataServiceWeek = toSignal(this._homeService.weekVisit$, {
+    initialValue: null,
+  });
 
-    this._homeService.weekVisit$
-      .pipe(takeUntil(this._unsubscribeAll))
-      .subscribe((weekVisitData) => {
-        this.dataServiceWeek = weekVisitData;
-        this.weekVisit = weekVisit(this.dataServiceWeek);
-      });
+  readonly dataServiceYear = toSignal(this._homeService.yearVisit$, {
+    initialValue: null,
+  });
 
-    this._homeService.yearVisit$
-      .pipe(takeUntil(this._unsubscribeAll))
-      .subscribe((yearVisitData) => {
-        this.dataServiceYear = yearVisitData;
-        this.yearVisit = yearVisit(this.dataServiceYear);
-      });
+  readonly dataServiceVisitVsPages = toSignal(this._homeService.visitVsPages$, {
+    initialValue: null,
+  });
 
-    this._homeService.top10Pages$.pipe(takeUntil(this._unsubscribeAll)).subscribe((top10Pages) => {
-      this.dataServiceTop10 = top10Pages;
-    });
+  readonly dataServiceTop10 = toSignal(this._homeService.top10Pages$, {
+    initialValue: [],
+  });
 
-    this._homeService.visitVsPages$
-      .pipe(takeUntil(this._unsubscribeAll))
-      .subscribe((visitVsPagesData) => {
-        this.dataServiceVisitVsPages = visitVsPagesData;
-        this.visitiVsPageVisit = visitVsPages(this.dataServiceVisitVsPages);
-      });
+  readonly notifications = toSignal(this._notificationsService.notifications$, {
+    initialValue: [],
+  });
 
-    this._notificationsService.notifications$
-      .pipe(takeUntil(this._unsubscribeAll))
-      .subscribe((notifications) => {
-        this.unreadNotify = notifications.length;
-      });
-  }
+  // --------------------------------------------------------------------------
+  // Computed
+  // --------------------------------------------------------------------------
 
-  /**
-   * On destroy
-   */
-  ngOnDestroy(): void {
-    // Unsubscribe from all subscriptions
-    this._unsubscribeAll.next(null);
-    this._unsubscribeAll.complete();
-  }
+  readonly top3Pages = computed(() =>
+    [...this.dataServiceTop10()].sort((a, b) => b.visits - a.visits).slice(0, 3),
+  );
 
-  // -----------------------------------------------------------------------------------------------------
-  // @ Public methods
-  // -----------------------------------------------------------------------------------------------------
+  readonly unreadNotify = computed(() => this.notifications().length);
+
+  readonly weekVisit = computed<ApexOptionsI>(() => {
+    const data = this.dataServiceWeek();
+    return data ? weekVisit(data) : {};
+  });
+
+  readonly yearVisit = computed<ApexOptionsI>(() => {
+    const data = this.dataServiceYear();
+    return data ? yearVisit(data) : {};
+  });
+
+  readonly visitiVsPageVisit = computed<ApexOptionsI>(() => {
+    const data = this.dataServiceVisitVsPages();
+    return data ? visitVsPages(data) : {};
+  });
+
+  readonly totalVisitWeek = computed(() => {
+    const dataServiceWeek = this.dataServiceWeek()![this.weekVisitButton()];
+    return dataServiceWeek.micrositie + dataServiceWeek.page + dataServiceWeek.sitie;
+  });
+
+  readonly top10PagesColumns: string[] = ['name', 'micrositie', 'lang', 'path', 'visits'];
+
+  constructor(private sanitizer: DomSanitizer) {}
+
+  // --------------------------------------------------------------------------
+  // Public methods
+  // --------------------------------------------------------------------------
 
   /**
-   * Valid render permission
+   * Validate permission
+   * @param code 
+   * @returns 
    */
-  validPermission(code: string) {
+  validPermission(code: string): boolean {
     return validAction(code);
   }
 
   /**
-   * Output copy event
-   * @param event
+   * Copy url to clipboard
    */
-  copyEvent(event: true) {
-    // Set the alert
-    this._toastrService.info('Url Copiada.', 'Aviso');
+  copyEvent(): void {
+    this._toastrService.info('URL copiada al portapapeles', 'Aviso');
+  }
+
+  /**
+   * Get path santizer
+   * @param url 
+   * @returns 
+   */
+  getPath(url: string) {
+    return this.sanitizer.bypassSecurityTrustResourceUrl(url);
   }
 }

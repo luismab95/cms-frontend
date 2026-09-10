@@ -1,8 +1,82 @@
-<div class="bg-white cms-splash-screen" [class.hidden!]="!show()">
-  <img [src]="getLogo()" class="w-48! h-auto" alt="logo" />
-  <div class="spinner">
-    <div class="bounce1"></div>
-    <div class="bounce2"></div>
-    <div class="bounce3"></div>
+<div [class.hidden!]="!show()" class="fixed inset-0 w-full h-full overflow-hidden bg-white z-60">
+  <!-- Soft Ambient Frosted Glass Overlay -->
+  <div class="absolute inset-0 bg-slate-900/10 backdrop-blur-[6px] z-10"></div>
+
+  <!-- Central Modal / Splash Loader Stage -->
+  <div
+    class="bg-white w-full h-full relative z-50 flex flex-col items-center justify-center px-4 py-8 overflow-hidden"
+  >
+    <!-- HEADER -->
+    <header
+      class="absolute top-0 left-0 z-50 w-full px-8 py-6 flex items-center justify-between bg-white"
+    >
+      <div class="flex items-center gap-3">
+        <div class="w-42 h-auto flex items-center justify-center">
+          <img
+            [src]="getLogo()"
+            class="w-64 max-w-full object-contain"
+            [alt]="getParameter('COMPANY_NAME')"
+          />
+        </div>
+      </div>
+    </header>
+
+    <!-- LOADER -->
+    <div
+      class="w-full max-w-md bg-white rounded-3xl p-8 sm:p-10 shadow-2xl border border-slate-100/80 relative text-center"
+    >
+      <!-- Logo Orb -->
+      <div class="relative w-24 h-24 mx-auto mb-6 flex items-center justify-center">
+        <div class="absolute inset-0 rounded-full bg-brand-100/80 animate-ping opacity-30"></div>
+
+        <div
+          class="absolute -inset-2 rounded-full bg-linear-to-tr from-brand-100 via-blue-50 to-indigo-100 blur-sm"
+        ></div>
+
+        <div
+          class="relative w-20 h-20 rounded-2xl bg-linear-to-br from-brand-600 to-indigo-600 text-white flex items-center justify-center shadow-xl shadow-brand-600/30 animate-pulse-soft"
+        >
+          <i class="fa-solid fa-database fa-2xl"></i>
+        </div>
+      </div>
+
+      <!-- Headline -->
+      <h2 class="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight mb-2">
+        Preparando tu entorno
+      </h2>
+
+      <p class="text-slate-500 text-sm mb-7 leading-relaxed">
+        Cargando tus dashboards analíticos, preferencias de personalización y recursos recientes.
+      </p>
+
+      <!-- Progress -->
+      <div class="relative w-full h-2 bg-slate-100 rounded-full overflow-hidden mb-6">
+        <div
+          class="absolute inset-y-0 left-0 bg-indigo-600 rounded-full w-full wave-line"
+          style="width: 45%"
+        ></div>
+      </div>
+
+      <!-- Status -->
+      <div
+        class="inline-flex items-center gap-2.5 px-4 py-2 mb-8 rounded-full bg-indigo-50 border border-indigo-100/80 text-indigo-700 text-xs font-medium"
+      >
+        <i class="fa-solid fa-circle-notch animate-spin text-indigo-600"></i>
+        <span>Sincronizando componentes y vistas</span>
+      </div>
+    </div>
   </div>
+
+  <!-- FOOTER -->
+  <footer
+    class="absolute bottom-0 left-0 right-0 z-60 w-full px-8 py-5 flex items-center justify-between text-xs text-slate-500"
+  >
+    <div class="flex items-center gap-2">
+      <span>
+        © {{ currentYear }}
+        {{ getCompanyInfo('COMPANY_NAME')?.value }}
+        Todos los derechos reservados.
+      </span>
+    </div>
+  </footer>
 </div>

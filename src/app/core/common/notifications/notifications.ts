@@ -1,6 +1,5 @@
 import { Overlay, OverlayRef } from '@angular/cdk/overlay';
 import { TemplatePortal } from '@angular/cdk/portal';
-import { NgTemplateOutlet } from '@angular/common';
 import {
   ChangeDetectorRef,
   Component,
@@ -12,7 +11,7 @@ import {
   ViewChild,
   ViewContainerRef,
 } from '@angular/core';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { NotifyI } from 'app/core/interfaces/notification.interface';
 import { RoleI } from 'app/core/interfaces/user.interface';
 import { NotificationsService } from 'app/core/services/notifications.service';
@@ -22,7 +21,7 @@ import { Subject, takeUntil, lastValueFrom } from 'rxjs';
 @Component({
   selector: 'notifications-component',
   templateUrl: './notifications.html',
-  imports: [NgTemplateOutlet],
+  imports: [RouterLink],
 })
 export class Notifications implements OnInit, OnDestroy {
   @ViewChild('notificationsOrigin') private _notificationsOrigin!: ElementRef<HTMLElement>;
@@ -163,7 +162,6 @@ export class Notifications implements OnInit, OnDestroy {
     // Create the overlay
     this._overlayRef = this._overlay.create({
       hasBackdrop: true,
-      backdropClass: 'fuse-backdrop-on-mobile',
       scrollStrategy: this._overlay.scrollStrategies.block(),
       positionStrategy: this._overlay
         .position()
