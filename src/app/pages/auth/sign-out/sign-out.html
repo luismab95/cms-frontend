@@ -1,0 +1,104 @@
+<div
+  class="w-screen flex flex-col items-center sm:flex-row sm:justify-center md:items-start md:justify-start"
+>
+  <section class="relative hidden h-screen lg:flex lg:w-[65%]">
+    @if (parameters().length > 0) {
+      <auth-component class="w-full" [parameters]="parameters()" />
+    }
+  </section>
+
+  <section
+    class="lg:w-5/12 bg-white flex flex-col justify-center items-center px-6 sm:px-12 lg:px-16 py-12 relative"
+    data-purpose="logout-action-panel"
+  >
+    <div class="w-full max-w-md mx-auto flex flex-col items-center text-center">
+      <!-- CMS Stylized Monogram / Logotype -->
+      <div class="mb-8" data-purpose="cms-brand-logo">
+        <div class="relative inline-flex items-center justify-center">
+          <div class="w-auto">
+            <img [src]="getLogo()" class="w-42" alt="logo" />
+          </div>
+        </div>
+      </div>
+      <!-- Success Confirmation Icon with Pulse Ring -->
+      <div class="relative mb-6">
+        <div
+          class="w-16 h-16 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center border-2 border-emerald-100 shadow-sm"
+        >
+          <i class="fa-solid fa-check text-emerald-500"></i>
+        </div>
+        <div
+          class="absolute inset-0 rounded-full border-2 border-emerald-300/40 animate-ping pointer-events-none"
+        ></div>
+      </div>
+      <!-- Main Title & Description -->
+      <h2 class="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight mb-3">
+        ¡Has cerrado sesión!
+      </h2>
+      <p class="text-slate-500 text-sm sm:text-base leading-normal mb-8 max-w-sm">
+        Gracias por trabajar en
+        <span class="text-indigo-900 font-bold">{{ getCompanyInfo() }} </span>. Tu espacio de
+        trabajo ha sido sincronizado.
+      </p>
+      <!-- Dynamic Countdown & Auto-Redirect Indicator -->
+      <div
+        class="w-full bg-slate-50 p-4 rounded-xl border border-slate-200 mb-6 shadow-xs"
+        data-purpose="auto-redirect-box"
+      >
+        <div class="flex items-center justify-between text-xs font-semibold text-slate-600 mb-2">
+          <div class="flex items-center space-x-1.5">
+            <i class="fa-solid fa-spinner text-indigo-600 animate-spin"></i>
+            <span>Redireccionando al inicio de sesión</span>
+          </div>
+          <span class="font-mono text-indigo-700 bg-blue-50 px-2 py-0.5 rounded" id="timer-badge"
+            >en <span id="countdown-seconds">{{ countdown() }}</span
+            >&nbsp;s</span
+          >
+        </div>
+        <!-- Countdown Progress Bar -->
+        <div class="w-full h-1.5 bg-slate-200 rounded-full overflow-hidden mb-3">
+          <div
+            class="h-full bg-indigo-600 rounded-full transition-all duration-1000 ease-linear"
+            [style.width.%]="progressPercentage()"
+          ></div>
+        </div>
+        <!-- Pause / Cancel Redirect Controls -->
+        <div class="flex items-center justify-between text-[11px] text-slate-400">
+          <span>¿Deseas quedarte en esta página?</span>
+          <button
+            class="cursor-pointer text-slate-600 hover:text-red-600 font-semibold transition-colors focus:outline-none hover:underline"
+            (click)="stop()"
+            type="button"
+          >
+            Detener redirección
+          </button>
+        </div>
+      </div>
+      <!-- Main Action Buttons -->
+      <div class="w-full space-y-3" data-purpose="navigation-actions">
+        <!-- Primary Re-Authentication Button -->
+        <button
+          class="cursor-pointer w-full flex justify-center gap-2 items-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-semibold text-white bg-indigo-500 hover:bg-indigo-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 active:transform active:scale-[0.99] transition duration-150 ease-in-out disabled:cursor-not-allowed disabled:bg-indigo-300"
+          [routerLink]="['/auth/sign-in']"
+        >
+          <i class="fa-solid fa-arrow-left"></i>
+          Volver al inicio de sesión
+        </button>
+      </div>
+      <!-- Shared Device Security Notice -->
+      <div
+        class="mt-10 p-3.5 bg-amber-50/70 border border-amber-200/80 rounded-xl text-left flex items-start space-x-3 w-full"
+        data-purpose="security-warning"
+      >
+        <i class="fa-solid fa-triangle-exclamation text-amber-600 shrink-0 mt-0.5"></i>
+        <div class="text-xs text-amber-900 leading-relaxed">
+          <span class="font-semibold block text-amber-950"
+            >¿Equipo compartido o terminal público?</span
+          >
+          Por cumplimiento de seguridad ISO 27001, te recomendamos cerrar completamente todas las
+          pestañas de tu navegador.
+        </div>
+      </div>
+    </div>
+  </section>
+</div>

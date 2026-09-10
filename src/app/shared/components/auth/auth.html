@@ -1,0 +1,30 @@
+<div
+  style="background-image: url('{{ getAuthBackground() }}');"
+  class="bg-no-repeat bg-center! bg-cover! relative hidden w-full! h-full md:flex bg-[#080d1f] text-white flex-col justify-between p-12 xl:p-16 overflow-hidden"
+>
+  <!-- Center text content -->
+  <div class="relative z-10 max-w-xl my-auto py-12">
+    <h1 class="text-4xl xl:text-5xl font-extrabold tracking-tight text-white mb-6 leading-tight">
+      Bienvenido a
+      <span
+        class="bg-linear-to-r from-sky-400 via-indigo-300 to-pink-400 bg-clip-text text-transparent"
+        >{{ getCompanyInfo('COMPANY_NAME')?.value }}</span
+      >
+    </h1>
+    <p class="text-base xl:text-lg text-slate-300 leading-relaxed font-normal">
+      {{ getCompanyInfo('COMPANY_DESCRIPTION')?.value }}
+    </p>
+    <!-- Feature pills / trust points -->
+    <div class="mt-8 flex flex-wrap items-center gap-3 pt-4 border-t border-slate-800/80"></div>
+  </div>
+  <!-- Left panel footer -->
+  <footer
+    class="relative z-10 flex items-center justify-between text-xs text-slate-400 border-t border-white/10 pt-6"
+  >
+    <div class="flex items-center gap-2"></div>
+    <span
+      >© {{ currentYear }} {{ getCompanyInfo('COMPANY_NAME')?.value }} Todos los derechos
+      reservados.</span
+    >
+  </footer>
+</div>

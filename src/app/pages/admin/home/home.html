@@ -1,0 +1,51 @@
+<div class="flex min-w-0 flex-auto flex-col">
+  <!-- Header -->
+  <div class="bg-card">
+    <div class="mx-auto flex w-full max-w-7xl flex-col px-6 sm:px-8">
+      <div class="my-8 flex min-w-0 flex-auto flex-col sm:my-12 sm:flex-row sm:items-center">
+        <!-- Avatar and name -->
+        <div class="flex min-w-0 flex-auto items-center">
+          <div
+            class="ring-bg-card flex h-32 w-32 items-center justify-center overflow-hidden rounded-full ring-4"
+          >
+            <div
+              class="flex h-full w-full items-center justify-center overflow-hidden rounded bg-gray-200 text-8xl font-bold uppercase leading-none text-gray-600 dark:bg-gray-700 dark:text-gray-200"
+            >
+              {{ user.firstname.charAt(0) }}{{ user.lastname.charAt(0) }}
+            </div>
+          </div>
+          <div class="ml-4 flex min-w-0 flex-col">
+            <div
+              class="truncate text-2xl font-semibold leading-7 tracking-tight md:text-5xl md:leading-snug"
+            >
+              Bienvenido, {{ user.firstname }}
+            </div>
+            <div class="flex items-center">
+              <i class="fa-solid fa-bell"></i>
+              <div class="text-secondary ml-1.5 truncate leading-6">
+                Tienes {{ unreadNotify }} notificaciones nuevas.
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- Actions -->
+        <div class="mt-6 flex items-center space-x-3 sm:ml-2 sm:mt-0">
+          <button
+            class="cursor-pointer w-full flex justify-center items-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-semibold text-white bg-indigo-500 hover:bg-indigo-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 active:transform active:scale-[0.99] transition duration-150 ease-in-out disabled:cursor-not-allowed disabled:bg-indigo-300"
+            [routerLink]="['/admin/security/settings']"
+          >
+            <i class="fa-solid fa-gears"></i>
+            <span class="ml-2">Ajustes</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main -->
+  <div class="-mt-px flex-auto border-t pt-4 sm:pt-6">
+    <div class="mx-auto w-full max-w-7xl">
+      <!-- Tabs -->
+    </div>
+  </div>
+</div>

@@ -1,0 +1,21 @@
+<button
+  (click)="openPanel()"
+  #notificationsOrigin
+  aria-label="Notificaciones"
+  class="cursor-pointer relative p-2 rounded-lg text-[#565e74] hover:bg-[#eff4ff] hover:text-[#0b1c30] transition-colors"
+>
+  <i class="fa-regular fa-bell fa-lg"></i>
+
+  @if (unreadCount > 0) {
+    <span
+      class="absolute top-1.5 right-1.5 w-4 h-4 rounded-full bg-red-500 text-white text-[10px] flex items-center justify-center font-bold"
+    >
+      {{ unreadCount }}
+    </span>
+  }
+</button>
+
+<!-- Notifications panel -->
+<ng-template #notificationsPanel>
+ 
+</ng-template>

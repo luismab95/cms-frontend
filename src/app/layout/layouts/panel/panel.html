@@ -1,0 +1,41 @@
+<!-- Loading bar -->
+<!-- <fuse-loading-bar></fuse-loading-bar> -->
+
+<!-- Navigation -->
+<navigation-component />
+
+<!-- Wrapper -->
+<div [class.pl-65]="isOpen()">
+  <header
+    [class.left-65!]="isOpen()"
+    class="fixed top-0 right-0 h-17 left-0 bg-white/95 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)] z-40 flex items-center justify-between px-6"
+  >
+    <div class="flex items-center justify-between gap-1 lg:gap-4 flex-1 w-full">
+      <div class="flex flex-row justify-between items-center gap-1 lg:gap-4">
+        <button
+          aria-label="bars"
+          (click)="toggleNavigation()"
+          class="cursor-pointer relative p-2 rounded-lg text-[#565e74] hover:bg-[#eff4ff] hover:text-[#0b1c30] transition-colors"
+        >
+          <i class="fa-solid fa-bars"></i>
+        </button>
+        <search-component />
+      </div>
+      <div class="flex items-center gap-0.5 lg:gap-4 px-2 py-1.5 rounded-lg text-[#0b1c30]">
+        <div class="flex items-center gap-0.5 lg:gap-3">
+          <notifications-component />
+          <div class="h-6 w-px bg-[#dce9ff] mx-1"></div>
+          <user-component />
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="w-full pt-17 min-h-screen bg-[#f8f9ff] px-6 py-6 mx-auto">
+    <div class="flex flex-col w-full space-y-8">
+      @if (true) {
+        <router-outlet />
+      }
+    </div>
+  </main>
+</div>

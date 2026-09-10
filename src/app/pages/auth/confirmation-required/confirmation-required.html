@@ -1,0 +1,134 @@
+<div
+  class="w-screen flex flex-col items-center sm:flex-row sm:justify-center md:items-start md:justify-start"
+>
+  <section class="relative hidden h-screen lg:flex lg:w-[65%]">
+    @if (parameters().length > 0) {
+      <auth-component class="w-full" [parameters]="parameters()" />
+    }
+  </section>
+  <section
+    class="flex-1 flex flex-col justify-between px-6 py-10 sm:px-12 md:px-16 lg:px-16 xl:px-24 bg-white h-screen"
+  >
+    <div class="mx-auto w-full max-w-120 sm:mx-0 sm:w-120">
+      <!-- Logo -->
+      <div class="w-auto">
+        <img [src]="getLogo()" class="w-42" alt="logo" />
+      </div>
+      <!-- Icon & Header Group -->
+      <div class="text-center mb-8 my-12" data-purpose="section-header">
+        <div
+          class="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-blue-50 text-blue-600 ring-8 ring-blue-50/50 mb-5 shadow-sm"
+        >
+          <svg
+            class="w-8 h-8"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.8"
+            viewBox="0 0 24 24"
+          >
+            <path
+              d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            ></path>
+          </svg>
+        </div>
+        <h2 class="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900 mb-2.5">
+          Verificación de dos factores
+        </h2>
+        <p class="text-sm text-slate-500 leading-relaxed max-w-sm mx-auto">
+          Se ha enviado un código de verificación a su correo electrónico. Siga las instrucciones
+          para confirmar su dirección de correo electrónico y ingresar a su cuenta.
+        </p>
+      </div>
+
+      <form class="mt-8" [formGroup]="signInForm" #signInNgForm="ngForm">
+        <div class="space-y-2">
+          <label
+            class="block text-xs font-semibold uppercase tracking-wider text-slate-600 text-center mb-3"
+          >
+            Ingresa el código de verificación
+          </label>
+        </div>
+
+        @if (parameters().length > 0) {
+          <div class="flex items-center justify-center gap-2 sm:gap-3">
+            <otp-component
+              #OtpComponent
+              [parameters]="parameters()"
+              [hasError]="validateFormControl(signInForm, 'otp')"
+              (otpEvent)="onOtpChange($event)"
+            />
+          </div>
+        }
+        <!-- Errores -->
+        @if (getErrorMessage(signInForm, 'otp') !== '') {
+          <p class="mt-1.5 flex items-center justify-center gap-1 text-sm text-red-600">
+            <i class="fa-solid fa-circle-exclamation"></i>
+            <span>{{ getErrorMessage(signInForm, 'otp') }}</span>
+          </p>
+        }
+
+        <!-- Countdown Timer and Resend Row -->
+        <div
+          class="flex flex-col sm:flex-row items-center justify-between text-xs text-slate-500 gap-2 pt-1 px-24 mt-4"
+        >
+          <span class="flex items-center gap-1.5">
+            <i class="fa-regular fa-clock"></i>
+            ¿No recibiste el código?
+          </span>
+          <div class="flex flex-row items-center">
+            @if (resendOtp()) {
+              <button
+              (click)="resendOtpCode()"
+                class="text-indigo-600 hover:text-indigo-700 font-semibold focus:outline-none hover:underline cursor-pointer"
+                type="button"
+              >
+                Reenviar código
+              </button>
+            } @else {
+              <span class="text-slate-500 font-medium" id="timerText"
+                >Reenviar en &nbsp;
+                <span class="text-blue-600 font-semibold font-mono" id="countdown"
+                  >{{ formatTime(countdown()) }}
+                </span></span
+              >
+            }
+          </div>
+        </div>
+
+        <!-- Submit button -->
+        <div class="pt-12">
+          <button
+            class="cursor-pointer w-full flex justify-center items-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-semibold text-white bg-indigo-500 hover:bg-indigo-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 active:transform active:scale-[0.99] transition duration-150 ease-in-out disabled:cursor-not-allowed disabled:bg-indigo-300"
+            type="button"
+            [disabled]="signInForm.disabled"
+            (click)="signIn()"
+          >
+            @if (!signInForm.disabled) {
+              <span class="flex items-center justify-center gap-2">
+                <i class="fa-solid fa-right-to-bracket"></i>
+                <span>Verificar y continuar</span>
+              </span>
+            }
+
+            @if (signInForm.disabled) {
+              <span
+                class="h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent"
+              ></span>
+            }
+          </button>
+        </div>
+      </form>
+    </div>
+    <div class="w-full text-center py-4 border-t border-slate-100">
+      <a
+        class="inline-flex items-center gap-2 text-xs sm:text-sm font-medium text-slate-500 hover:text-slate-800 transition-colors focus:outline-none"
+        [routerLink]="['/auth/sign-in']"
+      >
+        <i class="fa-solid fa-arrow-left text-slate-500"></i>
+        Cancelar y volver al inicio de sesión
+      </a>
+    </div>
+  </section>
+</div>

@@ -1,0 +1,225 @@
+<div
+  class="w-screen flex flex-col items-center sm:flex-row sm:justify-center md:items-start md:justify-start"
+>
+  <section class="relative hidden h-screen lg:flex lg:w-[65%]">
+    @if (parameters().length > 0) {
+      <auth-component class="w-full" [parameters]="parameters()" />
+    }
+  </section>
+
+  <section
+    class="flex-1 flex flex-col justify-between px-6 py-10 sm:px-12 md:px-16 lg:px-16 xl:px-24 bg-white h-screen"
+  >
+    <div class="mx-auto w-full max-w-120 sm:mx-0 sm:w-120">
+      <!-- Logo -->
+      <div class="w-auto">
+        <img [src]="getLogo()" class="w-42" alt="logo" />
+      </div>
+      <!-- Icon & Header Group -->
+      <div class="mb-8 my-12">
+        <div
+          class="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-blue-50 text-blue-600 ring-8 ring-blue-50/50 mb-5 shadow-sm"
+        >
+          <svg
+            class="w-6 h-6"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            viewBox="0 0 24 24"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            ></path>
+          </svg>
+        </div>
+        <h2 class="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900 mb-2.5">
+          Iniciar sesión
+        </h2>
+        <p class="text-sm text-slate-500 leading-relaxed max-w-sm">
+          Ingresa tus credenciales para acceder a tu panel de administración.
+        </p>
+      </div>
+
+      <!-- Authentication Form -->
+      <form class="space-y-5" [formGroup]="signInForm" #signInNgForm="ngForm">
+        <!-- Email Input -->
+        <div>
+          <label
+            [class.text-red-500!]="validateFormControl(signInForm, 'email')"
+            class="block text-xs font-semibold uppercase tracking-wider text-slate-700 mb-1.5"
+            for="email"
+          >
+            Dirección de correo electrónico <span class="text-rose-500 font-bold">*</span>
+          </label>
+          <div class="relative rounded-lg shadow-sm">
+            <div
+              class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400"
+            >
+              <i
+                class="fa-regular fa-envelope"
+                [class.text-red-500!]="validateFormControl(signInForm, 'email')"
+              ></i>
+            </div>
+            <input
+              formControlName="email"
+              class="block w-full pl-10 pr-3.5 py-2.5 sm:py-3 text-sm text-slate-900 placeholder-slate-400 bg-slate-50/50 border border-slate-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-brand-600 focus:border-brand-600 focus:bg-white transition-colors"
+              [class.border-red-500!.text-red-500!]="validateFormControl(signInForm, 'email')"
+              [class.text-red-500!]="validateFormControl(signInForm, 'email')"
+              [class.placeholder:text-red-500!]="validateFormControl(signInForm, 'email')"
+              id="email"
+              name="email"
+              placeholder="correo@ejemplo.com"
+              required=""
+              type="email"
+            />
+          </div>
+
+          <!-- Errores -->
+          @if (getErrorMessage(signInForm, 'email') !== '') {
+            <p class="mt-1.5 flex items-center gap-1 text-sm text-red-600">
+              <i class="fa-solid fa-circle-exclamation"></i>
+              <span>{{ getErrorMessage(signInForm, 'email') }}</span>
+            </p>
+          }
+        </div>
+        <!-- Password Input -->
+        <div>
+          <div class="flex items-center justify-between mb-1.5">
+            <label
+              [class.text-red-500!]="validateFormControl(signInForm, 'password')"
+              class="block text-xs font-semibold uppercase tracking-wider text-slate-700"
+              for="password"
+            >
+              Contraseña <span class="text-rose-500 font-bold">*</span>
+            </label>
+          </div>
+          <div class="relative rounded-lg shadow-sm">
+            <div
+              class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400"
+            >
+              <i
+                class="fa-regular fa-keyboard"
+                [class.text-red-500!]="
+                  signInForm.get('password')?.invalid && signInForm.get('password')?.touched
+                "
+              ></i>
+            </div>
+            <input
+              formControlName="password"
+              class="block w-full pl-10 pr-11 py-2.5 sm:py-3 text-sm text-slate-900 placeholder-slate-400 bg-slate-50/50 border border-slate-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-brand-600 focus:border-brand-600 focus:bg-white transition-colors"
+              [class.border-red-500!]="validateFormControl(signInForm, 'password')"
+              [class.text-red-500!]="validateFormControl(signInForm, 'password')"
+              [class.placeholder:text-red-500!]="validateFormControl(signInForm, 'password')"
+              id="password"
+              name="password"
+              placeholder="••••••••••••"
+              required=""
+              [type]="passwordVisible() ? 'text' : 'password'"
+            />
+            <!-- Password toggle button -->
+            <button
+              aria-label="Alternar visibilidad de contraseña"
+              class="cursor-pointer absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-400 hover:text-slate-600 focus:outline-none focus:text-slate-800"
+              id="togglePassword"
+              type="button"
+              (click)="togglePasswordVisibility()"
+            >
+              @if (!passwordVisible()) {
+                <!-- Eye icon (show) -->
+                <i
+                  class="fa-regular fa-eye"
+                  [class.text-red-500!]="
+                    signInForm.get('password')?.invalid && signInForm.get('password')?.touched
+                  "
+                ></i>
+              } @else {
+                <!-- Eye-off icon (hide) -->
+                <i
+                  class="fa-regular fa-eye-slash"
+                  [class.text-red-500!]="
+                    signInForm.get('password')?.invalid && signInForm.get('password')?.touched
+                  "
+                ></i>
+              }
+            </button>
+          </div>
+          <!-- Errores -->
+          @if (getErrorMessage(signInForm, 'password') !== '') {
+            <p class="mt-1.5 flex items-center gap-1 text-sm text-red-600">
+              <i class="fa-solid fa-circle-exclamation"></i>
+              <span>{{ getErrorMessage(signInForm, 'password') }}</span>
+            </p>
+          }
+        </div>
+        <!-- Options row: Remember & Forgot link -->
+        <div class="flex items-center justify-end text-xs sm:text-sm pt-0.5">
+          <a
+            class="font-medium text-indigo-600 hover:text-indigo-700 hover:underline transition-colors"
+            [routerLink]="['/auth/forgot-password']"
+          >
+            ¿Has olvidado tu contraseña?
+          </a>
+        </div>
+        <!-- Submit Button -->
+        <div class="pt-2">
+          <button
+            class="cursor-pointer w-full flex justify-center items-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-semibold text-white bg-indigo-500 hover:bg-indigo-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 active:transform active:scale-[0.99] transition duration-150 ease-in-out disabled:cursor-not-allowed disabled:bg-indigo-300"
+            type="button"
+            [disabled]="signInForm.disabled"
+            (click)="signIn()"
+          >
+            @if (!signInForm.disabled) {
+              <span class="flex items-center justify-center gap-2">
+                <i class="fa-solid fa-right-to-bracket"></i>
+                <span>Iniciar sesión</span>
+              </span>
+            }
+
+            @if (signInForm.disabled) {
+              <span
+                class="h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent"
+              ></span>
+            }
+          </button>
+        </div>
+      </form>
+    </div>
+
+    <!-- Right panel footer -->
+    <div
+      class="pt-6 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-center gap-3 text-xs text-slate-400"
+    >
+      <!-- Language selector -->
+      <div class="flex items-center justify-center gap-5 flex-row w-full">
+        <span class="text-slate-500 text-xs leading-relaxed">Visita el sitio en:</span>
+        <div class="w-auto">
+          <ng-select
+            [clearable]="false"
+            class="w-full!"
+            [items]="languages()"
+            [formControl]="selectedLanguage"
+            bindLabel="name"
+            bindValue="lang"
+          >
+            <ng-template ng-label-tmp let-item="item">
+              <div class="flex items-center gap-2">
+                <img height="15" width="15" [alt]="'CMS'" [src]="item.icon" />
+                {{ item.name }}
+              </div>
+            </ng-template>
+          </ng-select>
+        </div>
+        <a
+          [routerLink]="['/' + selectedLanguage.value]"
+          target="_blank"
+          class="font-medium text-slate-600 hover:text-slate-700 hover:underline transition-colors"
+        >
+          <i class="fa-solid fa-arrow-up-right-from-square text-slate-500"></i>
+        </a>
+      </div>
+    </div>
+  </section>
+</div>

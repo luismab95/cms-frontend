@@ -1,0 +1,61 @@
+<aside
+  [ngClass]="{
+    flex: isOpen(),
+    hidden: !isOpen(),
+    'fixed left-0 top-0 w-65': previewType() === 'desktop',
+    'absolute z-50 left-0 top-0 w-screen': previewType() !== 'desktop',
+  }"
+  class="h-full bg-[#213145] z-50 flex-col justify-between select-none"
+>
+  <div class="flex flex-col flex-1 overflow-y-auto">
+    <div class="h-17 px-4 flex items-center justify-between border-b border-white/5">
+      <div class="flex items-center gap-2 w-full">
+        <div class="flex flex-row gap-2 justify-between w-full">
+          <img class="w-24" [src]="getLogo('LOGO_PRIMARY')" [alt]="getParameter('COMPANY_NAME')" />
+          <button
+            class="block xl:hidden cursor-pointer relative p-2 rounded-lg text-[#565e74] hover:bg-[#eff4ff] hover:text-[#0b1c30] transition-colors"
+            (click)="closePanel()"
+          >
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+    <nav class="flex-1 px-4 py-4 space-y-4">
+      @for (nav of navigation(); track nav.id) {
+        <div class="space-y-1">
+          <div class="px-3 pb-2 flex flex-col gap-0.5">
+            <span class="text-xs uppercase tracking-wider text-indigo-500 font-semibold">
+              {{ nav.title }}
+            </span>
+
+            <span class="text-[11px] text-[#c3c6d7] font-normal">
+              {{ nav.subtitle }}
+            </span>
+          </div>
+          @for (child of nav.children; track child.id) {
+            <a
+              [ngClass]="{ 'bg-indigo-500 text-white ': currrentNavigation()?.id === child.id }"
+              class="flex items-center gap-2 px-3 py-2 rounded-lg text-[#eaf1ff]/80 hover:bg-white/10 hover:text-white transition-all"
+              (click)="setNavigation(child)"
+              [routerLink]="child.link"
+            >
+              <i [class]="child.icon"></i>
+              <span class="text-sm font-medium">{{ child.title }}</span>
+            </a>
+          }
+        </div>
+      }
+    </nav>
+  </div>
+  <div class="p-2 border-t border-white/5 space-y-1">
+    <button
+      class="cursor-pointer w-full flex items-center gap-2 px-2 py-4 rounded-lg text-[#eaf1ff]/70 hover:bg-red-500/10 hover:text-red-500 transition-all"
+      data-path="ayuda"
+      (click)="signOut()"
+    >
+      <i class="fa-solid fa-right-from-bracket"></i>
+      <span class="text-sm font-medium">Cerrar sesión</span>
+    </button>
+  </div>
+</aside>

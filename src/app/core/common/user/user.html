@@ -1,0 +1,57 @@
+<button
+  (click)="openPanel()"
+  #userOrigin
+  class="cursor-pointer flex items-center gap-2.5 hover:bg-[#eff4ff] hover:text-[#0b1c30] transition-colors p-2 rounded-lg"
+  aria-label="opciones-usuario"
+>
+  <div class="w-8 h-8 rounded-full bg-indigo-500 flex items-center justify-center">
+    <span class="text-white text-[18px]"><i class="fa-regular fa-user"></i></span>
+  </div>
+  <div class="hidden md:flex flex-col text-left">
+    <span class="font-semibold text-[13px] leading-tight text-[#0b1c30]">Lour Peter</span
+    ><span class="font-semibold text-[11px] text-[#565e74]">Administrador</span>
+  </div>
+</button>
+
+<ng-template #userPanel>
+  <div class="bg-white rounded-xl border border-slate-200 dropdown-shadow overflow-hidden text-sm">
+    <!-- Micro Tarjeta de Perfil -->
+    <div class="p-3.5 flex items-center gap-3 border-b border-slate-100">
+      <div
+        class="w-10 h-10 rounded-full bg-indigo-500 text-white flex items-center justify-center font-bold text-xs shrink-0"
+      >
+        {{ user.firstname[0] }} {{ user.lastname[0] }}
+      </div>
+      <div class="min-w-0 flex-1">
+        <span class="font-bold text-xs text-slate-900 block truncate">
+          {{ user.firstname }} {{ user.lastname }}</span
+        >
+        <span class="text-[10px] text-slate-500 block truncate">{{ role.name }}</span>
+      </div>
+    </div>
+    <!-- Enlaces Directos Compactos -->
+    <div class="space-y-0.5">
+      <a
+        class="cursor-pointer flex items-center justify-between px-3 py-4 rounded-lg text-xs font-medium text-slate-700 hover:bg-slate-100 transition-colors"
+        [routerLink]=""
+      >
+        <span class="flex items-center gap-2.5">
+          <i class="fa-regular fa-address-card"></i>
+          Configurar Perfil
+        </span>
+      </a>
+    </div>
+    <!-- Logout Simple Limpio -->
+    <div class="border-t border-slate-100 bg-slate-50/60">
+      <button
+      (click)="signOut()"
+        class="cursor-pointer w-full flex items-center justify-start gap-2.5 px-3 py-4 rounded-lg text-red-600 hover:bg-red-100 text-xs font-semibold transition-colors"
+        type="button"
+      >
+        <i class="fa-solid fa-right-from-bracket"></i>
+
+        Cerrar sesión
+      </button>
+    </div>
+  </div>
+</ng-template>

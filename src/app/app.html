@@ -1,1 +1,5 @@
-<router-outlet />
+<loader-component />
+<router-outlet
+  (document:keypress)="onActivity($event)"
+  (document:mousemove)="onActivity($event)"
+></router-outlet>

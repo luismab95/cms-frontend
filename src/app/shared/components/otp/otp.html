@@ -1,0 +1,12 @@
+@if (otpInputConfig !== undefined) {
+  <ngx-otp-input
+    #otpInput
+    [length]="otpInputConfig.otpLength"
+    [inputMode]="otpInputConfig.inputMode"
+    [autoFocus]="otpInputConfig.autoFocus"
+    [charPattern]="otpInputConfig.regexp"
+    (valueChange)="getOtp($event)"
+    [status]="getStatus()"
+  ></ngx-otp-input>
+
+}

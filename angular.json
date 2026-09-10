@@ -24,7 +24,10 @@
                 "input": "public"
               }
             ],
-            "styles": ["src/styles.css"]
+            "styles": [
+              "src/styles.css",
+              "node_modules/@iqx-limited/ngx-toastr/toastr.css"
+            ]
           },
           "configurations": {
             "production": {
@@ -45,7 +48,7 @@
             "development": {
               "optimization": false,
               "extractLicenses": false,
-              "sourceMap": true        
+              "sourceMap": true
             }
           },
           "defaultConfiguration": "production"

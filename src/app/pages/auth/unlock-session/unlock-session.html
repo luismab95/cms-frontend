@@ -1,0 +1,215 @@
+<div
+  class="w-screen flex flex-col items-center sm:flex-row sm:justify-center md:items-start md:justify-start"
+>
+  <section class="relative hidden h-screen lg:flex lg:w-[65%]">
+    @if (parameters().length > 0) {
+      <auth-component class="w-full" [parameters]="parameters()" />
+    }
+  </section>
+
+  <section
+    class="flex-1 flex flex-col justify-between px-6 py-10 sm:px-12 md:px-16 lg:px-16 xl:px-24 bg-white h-screen"
+  >
+    <div class="mx-auto w-full max-w-120 sm:mx-0 sm:w-120">
+      <!-- Logo -->
+      <div class="w-auto">
+        <img [src]="getLogo()" class="w-42" alt="logo" />
+      </div>
+      <!-- Icon & Header Group -->
+      <div class="mb-8 my-12">
+        <div
+          class="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-blue-50 text-blue-600 ring-8 ring-blue-50/50 mb-5 shadow-sm"
+        >
+          <svg
+            class="w-6 h-6"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.8"
+            viewBox="0 0 24 24"
+          >
+            <path
+              d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            ></path>
+          </svg>
+        </div>
+        <h2 class="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900 mb-2.5">
+          Desbloquear sesión
+        </h2>
+        <p class="text-sm text-slate-500 leading-relaxed max-w-sm">
+          Ingresa tu contraseña para continuar donde lo dejaste.
+        </p>
+      </div>
+
+      <!-- Authentication Form -->
+      <form class="space-y-5" [formGroup]="unlockSessionForm" #signInNgForm="ngForm">
+        <!-- name Input -->
+        <div>
+          <label
+            [class.text-red-500!]="validateFormControl(unlockSessionForm, 'name')"
+            class="block text-xs font-semibold uppercase tracking-wider text-slate-700 mb-1.5"
+            for="name"
+          >
+            Usuario <span class="text-rose-500 font-bold">*</span>
+          </label>
+          <div class="relative rounded-lg shadow-sm">
+            <div
+              class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400"
+            >
+              <i
+                class="fa-regular fa-user"
+                [class.text-red-500!]="validateFormControl(unlockSessionForm, 'name')"
+              ></i>
+            </div>
+            <input
+              formControlName="name"
+              class="block w-full pl-10 pr-3.5 py-2.5 sm:py-3 text-sm text-slate-900 placeholder-slate-400 bg-slate-50/50 border border-slate-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-brand-600 focus:border-brand-600 focus:bg-white transition-colors disabled:bg-slate-200"
+              [class.border-red-500!.text-red-500!]="validateFormControl(unlockSessionForm, 'name')"
+              [class.text-red-500!]="validateFormControl(unlockSessionForm, 'name')"
+              [class.placeholder:text-red-500!]="validateFormControl(unlockSessionForm, 'name')"
+              id="name"
+              name="name"
+              required=""
+              type="text"
+            />
+          </div>
+
+          <!-- Errores -->
+          @if (getErrorMessage(unlockSessionForm, 'name') !== '') {
+            <p class="mt-1.5 flex items-center gap-1 text-sm text-red-600">
+              <i class="fa-solid fa-circle-exclamation"></i>
+              <span>{{ getErrorMessage(unlockSessionForm, 'name') }}</span>
+            </p>
+          }
+        </div>
+        <!-- Password Input -->
+        <div>
+          <div class="flex items-center justify-between mb-1.5">
+            <label
+              [class.text-red-500!]="validateFormControl(unlockSessionForm, 'password')"
+              class="block text-xs font-semibold uppercase tracking-wider text-slate-700"
+              for="password"
+            >
+              Contraseña <span class="text-rose-500 font-bold">*</span>
+            </label>
+          </div>
+          <div class="relative rounded-lg shadow-sm">
+            <div
+              class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400"
+            >
+              <i
+                class="fa-regular fa-keyboard"
+                [class.text-red-500!]="
+                  unlockSessionForm.get('password')?.invalid &&
+                  unlockSessionForm.get('password')?.touched
+                "
+              ></i>
+            </div>
+            <input
+              formControlName="password"
+              class="block w-full pl-10 pr-11 py-2.5 sm:py-3 text-sm text-slate-900 placeholder-slate-400 bg-slate-50/50 border border-slate-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-brand-600 focus:border-brand-600 focus:bg-white transition-colors"
+              [class.border-red-500!]="validateFormControl(unlockSessionForm, 'password')"
+              [class.text-red-500!]="validateFormControl(unlockSessionForm, 'password')"
+              [class.placeholder:text-red-500!]="validateFormControl(unlockSessionForm, 'password')"
+              id="password"
+              name="password"
+              placeholder="••••••••••••"
+              required=""
+              [type]="passwordVisible() ? 'text' : 'password'"
+            />
+            <!-- Password toggle button -->
+            <button
+              aria-label="Alternar visibilidad de contraseña"
+              class="cursor-pointer absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-400 hover:text-slate-600 focus:outline-none focus:text-slate-800"
+              id="togglePassword"
+              type="button"
+              (click)="togglePasswordVisibility()"
+            >
+              @if (!passwordVisible()) {
+                <!-- Eye icon (show) -->
+                <i
+                  class="fa-regular fa-eye"
+                  [class.text-red-500!]="
+                    unlockSessionForm.get('password')?.invalid &&
+                    unlockSessionForm.get('password')?.touched
+                  "
+                ></i>
+              } @else {
+                <!-- Eye-off icon (hide) -->
+                <i
+                  class="fa-regular fa-eye-slash"
+                  [class.text-red-500!]="
+                    unlockSessionForm.get('password')?.invalid &&
+                    unlockSessionForm.get('password')?.touched
+                  "
+                ></i>
+              }
+            </button>
+          </div>
+          <!-- Errores -->
+          @if (getErrorMessage(unlockSessionForm, 'password') !== '') {
+            <p class="mt-1.5 flex items-center gap-1 text-sm text-red-600">
+              <i class="fa-solid fa-circle-exclamation"></i>
+              <span>{{ getErrorMessage(unlockSessionForm, 'password') }}</span>
+            </p>
+          }
+        </div>
+
+        <!-- Submit Button -->
+        <div class="pt-2">
+          <button
+            class="cursor-pointer w-full flex justify-center items-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-semibold text-white bg-indigo-500 hover:bg-indigo-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 active:transform active:scale-[0.99] transition duration-150 ease-in-out disabled:cursor-not-allowed disabled:bg-indigo-300"
+            type="button"
+            [disabled]="unlockSessionForm.disabled"
+            (click)="signIn()"
+          >
+            @if (!unlockSessionForm.disabled) {
+              <span class="flex items-center justify-center gap-2">
+                <i class="fa-solid fa-right-to-bracket"></i>
+                <span> Desbloquear y continuar</span>
+              </span>
+            }
+
+            @if (unlockSessionForm.disabled) {
+              <span
+                class="h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent"
+              ></span>
+            }
+          </button>
+        </div>
+
+        <!-- Alternate Switch Account Link -->
+        <div
+          class="text-center text-sm pt-2 text-slate-500 flex flex-row items-center justify-center gap-2"
+        >
+          ¿No eres {{ name }}?,
+          <a
+            class="inline-flex items-center gap-2 font-semibold text-indigo-600 hover:text-indigo-700 transition group"
+            [routerLink]="['/auth/sign-in']"
+            ><i class="fa-solid fa-arrow-right-to-bracket"></i> Iniciar sesión con otra cuenta</a
+          >
+        </div>
+      </form>
+    </div>
+
+    <!-- Bottom footer -->
+    <div
+      class="pt-6 border-t border-slate-100 text-center sm:text-left"
+      data-purpose="recovery-footer"
+    >
+      <div class="flex items-start gap-3 bg-slate-50 p-3.5 rounded-lg border border-slate-200/60">
+        <i class="fa-solid fa-circle-info text-slate-500"></i>
+        <p class="text-xs text-slate-500 leading-relaxed">
+          ¿Olvidaste tu contraseña? Solicita el
+          <a
+            class="font-semibold text-indigo-600 hover:underline"
+            [routerLink]="['/auth/forgot-password']"
+            >restablecimiento
+          </a>
+          o contacta a tu administrador del sistema.
+        </p>
+      </div>
+    </div>
+  </section>
+</div>
