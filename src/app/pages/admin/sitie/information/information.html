@@ -1,0 +1,394 @@
+<form [formGroup]="sitieForm">
+  <div class="flex flex-col gap-8 p-4">
+    <!-- Section 1: General Company Information -->
+    <section class="rounded-2xl border border-slate-200/80 bg-white shadow-sm overflow-hidden">
+      <div class="border-b border-slate-100 bg-white px-6 py-5">
+        <div class="flex items-center justify-between">
+          <div>
+            <h2 class="text-base font-bold text-slate-900">Información General</h2>
+            <p class="text-xs text-slate-500 mt-0.5">
+              Información básica y general del sitio web, incluyendo los elementos fundamentales
+              necesarios para su correcta identificación. Comprende
+              datos como el nombre del sitio, descripción general y dominio.
+            </p>
+          </div>
+        </div>
+      </div>
+      <div class="p-6 space-y-6">
+        <!-- Nombre -->
+        <div>
+          <label
+            [class.text-red-500!]="validateFormControl(sitieForm, 'name')"
+            class="block text-xs font-semibold uppercase tracking-wider text-slate-700 mb-1.5"
+            for="name"
+          >
+            Nombre <span class="text-rose-500 font-bold">*</span>
+          </label>
+          <div class="relative rounded-lg shadow-sm">
+            <div
+              class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400"
+            >
+              <i
+                class="fa-solid fa-heading"
+                [class.text-red-500!]="validateFormControl(sitieForm, 'name')"
+              ></i>
+            </div>
+            <input
+              formControlName="name"
+              class="block w-full pl-10 pr-3.5 py-2.5 sm:py-3 text-sm text-slate-900 placeholder-slate-400 bg-slate-50/50 border border-slate-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-brand-600 focus:border-brand-600 focus:bg-white transition-colors"
+              [class.border-red-500!.text-red-500!]="validateFormControl(sitieForm, 'name')"
+              [class.text-red-500!]="validateFormControl(sitieForm, 'name')"
+              [class.placeholder:text-red-500!]="validateFormControl(sitieForm, 'name')"
+              id="name"
+              name="name"
+              required=""
+              type="text"
+            />
+          </div>
+
+          <!-- Errores -->
+          @if (getErrorMessage(sitieForm, 'name') !== '') {
+            <p class="mt-1.5 flex items-center gap-1 text-sm text-red-600">
+              <i class="fa-solid fa-circle-exclamation"></i>
+              <span>{{ getErrorMessage(sitieForm, 'name') }}</span>
+            </p>
+          }
+        </div>
+        <!-- Dominio -->
+        <div>
+          <label
+            [class.text-red-500!]="validateFormControl(sitieForm, 'domain')"
+            class="block text-xs font-semibold uppercase tracking-wider text-slate-700 mb-1.5"
+            for="domain"
+          >
+            Dominio <span class="text-rose-500 font-bold">*</span>
+          </label>
+          <div class="relative rounded-lg shadow-sm">
+            <div
+              class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400"
+            >
+              <i
+                class="fa-solid fa-globe"
+                [class.text-red-500!]="validateFormControl(sitieForm, 'domain')"
+              ></i>
+            </div>
+            <input
+              formControlName="domain"
+              class="block w-full pl-10 pr-3.5 py-2.5 sm:py-3 text-sm text-slate-900 placeholder-slate-400 bg-slate-50/50 border border-slate-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-brand-600 focus:border-brand-600 focus:bg-white transition-colors"
+              [class.border-red-500!.text-red-500!]="validateFormControl(sitieForm, 'domain')"
+              [class.text-red-500!]="validateFormControl(sitieForm, 'domain')"
+              [class.placeholder:text-red-500!]="validateFormControl(sitieForm, 'domain')"
+              id="domain"
+              name="domain"
+              required=""
+              type="text"
+            />
+          </div>
+
+          <!-- Errores -->
+          @if (getErrorMessage(sitieForm, 'domain') !== '') {
+            <p class="mt-1.5 flex items-center gap-1 text-sm text-red-600">
+              <i class="fa-solid fa-circle-exclamation"></i>
+              <span>{{ getErrorMessage(sitieForm, 'domain') }}</span>
+            </p>
+          }
+        </div>
+        <!-- Descripción -->
+        <div>
+          <label
+            [class.text-red-500!]="validateFormControl(sitieForm, 'description')"
+            class="block text-xs font-semibold uppercase tracking-wider text-slate-700 mb-1.5"
+            for="description"
+          >
+            Descripción <span class="text-rose-500 font-bold">*</span>
+          </label>
+          <div class="relative rounded-lg shadow-sm">
+            <div
+              class="absolute left-0 top-4 pl-3.5 flex items-center pointer-events-none text-slate-400"
+            >
+              <i
+                class="fa-solid fa-align-justify"
+                [class.text-red-500!]="validateFormControl(sitieForm, 'description')"
+              ></i>
+            </div>
+            <textarea
+              formControlName="description"
+              class="block w-full pl-10 pr-3.5 py-2.5 sm:py-3 text-sm text-slate-900 placeholder-slate-400 bg-slate-50/50 border border-slate-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-brand-600 focus:border-brand-600 focus:bg-white transition-colors"
+              [class.border-red-500!.text-red-500!]="validateFormControl(sitieForm, 'description')"
+              [class.text-red-500!]="validateFormControl(sitieForm, 'description')"
+              [class.placeholder:text-red-500!]="validateFormControl(sitieForm, 'description')"
+              id="description"
+              name="description"
+              required=""
+              rows="5"
+            ></textarea>
+          </div>
+
+          <!-- Errores -->
+          @if (getErrorMessage(sitieForm, 'description') !== '') {
+            <p class="mt-1.5 flex items-center gap-1 text-sm text-red-600">
+              <i class="fa-solid fa-circle-exclamation"></i>
+              <span>{{ getErrorMessage(sitieForm, 'description') }}</span>
+            </p>
+          }
+          <p class="text-xs text-slate-400 mt-1">
+            Breve descripción de tu compañía para agregadores e indexación de metabúsqueda.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Section 2: Diseño -->
+    <section class="rounded-2xl border border-slate-200/80 bg-white shadow-sm overflow-hidden">
+      <div class="border-b border-slate-100 bg-white px-6 py-5">
+        <div class="flex items-center justify-between">
+          <div>
+            <h2 class="text-base font-bold text-slate-900">Diseño</h2>
+            <p class="text-xs text-slate-500 mt-0.5">
+              Base prediseñada para la estructuración y organización de los contenidos de todas las
+              páginas del sitio web, estableciendo una arquitectura visual y funcional consistente
+              que permita mantener la misma línea de diseño, distribución y jerarquía de información
+              en cada sección.
+            </p>
+          </div>
+        </div>
+      </div>
+      <div class="p-6 space-y-6">
+        <!-- Template -->
+        <div>
+          <label
+            [class.text-red-500!]="validateFormControl(sitieForm, 'templateId')"
+            class="block text-xs font-semibold uppercase tracking-wider text-slate-700 mb-1.5"
+            for="templateId"
+          >
+            Plantilla <span class="text-rose-500 font-bold">*</span>
+          </label>
+          <div
+            [class.border-red-500!.text-red-500!]="validateFormControl(sitieForm, 'templateId')"
+            [class.border!]="validateFormControl(sitieForm, 'templateId')"
+            [class.text-red-500!]="validateFormControl(sitieForm, 'templateId')"
+            [class.placeholder:text-red-500!]="validateFormControl(sitieForm, 'templateId')"
+            class="relative rounded-sm shadow-sm"
+          >
+            <ng-select
+              [class.border-red-500!.text-red-500!]="validateFormControl(sitieForm, 'templateId')"
+              [class.text-red-500!]="validateFormControl(sitieForm, 'templateId')"
+              [class.placeholder:text-red-500!]="validateFormControl(sitieForm, 'templateId')"
+              id="templateId"
+              [clearable]="false"
+              [items]="templates().records"
+              [formControlName]="'templateId'"
+              bindLabel="name"
+              bindValue="id"
+              [id]="'templateId'"
+              notFoundText="No se encontraron elementos"
+            >
+              <ng-template ng-label-tmp let-item="item">
+                <div class="flex items-center gap-2 text-sm text-slate-900 placeholder-slate-400">
+                  <i
+                    class="fa-solid fa-palette text-slate-400"
+                    [class.text-red-500!]="validateFormControl(sitieForm, 'templateId')"
+                  ></i>
+                  {{ item.name }}
+                </div>
+              </ng-template>
+            </ng-select>
+          </div>
+
+          <!-- Errores -->
+          @if (getErrorMessage(sitieForm, 'templateId') !== '') {
+            <p class="mt-1.5 flex items-center gap-1 text-sm text-red-600">
+              <i class="fa-solid fa-circle-exclamation"></i>
+              <span>{{ getErrorMessage(sitieForm, 'templateId') }}</span>
+            </p>
+          }
+        </div>
+      </div>
+    </section>
+
+    <!-- Section 3: Zona de peligro -->
+    <section class="rounded-2xl border-2 border-red-500 bg-white shadow-sm overflow-hidden">
+      <div class="border-b border-slate-100 bg-white px-6 py-5">
+        <div class="flex items-center justify-between">
+          <div>
+            <h2 class="text-base font-bold text-slate-p00">Zona de peligro</h2>
+            <p class="text-xs text-slate-500 mt-0.5">
+              Las opciones disponibles en esta sección corresponden a funciones de administración
+              y configuración general del sitio web. Estos ajustes pueden afectar el
+              funcionamiento, la estructura o la información visible para los usuarios, por lo que
+              se recomienda utilizarlos con precaución y verificar los cambios antes de guardarlos.
+            </p>
+          </div>
+        </div>
+      </div>
+      <div class="p-6 space-y-6">
+        <!--Desactivar -->
+        <div class="px-6 transition hover:bg-slate-50/60">
+          @let status = sitieForm.get('status')?.value;
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div class="space-y-1.5 max-w-xl">
+              <div class="flex items-center gap-2.5 flex-wrap">
+                <h3 class="text-sm font-bold text-slate-900">Activar/Inactivar el sitio</h3>
+                <span
+                  [class.bg-slate-100]="!status"
+                  [class.bg-emerald-100]="status"
+                  [class.text-slate-600]="!status"
+                  [class.text-emerald-600]="status"
+                  [class.ring-slate-200]="!status"
+                  [class.ring-emerald-200]="status"
+                  class="inline-flex items-center rounded-md bg-slate-100 px-2 py-0.5 text-[11px] font-semibold ring-1 ring-inset"
+                >
+                  <span
+                    [class.bg-slate-400]="!status"
+                    [class.bg-emerald-400]="status"
+                    class="h-1.5 w-1.5 rounded-full mr-1.5"
+                  ></span>
+                  @if (!status) {
+                    Inactivo
+                  } @else {
+                    En Línea
+                  }
+                </span>
+              </div>
+              <p class="text-xs text-slate-500 leading-relaxed">
+                Desactiva temporalmente el acceso para usuarios mostrando la pantalla de cortesía
+                HTTP 404. Los administradores podrán continuar accediendo al sistema.
+              </p>
+              <div
+                class="flex items-center gap-1.5 text-[11px] text-amber-700 bg-amber-50 px-2.5 py-1 rounded-md w-fit ring-1 ring-inset ring-amber-600/20"
+              >
+                <i class="fa-solid fa-triangle-exclamation text-amber-600"></i>
+                <span>Activar este switch desactivará el sitio y todas sus páginas.</span>
+              </div>
+            </div>
+            <!-- Switch Toggle Anatomy: OFF (slate-200) -->
+            <button
+              (click)="sitieForm.get('status')?.setValue(!status)"
+              aria-checked="false"
+              [class.bg-indigo-600]="status"
+              [class.bg-slate-200]="!status"
+              class="relative inline-flex h-7 w-14 shrink-0 cursor-pointer rounded-full border-2 border-transparent p-0.5 transition-colors duration-200 ease-in-out focus:outline-none focus:ring-1 focus:ring-brand-500 focus:ring-offset-2 self-start sm:self-center"
+              role="switch"
+              type="button"
+            >
+              <!-- Thumb -->
+              <span
+                [class.translate-x-7]="status"
+                [class.translate-x-0]="!status"
+                class="pointer-events-none inline-flex h-6 w-6 transform items-center justify-center rounded-full bg-white shadow-md ring-0 transition duration-200 ease-in-out"
+              >
+                @if (!status) {
+                  <i class="fa-solid fa-xmark text-slate-400 fa-2xs"></i>
+                } @else {
+                  <i class="fa-solid fa-check text-indigo-400 fa-2xs"></i>
+                }
+              </span>
+            </button>
+          </div>
+        </div>
+        <div class="border-b border-slate-100"></div>
+        <!--Mantenimiento -->
+        <div class="px-6 transition hover:bg-slate-50/60">
+          @let maintenance = sitieForm.get('maintenance')?.value;
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div class="space-y-1.5 max-w-xl">
+              <div class="flex items-center gap-2.5 flex-wrap">
+                <h3 class="text-sm font-bold text-slate-900">
+                  Modo Mantenimiento de la Plataforma
+                </h3>
+                <span
+                  [class.bg-slate-100]="!maintenance"
+                  [class.bg-emerald-100]="maintenance"
+                  [class.text-slate-600]="!maintenance"
+                  [class.text-emerald-600]="maintenance"
+                  [class.ring-slate-200]="!maintenance"
+                  [class.ring-emerald-200]="maintenance"
+                  class="inline-flex items-center rounded-md bg-slate-100 px-2 py-0.5 text-[11px] font-semibold ring-1 ring-inset"
+                >
+                  <span
+                    [class.bg-slate-400]="!maintenance"
+                    [class.bg-emerald-400]="maintenance"
+                    class="h-1.5 w-1.5 rounded-full mr-1.5"
+                  ></span>
+                  @if (!maintenance) {
+                    Inactivo / En Línea
+                  } @else {
+                    En mantenimiento
+                  }
+                </span>
+              </div>
+              <p class="text-xs text-slate-500 leading-relaxed">
+                Desconecta el frontend para usuarios regulares mostrando la pantalla de cortesía
+                HTTP 503. Los administradores mantienen sesión activa.
+              </p>
+              <div
+                class="flex items-center gap-1.5 text-[11px] text-amber-700 bg-amber-50 px-2.5 py-1 rounded-md w-fit ring-1 ring-inset ring-amber-600/20"
+              >
+                <i class="fa-solid fa-triangle-exclamation text-amber-600"></i>
+                <span>Activar este switch suspenderá el tráfico de las páginas.</span>
+              </div>
+            </div>
+            <!-- Switch Toggle Anatomy: OFF (slate-200) -->
+            <button
+              (click)="sitieForm.get('maintenance')?.setValue(!maintenance)"
+              aria-checked="false"
+              [class.bg-indigo-600]="maintenance"
+              [class.bg-slate-200]="!maintenance"
+              class="relative inline-flex h-7 w-14 shrink-0 cursor-pointer rounded-full border-2 border-transparent p-0.5 transition-colors duration-200 ease-in-out focus:outline-none focus:ring-1 focus:ring-brand-500 focus:ring-offset-2 self-start sm:self-center"
+              role="switch"
+              type="button"
+            >
+              <!-- Thumb -->
+              <span
+                [class.translate-x-7]="maintenance"
+                [class.translate-x-0]="!maintenance"
+                class="pointer-events-none inline-flex h-6 w-6 transform items-center justify-center rounded-full bg-white shadow-md ring-0 transition duration-200 ease-in-out"
+              >
+                @if (!maintenance) {
+                  <i class="fa-solid fa-xmark text-slate-400 fa-2xs"></i>
+                } @else {
+                  <i class="fa-solid fa-check text-indigo-400 fa-2xs"></i>
+                }
+              </span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Bottom Action Bar (Fixed feel) -->
+    @if (validPermission(permission.editSitie)) {
+      <div class="flex items-center justify-end gap-3 pt-2">
+        <button
+          (click)="cancel()"
+          class="cursor-pointer w-auto flex justify-center items-center py-3 px-4 border border-slate-300 rounded-lg shadow-sm text-sm font-semibold text-slate-700 bg-white hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-50 active:transform active:scale-[0.99] transition duration-150 ease-in-out"
+          type="button"
+        >
+          Descartar
+        </button>
+
+        <button
+          class="cursor-pointer w-auto flex justify-center items-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-semibold text-white bg-indigo-500 hover:bg-indigo-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 active:transform active:scale-[0.99] transition duration-150 ease-in-out disabled:cursor-not-allowed disabled:bg-indigo-300"
+          type="button"
+          [disabled]="sitieForm.disabled"
+          (click)="save()"
+        >
+          @if (!sitieForm.disabled) {
+            <span class="flex items-center justify-center gap-2">
+              <i class="fa-solid fa-floppy-disk"></i>
+              <span>Guardar Configuración</span>
+            </span>
+          }
+
+          @if (sitieForm.disabled) {
+            <span
+              class="h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent"
+            ></span>
+          }
+        </button>
+      </div>
+    } @else {
+      <permission-component [show]="false" />
+    }
+  </div>
+</form>

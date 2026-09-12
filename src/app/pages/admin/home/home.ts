@@ -7,7 +7,7 @@ import { ApexOptions, NgApexchartsModule } from 'ng-apexcharts';
 import { PermissionCode, validAction } from 'app/shared/utils/permission.utils';
 import {
   ApexOptionsI,
-  visitVsPages,
+  distributionOrigen,
   weekVisit,
   yearVisit,
 } from 'app/core/interfaces/home.interface';
@@ -16,6 +16,10 @@ import { UserService } from 'app/core/services/user.service';
 import { NotificationsService } from 'app/core/services/notifications.service';
 import { PermissionComponent } from 'app/shared/components/permission/permission';
 import { ToastrService } from '@iqx-limited/ngx-toastr';
+import { ParameterService } from 'app/core/services/parameter.service';
+import { findParameter } from 'app/shared/utils/parameter.utils';
+import { SitieService } from 'app/core/services/sitie.service';
+import { formatNumber } from 'app/shared/utils/number.utils';
 
 @Component({
   selector: 'home',
@@ -25,8 +29,13 @@ import { ToastrService } from '@iqx-limited/ngx-toastr';
 export class Home {
   weekVisitButton = signal<'lastWeek' | 'thisWeek'>('thisWeek');
   yearVisitButton = signal<'lastYear' | 'thisYear'>('thisYear');
+  visitButton = signal<'year' | 'week'>('week');
+
+  formatNumberUtil = formatNumber;
 
   private readonly _notificationsService = inject(NotificationsService);
+  private readonly _parameterService = inject(ParameterService);
+  private readonly _sitieService = inject(SitieService);
   private readonly _homeService = inject(HomeService);
   private readonly _userService = inject(UserService);
   private readonly _toastrService = inject(ToastrService);
@@ -36,6 +45,10 @@ export class Home {
   // --------------------------------------------------------------------------
   // Signals
   // --------------------------------------------------------------------------
+
+  readonly parameters = toSignal(this._parameterService.parameter$, {
+    initialValue: null,
+  });
 
   readonly user = toSignal(this._userService.userLogin$, {
     initialValue: null,
@@ -53,10 +66,6 @@ export class Home {
     initialValue: null,
   });
 
-  readonly dataServiceVisitVsPages = toSignal(this._homeService.visitVsPages$, {
-    initialValue: null,
-  });
-
   readonly dataServiceTop10 = toSignal(this._homeService.top10Pages$, {
     initialValue: [],
   });
@@ -65,13 +74,24 @@ export class Home {
     initialValue: [],
   });
 
+  readonly sitie = toSignal(this._sitieService.sitie$, {
+    initialValue: null,
+  });
+
   // --------------------------------------------------------------------------
   // Computed
   // --------------------------------------------------------------------------
 
-  readonly top3Pages = computed(() =>
-    [...this.dataServiceTop10()].sort((a, b) => b.visits - a.visits).slice(0, 3),
-  );
+  readonly top3Pages = computed(() => {
+    return [...this.dataServiceTop10()]
+      .sort((a, b) => b.visits - a.visits)
+      .slice(0, 3)
+      .slice(0, 3)
+      .map((item) => ({
+        ...item,
+        safePath: this.sanitizer.bypassSecurityTrustResourceUrl(item.path),
+      }));
+  });
 
   readonly unreadNotify = computed(() => this.notifications().length);
 
@@ -85,17 +105,16 @@ export class Home {
     return data ? yearVisit(data) : {};
   });
 
-  readonly visitiVsPageVisit = computed<ApexOptionsI>(() => {
-    const data = this.dataServiceVisitVsPages();
-    return data ? visitVsPages(data) : {};
+  readonly distributionOrigen = computed<ApexOptions>(() => {
+    const data = this.countElements();
+    return data ? distributionOrigen(data) : {};
   });
 
   readonly totalVisitWeek = computed(() => {
-    const dataServiceWeek = this.dataServiceWeek()![this.weekVisitButton()];
-    return dataServiceWeek.micrositie + dataServiceWeek.page + dataServiceWeek.sitie;
+    const dataServiceWeek = this.dataServiceWeek()!['thisWeek'];
+    const total = dataServiceWeek.micrositie + dataServiceWeek.page + dataServiceWeek.sitie;
+    return total > 0 ? total : 1;
   });
-
-  readonly top10PagesColumns: string[] = ['name', 'micrositie', 'lang', 'path', 'visits'];
 
   constructor(private sanitizer: DomSanitizer) {}
 
@@ -105,8 +124,8 @@ export class Home {
 
   /**
    * Validate permission
-   * @param code 
-   * @returns 
+   * @param code
+   * @returns
    */
   validPermission(code: string): boolean {
     return validAction(code);
@@ -120,11 +139,11 @@ export class Home {
   }
 
   /**
-   * Get path santizer
-   * @param url 
-   * @returns 
+   * Get company parameters
+   * @param code
+   * @returns
    */
-  getPath(url: string) {
-    return this.sanitizer.bypassSecurityTrustResourceUrl(url);
+  getCompanyInfo(code: string) {
+    return findParameter(code, this.parameters()!);
   }
 }

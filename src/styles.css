@@ -2,6 +2,9 @@
 @import 'tailwindcss';
 @import "@iqx-limited/ngx-toastr/toastr";
 @import '@ng-select/ng-select/themes/default.theme.css';
+@import 'aos/dist/aos.css';
+
+
 
 
 @theme {

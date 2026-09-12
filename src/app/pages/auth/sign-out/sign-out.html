@@ -1,13 +1,19 @@
 <div
   class="w-screen flex flex-col items-center sm:flex-row sm:justify-center md:items-start md:justify-start"
 >
-  <section class="relative hidden h-screen lg:flex lg:w-[65%]">
+  <section
+    data-aos="fade-right"
+    data-aos-duration="1000"
+    class="relative hidden h-screen lg:flex lg:w-[65%]"
+  >
     @if (parameters().length > 0) {
       <auth-component class="w-full" [parameters]="parameters()" />
     }
   </section>
 
   <section
+    data-aos="fade-left"
+    data-aos-duration="1000"
     class="lg:w-5/12 bg-white flex flex-col justify-center items-center px-6 sm:px-12 lg:px-16 py-12 relative"
     data-purpose="logout-action-panel"
   >

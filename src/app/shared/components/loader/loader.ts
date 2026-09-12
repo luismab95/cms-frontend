@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, OnInit, inject, signal } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit, inject, output, signal } from '@angular/core';
 import { ParameterI } from 'app/core/interfaces/parameter.interface';
 import { ParameterService } from 'app/core/services/parameter.service';
 import { findParameter } from 'app/shared/utils/parameter.utils';
@@ -9,6 +9,9 @@ import { Subject, takeUntil } from 'rxjs';
   templateUrl: './loader.html',
 })
 export class LoaderComponent implements OnInit {
+
+  stopLoader = output<boolean>();
+
   parameters = signal<ParameterI[]>([]);
   show = signal<boolean>(true);
 
@@ -34,6 +37,7 @@ export class LoaderComponent implements OnInit {
   ngOnInit(): void {
     setTimeout(() => {
       this.show.set(false);
+      this.stopLoader.emit(true);
     }, 3000);
   }
 

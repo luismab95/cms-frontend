@@ -9,16 +9,26 @@ import { ParameterService } from 'app/core/services/parameter.service';
 import { NavigationService } from 'app/core/services/navigation.service';
 import { LoaderComponent } from 'app/shared/components/loader/loader';
 import { LoadingBarComponent } from 'app/shared/components/loading-bar/loading-bar';
+
 import { Subject, takeUntil } from 'rxjs';
 
 @Component({
   selector: 'panel-layout',
   templateUrl: './panel.html',
-  imports: [Notifications, User, VerticalNavigation, Search, RouterOutlet, LoaderComponent,LoadingBarComponent],
+  imports: [
+    Notifications,
+    User,
+    VerticalNavigation,
+    Search,
+    RouterOutlet,
+    LoaderComponent,
+    LoadingBarComponent,
+  ],
 })
 export class PanelLayout implements OnInit, OnDestroy {
   parameters = signal<ParameterI[]>([]);
   isOpen = signal<boolean>(true);
+  isLoader = signal<boolean>(true);
 
   private _unsubscribeAll: Subject<any> = new Subject<any>();
 
@@ -78,5 +88,12 @@ export class PanelLayout implements OnInit, OnDestroy {
   toggleNavigation(): void {
     this.isOpen.update((value) => !value);
     this._navigationService._isOpenNavigation.next(this.isOpen());
+  }
+
+  /**
+   * Stop Loader
+   */
+  stopLoader() {
+    this.isLoader.set(false);
   }
 }

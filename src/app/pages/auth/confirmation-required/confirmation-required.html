@@ -1,12 +1,18 @@
 <div
   class="w-screen flex flex-col items-center sm:flex-row sm:justify-center md:items-start md:justify-start"
 >
-  <section class="relative hidden h-screen lg:flex lg:w-[65%]">
+  <section
+    ddata-aos="fade-right"
+    data-aos-duration="1000"
+    class="relative hidden h-screen lg:flex lg:w-[65%]"
+  >
     @if (parameters().length > 0) {
       <auth-component class="w-full" [parameters]="parameters()" />
     }
   </section>
   <section
+    data-aos="fade-left"
+    data-aos-duration="1000"
     class="flex-1 flex flex-col justify-between px-6 py-10 sm:px-12 md:px-16 lg:px-16 xl:px-24 bg-white h-screen"
   >
     <div class="mx-auto w-full max-w-120 sm:mx-0 sm:w-120">
@@ -80,7 +86,7 @@
           <div class="flex flex-row items-center">
             @if (resendOtp()) {
               <button
-              (click)="resendOtpCode()"
+                (click)="resendOtpCode()"
                 class="text-indigo-600 hover:text-indigo-700 font-semibold focus:outline-none hover:underline cursor-pointer"
                 type="button"
               >

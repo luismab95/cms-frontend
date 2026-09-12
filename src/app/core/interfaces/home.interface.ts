@@ -1,3 +1,4 @@
+import { formatNumber } from 'app/shared/utils/number.utils';
 import { ApexAxisChartSeries, ApexNonAxisChartSeries, ApexOptions } from 'ng-apexcharts';
 
 export interface CountElementsI {
@@ -30,105 +31,84 @@ export interface ApexOptionsI extends Omit<ApexOptions, 'series'> {
 
 export const weekVisit = (data: WeekVisitI) =>
   ({
-    chart: {
-      fontFamily: 'inherit',
-      foreColor: '#64748B',
-      height: '100%',
-      type: 'line',
-      toolbar: {
-        show: false,
-      },
-      zoom: {
-        enabled: false,
-      },
-    },
-
-    // Tailwind: indigo-500 / indigo-300
-    colors: ['#6366F1', '#A5B4FC'],
-
-    dataLabels: {
-      enabled: true,
-      enabledOnSeries: [0],
-      background: {
-        borderWidth: 0,
-      },
-    },
-
-    // Tailwind: slate-200
-    grid: {
-      borderColor: '#E2E8F0',
-    },
-
-    labels: ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'],
-
-    legend: {
-      show: false,
-    },
-
-    plotOptions: {
-      bar: {
-        columnWidth: '50%',
-      },
-    },
-
     series: {
       thisWeek: [
         {
           name: 'Visitas',
-          type: 'line',
           data: data.thisWeek.data,
         },
       ],
       lastWeek: [
         {
           name: 'Visitas',
-          type: 'line',
           data: data.lastWeek.data,
         },
       ],
     },
-
-    stroke: {
-      width: [3, 0],
-    },
-
-    tooltip: {
-      followCursor: true,
-      theme: 'dark',
-    },
-
-    xaxis: {
-      axisBorder: {
-        show: false,
+    colors: ['#6366F1', '#A5B4FC'],
+    chart: {
+      type: 'area',
+      fontFamily: 'inherit',
+      foreColor: '#64748B',
+      height: 350,
+      zoom: {
+        type: 'x',
+        enabled: true,
+        autoScaleYaxis: true,
       },
-
-      // Tailwind: slate-200
-      axisTicks: {
-        color: '#E2E8F0',
-      },
-
-      labels: {
-        style: {
-          // Tailwind: slate-500
-          colors: '#64748B',
+      toolbar: {
+        tools: {
+          download: false,
+          selection: false,
+          zoom: true,
+          zoomin: true,
+          zoomout: true,
+          pan: false,
+          reset: true,
         },
       },
-
-      tooltip: {
-        enabled: false,
-      },
+      locales: [
+        {
+          name: 'es',
+          options: {
+            toolbar: {
+              selectionZoom: 'Zoom de selección',
+              zoomIn: 'Acercar',
+              zoomOut: 'Alejar',
+              reset: 'Restablecer zoom',
+            },
+          },
+        },
+      ],
+      defaultLocale: 'es',
     },
-
+    dataLabels: {
+      enabled: false,
+    },
+    stroke: {
+      curve: 'straight',
+    },
+    labels: ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'],
     yaxis: {
       labels: {
-        offsetX: -16,
-        style: {
-          // Tailwind: slate-500
-          colors: '#64748B',
+        formatter: function (val: number) {
+          return val.toString();
+        },
+      },
+      title: {
+        text: 'Visitas',
+      },
+    },
+    tooltip: {
+      shared: false,
+      y: {
+        formatter: function (val: string) {
+          return val;
         },
       },
     },
   }) as unknown as ApexOptionsI;
+
 export interface YearVisitI {
   lastYear: YearVisitDataI[];
   thisYear: YearVisitDataI[];
@@ -141,194 +121,91 @@ export interface YearVisitDataI {
 
 export const yearVisit = (data: YearVisitI) =>
   ({
+    series: data,
     chart: {
-      animations: {
-        speed: 400,
-        animateGradually: {
-          enabled: false,
-        },
-      },
+      type: 'area',
       fontFamily: 'inherit',
       foreColor: '#64748B',
-      width: '100%',
-      height: '100%',
-      type: 'area',
-      toolbar: {
-        show: false,
-      },
+      stacked: false,
+      height: 350,
       zoom: {
-        enabled: false,
+        type: 'x',
+        enabled: true,
+        autoScaleYaxis: true,
       },
+      toolbar: {
+        tools: {
+          download: false,
+          selection: false,
+          zoom: true,
+          zoomin: true,
+          zoomout: true,
+          pan: false,
+          reset: true,
+        },
+      },
+      locales: [
+        {
+          name: 'es',
+          options: {
+            toolbar: {
+              selectionZoom: 'Zoom de selección',
+              zoomIn: 'Acercar',
+              zoomOut: 'Alejar',
+              reset: 'Restablecer zoom',
+            },
+          },
+        },
+      ],
+      defaultLocale: 'es',
     },
-    // indigo-500
     colors: ['#6366F1'],
     dataLabels: {
       enabled: false,
     },
-    // Relleno Indigo suave
+    markers: {
+      size: 0,
+    },
     fill: {
       type: 'gradient',
       gradient: {
         shadeIntensity: 1,
-        opacityFrom: 0.25,
-        opacityTo: 0.02,
-        stops: [0, 100],
+        inverseColors: false,
+        opacityFrom: 0.5,
+        opacityTo: 0,
+        stops: [0, 90, 100],
       },
     },
-    // slate-200 / slate-100
-    grid: {
-      show: true,
-      borderColor: '#E2E8F0',
-      strokeDashArray: 0,
-      padding: {
-        top: 10,
-        bottom: -40,
-        left: 0,
-        right: 0,
-      },
-      position: 'back',
-      xaxis: {
-        lines: {
-          show: true,
+    yaxis: {
+      labels: {
+        formatter: function (val: number) {
+          return val.toString();
         },
       },
-      yaxis: {
-        lines: {
-          show: true,
-        },
+      title: {
+        text: 'Visitas',
       },
     },
-    series: data,
-    stroke: {
-      width: 2,
-      curve: 'smooth',
+    xaxis: {
+      type: 'datetime',
+      labels: {
+        datetimeUTC: false,
+        formatter: (value: string, timestamp?: number) => {
+          const fecha = new Date(timestamp ?? value);
+          return fecha.toLocaleDateString('es-ES', {
+            day: '2-digit',
+            month: 'short',
+          });
+        },
+      },
     },
     tooltip: {
-      followCursor: true,
-      theme: 'dark',
-      x: {
-        format: 'MMM dd, yyyy',
-      },
+      shared: false,
       y: {
-        formatter: (value: number): string => `${value}`,
-      },
-    },
-    xaxis: {
-      axisBorder: {
-        show: false,
-      },
-      axisTicks: {
-        show: false,
-      },
-      // Crosshair sutil
-      crosshairs: {
-        stroke: {
-          color: '#C7D2FE', // indigo-200
-          dashArray: 4,
-          width: 1,
+        formatter: function (val: string) {
+          return val;
         },
       },
-      labels: {
-        offsetY: -20,
-        style: {
-          colors: '#94A3B8', // slate-400
-        },
-      },
-      tickAmount: 10,
-      tooltip: {
-        enabled: false,
-      },
-      type: 'datetime',
-    },
-    yaxis: {
-      axisTicks: {
-        show: false,
-      },
-      axisBorder: {
-        show: false,
-      },
-      min: (min: number): number => min - 750,
-      max: (max: number): number => max + 250,
-      tickAmount: 5,
-      show: false,
-    },
-  }) as unknown as ApexOptionsI;
-
-export const visitVsPages = (data: YearVisitI) =>
-  ({
-    chart: {
-      animations: {
-        enabled: false,
-      },
-      fontFamily: 'inherit',
-      foreColor: 'inherit',
-      height: '100%',
-      type: 'area',
-      toolbar: {
-        show: false,
-      },
-      zoom: {
-        enabled: false,
-      },
-    },
-    colors: ['#64748B', '#94A3B8'],
-    dataLabels: {
-      enabled: false,
-    },
-    fill: {
-      colors: ['#64748B', '#94A3B8'],
-      opacity: 0.5,
-    },
-    grid: {
-      show: false,
-      padding: {
-        bottom: -40,
-        left: 0,
-        right: 0,
-      },
-    },
-    legend: {
-      show: false,
-    },
-    series: data,
-    stroke: {
-      curve: 'smooth',
-      width: 2,
-    },
-    tooltip: {
-      followCursor: true,
-      theme: 'dark',
-      x: {
-        format: 'MMM dd, yyyy',
-      },
-    },
-    xaxis: {
-      axisBorder: {
-        show: false,
-      },
-      labels: {
-        offsetY: -20,
-        rotate: 0,
-        style: {
-          colors: 'var(--fuse-text-secondary)',
-        },
-      },
-      tickAmount: 3,
-      tooltip: {
-        enabled: false,
-      },
-      type: 'datetime',
-    },
-    yaxis: {
-      labels: {
-        style: {
-          colors: 'var(--fuse-text-secondary)',
-        },
-      },
-      max: (max: number): number => max + 250,
-      min: (min: number): number => min - 250,
-      show: false,
-      tickAmount: 5,
     },
   }) as unknown as ApexOptionsI;
 
@@ -339,3 +216,56 @@ export interface Top10PagesI {
   path: string;
   visits: number;
 }
+
+export const distributionOrigen = (data: CountElementsI) => {
+  return {
+    series: [data.microsities + data.pages, data.microsities, data.pages],
+    chart: {
+      type: 'donut',
+      width: 250,
+    },
+    labels: ['Sitio', 'Micrositio', 'Páginas'],
+    colors: ['#432dd7', '#00bc7d', '#62748e'],
+    dataLabels: {
+      enabled: false,
+    },
+    legend: {
+      show: false,
+    },
+    plotOptions: {
+      pie: {
+        donut: {
+          size: '70%',
+          labels: {
+            show: true,
+            name: {
+              show: true,
+              offsetY: 25,
+              color: '#64748b',
+              fontSize: '14px',
+              fontWeight: 500,
+              formatter: () => 'Total visitas',
+            },
+            value: {
+              show: true,
+              offsetY: -10,
+              color: '#0f172a',
+              fontSize: '28px',
+              fontWeight: 700,
+              formatter: (val: number) => formatNumber(val),
+            },
+            total: {
+              showAlways: true,
+              show: true,
+              formatter: (val: any) => {
+                const series = val.seriesData.series as number[];
+                const total = series.reduce((acc: number, value: number) => acc + value, 0);
+                return formatNumber(total);
+              },
+            },
+          },
+        },
+      },
+    },
+  } as unknown as ApexOptions;
+};

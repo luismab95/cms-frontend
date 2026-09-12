@@ -7,6 +7,8 @@ import { initialDataResolver } from './app.resolvers';
 import { NoAuthGuard } from './core/guards/noAuth.guard';
 import { AuthGuard } from './core/guards/auth.guard';
 import { MenuGuard } from './core/guards/menu.guard';
+import { SitieService } from './core/services/sitie.service';
+import { TemplateService } from './core/services/templates.service';
 
 export const routes: Routes = [
   // Redirect empty path to 'default sitie'
@@ -99,8 +101,69 @@ export const routes: Routes = [
               visitVsPages: () => inject(HomeService).getVisitVsPages(),
               weekVisit: () => inject(HomeService).getWeekVisit(),
               yearVisit: () => inject(HomeService).getYearVisit(),
+              sitie: () => inject(SitieService).find(),
             },
           },
+        ],
+      },
+      // Content
+      {
+        path: 'content',
+        children: [
+          {
+            path: 'sitie',
+            loadComponent: () => import('./pages/admin/sitie/sitie').then((m) => m.Sitie),
+            resolve: {
+              sitie: () => inject(SitieService).find(),
+              languages: () =>
+                inject(LanguageService).getAll({
+                  page: 1,
+                  limit: 10,
+                  search: null,
+                  status: true,
+                }),
+              templates: () =>
+                inject(TemplateService).getAll({
+                  page: 1,
+                  limit: 99999,
+                  search: null,
+                  status: true,
+                }),
+            },
+          },
+          // {
+          //     path: 'microsities',
+          //     loadChildren: () =>
+          //         import(
+          //             'app/modules/admin/microsities/micrositie.routes'
+          //         ),
+          // },
+          // {
+          //     path: 'pages',
+          //     loadChildren: () =>
+          //         import('app/modules/admin/pages/pages.routes'),
+          // },
+          // {
+          //     path: 'templates',
+          //     loadChildren: () =>
+          //         import(
+          //             'app/modules/admin/templates/templates.routes'
+          //         ),
+          // },
+          // {
+          //     path: 'file-manager',
+          //     loadChildren: () =>
+          //         import(
+          //             'app/modules/admin/file-manager/file-manager.routes'
+          //         ),
+          // },
+          // {
+          //     path: 'review-pages',
+          //     loadChildren: () =>
+          //         import(
+          //             'app/modules/admin/review/review.routes'
+          //         ),
+          // },
         ],
       },
       //Default
