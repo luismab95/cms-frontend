@@ -1,22 +1,13 @@
 import { NgClass } from '@angular/common';
-import {
-  Component,
-  OnInit,
-  OnDestroy,
-  inject,
-  signal,
-  ChangeDetectorRef,
-  computed,
-} from '@angular/core';
-import { Router, RouterLink } from '@angular/router';
-import { NavigationI } from 'app/core/interfaces/navigation.interface';
-import { ParameterI } from 'app/core/interfaces/parameter.interface';
+import { Component, OnInit, OnDestroy, inject, computed } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { NavigationEnd, Router, RouterLink } from '@angular/router';
 import { AuthService } from 'app/core/services/auth.service';
 import { NavigationService } from 'app/core/services/navigation.service';
 import { ParameterService } from 'app/core/services/parameter.service';
 import { findParameter } from 'app/shared/utils/parameter.utils';
 import { DeviceDetectorService, DeviceType } from 'ngx-device-detector';
-import { Subject, takeUntil } from 'rxjs';
+import { filter, map, Subject } from 'rxjs';
 
 @Component({
   selector: 'navigation-component',
@@ -24,10 +15,7 @@ import { Subject, takeUntil } from 'rxjs';
   imports: [RouterLink, NgClass],
 })
 export class VerticalNavigation implements OnInit, OnDestroy {
-  parameters = signal<ParameterI[]>([]);
-  navigation = signal<NavigationI[]>([]);
-  currrentNavigation = signal<NavigationI | null>(null);
-  isOpen = signal<boolean>(true);
+  // currrentNavigation = signal<NavigationI | null>(null);
 
   previewType = computed(() => {
     const { deviceType } = this._deviceDetectorService.deviceInfo();
@@ -49,8 +37,24 @@ export class VerticalNavigation implements OnInit, OnDestroy {
   private _authService = inject(AuthService);
   private _router = inject(Router);
   private _navigationService = inject(NavigationService);
-  private _changeDetectorRef = inject(ChangeDetectorRef);
   private _deviceDetectorService = inject(DeviceDetectorService);
+
+  readonly parameters = toSignal(this._parameterService.parameter$, { initialValue: [] });
+  readonly navigation = toSignal(this._navigationService.navigation$, { initialValue: [] });
+  readonly isOpen = toSignal(this._navigationService.isOpenNavigation$, { initialValue: false });
+
+  readonly currentPath = toSignal(
+    this._router.events.pipe(
+      filter((event): event is NavigationEnd => event instanceof NavigationEnd),
+      map((event) => event.urlAfterRedirects.replace(/^\/admin\//, '')),
+    ),
+    {
+      initialValue: window.location.pathname.replace(/^\/admin\//, ''),
+    },
+  );
+  readonly currrentNavigation = computed(() => {
+    return this._navigationService.getCurrentNavigation(this.navigation(), this.currentPath());
+  });
 
   /**
    * Constructor
@@ -71,34 +75,7 @@ export class VerticalNavigation implements OnInit, OnDestroy {
   /**
    * On init
    */
-  ngOnInit(): void {
-    // Subscribe to  data
-    this._parameterService.parameter$
-      .pipe(takeUntil(this._unsubscribeAll))
-      .subscribe((response: ParameterI[]) => {
-        this.parameters.set(response);
-        this._changeDetectorRef.markForCheck();
-      });
-
-    // Subscribe to  data
-    this._navigationService.navigation$
-      .pipe(takeUntil(this._unsubscribeAll))
-      .subscribe((navigation: NavigationI[]) => {
-        this.navigation.set(navigation);
-        const currentPath = window.location.pathname.replace(/^\/admin\//, '');
-        this.currrentNavigation.set(
-          this._navigationService.getCurrentNavigation(navigation, currentPath),
-        );
-        this._changeDetectorRef.markForCheck();
-      });
-
-    this._navigationService.isOpenNavigation$
-      .pipe(takeUntil(this._unsubscribeAll))
-      .subscribe((response: boolean) => {
-        this.isOpen.set(response);
-        this._changeDetectorRef.markForCheck();
-      });
-  }
+  ngOnInit(): void {}
 
   /**
    * On destroy
@@ -135,14 +112,6 @@ export class VerticalNavigation implements OnInit, OnDestroy {
   }
 
   /**
-   * Set Current Navigation
-   * @param nav
-   */
-  setNavigation(nav: NavigationI) {
-    this.currrentNavigation.set(nav);
-  }
-
-  /**
    * Sign out
    */
   signOut(): void {
@@ -159,7 +128,6 @@ export class VerticalNavigation implements OnInit, OnDestroy {
    * Close navigation
    */
   closePanel() {
-    this.isOpen.set(false);
-    this._navigationService._isOpenNavigation.next(this.isOpen());
+    this._navigationService._isOpenNavigation.next(false);
   }
 }

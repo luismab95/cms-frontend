@@ -39,7 +39,6 @@
             <a
               [ngClass]="{ 'bg-indigo-500 text-white ': currrentNavigation()?.id === child.id }"
               class="flex items-center gap-2 px-3 py-2 rounded-lg text-[#eaf1ff]/80 hover:bg-white/10 hover:text-white transition-all"
-              (click)="setNavigation(child)"
               [routerLink]="child.link"
             >
               <i [class]="child.icon"></i>

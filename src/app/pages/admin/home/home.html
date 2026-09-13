@@ -1,4 +1,4 @@
-<div class="w-full min-h-screen bg-slate-50 px-6 pb-6 py-2 mx-auto max-w-7xl">
+<div class="w-full min-h-screen bg-slate-50 px-6 pb-6 py-2 mx-auto max-w-full">
   <div class="flex flex-col w-full space-y-8">
     <!-- 1. Encabezado de perfil y métricas ejecutivas en vivo -->
     <section
@@ -43,7 +43,7 @@
           <button
             class="cursor-pointer w-full flex justify-center items-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-semibold text-white bg-indigo-500 hover:bg-indigo-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 active:transform active:scale-[0.99] transition duration-150 ease-in-out disabled:cursor-not-allowed disabled:bg-indigo-300"
             type="button"
-            [routerLink]="'admin/security/settings'"
+            [routerLink]="'/admin/security/settings'"
           >
             <span class="flex items-center justify-center gap-2">
               <i class="fa-solid fa-gears"></i>
@@ -384,7 +384,7 @@
                   @let percentageSitie =
                     (dataServiceWeek()!['thisWeek']!.sitie * 100) / totalVisitWeek();
                   <span class="text-slate-900 font-semibold leading-none"
-                    >{{ percentageSitie }}%</span
+                    >{{ percentageSitie | number:'1.2-2' }}%</span
                   >
                   <p class="text-sm text-slate-900">
                     {{ formatNumberUtil(countElements()!.microsities + countElements()!.pages) }}
@@ -406,7 +406,7 @@
                   @let percentageMicrositie =
                     (dataServiceWeek()!['thisWeek']!.micrositie * 100) / totalVisitWeek();
                   <span class="text-slate-900 font-semibold leading-none"
-                    >{{ percentageMicrositie }}%</span
+                    >{{ percentageMicrositie | number:'1.2-2' }}%</span
                   >
                   <p class="text-sm text-slate-900">
                     {{ formatNumberUtil(dataServiceWeek()!['thisWeek']!.micrositie) }}
@@ -428,7 +428,7 @@
                   @let percentagePages =
                     (dataServiceWeek()!['thisWeek']!.page * 100) / totalVisitWeek();
                   <span class="text-slate-900 font-semibold leading-none"
-                    >{{ percentagePages }}%</span
+                    >{{ percentagePages | number:'1.2-2' }}%</span
                   >
                   <p class="text-sm text-slate-900">
                     {{ formatNumberUtil(dataServiceWeek()!['thisWeek']!.page) }}

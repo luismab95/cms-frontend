@@ -1,5 +1,5 @@
 <form [formGroup]="sitieForm">
-  <div class="flex flex-col gap-8 p-4">
+  <div class="flex flex-col gap-8 lg:p-4 p-0" data-aos="fade-left" data-aos-duration="1000">
     <!-- Section 1: General Company Information -->
     <section class="rounded-2xl border border-slate-200/80 bg-white shadow-sm overflow-hidden">
       <div class="border-b border-slate-100 bg-white px-6 py-5">
@@ -8,8 +8,8 @@
             <h2 class="text-base font-bold text-slate-900">Información General</h2>
             <p class="text-xs text-slate-500 mt-0.5">
               Información básica y general del sitio web, incluyendo los elementos fundamentales
-              necesarios para su correcta identificación. Comprende
-              datos como el nombre del sitio, descripción general y dominio.
+              necesarios para su correcta identificación. Comprende datos como el nombre del sitio,
+              descripción general y dominio.
             </p>
           </div>
         </div>
@@ -35,7 +35,7 @@
             </div>
             <input
               formControlName="name"
-              class="block w-full pl-10 pr-3.5 py-2.5 sm:py-3 text-sm text-slate-900 placeholder-slate-400 bg-slate-50/50 border border-slate-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-brand-600 focus:border-brand-600 focus:bg-white transition-colors"
+              class="block w-full pl-10 pr-3.5 py-2.5 sm:py-3 text-sm text-slate-900 placeholder-slate-400 bg-slate-50/50 border border-slate-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-slate-600 focus:border-slate-600 focus:bg-white transition-colors"
               [class.border-red-500!.text-red-500!]="validateFormControl(sitieForm, 'name')"
               [class.text-red-500!]="validateFormControl(sitieForm, 'name')"
               [class.placeholder:text-red-500!]="validateFormControl(sitieForm, 'name')"
@@ -74,7 +74,7 @@
             </div>
             <input
               formControlName="domain"
-              class="block w-full pl-10 pr-3.5 py-2.5 sm:py-3 text-sm text-slate-900 placeholder-slate-400 bg-slate-50/50 border border-slate-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-brand-600 focus:border-brand-600 focus:bg-white transition-colors"
+              class="block w-full pl-10 pr-3.5 py-2.5 sm:py-3 text-sm text-slate-900 placeholder-slate-400 bg-slate-50/50 border border-slate-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-slate-600 focus:border-slate-600 focus:bg-white transition-colors"
               [class.border-red-500!.text-red-500!]="validateFormControl(sitieForm, 'domain')"
               [class.text-red-500!]="validateFormControl(sitieForm, 'domain')"
               [class.placeholder:text-red-500!]="validateFormControl(sitieForm, 'domain')"
@@ -113,7 +113,7 @@
             </div>
             <textarea
               formControlName="description"
-              class="block w-full pl-10 pr-3.5 py-2.5 sm:py-3 text-sm text-slate-900 placeholder-slate-400 bg-slate-50/50 border border-slate-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-brand-600 focus:border-brand-600 focus:bg-white transition-colors"
+              class="block w-full pl-10 pr-3.5 py-2.5 sm:py-3 text-sm text-slate-900 placeholder-slate-400 bg-slate-50/50 border border-slate-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-slate-600 focus:border-slate-600 focus:bg-white transition-colors"
               [class.border-red-500!.text-red-500!]="validateFormControl(sitieForm, 'description')"
               [class.text-red-500!]="validateFormControl(sitieForm, 'description')"
               [class.placeholder:text-red-500!]="validateFormControl(sitieForm, 'description')"
@@ -180,7 +180,6 @@
               [formControlName]="'templateId'"
               bindLabel="name"
               bindValue="id"
-              [id]="'templateId'"
               notFoundText="No se encontraron elementos"
             >
               <ng-template ng-label-tmp let-item="item">
@@ -213,10 +212,10 @@
           <div>
             <h2 class="text-base font-bold text-slate-p00">Zona de peligro</h2>
             <p class="text-xs text-slate-500 mt-0.5">
-              Las opciones disponibles en esta sección corresponden a funciones de administración
-              y configuración general del sitio web. Estos ajustes pueden afectar el
-              funcionamiento, la estructura o la información visible para los usuarios, por lo que
-              se recomienda utilizarlos con precaución y verificar los cambios antes de guardarlos.
+              Las opciones disponibles en esta sección corresponden a funciones de administración y
+              configuración general del sitio web. Estos ajustes pueden afectar el funcionamiento,
+              la estructura o la información visible para los usuarios, por lo que se recomienda
+              utilizarlos con precaución y verificar los cambios antes de guardarlos.
             </p>
           </div>
         </div>
@@ -267,7 +266,7 @@
               aria-checked="false"
               [class.bg-indigo-600]="status"
               [class.bg-slate-200]="!status"
-              class="relative inline-flex h-7 w-14 shrink-0 cursor-pointer rounded-full border-2 border-transparent p-0.5 transition-colors duration-200 ease-in-out focus:outline-none focus:ring-1 focus:ring-brand-500 focus:ring-offset-2 self-start sm:self-center"
+              class="relative inline-flex h-7 w-14 shrink-0 cursor-pointer rounded-full border-2 border-transparent p-0.5 transition-colors duration-200 ease-in-out focus:outline-none focus:ring-1 focus:ring-slate-500 focus:ring-offset-2 self-start sm:self-center"
               role="switch"
               type="button"
             >
@@ -334,7 +333,7 @@
               aria-checked="false"
               [class.bg-indigo-600]="maintenance"
               [class.bg-slate-200]="!maintenance"
-              class="relative inline-flex h-7 w-14 shrink-0 cursor-pointer rounded-full border-2 border-transparent p-0.5 transition-colors duration-200 ease-in-out focus:outline-none focus:ring-1 focus:ring-brand-500 focus:ring-offset-2 self-start sm:self-center"
+              class="relative inline-flex h-7 w-14 shrink-0 cursor-pointer rounded-full border-2 border-transparent p-0.5 transition-colors duration-200 ease-in-out focus:outline-none focus:ring-1 focus:ring-slate-500 focus:ring-offset-2 self-start sm:self-center"
               role="switch"
               type="button"
             >
@@ -358,34 +357,46 @@
 
     <!-- Bottom Action Bar (Fixed feel) -->
     @if (validPermission(permission.editSitie)) {
-      <div class="flex items-center justify-end gap-3 pt-2">
-        <button
-          (click)="cancel()"
-          class="cursor-pointer w-auto flex justify-center items-center py-3 px-4 border border-slate-300 rounded-lg shadow-sm text-sm font-semibold text-slate-700 bg-white hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-50 active:transform active:scale-[0.99] transition duration-150 ease-in-out"
-          type="button"
-        >
-          Descartar
-        </button>
-
-        <button
-          class="cursor-pointer w-auto flex justify-center items-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-semibold text-white bg-indigo-500 hover:bg-indigo-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 active:transform active:scale-[0.99] transition duration-150 ease-in-out disabled:cursor-not-allowed disabled:bg-indigo-300"
-          type="button"
-          [disabled]="sitieForm.disabled"
-          (click)="save()"
-        >
-          @if (!sitieForm.disabled) {
+      <div class="flex items-center justify-between flex-col md:flex-row w-full">
+        <div class="flex items-center justify-start w-full">
+          <button
+            (click)="visit()"
+            class="cursor-pointer w-full md:w-auto flex justify-center items-center py-3 px-4 border border-indigo-300 rounded-lg shadow-sm text-sm font-semibold text-indigo-700 bg-white hover:bg-indigo-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-50 active:transform active:scale-[0.99] transition duration-150 ease-in-out"
+            type="button"
+          >
             <span class="flex items-center justify-center gap-2">
-              <i class="fa-solid fa-floppy-disk"></i>
-              <span>Guardar Configuración</span>
+              <i class="fa-solid fa-link"></i>
+              <span>Visitar</span>
             </span>
-          }
+          </button>
+        </div>
+        <div class="flex items-center justify-end gap-3 pt-2 flex-col md:flex-row w-full">
+          <button
+            (click)="cancel()"
+            class="cursor-pointer w-full md:w-auto flex justify-center items-center py-3 px-4 border border-slate-300 rounded-lg shadow-sm text-sm font-semibold text-slate-700 bg-white hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-50 active:transform active:scale-[0.99] transition duration-150 ease-in-out"
+            type="button"
+          >
+            Descartar
+          </button>
 
-          @if (sitieForm.disabled) {
-            <span
-              class="h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent"
-            ></span>
-          }
-        </button>
+          <button
+            class="cursor-pointer w-full md:w-auto flex justify-center items-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-semibold text-white bg-indigo-500 hover:bg-indigo-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 active:transform active:scale-[0.99] transition duration-150 ease-in-out disabled:cursor-not-allowed disabled:bg-indigo-300"
+            type="button"
+            [disabled]="sitieForm.disabled"
+            (click)="save()"
+          >
+            <span class="flex items-center justify-center gap-2">
+              @if (!sitieForm.disabled) {
+                <i class="fa-solid fa-floppy-disk"></i>
+              } @else {
+                <span
+                  class="h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent"
+                ></span>
+              }
+              <span>Guardar configuración</span>
+            </span>
+          </button>
+        </div>
       </div>
     } @else {
       <permission-component [show]="false" />

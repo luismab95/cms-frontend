@@ -19,7 +19,13 @@ import { Subject, takeUntil } from 'rxjs';
 @Component({
   selector: 'sitie-information',
   templateUrl: './information.html',
-  imports: [FormsModule, ReactiveFormsModule, PermissionComponent, NgSelectComponent,NgLabelTemplateDirective],
+  imports: [
+    FormsModule,
+    ReactiveFormsModule,
+    PermissionComponent,
+    NgSelectComponent,
+    NgLabelTemplateDirective,
+  ],
 })
 export class SitieInformationComponent implements OnInit {
   private readonly _formBuilder = inject(UntypedFormBuilder);
@@ -120,11 +126,14 @@ export class SitieInformationComponent implements OnInit {
       .subscribe({
         next: () => {
           this.sitieForm.enable();
-          this._toastrService.success('Proceso realizado con éxito.', 'Aviso');
+          this._toastrService.success('El sitio se actualizó correctamente.', 'Sitio actualizado');
         },
         error: (response) => {
           this.sitieForm.enable();
-          this._toastrService.error(response.error.message, 'Aviso');
+          this._toastrService.error(
+            response.error?.message || 'No fue posible actualizar la configuración del sitio.',
+            'Error al actualizar',
+          );
         },
       });
   }

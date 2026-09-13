@@ -400,6 +400,23 @@ ngx-otp-input {
     transform: translateX(100%);
   }
 }
+
 .wave-line {
   animation: wave-progress 2s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+/* ng-select */
+:root {
+  --ng-select-border: var(--color-slate-300);
+  --ng-select-bg: var(--color-slate-50/50);
+  --ng-select-primary-text: var(--color-slate-900);
+  --ng-select-border-radius: 0.5rem;
+  --ng-select-placeholder: var(--color-slate-500);
+  --ng-select-selected: var(--color-indigo-50);
+  --ng-select-box-shadow: none;
+  --ng-select-highlight: var(--color-slate-600);
+  --ng-select-selected-border: var(--color-slate-600);
+  --ng-select-container-hover-shadow: var(--color-slate-600);
+  --ng-select-value-font-size: 14px;
+  --ng-select-height: 46px
 }

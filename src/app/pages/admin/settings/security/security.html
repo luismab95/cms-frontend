@@ -1,53 +1,27 @@
-<div
-  class="w-screen flex flex-col items-center sm:flex-row sm:justify-center md:items-start md:justify-start"
->
-  <section class="relative hidden h-screen lg:flex lg:w-[65%]">
-    @if (parameters().length > 0) {
-      <auth-component class="w-full" [parameters]="parameters()" />
-    }
-  </section>
-
-  <section
-    class="flex-1 flex flex-col justify-between px-6 py-10 sm:px-12 md:px-16 lg:px-16 xl:px-24 bg-white h-screen"
-  >
-    <div class="mx-auto w-full max-w-120 sm:mx-0 sm:w-120">
-      <!-- Logo -->
-      <div class="w-auto">
-        <img [src]="getLogo()" class="w-42" alt="logo" />
-      </div>
-      <!-- Icon & Header Group -->
-      <div class="mb-8 my-12">
-        <div
-          class="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-blue-50 text-blue-600 ring-8 ring-blue-50/50 mb-5 shadow-sm"
-        >
-          <svg class="w-6 h-6 rotate-45" fill="none" stroke="currentColor" viewbox="0 0 24 24">
-            <path
-              d="M15.75 5.25a3 3 0 013 3m3 0a6 6 0 01-7.029 5.912c-.563-.097-1.159.026-1.563.43L10.5 17.25H8.25v2.25H6v2.25H2.25v-2.818c0-.597.237-1.17.659-1.591l6.499-6.499c.404-.404.527-1 .43-1.563A6 6 0 1121.75 8.25z"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-            ></path>
-          </svg>
+<form [formGroup]="securityForm">
+  <div class="flex flex-col gap-8 lg:p-4 p-0" data-aos="fade-left" data-aos-duration="1000">
+    <!-- Section 1: General Company Information -->
+    <section class="rounded-2xl border border-slate-200/80 bg-white shadow-sm overflow-hidden">
+      <div class="border-b border-slate-100 bg-white px-6 py-5">
+        <div class="flex items-center justify-between">
+          <div>
+            <h2 class="text-base font-bold text-slate-900">Cambia tu contraseña</h2>
+            <p class="text-xs text-slate-500 mt-0.5">
+              Ingresa una nueva contraseña segura para proteger tu cuenta.
+            </p>
+          </div>
         </div>
-        <h2 class="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900 mb-2.5">
-          Restablecer su contraseña
-        </h2>
-        <p class="text-sm text-slate-500 leading-relaxed max-w-sm">
-          Ingresa tu nueva contraseña. Asegúrate de cumplir con los requisitos mínimos de seguridad.
-        </p>
       </div>
-
-      <!-- Authentication Form -->
-      <form class="space-y-5" [formGroup]="resetPasswordForm" #resetPasswordNgForm="ngForm">
+      <div class="p-6 space-y-6">
         <!-- Password Input -->
         <div>
           <div class="flex items-center justify-between mb-1.5">
             <label
-              [class.text-red-500!]="validateFormControl(resetPasswordForm, 'password')"
+              [class.text-red-500!]="validateFormControl(securityForm, 'password')"
               class="block text-xs font-semibold uppercase tracking-wider text-slate-700"
               for="password"
             >
-              Nueva Contraseña <span class="text-rose-500 font-bold">*</span>
+              Nueva Contraseña
             </label>
           </div>
           <div class="relative rounded-lg shadow-sm">
@@ -57,21 +31,19 @@
               <i
                 class="fa-regular fa-keyboard"
                 [class.text-red-500!]="
-                  resetPasswordForm.get('password')?.invalid &&
-                  resetPasswordForm.get('password')?.touched
+                  securityForm.get('password')?.invalid && securityForm.get('password')?.touched
                 "
               ></i>
             </div>
             <input
               formControlName="password"
               class="block w-full pl-10 pr-11 py-2.5 sm:py-3 text-sm text-slate-900 placeholder-slate-400 bg-slate-50/50 border border-slate-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-slate-600 focus:border-slate-600 focus:bg-white transition-colors"
-              [class.border-red-500!]="validateFormControl(resetPasswordForm, 'password')"
-              [class.text-red-500!]="validateFormControl(resetPasswordForm, 'password')"
-              [class.placeholder:text-red-500!]="validateFormControl(resetPasswordForm, 'password')"
+              [class.border-red-500!]="validateFormControl(securityForm, 'password')"
+              [class.text-red-500!]="validateFormControl(securityForm, 'password')"
+              [class.placeholder:text-red-500!]="validateFormControl(securityForm, 'password')"
               id="password"
               name="password"
               placeholder="••••••••••••"
-              required=""
               [type]="passwordVisible() ? 'text' : 'password'"
             />
             <!-- Password toggle button -->
@@ -87,8 +59,7 @@
                 <i
                   class="fa-regular fa-eye"
                   [class.text-red-500!]="
-                    resetPasswordForm.get('password')?.invalid &&
-                    resetPasswordForm.get('password')?.touched
+                    securityForm.get('password')?.invalid && securityForm.get('password')?.touched
                   "
                 ></i>
               } @else {
@@ -96,8 +67,7 @@
                 <i
                   class="fa-regular fa-eye-slash"
                   [class.text-red-500!]="
-                    resetPasswordForm.get('password')?.invalid &&
-                    resetPasswordForm.get('password')?.touched
+                    securityForm.get('password')?.invalid && securityForm.get('password')?.touched
                   "
                 ></i>
               }
@@ -105,10 +75,10 @@
           </div>
 
           <!-- Errores -->
-          @if (getErrorMessage(resetPasswordForm, 'password') !== '') {
+          @if (getErrorMessage(securityForm, 'password') !== '') {
             <p class="mt-1.5 flex items-center gap-1 text-sm text-red-600">
               <i class="fa-solid fa-circle-exclamation"></i>
-              <span>{{ getErrorMessage(resetPasswordForm, 'password') }}</span>
+              <span>{{ getErrorMessage(securityForm, 'password') }}</span>
             </p>
           }
 
@@ -176,7 +146,7 @@
           <!-- Interactive Security Requirements Checklist -->
           <ul class="mt-3.5 space-y-1.5 text-xs text-slate-600" data-purpose="password-rules-list">
             @let longPwdRegexResult =
-              validateRegex(resetPasswordForm.get('password')?.value, longPwdRegex);
+              validateRegex(securityForm.get('password')?.value, longPwdRegex);
             <li class="flex items-center gap-2">
               <span
                 [ngClass]="{
@@ -197,7 +167,7 @@
             </li>
             @if (mayusPwd()) {
               @let mayusPwdRegexResult =
-                validateRegex(resetPasswordForm.get('password')?.value, mayusPwdRegex);
+                validateRegex(securityForm.get('password')?.value, mayusPwdRegex);
               <li class="flex items-center gap-2">
                 <span
                   [ngClass]="{
@@ -219,7 +189,7 @@
             }
             @if (numberPwd()) {
               @let numberPwdRegexResult =
-                validateRegex(resetPasswordForm.get('password')?.value, numberPwdRegex);
+                validateRegex(securityForm.get('password')?.value, numberPwdRegex);
               <li class="flex items-center gap-2">
                 <span
                   [ngClass]="{
@@ -241,7 +211,7 @@
             }
             @if (specialPwd()) {
               @let specialPwdRegexResult =
-                validateRegex(resetPasswordForm.get('password')?.value, specialPwdRegex);
+                validateRegex(securityForm.get('password')?.value, specialPwdRegex);
               <li class="flex items-center gap-2">
                 <span
                   [ngClass]="{
@@ -268,11 +238,11 @@
         <div>
           <div class="flex items-center justify-between mb-1.5">
             <label
-              [class.text-red-500!]="validateFormControl(resetPasswordForm, 'passwordConfirm')"
+              [class.text-red-500!]="validateFormControl(securityForm, 'passwordConfirm')"
               class="block text-xs font-semibold uppercase tracking-wider text-slate-700"
               for="password"
             >
-              Confirmar nueva contraseña <span class="text-rose-500 font-bold">*</span>
+              Confirmar nueva contraseña
             </label>
           </div>
           <div class="relative rounded-lg shadow-sm">
@@ -282,23 +252,22 @@
               <i
                 class="fa-regular fa-keyboard"
                 [class.text-red-500!]="
-                  resetPasswordForm.get('passwordConfirm')?.invalid &&
-                  resetPasswordForm.get('passwordConfirm')?.touched
+                  securityForm.get('passwordConfirm')?.invalid &&
+                  securityForm.get('passwordConfirm')?.touched
                 "
               ></i>
             </div>
             <input
               formControlName="passwordConfirm"
               class="block w-full pl-10 pr-11 py-2.5 sm:py-3 text-sm text-slate-900 placeholder-slate-400 bg-slate-50/50 border border-slate-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-slate-600 focus:border-slate-600 focus:bg-white transition-colors"
-              [class.border-red-500!]="validateFormControl(resetPasswordForm, 'passwordConfirm')"
-              [class.text-red-500!]="validateFormControl(resetPasswordForm, 'passwordConfirm')"
+              [class.border-red-500!]="validateFormControl(securityForm, 'passwordConfirm')"
+              [class.text-red-500!]="validateFormControl(securityForm, 'passwordConfirm')"
               [class.placeholder:text-red-500!]="
-                validateFormControl(resetPasswordForm, 'passwordConfirm')
+                validateFormControl(securityForm, 'passwordConfirm')
               "
               id="password"
               name="password"
               placeholder="••••••••••••"
-              required=""
               [type]="passwordConfirmedVisible() ? 'text' : 'password'"
             />
             <!-- Password toggle button -->
@@ -314,8 +283,8 @@
                 <i
                   class="fa-regular fa-eye"
                   [class.text-red-500!]="
-                    resetPasswordForm.get('passwordConfirm')?.invalid &&
-                    resetPasswordForm.get('passwordConfirm')?.touched
+                    securityForm.get('passwordConfirm')?.invalid &&
+                    securityForm.get('passwordConfirm')?.touched
                   "
                 ></i>
               } @else {
@@ -323,68 +292,141 @@
                 <i
                   class="fa-regular fa-eye-slash"
                   [class.text-red-500!]="
-                    resetPasswordForm.get('passwordConfirm')?.invalid &&
-                    resetPasswordForm.get('passwordConfirm')?.touched
+                    securityForm.get('passwordConfirm')?.invalid &&
+                    securityForm.get('passwordConfirm')?.touched
                   "
                 ></i>
               }
             </button>
           </div>
           <!-- Errores -->
-          @if (getErrorMessage(resetPasswordForm, 'passwordConfirm') !== '') {
+          @if (getErrorMessage(securityForm, 'passwordConfirm') !== '') {
             <p class="mt-1.5 flex items-center gap-1 text-sm text-red-600">
               <i class="fa-solid fa-circle-exclamation"></i>
-              <span>{{ getErrorMessage(resetPasswordForm, 'passwordConfirm') }}</span>
+              <span>{{ getErrorMessage(securityForm, 'passwordConfirm') }}</span>
             </p>
           }
         </div>
+      </div>
+    </section>
 
-        <!-- Submit Button -->
-        <div class="pt-2">
+    <!-- Section 3: Zona de peligro -->
+    <section class="rounded-2xl border border-slate-200/80 bg-white shadow-sm overflow-hidden">
+      <div class="border-b border-slate-100 bg-white px-6 py-5">
+        <div class="flex items-center justify-between">
+          <div>
+            <h2 class="text-base font-bold text-slate-p00">Preferencias de seguridad</h2>
+            <p class="text-xs text-slate-500 mt-0.5">
+              Mantenga su cuenta más segura con las siguientes preferencias.
+            </p>
+          </div>
+        </div>
+      </div>
+      <div class="p-6 space-y-6">
+        <!--MFA -->
+        <div class="px-6 transition hover:bg-slate-50/60">
+          @let status = securityForm.get('twoFactorAuth')?.value;
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div class="space-y-1.5 max-w-xl">
+              <div class="flex items-center gap-2.5 flex-wrap">
+                <h3 class="text-sm font-bold text-slate-900">
+                  Activar/Inactivar la autenticación de 2 pasos
+                </h3>
+                <span
+                  [class.bg-slate-100]="!status"
+                  [class.bg-emerald-100]="status"
+                  [class.text-slate-600]="!status"
+                  [class.text-emerald-600]="status"
+                  [class.ring-slate-200]="!status"
+                  [class.ring-emerald-200]="status"
+                  class="inline-flex items-center rounded-md bg-slate-100 px-2 py-0.5 text-[11px] font-semibold ring-1 ring-inset"
+                >
+                  <span
+                    [class.bg-slate-400]="!status"
+                    [class.bg-emerald-400]="status"
+                    class="h-1.5 w-1.5 rounded-full mr-1.5"
+                  ></span>
+                  @if (!status) {
+                    Inactivo
+                  } @else {
+                    Activo
+                  }
+                </span>
+              </div>
+              <p class="text-xs text-slate-500 leading-relaxed">
+                Activa o desactiva la autenticación de dos pasos para añadir una capa adicional de
+                seguridad a tu cuenta.
+              </p>
+              <div
+                class="flex items-center gap-1.5 text-[11px] text-amber-700 bg-amber-50 px-2.5 py-1 rounded-md w-fit ring-1 ring-inset ring-amber-600/20"
+              >
+                <i class="fa-solid fa-triangle-exclamation text-amber-600"></i>
+                <span
+                  >Activar este switch le protege contra el robo de contraseñas solicitando una
+                  código de autenticación vía correo electrónico en cada inicio de sesión..</span
+                >
+              </div>
+            </div>
+            <!-- Switch Toggle Anatomy: OFF (slate-200) -->
+            <button
+              (click)="securityForm.get('twoFactorAuth')?.setValue(!status)"
+              aria-checked="false"
+              [class.bg-indigo-600]="status"
+              [class.bg-slate-200]="!status"
+              class="relative inline-flex h-7 w-14 shrink-0 cursor-pointer rounded-full border-2 border-transparent p-0.5 transition-colors duration-200 ease-in-out focus:outline-none focus:ring-1 focus:ring-slate-500 focus:ring-offset-2 self-start sm:self-center"
+              role="switch"
+              type="button"
+            >
+              <!-- Thumb -->
+              <span
+                [class.translate-x-7]="status"
+                [class.translate-x-0]="!status"
+                class="pointer-events-none inline-flex h-6 w-6 transform items-center justify-center rounded-full bg-white shadow-md ring-0 transition duration-200 ease-in-out"
+              >
+                @if (!status) {
+                  <i class="fa-solid fa-xmark text-slate-400 fa-2xs"></i>
+                } @else {
+                  <i class="fa-solid fa-check text-indigo-400 fa-2xs"></i>
+                }
+              </span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Bottom Action Bar (Fixed feel) -->
+    @if (edit()) {
+      <div class="flex items-center justify-between flex-col md:flex-row w-full">
+        <div class="flex items-center justify-start w-full"></div>
+        <div class="flex items-center justify-end gap-3 pt-2 flex-col md:flex-row w-full">
           <button
-            class="cursor-pointer w-full flex justify-center items-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-semibold text-white bg-indigo-500 hover:bg-indigo-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 active:transform active:scale-[0.99] transition duration-150 ease-in-out disabled:cursor-not-allowed disabled:bg-indigo-300"
+            (click)="cancel()"
+            class="cursor-pointer w-full md:w-auto flex justify-center items-center py-3 px-4 border border-slate-300 rounded-lg shadow-sm text-sm font-semibold text-slate-700 bg-white hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-50 active:transform active:scale-[0.99] transition duration-150 ease-in-out"
             type="button"
-            [disabled]="resetPasswordForm.disabled"
-            (click)="resetPassword()"
+          >
+            Descartar
+          </button>
+
+          <button
+            class="cursor-pointer w-full md:w-auto flex justify-center items-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-semibold text-white bg-indigo-500 hover:bg-indigo-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 active:transform active:scale-[0.99] transition duration-150 ease-in-out disabled:cursor-not-allowed disabled:bg-indigo-300"
+            type="button"
+            [disabled]="securityForm.disabled"
+            (click)="save()"
           >
             <span class="flex items-center justify-center gap-2">
-              @if (!resetPasswordForm.disabled) {
-                <i class="fa-regular fa-floppy-disk"></i>
+              @if (!securityForm.disabled) {
+                <i class="fa-solid fa-floppy-disk"></i>
               } @else {
                 <span
                   class="h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent"
                 ></span>
               }
-              <span> Restablecer contraseña</span>
+              <span>Guardar</span>
             </span>
           </button>
         </div>
-      </form>
-      <!-- Back to Login Navigation -->
-      <div class="mt-8 text-center">
-        <a
-          class="inline-flex items-center gap-2 text-sm font-medium text-indigo-600 hover:text-indigo-700 transition-colors"
-          [routerLink]="['/auth/sign-in']"
-        >
-          <i class="fa-solid fa-arrow-left"></i>
-          Volver al inicio de sesión
-        </a>
       </div>
-    </div>
-
-    <!-- Bottom footer with cancel link -->
-
-    <div
-      class="pt-6 border-t border-slate-100 text-center sm:text-left"
-      data-purpose="recovery-footer"
-    >
-      <div class="flex items-start gap-3 bg-slate-50 p-3.5 rounded-lg border border-slate-200/60">
-        <i class="fa-solid fa-circle-info text-slate-500"></i>
-        <p class="text-xs text-slate-500 leading-relaxed">
-          ¿Problemas con el enlace o token expirado? contacta a
-          <a class="font-medium text-indigo-600 hover:underline">soporte técnico</a>.
-        </p>
-      </div>
-    </div>
-  </section>
-</div>
+    }
+  </div>
+</form>

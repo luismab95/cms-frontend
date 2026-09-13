@@ -11,6 +11,7 @@ import { LoaderComponent } from 'app/shared/components/loader/loader';
 import { LoadingBarComponent } from 'app/shared/components/loading-bar/loading-bar';
 
 import { Subject, takeUntil } from 'rxjs';
+import { DialogComponent } from 'app/shared/components/dialog/dialog';
 
 @Component({
   selector: 'panel-layout',
@@ -23,6 +24,7 @@ import { Subject, takeUntil } from 'rxjs';
     RouterOutlet,
     LoaderComponent,
     LoadingBarComponent,
+    DialogComponent,
   ],
 })
 export class PanelLayout implements OnInit, OnDestroy {

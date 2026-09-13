@@ -120,7 +120,7 @@ export const routes: Routes = [
                   page: 1,
                   limit: 10,
                   search: null,
-                  status: true,
+                  status: null,
                 }),
               templates: () =>
                 inject(TemplateService).getAll({
@@ -164,6 +164,23 @@ export const routes: Routes = [
           //             'app/modules/admin/review/review.routes'
           //         ),
           // },
+        ],
+      },
+      {
+        path: 'security',
+        children: [
+          // {
+          //   path: 'users',
+          //   loadChildren: () => import('app/modules/admin/users/users.routes'),
+          // },
+          // {
+          //   path: 'parameters',
+          //   loadChildren: () => import('app/modules/admin/parameters/parameters.routes'),
+          // },
+          {
+            path: 'settings',
+            loadComponent: () => import('./pages/admin/settings/settings').then((m) => m.Settings),
+          },
         ],
       },
       //Default

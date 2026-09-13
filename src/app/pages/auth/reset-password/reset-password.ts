@@ -192,7 +192,6 @@ export class AuthResetPassword implements OnInit {
     if (this.numberPwd()) regex += '(?=.*\\d)';
     regex += '.{' + this.longPwd() + ',}$';
 
-    console.log(regex);
     return new RegExp(regex);
   }
 

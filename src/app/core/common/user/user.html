@@ -32,8 +32,9 @@
     <!-- Enlaces Directos Compactos -->
     <div class="space-y-0.5">
       <a
+        (click)="closePanel()"
         class="cursor-pointer flex items-center justify-between px-3 py-4 rounded-lg text-xs font-medium text-slate-700 hover:bg-slate-100 transition-colors"
-        [routerLink]=""
+        [routerLink]="'/admin/security/settings'"
       >
         <span class="flex items-center gap-2.5">
           <i class="fa-regular fa-address-card"></i>
@@ -44,7 +45,7 @@
     <!-- Logout Simple Limpio -->
     <div class="border-t border-slate-100 bg-slate-50/60">
       <button
-      (click)="signOut()"
+        (click)="signOut()"
         class="cursor-pointer w-full flex items-center justify-start gap-2.5 px-3 py-4 rounded-lg text-red-600 hover:bg-red-100 text-xs font-semibold transition-colors"
         type="button"
       >

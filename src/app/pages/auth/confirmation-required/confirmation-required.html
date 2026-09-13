@@ -111,18 +111,16 @@
             [disabled]="signInForm.disabled"
             (click)="signIn()"
           >
-            @if (!signInForm.disabled) {
-              <span class="flex items-center justify-center gap-2">
+            <span class="flex items-center justify-center gap-2">
+              @if (!signInForm.disabled) {
                 <i class="fa-solid fa-right-to-bracket"></i>
-                <span>Verificar y continuar</span>
-              </span>
-            }
-
-            @if (signInForm.disabled) {
-              <span
-                class="h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent"
-              ></span>
-            }
+              } @else {
+                <span
+                  class="h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent"
+                ></span>
+              }
+              <span>Verificar y continuar</span>
+            </span>
           </button>
         </div>
       </form>

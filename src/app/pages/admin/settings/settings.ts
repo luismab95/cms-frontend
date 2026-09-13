@@ -1,34 +1,34 @@
 import { Component, OnDestroy, OnInit, inject, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
-import { SitieService } from 'app/core/services/sitie.service';
-import { PermissionCode, validAction } from 'app/shared/utils/permission.utils';
-import { DrawerI } from 'app/shared/interfaces/drawer.interface';
+import { UserService } from 'app/core/services/user.service';
 import { DrawerComponent } from 'app/shared/components/drawer/drawer';
-import { SitieInformationComponent } from './information/information';
-import { SitieLanguagesComponent } from './languages/languages';
 import { PermissionComponent } from 'app/shared/components/permission/permission';
+import { DrawerI } from 'app/shared/interfaces/drawer.interface';
+import { PermissionCode, validAction } from 'app/shared/utils/permission.utils';
+import { SettingsAccountComponent } from './account/account';
 import { Subject } from 'rxjs';
+import { SettingsSecurityComponent } from './security/security';
 
 @Component({
-  selector: 'sitie',
-  templateUrl: './sitie.html',
+  selector: 'settings',
+  templateUrl: './settings.html',
   imports: [
-    DrawerComponent,
-    SitieInformationComponent,
-    SitieLanguagesComponent,
     PermissionComponent,
+    DrawerComponent,
+    SettingsAccountComponent,
+    SettingsSecurityComponent,
   ],
 })
-export class Sitie implements OnInit, OnDestroy {
+export class Settings implements OnInit, OnDestroy {
   permission = PermissionCode;
   panels = signal<DrawerI[]>([]);
   selectedPanel = signal<string>('');
 
   private _unsubscribeAll: Subject<any> = new Subject<any>();
 
-  private readonly _sitieService = inject(SitieService);
+  private readonly _userService = inject(UserService);
 
-  readonly sitie = toSignal(this._sitieService.sitie$, {
+  readonly user = toSignal(this._userService.userLogin$, {
     initialValue: null,
   });
 
@@ -48,16 +48,16 @@ export class Sitie implements OnInit, OnDestroy {
     // Setup available panels
     this.panels.set([
       {
-        id: 'information',
-        icon: 'fa-solid fa-circle-info',
-        title: 'Información',
-        description: 'Gestiona la información general del sitio.',
+        id: 'account',
+        icon: 'fa-solid fa-circle-user',
+        title: 'Cuenta',
+        description: 'Administra tu perfil público e información privada',
       },
       {
-        id: 'languages',
-        icon: 'fa-solid fa-flag',
-        title: 'Idiomas',
-        description: 'Gestiona los idiomas disponibles del sitio.',
+        id: 'security',
+        icon: 'fa-solid fa-user-shield',
+        title: 'Seguridad',
+        description: 'Administre su contraseña y preferencias de verificación en dos pasos',
       },
     ]);
 

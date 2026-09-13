@@ -1,5 +1,6 @@
 import { DomSanitizer } from '@angular/platform-browser';
 import { ClipboardModule } from '@angular/cdk/clipboard';
+import { DecimalPipe } from '@angular/common';
 import { Component, computed, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { toSignal } from '@angular/core/rxjs-interop';
@@ -24,7 +25,7 @@ import { formatNumber } from 'app/shared/utils/number.utils';
 @Component({
   selector: 'home',
   templateUrl: './home.html',
-  imports: [RouterLink, ClipboardModule, NgApexchartsModule, PermissionComponent],
+  imports: [RouterLink, ClipboardModule, NgApexchartsModule, PermissionComponent, DecimalPipe],
 })
 export class Home {
   weekVisitButton = signal<'lastWeek' | 'thisWeek'>('thisWeek');

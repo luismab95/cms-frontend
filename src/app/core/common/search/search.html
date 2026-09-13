@@ -38,7 +38,7 @@
         <div class="flex items-center gap-2">
           <h3 class="font-bold text-slate-900 text-sm">Resultados</h3>
           <span class="bg-indigo-100 text-indigo-700 text-xs font-bold px-2 py-0.5 rounded-full">
-            {{totalResults()}} encontrados
+            {{ totalResults() }} encontrados
           </span>
         </div>
         <div class="flex items-center gap-1">
@@ -132,7 +132,7 @@
             <div
               class="w-20 h-20 rounded-2xl bg-linear-to-tr from-blue-50 to-indigo-100 flex items-center justify-center border border-blue-100 shadow-inner"
             >
-              <i class="fa-brands fa-sistrix text-indigo-500 fa-2xl"></i>
+              <i class="fa-solid fa-magnifying-glass text-indigo-500 fa-2xl"></i>
             </div>
 
             <span
@@ -150,7 +150,7 @@
 
           <p class="text-sm text-slate-500 max-w-md mx-auto leading-relaxed mb-6">
             No existen resultados que coincidan con
-            <span class="font-medium text-slate-700"> “xyz_reporte_anual_2025” </span>. Intenta
+            <span class="font-medium text-slate-700"> “{{ searchInput.value }}” </span>. Intenta
             modificar tu búsqueda.
           </p>
 
