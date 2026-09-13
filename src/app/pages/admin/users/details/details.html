@@ -1,0 +1,369 @@
+<modal-component (closeModalEvent)="closeModal($event)">
+    <form [formGroup]="userForm">
+        @let edit = user() !== null;
+        <div
+            class="w-screen max-w-lg bg-white shadow-drawer flex flex-col h-full rounded-l-2xl overflow-hidden border-l border-slate-100">
+            <!-- Drawer Header with Contextual Banner -->
+            <div class="relative bg-linear-to-b from-slate-50 to-white px-7 pt-6 pb-5 border-b border-slate-100">
+                <div class="flex items-center justify-between mb-2">
+                    <!-- action status pill -->
+                    <div class="flex items-center space-x-2">
+                        <span [class.bg-amber-400]="user() !== null" [class.bg-emerald-400]="user() === null"
+                            class="inline-block w-2 h-2 rounded-full animate-pulse"></span>
+                        <span class="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                            @if (user() === null) {
+                            Nuevo Usuario
+                            } @else {
+                            Editar Usuario
+                            }
+                        </span>
+                    </div>
+                    <!-- Close Action Button -->
+                    <button (click)="closeModal(false)" aria-label="Cerrar panel"
+                        class="cursor-pointer w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors focus:outline-none focus:ring-2 focus:ring-slate-300"
+                        type="button">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                </div>
+                <h2 class="text-xl font-bold text-slate-900 tracking-tight">
+                    @if (edit) {
+                    Editar Usuario
+                    } @else {
+                    Agregar nuevo usuario
+                    }
+                </h2>
+                <p class="text-xs text-slate-500 mt-1 leading-relaxed">
+                    Registra y administra la información de los usuarios del sistema, incluyendo sus datos
+                    personales y rol.
+                </p>
+            </div>
+            @if (validPermission(permission.viewUser)) {
+            <!-- Drawer Body Form Scrollable -->
+            <div class="flex-1 overflow-y-auto px-7 py-6 space-y-6 custom-scrollbar">
+                <!-- firstname -->
+                <div>
+                    <label [class.text-red-500!]="validateFormControl(userForm, 'firstname')"
+                        class="block text-xs font-semibold uppercase tracking-wider text-slate-700 mb-1.5"
+                        for="firstname">
+                        Nombres <span class="text-red-500 font-bold">*</span>
+                    </label>
+                    <div class="relative rounded-lg shadow-sm">
+                        <div
+                            class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                            <i class="fa-solid fa-align-right"
+                                [class.text-red-500!]="validateFormControl(userForm, 'firstname')"></i>
+                        </div>
+                        <input formControlName="firstname"
+                            class="block w-full pl-10 pr-3.5 py-2.5 sm:py-3 text-sm text-slate-900 placeholder-slate-400 bg-slate-50/50 border border-slate-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-slate-600 focus:border-slate-600 focus:bg-white transition-colors"
+                            [class.border-red-500!.text-red-500!]="validateFormControl(userForm, 'firstname')"
+                            [class.text-red-500!]="validateFormControl(userForm, 'firstname')"
+                            [class.placeholder:text-red-500!]="validateFormControl(userForm, 'firstname')"
+                            id="firstname" name="firstname" placeholder="nombres" required="" type="text" />
+                    </div>
+
+                    <!-- Errores -->
+                    @if (getErrorMessage(userForm, 'firstname') !== '') {
+                    <p class="mt-1.5 flex items-center gap-1 text-sm text-red-600">
+                        <i class="fa-solid fa-circle-exclamation"></i>
+                        <span>{{ getErrorMessage(userForm, 'firstname') }}</span>
+                    </p>
+                    }
+                </div>
+                <!-- lastname -->
+                <div>
+                    <label [class.text-red-500!]="validateFormControl(userForm, 'lastname')"
+                        class="block text-xs font-semibold uppercase tracking-wider text-slate-700 mb-1.5"
+                        for="lastname">
+                        Apellidos <span class="text-red-500 font-bold">*</span>
+                    </label>
+                    <div class="relative rounded-lg shadow-sm">
+                        <div
+                            class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                            <i class="fa-solid fa-align-right"
+                                [class.text-red-500!]="validateFormControl(userForm, 'lastname')"></i>
+                        </div>
+                        <input formControlName="lastname"
+                            class="block w-full pl-10 pr-3.5 py-2.5 sm:py-3 text-sm text-slate-900 placeholder-slate-400 bg-slate-50/50 border border-slate-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-slate-600 focus:border-slate-600 focus:bg-white transition-colors"
+                            [class.border-red-500!.text-red-500!]="validateFormControl(userForm, 'lastname')"
+                            [class.text-red-500!]="validateFormControl(userForm, 'lastname')"
+                            [class.placeholder:text-red-500!]="validateFormControl(userForm, 'lastname')" id="lastname"
+                            name="lastname" placeholder="apellidos" required="" type="text" />
+                    </div>
+
+                    <!-- Errores -->
+                    @if (getErrorMessage(userForm, 'lastname') !== '') {
+                    <p class="mt-1.5 flex items-center gap-1 text-sm text-red-600">
+                        <i class="fa-solid fa-circle-exclamation"></i>
+                        <span>{{ getErrorMessage(userForm, 'lastname') }}</span>
+                    </p>
+                    }
+                </div>
+                <!-- email -->
+                <div>
+                    <label [class.text-red-500!]="validateFormControl(userForm, 'email')"
+                        class="block text-xs font-semibold uppercase tracking-wider text-slate-700 mb-1.5" for="email">
+                        Dirección de correo electrónico <span class="text-rose-500 font-bold">*</span>
+                    </label>
+                    <div class="relative rounded-lg shadow-sm">
+                        <div
+                            class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                            <i class="fa-regular fa-envelope"
+                                [class.text-red-500!]="validateFormControl(userForm, 'email')"></i>
+                        </div>
+                        <input formControlName="email"
+                            class="block w-full pl-10 pr-3.5 py-2.5 sm:py-3 text-sm text-slate-900 placeholder-slate-400 bg-slate-50/50 border border-slate-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-slate-600 focus:border-slate-600 focus:bg-white transition-colors"
+                            [class.border-red-500!.text-red-500!]="validateFormControl(userForm, 'email')"
+                            [class.text-red-500!]="validateFormControl(userForm, 'email')"
+                            [class.placeholder:text-red-500!]="validateFormControl(userForm, 'email')" id="email"
+                            name="email" placeholder="correo@ejemplo.com" required="" type="email" />
+                    </div>
+
+                    <!-- Errores -->
+                    @if (getErrorMessage(userForm, 'email') !== '') {
+                    <p class="mt-1.5 flex items-center gap-1 text-sm text-red-600">
+                        <i class="fa-solid fa-circle-exclamation"></i>
+                        <span>{{ getErrorMessage(userForm, 'email') }}</span>
+                    </p>
+                    }
+                </div>
+                <!-- rol -->
+                <div>
+                    <label [class.text-red-500!]="validateFormControl(userForm, 'roleId')"
+                        class="block text-xs font-semibold uppercase tracking-wider text-slate-700 mb-1.5" for="roleId">
+                        Rol asignado <span class="text-rose-500 font-bold">*</span>
+                    </label>
+                    <div class="relative w-full">
+                        @let selectedRole = getRole(userForm.get('roleId')?.value);
+                        <!-- Trigger -->
+                        <button id="role-selector-trigger" type="button" (click)="toggleDropdown()"
+                            class="cursor-pointer w-full rounded-xl border border-slate-200 bg-white pl-1 pr-4 py-4 text-left shadow-sm transition-all duration-200 hover:border-indigo-300 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-indigo-500/30"
+                            [class.border-indigo-500]="isOpen()" [class.ring-2]="isOpen()"
+                            [class.border-red-500!.text-red-500!]="validateFormControl(userForm, 'roleId')"
+                            [class.text-red-500!]="validateFormControl(userForm, 'roleId')"
+                            [class.placeholder:text-red-500!]="validateFormControl(userForm, 'roleId')"
+                            [class.ring-indigo-500/20]="isOpen()">
+                            @if (selectedRole !== null) {
+                            <div class="flex min-w-0 items-center justify-between gap-4">
+                                <div class="flex min-w-0 items-center gap-3">
+                                    <div class="flex size-10 shrink-0 items-center justify-center">
+                                        <i class="fa-regular fa-address-card text-slate-400"></i>
+                                    </div>
+                                    <div class="min-w-0">
+                                        <div class="flex items-center gap-2">
+                                            <span class="truncate font-semibold text-slate-900">
+                                                {{ selectedRole.name }}
+                                            </span>
+                                            <span
+                                                class="hidden rounded-full bg-indigo-50 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-indigo-700 sm:inline-flex">
+                                                Actualmente asignado
+                                            </span>
+                                        </div>
+                                        <p class="truncate text-sm text-slate-500">
+                                            {{ selectedRole.description }}
+                                        </p>
+                                    </div>
+                                </div>
+                                <i [class.fa-chevron-down]="!isOpen()" [class.fa-chevron-up]="isOpen()"
+                                    class="fa-solid  text-slate-400"></i>
+                            </div>
+                            } @else {
+                            <div class="flex items-center justify-between gap-4">
+                                <div class="flex items-center gap-3">
+                                    <div class="flex size-10 items-center justify-center text-slate-400">
+                                        <i [class.text-red-500!]="validateFormControl(userForm, 'roleId')"
+                                            class="fa-regular fa-address-card"></i>
+                                    </div>
+                                    <div>
+                                        <span [class.text-red-500!]="validateFormControl(userForm, 'roleId')"
+                                            class="font-semibold text-slate-900"> Seleccionar rol </span>
+                                        <p [class.text-red-500!]="validateFormControl(userForm, 'roleId')"
+                                            class="text-sm text-slate-500">Selecciona un rol para el usuario</p>
+                                    </div>
+                                </div>
+                                <i [class.text-red-500!]="validateFormControl(userForm, 'roleId')"
+                                    [class.fa-chevron-down]="!isOpen()" [class.fa-chevron-up]="isOpen()"
+                                    class="fa-solid  text-slate-400"></i>
+                            </div>
+                            }
+                        </button>
+
+                        <!-- Dropdown -->
+                        @if (isOpen()) {
+                        <div
+                            class="absolute left-0 right-0 z-50 mt-2 rounded-xl border border-slate-200 bg-white p-3 shadow-xl shadow-slate-900/10">
+                            <!-- Roles -->
+                            <div class="mt-3 max-h-56 space-y-1 overflow-y-auto">
+                                @for (role of roles(); track role.id) {
+                                <button type="button" (click)="selectRole(role)"
+                                    class="cursor-pointer group w-full rounded-xl p-3 text-left transition-colors hover:bg-slate-50"
+                                    [class.bg-indigo-50]="isSelected(role)">
+                                    <div class="flex items-start gap-3">
+                                        <!-- Selected indicator -->
+                                        <div class="mt-0.5 flex size-6 shrink-0 items-center justify-center rounded-full border transition-colors"
+                                            [class.border-indigo-600]="isSelected(role)"
+                                            [class.bg-indigo-600]="isSelected(role)"
+                                            [class.border-slate-300]="!isSelected(role)"
+                                            [class.bg-white]="!isSelected(role)">
+                                            @if (isSelected(role)) {
+                                            <i class="fa-solid fa-check text-white"></i>
+                                            }
+                                        </div>
+                                        <!-- Role information -->
+                                        <div class="min-w-0 flex-1">
+                                            <div class="flex items-center justify-between gap-2">
+                                                <span class="font-semibold" [class.text-indigo-700]="isSelected(role)"
+                                                    [class.text-slate-900]="!isSelected(role)">
+                                                    {{ role.name }}
+                                                </span>
+                                                @if (isSelected(role)) {
+                                                <span
+                                                    class="shrink-0 rounded-md bg-indigo-100 px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-indigo-700">
+                                                    Seleccionado
+                                                </span>
+                                                }
+                                            </div>
+                                            <p class="mt-1 text-sm leading-5 text-slate-500">
+                                                {{ role.description }}
+                                            </p>
+                                        </div>
+                                    </div>
+                                </button>
+                                }
+                            </div>
+                        </div>
+                        }
+                    </div>
+
+                    <!-- Errores -->
+                    @if (getErrorMessage(userForm, 'roleId') !== '') {
+                    <p class="mt-1.5 flex items-center gap-1 text-sm text-red-600">
+                        <i class="fa-solid fa-circle-exclamation"></i>
+                        <span>{{ getErrorMessage(userForm, 'roleId') }}</span>
+                    </p>
+                    }
+                </div>
+                @if(edit ){
+                <!-- bloqued -->
+                <div>
+                    @let bloqued = userForm.get('bloqued')?.value;
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                        <div class="space-y-1.5 max-w-xl">
+                            <div class="flex items-center gap-2.5 flex-wrap">
+                                <h3 class="block text-xs font-semibold uppercase tracking-wider text-slate-700 ">
+                                    Desbloquea/Bloquea al usuario
+                                </h3>
+                                <span [class.bg-slate-100]="bloqued" [class.bg-emerald-100]="!bloqued"
+                                    [class.text-slate-600]="bloqued" [class.text-emerald-600]="!bloqued"
+                                    [class.ring-slate-200]="bloqued" [class.ring-emerald-200]="!bloqued"
+                                    class="inline-flex items-center rounded-md bg-slate-100 px-2 py-0.5 text-[11px] font-semibold ring-1 ring-inset">
+                                    <span [class.bg-slate-400]="bloqued" [class.bg-emerald-400]="!bloqued"
+                                        class="h-1.5 w-1.5 rounded-full mr-1.5"></span>
+                                    @if (bloqued) {
+                                    Bloqueado
+                                    } @else {
+                                    Activo
+                                    }
+                                </span>
+                            </div>
+                            <p class="text-xs text-slate-500 leading-relaxed">
+                                Bloquea el acceso del usuario a la plataforma hasta que su cuenta sea desbloqueada.
+                            </p>
+                            <div
+                                class="flex items-center gap-1.5 text-[11px] text-amber-700 bg-amber-50 px-2.5 py-1 rounded-md w-fit ring-1 ring-inset ring-amber-600/20">
+                                <i class="fa-solid fa-triangle-exclamation text-amber-600"></i>
+                                <span>Activa esta opción para bloquear la cuenta del usuario e impedir su acceso a la
+                                    plataforma. El usuario no podrá iniciar sesión hasta que la cuenta sea desbloqueada.
+                                </span>
+                            </div>
+                        </div>
+                        <!-- Switch Toggle Anatomy: OFF (slate-200) -->
+                        <button (click)="userForm.get('bloqued')?.setValue(!bloqued)" aria-checked="false"
+                            [class.bg-indigo-600]="bloqued" [class.bg-slate-200]="!bloqued"
+                            class="relative inline-flex h-7 w-14 shrink-0 cursor-pointer rounded-full border-2 border-transparent p-0.5 transition-colors duration-200 ease-in-out focus:outline-none focus:ring-1 focus:ring-slate-500 focus:ring-offset-2 self-start sm:self-center"
+                            role="switch" type="button">
+                            <!-- Thumb -->
+                            <span [class.translate-x-7]="!bloqued" [class.translate-x-0]="bloqued"
+                                class="pointer-events-none inline-flex h-6 w-6 transform items-center justify-center rounded-full bg-white shadow-md ring-0 transition duration-200 ease-in-out">
+                                @if (!bloqued) {
+                                <i class="fa-solid fa-xmark text-slate-400 fa-2xs"></i>
+                                } @else {
+                                <i class="fa-solid fa-check text-indigo-400 fa-2xs"></i>
+                                }
+                            </span>
+                        </button>
+                    </div>
+                </div>
+                }
+            </div>
+            <!-- Drawer Fixed Footer with Actions  -->
+            <div class="p-5 bg-slate-50 border-t border-slate-200/80 flex flex-col space-y-3 shrink-0">
+                <div class="flex items-center justify-between space-x-3">
+                    @if (validPermission(permission.toogleUser) && edit) {
+                    <button (click)="toggleUser()" [class.border-red-300]="user()!.status"
+                        [class.hover:bg-red-50]="user()!.status" [class.text-red-500]="user()!.status"
+                        [class.focus:ring-red-50]="user()!.status" [class.border-emerald-300]="!user()!.status"
+                        [class.text-emerald-500]="!user()!.status" [class.hover:bg-emerald-50]="!user()!.status"
+                        [class.focus:ring-emerald-50]="!user()!.status"
+                        class="cursor-pointer w-full md:w-auto flex justify-center items-center py-3 px-4 border rounded-lg shadow-sm text-sm font-semibold bg-white focus:outline-none focus:ring-2 focus:ring-offset-2 active:transform active:scale-[0.99] transition duration-150 ease-in-out"
+                        type="button">
+                        <span class="flex items-center justify-center gap-2">
+                            @if (user()!.status) {
+                            <i class="fa-solid fa-toggle-off"></i>
+                            Inactivar
+                            } @else {
+                            <i class="fa-solid fa-toggle-on"></i>
+                            Activar
+                            }
+                        </span>
+                    </button>
+                    } @else {
+                    <div></div>
+                    }
+
+                    <div class="flex items-center justify-end gap-2">
+                        <button (click)="closeModal(false)"
+                            class="cursor-pointer w-full md:w-auto flex justify-center items-center py-3 px-4 border border-slate-300 rounded-lg shadow-sm text-sm font-semibold text-slate-700 bg-white hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-50 active:transform active:scale-[0.99] transition duration-150 ease-in-out"
+                            type="button">
+                            Cancelar
+                        </button>
+
+                        @if (validPermission(permission.editUser) && edit) {
+                        <button
+                            class="cursor-pointer w-full md:w-auto flex justify-center items-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-semibold text-white bg-indigo-500 hover:bg-indigo-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 active:transform active:scale-[0.99] transition duration-150 ease-in-out disabled:cursor-not-allowed disabled:bg-indigo-300"
+                            type="button" [disabled]="userForm.disabled" (click)="updateUser()">
+                            <span class="flex items-center justify-center gap-2">
+                                @if (!userForm.disabled) {
+                                <i class="fa-solid fa-floppy-disk"></i>
+                                } @else {
+                                <span
+                                    class="h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent"></span>
+                                }
+                                <span>Guardar </span>
+                            </span>
+                        </button>
+                        }
+
+                        @if (validPermission(permission.createUser) && !edit) {
+                        <button
+                            class="cursor-pointer w-full md:w-auto flex justify-center items-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-semibold text-white bg-indigo-500 hover:bg-indigo-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 active:transform active:scale-[0.99] transition duration-150 ease-in-out disabled:cursor-not-allowed disabled:bg-indigo-300"
+                            type="button" [disabled]="userForm.disabled" (click)="newUser()">
+                            <span class="flex items-center justify-center gap-2">
+                                @if (!userForm.disabled) {
+                                <i class="fa-solid fa-floppy-disk"></i>
+                                } @else {
+                                <span
+                                    class="h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent"></span>
+                                }
+                                <span>Guardar</span>
+                            </span>
+                        </button>
+                        }
+                    </div>
+                </div>
+            </div>
+            } @else {
+            <permission-component [show]="true" />
+            }
+        </div>
+    </form>
+</modal-component>

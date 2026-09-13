@@ -10,14 +10,14 @@ export class ParameterService {
   private prefix = 'ms-security';
   private url = environment.apiUrl;
   private _parameter: ReplaySubject<ParameterI[]> = new ReplaySubject<ParameterI[]>(1);
-
+  private _parameters: ReplaySubject<ParameterI[]> = new ReplaySubject<ParameterI[]>(1);
   private _httpClient = inject(HttpClient);
   // -----------------------------------------------------------------------------------------------------
   // @ Accessors
   // -----------------------------------------------------------------------------------------------------
 
   /**
-   * Setter & getter for user
+   * Setter & getter for parameter
    *
    * @param value
    */
@@ -28,6 +28,20 @@ export class ParameterService {
 
   get parameter$(): Observable<ParameterI[]> {
     return this._parameter.asObservable();
+  }
+
+  /**
+   * Setter & getter for parameters
+   *
+   * @param value
+   */
+  set parameters(value: ParameterI[]) {
+    // Store the value
+    this._parameters.next(value);
+  }
+
+  get parameters$(): Observable<ParameterI[]> {
+    return this._parameters.asObservable();
   }
 
   // -----------------------------------------------------------------------------------------------------
@@ -53,7 +67,13 @@ export class ParameterService {
    *
    */
   getAll(): Observable<ResponseI<ParameterI[]>> {
-    return this._httpClient.get<ResponseI<ParameterI[]>>(`${this.url}/${this.prefix}/parameters`);
+    return this._httpClient
+      .get<ResponseI<ParameterI[]>>(`${this.url}/${this.prefix}/parameters`)
+      .pipe(
+        tap((response) => {
+          this._parameters.next(response.message);
+        }),
+      );
   }
 
   /**

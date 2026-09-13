@@ -9,6 +9,9 @@ import { AuthGuard } from './core/guards/auth.guard';
 import { MenuGuard } from './core/guards/menu.guard';
 import { SitieService } from './core/services/sitie.service';
 import { TemplateService } from './core/services/templates.service';
+import { ParameterService } from './core/services/parameter.service';
+import { RoleService } from './shared/services/role.service';
+import { UserService } from './core/services/user.service';
 
 export const routes: Routes = [
   // Redirect empty path to 'default sitie'
@@ -169,14 +172,28 @@ export const routes: Routes = [
       {
         path: 'security',
         children: [
-          // {
-          //   path: 'users',
-          //   loadChildren: () => import('app/modules/admin/users/users.routes'),
-          // },
-          // {
-          //   path: 'parameters',
-          //   loadChildren: () => import('app/modules/admin/parameters/parameters.routes'),
-          // },
+          {
+            path: 'users',
+            loadComponent: () => import('./pages/admin/users/list').then((m) => m.UsersList),
+            resolve: {
+              users: () =>
+                inject(UserService).getAll({
+                  limit: 10,
+                  page: 1,
+                  search: null,
+                  status: true,
+                }),
+              roles: () => inject(RoleService).getAll(),
+            },
+          },
+          {
+            path: 'parameters',
+            loadComponent: () =>
+              import('./pages/admin/parameters/parameters').then((m) => m.Parameters),
+            resolve: {
+              parameters: () => inject(ParameterService).getAll(),
+            },
+          },
           {
             path: 'settings',
             loadComponent: () => import('./pages/admin/settings/settings').then((m) => m.Settings),

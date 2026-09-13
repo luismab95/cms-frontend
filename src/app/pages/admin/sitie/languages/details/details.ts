@@ -282,6 +282,7 @@ export class SitieLanguagesDetailsComponent implements OnInit, OnDestroy {
    */
   setFile(event: any) {
     const file: File = event.target.files[0];
+    if(!file) return;
     this.selectedFile.set(file);
     this.languageForm.get('icon')?.setValue('preview');
   }

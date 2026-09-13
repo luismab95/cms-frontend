@@ -1,0 +1,546 @@
+<form [formGroup]="securityForm">
+  <div class="flex flex-col gap-8 lg:p-4 p-0" data-aos="fade-left" data-aos-duration="1000">
+    <!-- Section 1: General Information -->
+    <section class="rounded-2xl border border-slate-200/80 bg-white shadow-sm overflow-hidden">
+      <div class="border-b border-slate-100 bg-white px-6 py-5">
+        <div class="flex items-center justify-between">
+          <div>
+            <h2 class="text-base font-bold text-slate-900">Sesiones</h2>
+            <p class="text-xs text-slate-500 mt-0.5">
+              Configura y administra las políticas relacionadas con las sesiones de los usuarios.
+              Define parámetros como el tiempo de duración de las sesiones y el cierre automático
+              por inactividad.
+            </p>
+          </div>
+        </div>
+      </div>
+      <div class="p-6 space-y-6">
+        <!-- Attemps -->
+        <div>
+          <label
+            [class.text-red-500!]="validateFormControl(securityForm, 'attemps')"
+            class="block text-xs font-semibold uppercase tracking-wider text-slate-700 mb-1.5"
+            for="attemps"
+          >
+            Números de intentos para inicio de sesión <span class="text-rose-500 font-bold">*</span>
+          </label>
+          <div class="relative rounded-lg shadow-sm">
+            <div
+              class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400"
+            >
+              <i
+                class="fa-solid fa-hashtag"
+                [class.text-red-500!]="validateFormControl(securityForm, 'attemps')"
+              ></i>
+            </div>
+            <input
+              formControlName="attemps"
+              class="block w-full pl-10 pr-3.5 py-2.5 sm:py-3 text-sm text-slate-900 placeholder-slate-400 bg-slate-50/50 border border-slate-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-slate-600 focus:border-slate-600 focus:bg-white transition-colors"
+              [class.border-red-500!.text-red-500!]="validateFormControl(securityForm, 'attemps')"
+              [class.text-red-500!]="validateFormControl(securityForm, 'attemps')"
+              [class.placeholder:text-red-500!]="validateFormControl(securityForm, 'attemps')"
+              id="attemps"
+              name="attemps"
+              required=""
+              type="text"
+            />
+          </div>
+
+          <!-- Errores -->
+          @if (getErrorMessage(securityForm, 'attemps') !== '') {
+            <p class="mt-1.5 flex items-center gap-1 text-sm text-red-600">
+              <i class="fa-solid fa-circle-exclamation"></i>
+              <span>{{ getErrorMessage(securityForm, 'attemps') }}</span>
+            </p>
+          }
+        </div>
+        <!-- Inactivity -->
+        <div>
+          <label
+            [class.text-red-500!]="validateFormControl(securityForm, 'inactivity')"
+            class="block text-xs font-semibold uppercase tracking-wider text-slate-700 mb-1.5"
+            for="inactivity"
+          >
+            Tiempo cierre de sesión por inactividad (minutos)
+            <span class="text-rose-500 font-bold">*</span>
+          </label>
+          <div class="relative rounded-lg shadow-sm">
+            <div
+              class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400"
+            >
+              <i
+                class="fa-solid fa-clock"
+                [class.text-red-500!]="validateFormControl(securityForm, 'inactivity')"
+              ></i>
+            </div>
+            <input
+              formControlName="inactivity"
+              class="block w-full pl-10 pr-3.5 py-2.5 sm:py-3 text-sm text-slate-900 placeholder-slate-400 bg-slate-50/50 border border-slate-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-slate-600 focus:border-slate-600 focus:bg-white transition-colors"
+              [class.border-red-500!.text-red-500!]="
+                validateFormControl(securityForm, 'inactivity')
+              "
+              [class.text-red-500!]="validateFormControl(securityForm, 'inactivity')"
+              [class.placeholder:text-red-500!]="validateFormControl(securityForm, 'inactivity')"
+              id="inactivity"
+              name="inactivity"
+              required=""
+              type="text"
+            />
+          </div>
+
+          <!-- Errores -->
+          @if (getErrorMessage(securityForm, 'inactivity') !== '') {
+            <p class="mt-1.5 flex items-center gap-1 text-sm text-red-600">
+              <i class="fa-solid fa-circle-exclamation"></i>
+              <span>{{ getErrorMessage(securityForm, 'inactivity') }}</span>
+            </p>
+          }
+        </div>
+      </div>
+    </section>
+
+    <!-- Section 2: Contacto -->
+    <section class="rounded-2xl border border-slate-200/80 bg-white shadow-sm overflow-hidden">
+      <div class="border-b border-slate-100 bg-white px-6 py-5">
+        <div class="flex items-center justify-between">
+          <div>
+            <h2 class="text-base font-bold text-slate-p00">Verificación de usuarios - OTP</h2>
+            <p class="text-xs text-slate-500 mt-0.5">
+              Configura y administra las políticas de verificación de usuarios mediante códigos de
+              un solo uso (OTP). Define cómo y cuándo se solicitará la verificación adicional para
+              confirmar la identidad del usuario y reforzar la seguridad durante el acceso a la
+              plataforma.
+            </p>
+          </div>
+        </div>
+      </div>
+      <div class="p-6 space-y-6">
+        <!-- long -->
+        <div>
+          <label
+            [class.text-red-500!]="validateFormControl(securityForm, 'otpLong')"
+            class="block text-xs font-semibold uppercase tracking-wider text-slate-700 mb-1.5"
+            for="otpLong"
+          >
+            Longitud de código de verificación OTP <span class="text-rose-500 font-bold">*</span>
+          </label>
+          <div class="relative rounded-lg shadow-sm">
+            <div
+              class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400"
+            >
+              <i
+                class="fa-solid fa-hashtag"
+                [class.text-red-500!]="validateFormControl(securityForm, 'otpLong')"
+              ></i>
+            </div>
+            <input
+              formControlName="otpLong"
+              class="block w-full pl-10 pr-3.5 py-2.5 sm:py-3 text-sm text-slate-900 placeholder-slate-400 bg-slate-50/50 border border-slate-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-slate-600 focus:border-slate-600 focus:bg-white transition-colors"
+              [class.border-red-500!.text-red-500!]="validateFormControl(securityForm, 'otpLong')"
+              [class.text-red-500!]="validateFormControl(securityForm, 'otpLong')"
+              [class.placeholder:text-red-500!]="validateFormControl(securityForm, 'otpLong')"
+              id="otpLong"
+              name="otpLong"
+              required=""
+              type="text"
+            />
+          </div>
+
+          <!-- Errores -->
+          @if (getErrorMessage(securityForm, 'otpLong') !== '') {
+            <p class="mt-1.5 flex items-center gap-1 text-sm text-red-600">
+              <i class="fa-solid fa-circle-exclamation"></i>
+              <span>{{ getErrorMessage(securityForm, 'otpLong') }}</span>
+            </p>
+          }
+        </div>
+        <!-- resend -->
+        <div>
+          <label
+            [class.text-red-500!]="validateFormControl(securityForm, 'optTime')"
+            class="block text-xs font-semibold uppercase tracking-wider text-slate-700 mb-1.5"
+            for="optTime"
+          >
+            Tiempo para validar reenvío de código OTP (segundos)
+            <span class="text-rose-500 font-bold">*</span>
+          </label>
+          <div class="relative rounded-lg shadow-sm">
+            <div
+              class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400"
+            >
+              <i
+                class="fa-solid fa-clock"
+                [class.text-red-500!]="validateFormControl(securityForm, 'optTime')"
+              ></i>
+            </div>
+            <input
+              formControlName="optTime"
+              class="block w-full pl-10 pr-3.5 py-2.5 sm:py-3 text-sm text-slate-900 placeholder-slate-400 bg-slate-50/50 border border-slate-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-slate-600 focus:border-slate-600 focus:bg-white transition-colors"
+              [class.border-red-500!.text-red-500!]="validateFormControl(securityForm, 'optTime')"
+              [class.text-red-500!]="validateFormControl(securityForm, 'optTime')"
+              [class.placeholder:text-red-500!]="validateFormControl(securityForm, 'optTime')"
+              id="optTime"
+              name="optTime"
+              required=""
+              type="text"
+            />
+          </div>
+
+          <!-- Errores -->
+          @if (getErrorMessage(securityForm, 'inactivity') !== '') {
+            <p class="mt-1.5 flex items-center gap-1 text-sm text-red-600">
+              <i class="fa-solid fa-circle-exclamation"></i>
+              <span>{{ getErrorMessage(securityForm, 'inactivity') }}</span>
+            </p>
+          }
+        </div>
+        <!-- type -->
+        <div>
+          <label
+            [class.text-red-500!]="validateFormControl(securityForm, 'otpType')"
+            class="block text-xs font-semibold uppercase tracking-wider text-slate-700 mb-1.5"
+            for="otpType"
+          >
+            Tipo de caracteres <span class="text-rose-500 font-bold">*</span>
+          </label>
+          <div
+            [class.border-red-500!.text-red-500!]="validateFormControl(securityForm, 'otpType')"
+            [class.border!]="validateFormControl(securityForm, 'otpType')"
+            [class.text-red-500!]="validateFormControl(securityForm, 'otpType')"
+            [class.placeholder:text-red-500!]="validateFormControl(securityForm, 'otpType')"
+            class="relative rounded-sm shadow-sm"
+          >
+            <ng-select
+              [class.border-red-500!.text-red-500!]="validateFormControl(securityForm, 'otpType')"
+              [class.text-red-500!]="validateFormControl(securityForm, 'otpType')"
+              [class.placeholder:text-red-500!]="validateFormControl(securityForm, 'otpType')"
+              id="otpType"
+              [clearable]="false"
+              [items]="[
+                { id: 'NUMBER', name: 'Númerico' },
+                { id: 'LETTER', name: 'Letras' },
+                { id: 'COMBINED', name: 'Combinado' },
+              ]"
+              [formControlName]="'otpType'"
+              bindLabel="name"
+              bindValue="id"
+              notFoundText="No se encontraron elementos"
+            >
+              <ng-template ng-label-tmp let-item="item">
+                <div class="flex items-center gap-2 text-sm text-slate-900 placeholder-slate-400">
+                  <i
+                    class="fa-solid fa-list-ul text-slate-400"
+                    [class.text-red-500!]="validateFormControl(securityForm, 'otpType')"
+                  ></i>
+                  {{ item.name }}
+                </div>
+              </ng-template>
+            </ng-select>
+          </div>
+
+          <!-- Errores -->
+          @if (getErrorMessage(securityForm, 'otpType') !== '') {
+            <p class="mt-1.5 flex items-center gap-1 text-sm text-red-600">
+              <i class="fa-solid fa-circle-exclamation"></i>
+              <span>{{ getErrorMessage(securityForm, 'otpType') }}</span>
+            </p>
+          }
+        </div>
+      </div>
+    </section>
+
+    <!-- Section 3: Password -->
+    <section class="rounded-2xl border border-slate-200/80 bg-white shadow-sm overflow-hidden">
+      <div class="border-b border-slate-100 bg-white px-6 py-5">
+        <div class="flex items-center justify-between">
+          <div>
+            <h2 class="text-base font-bold text-slate-p00">Contraseñas</h2>
+            <p class="text-xs text-slate-500 mt-0.5">
+              Configura y administra las políticas de seguridad de las contraseñas de los usuarios.
+              Define los requisitos mínimos de complejidad, longitud, caducidad y otras condiciones
+              necesarias para mantener credenciales seguras y reducir el riesgo de accesos no
+              autorizados.
+            </p>
+          </div>
+        </div>
+      </div>
+      <div class="p-6 space-y-6">
+        <!-- long -->
+        <div>
+          <label
+            [class.text-red-500!]="validateFormControl(securityForm, 'pwdLong')"
+            class="block text-xs font-semibold uppercase tracking-wider text-slate-700 mb-1.5"
+            for="pwdLong"
+          >
+            Longitud mínima de contraseñas <span class="text-rose-500 font-bold">*</span>
+          </label>
+          <div class="relative rounded-lg shadow-sm">
+            <div
+              class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400"
+            >
+              <i
+                class="fa-solid fa-hashtag"
+                [class.text-red-500!]="validateFormControl(securityForm, 'pwdLong')"
+              ></i>
+            </div>
+            <input
+              formControlName="pwdLong"
+              class="block w-full pl-10 pr-3.5 py-2.5 sm:py-3 text-sm text-slate-900 placeholder-slate-400 bg-slate-50/50 border border-slate-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-slate-600 focus:border-slate-600 focus:bg-white transition-colors"
+              [class.border-red-500!.text-red-500!]="validateFormControl(securityForm, 'pwdLong')"
+              [class.text-red-500!]="validateFormControl(securityForm, 'pwdLong')"
+              [class.placeholder:text-red-500!]="validateFormControl(securityForm, 'pwdLong')"
+              id="pwdLong"
+              name="pwdLong"
+              required=""
+              type="text"
+            />
+          </div>
+
+          <!-- Errores -->
+          @if (getErrorMessage(securityForm, 'pwdLong') !== '') {
+            <p class="mt-1.5 flex items-center gap-1 text-sm text-red-600">
+              <i class="fa-solid fa-circle-exclamation"></i>
+              <span>{{ getErrorMessage(securityForm, 'pwdLong') }}</span>
+            </p>
+          }
+        </div>
+        <!-- Mayus -->
+        <div>
+          @let pwdMayus = securityForm.get('pwdMayus')?.value;
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div class="space-y-1.5 max-w-xl">
+              <div class="flex items-center gap-2.5 flex-wrap">
+                <h3 class="text-xs font-semibold text-slate-900 uppercase">Permitir mayúsculas</h3>
+                <span
+                  [class.bg-slate-100]="!pwdMayus"
+                  [class.bg-emerald-100]="pwdMayus"
+                  [class.text-slate-600]="!pwdMayus"
+                  [class.text-emerald-600]="pwdMayus"
+                  [class.ring-slate-200]="!pwdMayus"
+                  [class.ring-emerald-200]="pwdMayus"
+                  class="inline-flex items-center rounded-md bg-slate-100 px-2 py-0.5 text-[11px] font-semibold ring-1 ring-inset"
+                >
+                  <span
+                    [class.bg-slate-400]="!pwdMayus"
+                    [class.bg-emerald-400]="pwdMayus"
+                    class="h-1.5 w-1.5 rounded-full mr-1.5"
+                  ></span>
+                  @if (!pwdMayus) {
+                    Inactivo
+                  } @else {
+                    Activo
+                  }
+                </span>
+              </div>
+              <p class="text-xs text-slate-500 leading-relaxed">
+                Permite o restringe el uso de caracteres en mayúsculas en las contraseñas de los
+                usuarios.
+              </p>
+              <div
+                class="flex items-center gap-1.5 text-[11px] text-amber-700 bg-amber-50 px-2.5 py-1 rounded-md w-fit ring-1 ring-inset ring-amber-600/20"
+              >
+                <i class="fa-solid fa-triangle-exclamation text-amber-600"></i>
+                <span
+                  >Al activar esta opción, las contraseñas deberán incluir al menos un carácter en
+                  mayúscula.</span
+                >
+              </div>
+            </div>
+            <!-- Switch Toggle Anatomy: OFF (slate-200) -->
+            <button
+              (click)="securityForm.get('pwdMayus')?.setValue(!pwdMayus)"
+              aria-checked="false"
+              [class.bg-indigo-600]="pwdMayus"
+              [class.bg-slate-200]="!pwdMayus"
+              class="relative inline-flex h-7 w-14 shrink-0 cursor-pointer rounded-full border-2 border-transparent p-0.5 transition-colors duration-200 ease-in-out focus:outline-none focus:ring-1 focus:ring-slate-500 focus:ring-offset-2 self-start sm:self-center"
+              role="switch"
+              type="button"
+            >
+              <!-- Thumb -->
+              <span
+                [class.translate-x-7]="pwdMayus"
+                [class.translate-x-0]="!pwdMayus"
+                class="pointer-events-none inline-flex h-6 w-6 transform items-center justify-center rounded-full bg-white shadow-md ring-0 transition duration-200 ease-in-out"
+              >
+                @if (!pwdMayus) {
+                  <i class="fa-solid fa-xmark text-slate-400 fa-2xs"></i>
+                } @else {
+                  <i class="fa-solid fa-check text-indigo-400 fa-2xs"></i>
+                }
+              </span>
+            </button>
+          </div>
+        </div>
+        <!-- Number -->
+        <div>
+          @let pwdNumber = securityForm.get('pwdNumber')?.value;
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div class="space-y-1.5 max-w-xl">
+              <div class="flex items-center gap-2.5 flex-wrap">
+                <h3 class="text-xs font-semibold text-slate-900 uppercase">Permitir números</h3>
+                <span
+                  [class.bg-slate-100]="!pwdNumber"
+                  [class.bg-emerald-100]="pwdNumber"
+                  [class.text-slate-600]="!pwdNumber"
+                  [class.text-emerald-600]="pwdNumber"
+                  [class.ring-slate-200]="!pwdNumber"
+                  [class.ring-emerald-200]="pwdNumber"
+                  class="inline-flex items-center rounded-md bg-slate-100 px-2 py-0.5 text-[11px] font-semibold ring-1 ring-inset"
+                >
+                  <span
+                    [class.bg-slate-400]="!pwdNumber"
+                    [class.bg-emerald-400]="pwdNumber"
+                    class="h-1.5 w-1.5 rounded-full mr-1.5"
+                  ></span>
+                  @if (!pwdNumber) {
+                    Inactivo
+                  } @else {
+                    Activo
+                  }
+                </span>
+              </div>
+              <p class="text-xs text-slate-500 leading-relaxed">
+                Permite o restringe el uso de caracteres numéricos en las contraseñas de los
+                usuarios.
+              </p>
+              <div
+                class="flex items-center gap-1.5 text-[11px] text-amber-700 bg-amber-50 px-2.5 py-1 rounded-md w-fit ring-1 ring-inset ring-amber-600/20"
+              >
+                <i class="fa-solid fa-triangle-exclamation text-amber-600"></i>
+                <span
+                  >Al activar esta opción, las contraseñas deberán incluir al menos un número.</span
+                >
+              </div>
+            </div>
+            <!-- Switch Toggle Anatomy: OFF (slate-200) -->
+            <button
+              (click)="securityForm.get('pwdNumber')?.setValue(!pwdNumber)"
+              aria-checked="false"
+              [class.bg-indigo-600]="pwdNumber"
+              [class.bg-slate-200]="!pwdNumber"
+              class="relative inline-flex h-7 w-14 shrink-0 cursor-pointer rounded-full border-2 border-transparent p-0.5 transition-colors duration-200 ease-in-out focus:outline-none focus:ring-1 focus:ring-slate-500 focus:ring-offset-2 self-start sm:self-center"
+              role="switch"
+              type="button"
+            >
+              <!-- Thumb -->
+              <span
+                [class.translate-x-7]="pwdNumber"
+                [class.translate-x-0]="!pwdNumber"
+                class="pointer-events-none inline-flex h-6 w-6 transform items-center justify-center rounded-full bg-white shadow-md ring-0 transition duration-200 ease-in-out"
+              >
+                @if (!pwdNumber) {
+                  <i class="fa-solid fa-xmark text-slate-400 fa-2xs"></i>
+                } @else {
+                  <i class="fa-solid fa-check text-indigo-400 fa-2xs"></i>
+                }
+              </span>
+            </button>
+          </div>
+        </div>
+        <!-- Special -->
+        <div>
+          @let pwdSpecial = securityForm.get('pwdSpecial')?.value;
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div class="space-y-1.5 max-w-xl">
+              <div class="flex items-center gap-2.5 flex-wrap">
+                <h3 class="text-xs font-semibold text-slate-900 uppercase">
+                  Permitir caracteres especiales
+                </h3>
+                <span
+                  [class.bg-slate-100]="!pwdSpecial"
+                  [class.bg-emerald-100]="pwdSpecial"
+                  [class.text-slate-600]="!pwdSpecial"
+                  [class.text-emerald-600]="pwdSpecial"
+                  [class.ring-slate-200]="!pwdSpecial"
+                  [class.ring-emerald-200]="pwdSpecial"
+                  class="inline-flex items-center rounded-md bg-slate-100 px-2 py-0.5 text-[11px] font-semibold ring-1 ring-inset"
+                >
+                  <span
+                    [class.bg-slate-400]="!pwdSpecial"
+                    [class.bg-emerald-400]="pwdSpecial"
+                    class="h-1.5 w-1.5 rounded-full mr-1.5"
+                  ></span>
+                  @if (!pwdSpecial) {
+                    Inactivo
+                  } @else {
+                    Activo
+                  }
+                </span>
+              </div>
+              <p class="text-xs text-slate-500 leading-relaxed">
+                Permite o restringe el uso de caracteres especiales en las contraseñas de los
+                usuarios.
+              </p>
+              <div
+                class="flex items-center gap-1.5 text-[11px] text-amber-700 bg-amber-50 px-2.5 py-1 rounded-md w-fit ring-1 ring-inset ring-amber-600/20"
+              >
+                <i class="fa-solid fa-triangle-exclamation text-amber-600"></i>
+                <span
+                  >Al activar esta opción, las contraseñas deberán incluir al menos un carácter
+                  especial.</span
+                >
+              </div>
+            </div>
+            <!-- Switch Toggle Anatomy: OFF (slate-200) -->
+            <button
+              (click)="securityForm.get('pwdSpecial')?.setValue(!pwdSpecial)"
+              aria-checked="false"
+              [class.bg-indigo-600]="pwdSpecial"
+              [class.bg-slate-200]="!pwdSpecial"
+              class="relative inline-flex h-7 w-14 shrink-0 cursor-pointer rounded-full border-2 border-transparent p-0.5 transition-colors duration-200 ease-in-out focus:outline-none focus:ring-1 focus:ring-slate-500 focus:ring-offset-2 self-start sm:self-center"
+              role="switch"
+              type="button"
+            >
+              <!-- Thumb -->
+              <span
+                [class.translate-x-7]="pwdSpecial"
+                [class.translate-x-0]="!pwdSpecial"
+                class="pointer-events-none inline-flex h-6 w-6 transform items-center justify-center rounded-full bg-white shadow-md ring-0 transition duration-200 ease-in-out"
+              >
+                @if (!pwdSpecial) {
+                  <i class="fa-solid fa-xmark text-slate-400 fa-2xs"></i>
+                } @else {
+                  <i class="fa-solid fa-check text-indigo-400 fa-2xs"></i>
+                }
+              </span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Bottom Action Bar (Fixed feel) -->
+    @if (edit()) {
+      <div class="flex items-center justify-between flex-col md:flex-row w-full">
+        <div class="flex items-center justify-start w-full"></div>
+        <div class="flex items-center justify-end gap-3 pt-2 flex-col md:flex-row w-full">
+          <button
+            (click)="cancel()"
+            class="cursor-pointer w-full md:w-auto flex justify-center items-center py-3 px-4 border border-slate-300 rounded-lg shadow-sm text-sm font-semibold text-slate-700 bg-white hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-50 active:transform active:scale-[0.99] transition duration-150 ease-in-out"
+            type="button"
+          >
+            Descartar
+          </button>
+
+          <button
+            class="cursor-pointer w-full md:w-auto flex justify-center items-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-semibold text-white bg-indigo-500 hover:bg-indigo-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 active:transform active:scale-[0.99] transition duration-150 ease-in-out disabled:cursor-not-allowed disabled:bg-indigo-300"
+            type="button"
+            [disabled]="securityForm.disabled"
+            (click)="save()"
+          >
+            <span class="flex items-center justify-center gap-2">
+              @if (!securityForm.disabled) {
+                <i class="fa-solid fa-floppy-disk"></i>
+              } @else {
+                <span
+                  class="h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent"
+                ></span>
+              }
+              <span>Guardar</span>
+            </span>
+          </button>
+        </div>
+      </div>
+    }
+  </div>
+</form>

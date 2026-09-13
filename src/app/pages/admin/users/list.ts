@@ -1,60 +1,61 @@
-import { AsyncPipe, TitleCasePipe, UpperCasePipe, NgClass } from '@angular/common';
-import { Component, OnInit, inject, signal } from '@angular/core';
-import { toSignal } from '@angular/core/rxjs-interop';
+import { Component, inject, OnDestroy, OnInit, signal } from '@angular/core';
+import { NgClass, TitleCasePipe, UpperCasePipe } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, UntypedFormControl } from '@angular/forms';
+import { toSignal } from '@angular/core/rxjs-interop';
 import { ToastrService } from '@iqx-limited/ngx-toastr';
-import { ParameterService } from 'app/core/services/parameter.service';
+import { UserI } from 'app/core/interfaces/user.interface';
+import { UserService } from 'app/core/services/user.service';
 import { PaginationComponent } from 'app/shared/components/pagination/pagination';
 import { PermissionComponent } from 'app/shared/components/permission/permission';
-import { LanguageI } from 'app/shared/interfaces/language.interfaces';
 import { PaginationResquestI } from 'app/shared/interfaces/response.interface';
-import { LanguageService } from 'app/shared/services/language.service';
-import { findParameter } from 'app/shared/utils/parameter.utils';
+import { RoleService } from 'app/shared/services/role.service';
 import { PermissionCode, validAction } from 'app/shared/utils/permission.utils';
-import { debounceTime, Subject, takeUntil } from 'rxjs';
-import { SitieLanguagesDetailsComponent } from './details/details';
+import { Subject, takeUntil, debounceTime } from 'rxjs';
+import { UsersDetailsComponent } from './details/details';
 
 @Component({
-  selector: 'sitie-languages',
-  templateUrl: './languages.html',
+  selector: 'users-list',
+  templateUrl: './list.html',
   imports: [
     FormsModule,
     ReactiveFormsModule,
+    PaginationComponent,
+    PermissionComponent,
+    UsersDetailsComponent,
+    NgClass,
     TitleCasePipe,
     UpperCasePipe,
-    PermissionComponent,
-    PaginationComponent,
-    SitieLanguagesDetailsComponent,
-    NgClass,
   ],
 })
-export class SitieLanguagesComponent implements OnInit {
-  permission = PermissionCode;
-  searchInputControl: UntypedFormControl = new UntypedFormControl();
-  urlStatics = signal<string>('');
+export class UsersList implements OnInit, OnDestroy {
   limit = signal<number>(10);
-  totalLanguage = signal<number>(10);
+  totalUser = signal<number>(10);
   showDetails = signal<boolean>(false);
-  selectedLanguage = signal<LanguageI | null>(null);
+  selectedUser = signal<UserI | null>(null);
+
+  searchInputControl: UntypedFormControl = new UntypedFormControl();
+
+  permission = PermissionCode;
 
   private _unsubscribeAll: Subject<any> = new Subject<any>();
 
-  private _parameterService = inject(ParameterService);
-  private _languageService = inject(LanguageService);
-  private _toastrService = inject(ToastrService);
+  private readonly _userService = inject(UserService);
+  private readonly _roleService = inject(RoleService);
+  private readonly _toastrService = inject(ToastrService);
 
-  readonly parameters = toSignal(this._parameterService.parameter$, {
-    initialValue: [],
-  });
-  readonly languages = toSignal(this._languageService.languages$, {
+  readonly users = toSignal(this._userService.users$, {
     initialValue: { records: [], total: 0, page: 0, totalPage: 0 },
+  });
+
+  readonly roles = toSignal(this._roleService.roles$, {
+    initialValue: [],
   });
 
   /**
    * Constructor
    */
   constructor() {
-    this.totalLanguage.set(this.languages().records.length);
+    this.totalUser.set(this.users().records.length);
   }
 
   // -----------------------------------------------------------------------------------------------------
@@ -65,9 +66,6 @@ export class SitieLanguagesComponent implements OnInit {
    * On init
    */
   ngOnInit(): void {
-    // Get the languages
-    this.urlStatics.set(findParameter('APP_STATICS_URL', this.parameters())!.value);
-
     // Subscribe to search input field value changes
     this.searchInputControl.valueChanges
       .pipe(debounceTime(700), takeUntil(this._unsubscribeAll))
@@ -100,7 +98,7 @@ export class SitieLanguagesComponent implements OnInit {
       search,
       status,
     };
-    this._languageService
+    this._userService
       .getAll(params)
       .pipe(takeUntil(this._unsubscribeAll))
       .subscribe({
@@ -115,8 +113,8 @@ export class SitieLanguagesComponent implements OnInit {
    *
    * @param data
    */
-  openDetailsModal(language: LanguageI | null): void {
-    this.selectedLanguage.set(language);
+  openDetailsModal(user: UserI | null): void {
+    this.selectedUser.set(user);
     this.showDetails.set(true);
   }
 
@@ -128,19 +126,13 @@ export class SitieLanguagesComponent implements OnInit {
   }
 
   /**
-   * Get icon
+   * GetRole
+   * @param roleId
    * @returns
    */
-  getICon(icon: string) {
-    return `${this.urlStatics()}/${icon}`;
-  }
-
-  /**
-   * Clear input search
-   */
-  clearSearch() {
-    this.searchInputControl.reset();
-    this.getAll(1, null, null);
+  getRole(roleId: number): string {
+    const roles = this.roles();
+    return roles.find((role) => role.id === roleId)?.name || '';
   }
 
   /**
@@ -161,10 +153,18 @@ export class SitieLanguagesComponent implements OnInit {
   }
 
   /**
+   * Clear input search
+   */
+  clearSearch() {
+    this.searchInputControl.reset();
+    this.getAll(1, null, null);
+  }
+
+  /**
    * Close modal
    */
   closeModal(load: boolean) {
-    this.selectedLanguage.set(null);
+    this.selectedUser.set(null);
     this.showDetails.set(false);
     if (load) this.getAll(1, null, null);
   }

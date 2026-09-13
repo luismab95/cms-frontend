@@ -1,0 +1,339 @@
+<form [formGroup]="logoForm">
+    <div class="flex flex-col gap-8 lg:p-4 p-0" data-aos="fade-left" data-aos-duration="1000">
+        <!-- Section 1: fondo -->
+        <section class="rounded-2xl border border-slate-200/80 bg-white shadow-sm overflow-hidden">
+            <div class="border-b border-slate-100 bg-white px-6 py-5">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h2 class="text-base font-bold text-slate-900">Fondos</h2>
+                        <p class="text-xs text-slate-500 mt-0.5">
+                            Configura los fondos de tu aplicación para las experiencias de acceso y bienvenida.
+                        </p>
+                    </div>
+                </div>
+            </div>
+            <div class="p-6 space-y-6">
+                <div class="flex items-center justify-between">
+                    <h3 class="text-xs font-bold uppercase tracking-wider text-slate-500">Autenticación</h3>
+                    <span class="text-[11px] text-slate-400">Pantalla de Login, MFA y Recuperación de
+                        Contraseña</span>
+                </div>
+                <!-- Authentic Background Interactive Card matching IMAGE_2 -->
+                <div class="relative rounded-xl overflow-hidden border border-slate-200 shadow-sm bg-slate-900 group">
+                    <!-- Provided Auth Background Image -->
+                    <div
+                        class="relative w-full h-80 sm:h-96 overflow-hidden bg-slate-950 flex items-center justify-center">
+                        <img alt="Fondo de autenticación con círculos y cuadrículas sobre gradiente azul y violeta"
+                            class="w-full h-full object-cover object-center transform group-hover:scale-[1.01] transition-transform duration-500"
+                            [src]="authBackgroundUrl()" />
+                        <!-- Simulated Overlay Layer Preview -->
+                        <div class="absolute inset-0 bg-slate-950/20 backdrop-brightness-[0.98] pointer-events-none">
+                        </div>
+                        <!-- Floating Login Box Preview Mockup for context -->
+                        <div
+                            class="absolute hidden lg:flex flex-col items-center justify-center w-72 p-5 rounded-xl bg-white/10 backdrop-blur-md border border-white/20 shadow-2xl text-white pointer-events-none">
+                            <div class="w-9 h-9 rounded-lg bg-white/20 flex items-center justify-center mb-3">
+                                <i class="ph-bold ph-lock-key text-white text-lg"></i>
+                            </div>
+                            <div class="h-2.5 w-32 bg-white/60 rounded mb-2"></div>
+                            <div class="h-2 w-20 bg-white/30 rounded mb-4"></div>
+                            <div class="w-full h-7 bg-white/20 rounded border border-white/30 mb-2"></div>
+                            <div class="w-full h-7 bg-brand-600 rounded"></div>
+                            <span class="text-[9px] text-white/50 mt-3">Previsualización simulada de login</span>
+                        </div>
+                        <!-- Floating Badge in Image corner -->
+                        <div
+                            class="absolute top-4 left-4 flex items-center space-x-2 bg-slate-900/80 backdrop-blur-md text-white px-3 py-1.5 rounded-lg border border-white/10 shadow-lg text-xs font-medium">
+                            <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+                            <span>Fondo Activo en Pantalla de Login</span>
+                        </div>
+                        <!-- Primary Floating Actions Toolbar -->
+                        <div class="absolute bottom-4 right-4 flex items-center space-x-2">
+                            <label
+                                class="h-9 px-3.5 bg-indigo-600 hover:bg-brand-700 text-white text-xs font-semibold rounded-lg shadow-lg shadow-indigo-600/30 transition-all flex items-center gap-1.5 cursor-pointer">
+                                <i class="fa-solid fa-upload"></i>
+                                <span>Reemplazar imagen</span>
+                                <input #authBackgroundLogo class="hidden" accept="image/*"
+                                    (change)="removeImage($event,'authBackground')" required="" type="file" />
+
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 2: iconos -->
+        <section class="rounded-2xl border border-slate-200/80 bg-white shadow-sm overflow-hidden">
+            <div class="border-b border-slate-100 bg-white px-6 py-5">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h2 class="text-base font-bold text-slate-p00">Iconos</h2>
+                        <p class="text-xs text-slate-500 mt-0.5">
+                            Configura el ícono de tu aplicación y navegadores web (Favicon, Apple Touch &amp;
+                            PWA).
+                        </p>
+                    </div>
+                </div>
+            </div>
+            <div class="p-6 space-y-6">
+                <h3 class="text-xs font-bold uppercase tracking-wider text-slate-500 mb-4">Web</h3>
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
+                    <!-- Left: Dropzone Upload Card -->
+                    <div class="lg:col-span-5">
+                        <div
+                            class="border-2 border-dashed border-slate-300 hover:border-indigo-500 transition-colors bg-slate-50/50 hover:bg-indigo-50/20 rounded-xl p-6 flex flex-col items-center text-center group cursor-pointer relative">
+                            <!-- Favicon Graphic Representation with CMS Letters -->
+                            <div
+                                class="w-16 h-16 rounded-xl bg-white shadow-md border border-slate-200 flex items-center justify-center mb-3 relative group-hover:scale-105 transition-transform bg-transparency-grid">
+                                <div class="flex items-center font-extrabold tracking-tighter text-sm">
+                                    <img [src]="iconUrl()" alt="preview" />
+                                </div>
+                                <div
+                                    class="absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-indigo-600 text-white flex items-center justify-center text-[10px] shadow">
+                                    <i class="fa-solid fa-pen fa-2xs"></i>
+                                </div>
+                            </div>
+                            <p class="text-xs font-semibold text-slate-800">
+                                <span (click)="iconLogo.click()" class="text-indigo-600 underline">Examinar
+                                    archvivos</span>
+                            </p>
+                            <p class="text-[11px] text-slate-400 mt-1">
+                                SVG, PNG transparente o ICO (recomendado 32x32px)
+                            </p>
+                            <input #iconLogo class="hidden" accept=".ico,.png,.svg"
+                                (change)="removeImage($event,'icon')" required="" type="file" />
+                        </div>
+                    </div>
+                    <!-- Right: Real-time Browser Tab Simulation -->
+                    <div class="lg:col-span-7 bg-slate-100 rounded-xl p-4 border border-slate-200">
+                        <div
+                            class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider mb-2 flex items-center justify-between">
+                            <span>Previsualización de pestaña de navegador</span>
+                            <span class="text-emerald-600 flex items-center gap-1 font-mono text-[10px]">
+                                <i class="ph-bold ph-check-circle"></i> Renderizado óptimo
+                            </span>
+                        </div>
+                        <!-- Realistic Chrome Tab Mockup -->
+                        <div class="bg-white rounded-lg shadow-sm border border-slate-200 overflow-hidden">
+                            <!-- Browser Window Header -->
+                            <div
+                                class="bg-slate-200/70 px-3 py-2 flex items-center space-x-2 border-b border-slate-200">
+                                <div class="flex space-x-1.5">
+                                    <div class="w-2.5 h-2.5 rounded-full bg-rose-400"></div>
+                                    <div class="w-2.5 h-2.5 rounded-full bg-amber-400"></div>
+                                    <div class="w-2.5 h-2.5 rounded-full bg-emerald-400"></div>
+                                </div>
+                                <!-- Tab -->
+                                <div
+                                    class="ml-2 flex items-center space-x-2 bg-white px-3 py-1.5 rounded-t-md text-xs border-t border-x border-slate-200 shadow-sm max-w-xs">
+                                    <div
+                                        class="w-4 h-4 rounded flex items-center justify-center font-black text-[9px] bg-slate-50 border border-slate-200 leading-none">
+                                        <img [src]="iconUrl()" alt="preview" />
+                                    </div>
+                                    <span class="truncate font-medium text-slate-800">Administración</span>
+                                    <i class="ph ph-x text-[10px] text-slate-400 ml-1 hover:text-slate-700"></i>
+                                </div>
+                            </div>
+                            <!-- Tab URL Bar Preview -->
+                            <div
+                                class="px-4 py-2 bg-white flex items-center space-x-3 text-xs text-slate-400 border-b border-slate-100">
+                                <i class="ph ph-arrow-left"></i>
+                                <i class="ph ph-arrow-right"></i>
+                                <i class="ph ph-arrow-clockwise"></i>
+                                <div
+                                    class="flex-1 bg-slate-100 rounded-md py-1 px-3 text-slate-600 font-mono text-[11px] flex items-center gap-1.5">
+                                    <i class="ph-fill ph-lock text-emerald-600 text-[10px]"></i>
+                                    <span>https://cms.miempresa.com/admin/parametros</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 3: logos -->
+        <section class="rounded-2xl border border-slate-200/80 bg-white shadow-sm overflow-hidden">
+            <div class="border-b border-slate-100 bg-white px-6 py-5">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h2 class="text-base font-bold text-slate-p00">Logos</h2>
+                        <p class="text-xs text-slate-500 mt-0.5">
+                            Configura los logos de tu aplicación para las distintas superficies y contextos de
+                            visualización.
+                        </p>
+                    </div>
+                </div>
+            </div>
+            <div class="p-6 space-y-6">
+                <!-- 3 Logotypes Grid: Principal, Secundario, Email (As in Image Reference) -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- VARIANT 1: LOGO PRINCIPAL -->
+                    <div
+                        class="border border-slate-200 rounded-xl overflow-hidden flex flex-col bg-white hover:border-slate-300 transition-all shadow-sm">
+                        <div class="p-4 border-b border-slate-100 flex items-center justify-between">
+                            <div>
+                                <h3 class="text-xs font-bold uppercase tracking-wider text-slate-900">Principal</h3>
+                                <p class="text-[11px] text-slate-400">Header claro, Navbar y portales</p>
+                            </div>
+                            <span
+                                class="px-2 py-0.5 text-[10px] font-semibold rounded bg-blue-50 text-brand-700 border border-blue-100">Default</span>
+                        </div>
+                        <!-- Canvas Preview Container (Light Background) -->
+                        <div class="h-48 bg-transparency-grid flex items-center justify-center p-6 relative group">
+                            <div
+                                class="flex items-center space-x-1 select-none transform group-hover:scale-105 transition-transform duration-200">
+                                <img class="w-full object-cover" [src]="primaryUrl()" />
+                            </div>
+                            <!-- Quick Action Overlay on hover -->
+                            <div
+                                class="absolute inset-0 bg-slate-900/40 backdrop-blur-[2px] opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                                <label
+                                    class="p-2 bg-white rounded-lg text-slate-700 hover:bg-slate-50 cursor-pointer shadow-md text-xs font-medium flex items-center gap-1">
+                                    <i class="fa-solid fa-upload"></i>
+                                    <span>Cambiar</span>
+                                    <input #primaryLogo class="hidden" accept="image/svg+xml,image/png"
+                                        (change)="removeImage($event,'primary')" required="" type="file" />
+                                </label>
+                            </div>
+                        </div>
+                        <!-- Card Details & Footer -->
+                        <div
+                            class="p-4 bg-slate-50/80 border-t border-slate-100 flex-1 flex flex-col justify-between space-y-3">
+                            <div class="space-y-1">
+                                <div class="flex justify-between text-[11px]">
+                                    <span class="text-slate-400">Resolución recomendada:</span>
+                                    <span class="text-slate-700 font-medium">512 × 128 px (o SVG)</span>
+                                </div>
+                                <div class="flex justify-between text-[11px]">
+                                    <span class="text-slate-400">Modo de fondo:</span>
+                                    <span class="text-slate-700 font-medium">Claro / Transparente</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- VARIANT 2: LOGO SECUNDARIO -->
+                    <!-- <div
+                        class="border border-slate-200 rounded-xl overflow-hidden flex flex-col bg-white hover:border-slate-300 transition-all shadow-sm">
+                        <div class="p-4 border-b border-slate-100 flex items-center justify-between">
+                            <div>
+                                <h3 class="text-xs font-bold uppercase tracking-wider text-slate-900">
+                                    Secundario
+                                </h3>
+                                <p class="text-[11px] text-slate-400">Dark mode, footers y contrastes</p>
+                            </div>
+                            <span
+                                class="px-2 py-0.5 text-[10px] font-semibold rounded bg-slate-100 text-slate-600 border border-slate-200">Dark
+                                UI</span>
+                        </div>
+                        <div class="h-44 bg-slate-900 flex items-center justify-center p-6 relative group">
+                            <div
+                                class="flex items-center space-x-1 select-none transform group-hover:scale-105 transition-transform duration-200">
+                                <img class="w-full object-cover" [src]="getValue('secondary')" />
+                            </div>
+                            <div
+                                class="absolute inset-0 bg-slate-950/60 backdrop-blur-[2px] opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                                <label
+                                    class="p-2 bg-white rounded-lg text-slate-700 hover:bg-slate-50 cursor-pointer shadow-md text-xs font-medium flex items-center gap-1">
+                                    <i class="fa-solid fa-upload"></i>
+                                    <span>Cambiar</span>
+                                    <input accept="image/svg+xml,image/png" class="hidden" type="file" />
+                                </label>
+
+                            </div>
+                        </div>
+                        <div
+                            class="p-4 bg-slate-50/80 border-t border-slate-100 flex-1 flex flex-col justify-between space-y-3">
+                            <div class="space-y-1">
+                                <div class="flex justify-between text-[11px]">
+                                    <span class="text-slate-400">Resolución recomendada:</span>
+                                    <span class="text-slate-700 font-medium">512 × 128 px (o SVG)</span>
+                                </div>
+                                <div class="flex justify-between text-[11px]">
+                                    <span class="text-slate-400">Modo de fondo:</span>
+                                    <span class="text-slate-700 font-medium">Oscuro / Alto contraste</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div> -->
+                    <!-- VARIANT 3: LOGO EMAIL -->
+                    <div
+                        class="border border-slate-200 rounded-xl overflow-hidden flex flex-col bg-white hover:border-slate-300 transition-all shadow-sm">
+                        <div class="p-4 border-b border-slate-100 flex items-center justify-between">
+                            <div>
+                                <h3 class="text-xs font-bold uppercase tracking-wider text-slate-900">Email</h3>
+                                <p class="text-[11px] text-slate-400">Plantillas transaccionales y PDF</p>
+                            </div>
+                            <span
+                                class="px-2 py-0.5 text-[10px] font-semibold rounded bg-amber-50 text-amber-700 border border-amber-100">PNG
+                                Sólido</span>
+                        </div>
+                        <!-- Canvas Preview Container (Neutral Email Background) -->
+                        <div class="h-48 bg-slate-100 flex items-center justify-center p-6 relative group">
+                            <!-- Clean Container simulating typical email client header -->
+                            <div
+                                class="bg-white px-5 py-3 rounded-lg shadow-sm border border-slate-200 flex items-center space-x-1 select-none transform group-hover:scale-105 transition-transform duration-200">
+                                <img class="w-full object-cover" [src]="emailUrl()" />
+                            </div>
+                            <!-- Hover Action Overlay -->
+                            <div
+                                class="absolute inset-0 bg-slate-900/40 backdrop-blur-[2px] opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                                <label
+                                    class="p-2 bg-white rounded-lg text-slate-700 hover:bg-slate-50 cursor-pointer shadow-md text-xs font-medium flex items-center gap-1">
+                                    <i class="fa-solid fa-upload"></i>
+                                    <span>Cambiar</span>
+                                    <input #emailLogo class="hidden" accept="image/png,image/jpeg"
+                                        (change)="removeImage($event,'email')" required="" type="file" />
+                                </label>
+
+                            </div>
+                        </div>
+                        <!-- Card Details & Footer -->
+                        <div
+                            class="p-4 bg-slate-50/80 border-t border-slate-100 flex-1 flex flex-col justify-between space-y-3">
+                            <div class="space-y-1">
+                                <div class="flex justify-between text-[11px]">
+                                    <span class="text-slate-400">Resolución recomendada:</span>
+                                    <span class="text-slate-700 font-medium">300 × 80 px (PNG 72 DPI)</span>
+                                </div>
+                                <div class="flex justify-between text-[11px]">
+                                    <span class="text-slate-400">Compatibilidad:</span>
+                                    <span class="text-emerald-600 font-medium">Outlook &amp; Gmail ready</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Bottom Action Bar (Fixed feel) -->
+        @if (edit()) {
+        <div class="flex items-center justify-between flex-col md:flex-row w-full">
+            <div class="flex items-center justify-start w-full"></div>
+            <div class="flex items-center justify-end gap-3 pt-2 flex-col md:flex-row w-full">
+                <button (click)="cancel()"
+                    class="cursor-pointer w-full md:w-auto flex justify-center items-center py-3 px-4 border border-slate-300 rounded-lg shadow-sm text-sm font-semibold text-slate-700 bg-white hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-50 active:transform active:scale-[0.99] transition duration-150 ease-in-out"
+                    type="button">
+                    Descartar
+                </button>
+
+                <button
+                    class="cursor-pointer w-full md:w-auto flex justify-center items-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-semibold text-white bg-indigo-500 hover:bg-indigo-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 active:transform active:scale-[0.99] transition duration-150 ease-in-out disabled:cursor-not-allowed disabled:bg-indigo-300"
+                    type="button" [disabled]="logoForm.disabled" (click)="save()">
+                    <span class="flex items-center justify-center gap-2">
+                        @if (!logoForm.disabled) {
+                        <i class="fa-solid fa-floppy-disk"></i>
+                        } @else {
+                        <span
+                            class="h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent"></span>
+                        }
+                        <span>Guardar</span>
+                    </span>
+                </button>
+            </div>
+        </div>
+        }
+    </div>
+</form>

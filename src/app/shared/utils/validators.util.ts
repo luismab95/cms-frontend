@@ -1,4 +1,10 @@
-import { AbstractControl, UntypedFormGroup, ValidationErrors, ValidatorFn } from '@angular/forms';
+import {
+  AbstractControl,
+  FormControl,
+  UntypedFormGroup,
+  ValidationErrors,
+  ValidatorFn,
+} from '@angular/forms';
 
 export class CmsValidators {
   /**
@@ -57,6 +63,19 @@ export class CmsValidators {
 
   static validateFormControl(form: UntypedFormGroup, controlName: string): boolean {
     return form.controls[controlName].invalid && form.controls[controlName].touched;
+  }
+
+  static validateOnlyFormControl(formControl: FormControl): boolean {
+    return formControl.invalid && formControl.touched;
+  }
+  static getErrorMessageFormControl(formControl: FormControl): string {
+    if (!formControl.touched) return '';
+    if (!formControl || !formControl.errors) return '';
+
+    const firstErrorKey = Object.keys(formControl.errors)[0];
+    if (!firstErrorKey) return '';
+
+    return errorMessages[firstErrorKey] || 'El valor introducido no es válido.';
   }
 
   static getErrorMessage(form: UntypedFormGroup, controlName: string): string {

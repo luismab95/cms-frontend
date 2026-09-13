@@ -1,4 +1,4 @@
-import { Component, input, output, signal } from '@angular/core';
+import { Component, ElementRef, input, output, signal, ViewChild } from '@angular/core';
 import { DrawerI } from 'app/shared/interfaces/drawer.interface';
 
 @Component({
@@ -7,6 +7,8 @@ import { DrawerI } from 'app/shared/interfaces/drawer.interface';
   imports: [],
 })
 export class DrawerComponent {
+  @ViewChild('contentScroll') contentScroll!: ElementRef<HTMLDivElement>;
+
   panels = input.required<DrawerI[]>();
   selectedPanelEvent = output<string>();
 
@@ -21,5 +23,9 @@ export class DrawerComponent {
   onSelectPanel(panel: string, index: number) {
     this.selectedPanel.set(index);
     this.selectedPanelEvent.emit(panel);
+    this.contentScroll.nativeElement.scrollTo({
+      top: 0,
+      behavior: 'auto',
+    });
   }
 }

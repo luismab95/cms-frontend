@@ -12,12 +12,11 @@ import { UserService } from 'app/core/services/user.service';
 import { CmsValidators } from 'app/shared/utils/validators.util';
 import { Subject, takeUntil } from 'rxjs';
 import { UserI } from 'app/core/interfaces/user.interface';
-import { NgLabelTemplateDirective, NgSelectComponent } from '@ng-select/ng-select';
 
 @Component({
   selector: 'settings-account',
   templateUrl: './account.html',
-  imports: [FormsModule, ReactiveFormsModule, NgSelectComponent, NgLabelTemplateDirective],
+  imports: [FormsModule, ReactiveFormsModule],
 })
 export class SettingsAccountComponent implements OnInit {
   user = input.required<UserI>();

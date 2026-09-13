@@ -1,0 +1,347 @@
+<form [formGroup]="companyForm">
+  <div class="flex flex-col gap-8 lg:p-4 p-0" data-aos="fade-left" data-aos-duration="1000">
+    <!-- Section 1: General Company Information -->
+    <section class="rounded-2xl border border-slate-200/80 bg-white shadow-sm overflow-hidden">
+      <div class="border-b border-slate-100 bg-white px-6 py-5">
+        <div class="flex items-center justify-between">
+          <div>
+            <h2 class="text-base font-bold text-slate-900">General</h2>
+            <p class="text-xs text-slate-500 mt-0.5">
+              La siguiente información puede mostrarse públicamente. Verifica que los datos de tu
+              compañía, descripción y URLs de recursos estáticos sean correctos y no contengan
+              información confidencial.
+            </p>
+          </div>
+        </div>
+      </div>
+      <div class="p-6 space-y-6">
+        <!-- Nombre -->
+        <div>
+          <label
+            [class.text-red-500!]="validateFormControl(companyForm, 'name')"
+            class="block text-xs font-semibold uppercase tracking-wider text-slate-700 mb-1.5"
+            for="name"
+          >
+            Nombre <span class="text-rose-500 font-bold">*</span>
+          </label>
+          <div class="relative rounded-lg shadow-sm">
+            <div
+              class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400"
+            >
+              <i
+                class="fa-solid fa-align-right"
+                [class.text-red-500!]="validateFormControl(companyForm, 'name')"
+              ></i>
+            </div>
+            <input
+              formControlName="name"
+              class="block w-full pl-10 pr-3.5 py-2.5 sm:py-3 text-sm text-slate-900 placeholder-slate-400 bg-slate-50/50 border border-slate-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-slate-600 focus:border-slate-600 focus:bg-white transition-colors"
+              [class.border-red-500!.text-red-500!]="validateFormControl(companyForm, 'name')"
+              [class.text-red-500!]="validateFormControl(companyForm, 'name')"
+              [class.placeholder:text-red-500!]="validateFormControl(companyForm, 'name')"
+              id="name"
+              name="name"
+              required=""
+              type="text"
+            />
+          </div>
+
+          <!-- Errores -->
+          @if (getErrorMessage(companyForm, 'name') !== '') {
+            <p class="mt-1.5 flex items-center gap-1 text-sm text-red-600">
+              <i class="fa-solid fa-circle-exclamation"></i>
+              <span>{{ getErrorMessage(companyForm, 'name') }}</span>
+            </p>
+          }
+        </div>
+        <!-- Url -->
+        <div>
+          <label
+            [class.text-red-500!]="validateFormControl(companyForm, 'urlStatics')"
+            class="block text-xs font-semibold uppercase tracking-wider text-slate-700 mb-1.5"
+            for="urlStatics"
+          >
+            Dirección de estáticos <span class="text-rose-500 font-bold">*</span>
+          </label>
+          <div class="relative rounded-lg shadow-sm">
+            <div
+              class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400"
+            >
+              <i
+                class="fa-solid fa-link"
+                [class.text-red-500!]="validateFormControl(companyForm, 'urlStatics')"
+              ></i>
+            </div>
+            <input
+              formControlName="urlStatics"
+              class="block w-full pl-10 pr-3.5 py-2.5 sm:py-3 text-sm text-slate-900 placeholder-slate-400 bg-slate-50/50 border border-slate-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-slate-600 focus:border-slate-600 focus:bg-white transition-colors"
+              [class.border-red-500!.text-red-500!]="validateFormControl(companyForm, 'urlStatics')"
+              [class.text-red-500!]="validateFormControl(companyForm, 'urlStatics')"
+              [class.placeholder:text-red-500!]="validateFormControl(companyForm, 'urlStatics')"
+              id="urlStatics"
+              name="urlStatics"
+              required=""
+              type="text"
+            />
+          </div>
+
+          <!-- Errores -->
+          @if (getErrorMessage(companyForm, 'urlStatics') !== '') {
+            <p class="mt-1.5 flex items-center gap-1 text-sm text-red-600">
+              <i class="fa-solid fa-circle-exclamation"></i>
+              <span>{{ getErrorMessage(companyForm, 'urlStatics') }}</span>
+            </p>
+          }
+        </div>
+        <!-- Description -->
+        <div>
+          <label
+            [class.text-red-500!]="validateFormControl(companyForm, 'description')"
+            class="block text-xs font-semibold uppercase tracking-wider text-slate-700 mb-1.5"
+            for="description"
+          >
+            Dirección de correo electrónico <span class="text-rose-500 font-bold">*</span>
+          </label>
+          <div class="relative rounded-lg shadow-sm">
+            <div
+              class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400"
+            >
+              <i
+                class="fa-solid fa-align-justify"
+                [class.text-red-500!]="validateFormControl(companyForm, 'description')"
+              ></i>
+            </div>
+            <textarea
+              formControlName="description"
+              class="block w-full pl-10 pr-3.5 py-2.5 sm:py-3 text-sm text-slate-900 placeholder-slate-400 bg-slate-50/50 border border-slate-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-slate-600 focus:border-slate-600 focus:bg-white transition-colors"
+              [class.border-red-500!.text-red-500!]="
+                validateFormControl(companyForm, 'description')
+              "
+              [class.text-red-500!]="validateFormControl(companyForm, 'description')"
+              [class.placeholder:text-red-500!]="validateFormControl(companyForm, 'description')"
+              id="description"
+              name="description"
+              required=""
+              rows="5"
+            ></textarea>
+          </div>
+
+          <!-- Errores -->
+          @if (getErrorMessage(companyForm, 'description') !== '') {
+            <p class="mt-1.5 flex items-center gap-1 text-sm text-red-600">
+              <i class="fa-solid fa-circle-exclamation"></i>
+              <span>{{ getErrorMessage(companyForm, 'description') }}</span>
+            </p>
+          }
+        </div>
+      </div>
+    </section>
+
+    <!-- Section 2: Contacto -->
+    <section class="rounded-2xl border border-slate-200/80 bg-white shadow-sm overflow-hidden">
+      <div class="border-b border-slate-100 bg-white px-6 py-5">
+        <div class="flex items-center justify-between">
+          <div>
+            <h2 class="text-base font-bold text-slate-p00">Contacto</h2>
+            <p class="text-xs text-slate-500 mt-0.5">
+              Configura y administra los datos corporativos y medios de contacto oficiales de tu
+              compañía, como dirección, teléfonos, correos electrónicos y sitio web.
+            </p>
+          </div>
+        </div>
+      </div>
+      <div class="p-6 space-y-6">
+        <!-- Email -->
+        <div>
+          <label
+            [class.text-red-500!]="validateFormControl(companyForm, 'email')"
+            class="block text-xs font-semibold uppercase tracking-wider text-slate-700 mb-1.5"
+            for="email"
+          >
+            Dirección de correo electrónico <span class="text-rose-500 font-bold">*</span>
+          </label>
+          <div class="relative rounded-lg shadow-sm">
+            <div
+              class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400"
+            >
+              <i
+                class="fa-solid fa-envelope"
+                [class.text-red-500!]="validateFormControl(companyForm, 'email')"
+              ></i>
+            </div>
+            <input
+              formControlName="email"
+              class="block w-full pl-10 pr-3.5 py-2.5 sm:py-3 text-sm text-slate-900 placeholder-slate-400 bg-slate-50/50 border border-slate-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-slate-600 focus:border-slate-600 focus:bg-white transition-colors"
+              [class.border-red-500!.text-red-500!]="validateFormControl(companyForm, 'email')"
+              [class.text-red-500!]="validateFormControl(companyForm, 'email')"
+              [class.placeholder:text-red-500!]="validateFormControl(companyForm, 'email')"
+              id="email"
+              name="email"
+              required=""
+              type="email"
+            />
+          </div>
+
+          <!-- Errores -->
+          @if (getErrorMessage(companyForm, 'email') !== '') {
+            <p class="mt-1.5 flex items-center gap-1 text-sm text-red-600">
+              <i class="fa-solid fa-circle-exclamation"></i>
+              <span>{{ getErrorMessage(companyForm, 'email') }}</span>
+            </p>
+          }
+        </div>
+        <!-- Phone -->
+        <div>
+          <label
+            [class.text-red-500!]="validateFormControl(companyForm, 'phone')"
+            class="block text-xs font-semibold uppercase tracking-wider text-slate-700 mb-1.5"
+            for="phone"
+          >
+            Teléfono <span class="text-rose-500 font-bold">*</span>
+          </label>
+          <div class="relative rounded-lg shadow-sm">
+            <div
+              class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400"
+            >
+              <i
+                class="fa-solid fa-phone-volume"
+                [class.text-red-500!]="validateFormControl(companyForm, 'phone')"
+              ></i>
+            </div>
+            <input
+              formControlName="phone"
+              class="block w-full pl-10 pr-3.5 py-2.5 sm:py-3 text-sm text-slate-900 placeholder-slate-400 bg-slate-50/50 border border-slate-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-slate-600 focus:border-slate-600 focus:bg-white transition-colors"
+              [class.border-red-500!.text-red-500!]="validateFormControl(companyForm, 'phone')"
+              [class.text-red-500!]="validateFormControl(companyForm, 'phone')"
+              [class.placeholder:text-red-500!]="validateFormControl(companyForm, 'phone')"
+              id="phone"
+              name="phone"
+              required=""
+              type="text"
+            />
+          </div>
+
+          <!-- Errores -->
+          @if (getErrorMessage(companyForm, 'phone') !== '') {
+            <p class="mt-1.5 flex items-center gap-1 text-sm text-red-600">
+              <i class="fa-solid fa-circle-exclamation"></i>
+              <span>{{ getErrorMessage(companyForm, 'phone') }}</span>
+            </p>
+          }
+        </div>
+        <!-- Country -->
+        <div>
+          <label
+            [class.text-red-500!]="validateFormControl(companyForm, 'country')"
+            class="block text-xs font-semibold uppercase tracking-wider text-slate-700 mb-1.5"
+            for="country"
+          >
+            País <span class="text-rose-500 font-bold">*</span>
+          </label>
+          <div class="relative rounded-lg shadow-sm">
+            <div
+              class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400"
+            >
+              <i
+                class="fa-solid fa-globe"
+                [class.text-red-500!]="validateFormControl(companyForm, 'country')"
+              ></i>
+            </div>
+            <input
+              formControlName="country"
+              class="block w-full pl-10 pr-3.5 py-2.5 sm:py-3 text-sm text-slate-900 placeholder-slate-400 bg-slate-50/50 border border-slate-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-slate-600 focus:border-slate-600 focus:bg-white transition-colors"
+              [class.border-red-500!.text-red-500!]="validateFormControl(companyForm, 'country')"
+              [class.text-red-500!]="validateFormControl(companyForm, 'country')"
+              [class.placeholder:text-red-500!]="validateFormControl(companyForm, 'country')"
+              id="country"
+              name="country"
+              required=""
+              type="text"
+            />
+          </div>
+
+          <!-- Errores -->
+          @if (getErrorMessage(companyForm, 'country') !== '') {
+            <p class="mt-1.5 flex items-center gap-1 text-sm text-red-600">
+              <i class="fa-solid fa-circle-exclamation"></i>
+              <span>{{ getErrorMessage(companyForm, 'country') }}</span>
+            </p>
+          }
+        </div>
+        <!-- Website -->
+        <div>
+          <label
+            [class.text-red-500!]="validateFormControl(companyForm, 'website')"
+            class="block text-xs font-semibold uppercase tracking-wider text-slate-700 mb-1.5"
+            for="website"
+          >
+            Sitio web <span class="text-rose-500 font-bold">*</span>
+          </label>
+          <div class="relative rounded-lg shadow-sm">
+            <div
+              class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400"
+            >
+              <i
+                class="fa-solid fa-desktop"
+                [class.text-red-500!]="validateFormControl(companyForm, 'website')"
+              ></i>
+            </div>
+            <input
+              formControlName="website"
+              class="block w-full pl-10 pr-3.5 py-2.5 sm:py-3 text-sm text-slate-900 placeholder-slate-400 bg-slate-50/50 border border-slate-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-slate-600 focus:border-slate-600 focus:bg-white transition-colors"
+              [class.border-red-500!.text-red-500!]="validateFormControl(companyForm, 'website')"
+              [class.text-red-500!]="validateFormControl(companyForm, 'website')"
+              [class.placeholder:text-red-500!]="validateFormControl(companyForm, 'website')"
+              id="website"
+              name="website"
+              required=""
+              type="text"
+            />
+          </div>
+
+          <!-- Errores -->
+          @if (getErrorMessage(companyForm, 'website') !== '') {
+            <p class="mt-1.5 flex items-center gap-1 text-sm text-red-600">
+              <i class="fa-solid fa-circle-exclamation"></i>
+              <span>{{ getErrorMessage(companyForm, 'website') }}</span>
+            </p>
+          }
+        </div>
+      </div>
+    </section>
+
+    <!-- Bottom Action Bar (Fixed feel) -->
+    @if (edit()) {
+      <div class="flex items-center justify-between flex-col md:flex-row w-full">
+        <div class="flex items-center justify-start w-full"></div>
+        <div class="flex items-center justify-end gap-3 pt-2 flex-col md:flex-row w-full">
+          <button
+            (click)="cancel()"
+            class="cursor-pointer w-full md:w-auto flex justify-center items-center py-3 px-4 border border-slate-300 rounded-lg shadow-sm text-sm font-semibold text-slate-700 bg-white hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-50 active:transform active:scale-[0.99] transition duration-150 ease-in-out"
+            type="button"
+          >
+            Descartar
+          </button>
+
+          <button
+            class="cursor-pointer w-full md:w-auto flex justify-center items-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-semibold text-white bg-indigo-500 hover:bg-indigo-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 active:transform active:scale-[0.99] transition duration-150 ease-in-out disabled:cursor-not-allowed disabled:bg-indigo-300"
+            type="button"
+            [disabled]="companyForm.disabled"
+            (click)="save()"
+          >
+            <span class="flex items-center justify-center gap-2">
+              @if (!companyForm.disabled) {
+                <i class="fa-solid fa-floppy-disk"></i>
+              } @else {
+                <span
+                  class="h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent"
+                ></span>
+              }
+              <span>Guardar</span>
+            </span>
+          </button>
+        </div>
+      </div>
+    }
+  </div>
+</form>

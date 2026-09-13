@@ -1,15 +1,10 @@
 <div
-  class="mt-auto border-t border-slate-200 bg-white px-6 py-3.5 flex flex-col sm:flex-row items-center justify-between gap-4"
->
+  class="mt-auto border-t border-slate-200 bg-white px-6 py-3.5 flex flex-col sm:flex-row items-center justify-between gap-4">
   <!-- Información -->
   <div class="flex items-center flex-col lg:flex-row gap-3 text-xs text-slate-600">
     <span class="font-medium"> Registros por página: </span>
-    <ng-select
-      (change)="changeLimit($event)"
-      [clearable]="false"
-      [formField]="limitForm.limit"
-      [items]="[1, 10, 25, 50, 100]"
-    >
+    <ng-select (change)="changeLimit($event)" [clearable]="false" [formField]="limitForm.limit"
+      [items]="[1, 10, 25, 50, 100]">
     </ng-select>
 
     <span class="hidden lg:block text-slate-400">|</span>
@@ -22,70 +17,48 @@
   <!-- PAGINACIÓN -->
   <div class="flex items-center gap-1">
     <!-- Primera -->
-    <button
-      type="button"
-      (click)="firstPage()"
-      [disabled]="page() === 1"
+    <button type="button" (click)="firstPage()" [disabled]="page() === 1"
       class="cursor-pointer p-1 rounded border border-slate-200 text-slate-600 bg-white hover:bg-slate-50 disabled:text-slate-300 disabled:bg-slate-50 disabled:cursor-not-allowed"
-      title="Primera página"
-    >
+      title="Primera página">
       <i class="fa-solid fa-angles-left"></i>
     </button>
 
     <!-- Anterior -->
-    <button
-      type="button"
-      (click)="previousPage()"
-      [disabled]="page() === 1"
+    <button type="button" (click)="previousPage()" [disabled]="page() === 1"
       class="cursor-pointer p-1 rounded border border-slate-200 text-slate-600 bg-white hover:bg-slate-50 disabled:text-slate-300 disabled:bg-slate-50 disabled:cursor-not-allowed"
-      title="Anterior"
-    >
+      title="Anterior">
       <i class="fa-solid fa-angle-left"></i>
     </button>
 
     <!-- Páginas -->
     @for (item of pageNumbers(); track $index) {
-      @if (item === '...') {
-        <span class="min-w-8 h-8 flex items-center justify-center text-xs text-slate-400">
-          ...
-        </span>
-      } @else {
-        <button
-          type="button"
-          (click)="changeEvent(item)"
-          class="min-w-8 h-8 p-1 rounded border text-xs font-semibold transition-colors hover:bg-slate-50 cursor-pointer"
-          [class.bg-indigo-50]="item === page()"
-          [class.text-indigo-700]="item === page()"
-          [class.border-indigo-200]="item === page()"
-          [class.bg-white]="item !== page()"
-          [class.text-slate-600]="item !== page()"
-          [class.border-slate-200]="item !== page()"
-          [class.hover:bg-slate-50]="item !== page()"
-        >
-          {{ item }}
-        </button>
-      }
+    @if (item === '...') {
+    <span class="min-w-8 h-8 flex items-center justify-center text-xs text-slate-400">
+      ...
+    </span>
+    } @else {
+    <button type="button" (click)="changeEvent(item)"
+      class="min-w-8 h-8 p-1 rounded border text-xs font-semibold transition-colors hover:bg-slate-50 cursor-pointer"
+      [class.bg-indigo-50]="item === page()" [class.text-indigo-700]="item === page()"
+      [class.border-indigo-200]="item === page()" [class.bg-white]="item !== page()"
+      [class.text-slate-600]="item !== page()" [class.border-slate-200]="item !== page()"
+      [class.hover:bg-slate-50]="item !== page()">
+      {{ item }}
+    </button>
+    }
     }
 
     <!-- Siguiente -->
-    <button
-      type="button"
-      (click)="nextPage()"
-      [disabled]="page() === pages()"
+    <button type="button" (click)="nextPage()" [disabled]="page() === pages()"
       class="cursor-pointer p-1 rounded border border-slate-200 text-slate-600 bg-white hover:bg-slate-50 disabled:text-slate-300 disabled:bg-slate-50 disabled:cursor-not-allowed"
-      title="Siguiente"
-    >
+      title="Siguiente">
       <i class="fa-solid fa-angle-right"></i>
     </button>
 
     <!-- Última -->
-    <button
-      type="button"
-      (click)="lastPage()"
-      [disabled]="page() === pages()"
+    <button type="button" (click)="lastPage()" [disabled]="page() === pages()"
       class="cursor-pointer p-1 rounded border border-slate-200 text-slate-600 bg-white hover:bg-slate-50 disabled:text-slate-300 disabled:bg-slate-50 disabled:cursor-not-allowed"
-      title="Última página"
-    >
+      title="Última página">
       <i class="fa-solid fa-angles-right"></i>
     </button>
   </div>
