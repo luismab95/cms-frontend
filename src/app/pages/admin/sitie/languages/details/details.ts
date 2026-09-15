@@ -191,7 +191,6 @@ export class SitieLanguagesDetailsComponent implements OnInit, OnDestroy {
           );
           this.closeModal(true);
         },
-
         error: (response) => {
           this.languageForm.enable();
           this._toastrService.error(
@@ -282,28 +281,9 @@ export class SitieLanguagesDetailsComponent implements OnInit, OnDestroy {
    */
   setFile(event: any) {
     const file: File = event.target.files[0];
-    if(!file) return;
+    if (!file) return;
     this.selectedFile.set(file);
     this.languageForm.get('icon')?.setValue('preview');
-  }
-
-  /**
-   * Remove the image on the given note
-   * @param event
-   */
-  uploadFile(event: any) {
-    const file: File = event.target.files[0];
-    this._fileService
-      .uploadFile(file)
-      .pipe(takeUntil(this._unsubscribeAll))
-      .subscribe({
-        next: (response) => {
-          this.languageForm.get('icon')?.setValue(response.message.path);
-        },
-        error: (response) => {
-          this._toastrService.error(response.error.message, 'Aviso');
-        },
-      });
   }
 
   /**

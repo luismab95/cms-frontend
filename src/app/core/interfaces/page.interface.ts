@@ -27,6 +27,13 @@ export interface PageDetailReferenceI {
   keywords: ReferenceI;
 }
 
+export interface OnlyPageDetailReferenceI {
+  languageId: number;
+  alias: string;
+  description: string;
+  keywords: string;
+}
+
 export interface PageI {
   id?: number;
   name: string;

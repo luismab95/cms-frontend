@@ -1,6 +1,6 @@
-import { Component, inject, OnDestroy, OnInit, signal } from '@angular/core';
+import { Component, computed, inject, OnDestroy, OnInit, signal } from '@angular/core';
 import { NgClass, TitleCasePipe, UpperCasePipe } from '@angular/common';
-import { FormsModule, ReactiveFormsModule, UntypedFormControl } from '@angular/forms';
+import { FormControl, FormsModule, ReactiveFormsModule, UntypedFormControl } from '@angular/forms';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { ToastrService } from '@iqx-limited/ngx-toastr';
 import { UserI } from 'app/core/interfaces/user.interface';
@@ -12,6 +12,7 @@ import { RoleService } from 'app/shared/services/role.service';
 import { PermissionCode, validAction } from 'app/shared/utils/permission.utils';
 import { Subject, takeUntil, debounceTime } from 'rxjs';
 import { UsersDetailsComponent } from './details/details';
+import { NgSelectComponent } from '@ng-select/ng-select';
 
 @Component({
   selector: 'users-list',
@@ -22,6 +23,7 @@ import { UsersDetailsComponent } from './details/details';
     PaginationComponent,
     PermissionComponent,
     UsersDetailsComponent,
+    NgSelectComponent,
     NgClass,
     TitleCasePipe,
     UpperCasePipe,
@@ -29,11 +31,11 @@ import { UsersDetailsComponent } from './details/details';
 })
 export class UsersList implements OnInit, OnDestroy {
   limit = signal<number>(10);
-  totalUser = signal<number>(10);
   showDetails = signal<boolean>(false);
   selectedUser = signal<UserI | null>(null);
 
   searchInputControl: UntypedFormControl = new UntypedFormControl();
+  statusControl: FormControl = new FormControl(0);
 
   permission = PermissionCode;
 
@@ -51,12 +53,12 @@ export class UsersList implements OnInit, OnDestroy {
     initialValue: [],
   });
 
+  readonly totalUser = computed(() => this.users().total);
+
   /**
    * Constructor
    */
-  constructor() {
-    this.totalUser.set(this.users().records.length);
-  }
+  constructor() {}
 
   // -----------------------------------------------------------------------------------------------------
   // @ Lifecycle hooks
@@ -71,6 +73,27 @@ export class UsersList implements OnInit, OnDestroy {
       .pipe(debounceTime(700), takeUntil(this._unsubscribeAll))
       .subscribe((search: string) => {
         if (search) this.getAll(1, search === '' ? null : search, null);
+      });
+
+    this.statusControl.valueChanges
+      .pipe(takeUntil(this._unsubscribeAll))
+      .subscribe((res: number) => {
+        let status: boolean | null;
+        switch (res) {
+          case 1:
+            status = true;
+            break;
+          case 2:
+            status = false;
+            break;
+          default:
+            status = null;
+        }
+        this.getAll(
+          1,
+          this.searchInputControl.value === '' ? null : this.searchInputControl.value,
+          status,
+        );
       });
   }
 

@@ -1,4 +1,4 @@
-<div class="w-full min-h-screen bg-slate-50 px-6 pb-6 py-2 mx-auto max-w-full">
+<div class="w-full h-screen bg-slate-50 px-6 pb-6 py-2 mx-auto max-w-full overflow-y-auto">
   <div class="flex flex-col w-full space-y-8">
     <!-- 1. Encabezado de perfil y métricas ejecutivas en vivo -->
     <section
@@ -384,7 +384,7 @@
                   @let percentageSitie =
                     (dataServiceWeek()!['thisWeek']!.sitie * 100) / totalVisitWeek();
                   <span class="text-slate-900 font-semibold leading-none"
-                    >{{ percentageSitie | number:'1.2-2' }}%</span
+                    >{{ percentageSitie | number: '1.2-2' }}%</span
                   >
                   <p class="text-sm text-slate-900">
                     {{ formatNumberUtil(countElements()!.microsities + countElements()!.pages) }}
@@ -406,7 +406,7 @@
                   @let percentageMicrositie =
                     (dataServiceWeek()!['thisWeek']!.micrositie * 100) / totalVisitWeek();
                   <span class="text-slate-900 font-semibold leading-none"
-                    >{{ percentageMicrositie | number:'1.2-2' }}%</span
+                    >{{ percentageMicrositie | number: '1.2-2' }}%</span
                   >
                   <p class="text-sm text-slate-900">
                     {{ formatNumberUtil(dataServiceWeek()!['thisWeek']!.micrositie) }}
@@ -428,7 +428,7 @@
                   @let percentagePages =
                     (dataServiceWeek()!['thisWeek']!.page * 100) / totalVisitWeek();
                   <span class="text-slate-900 font-semibold leading-none"
-                    >{{ percentagePages | number:'1.2-2' }}%</span
+                    >{{ percentagePages | number: '1.2-2' }}%</span
                   >
                   <p class="text-sm text-slate-900">
                     {{ formatNumberUtil(dataServiceWeek()!['thisWeek']!.page) }}
@@ -597,5 +597,7 @@
     } @else {
       <permission-component />
     }
+
+    <br /><br /><br />
   </div>
 </div>

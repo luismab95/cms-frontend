@@ -1,59 +1,53 @@
-import { AsyncPipe, TitleCasePipe, UpperCasePipe, NgClass } from '@angular/common';
-import { Component, OnInit, computed, inject, signal } from '@angular/core';
+import { NgClass } from '@angular/common';
+import { Component, computed, inject, OnDestroy, OnInit, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { FormControl, FormsModule, ReactiveFormsModule, UntypedFormControl } from '@angular/forms';
+import { Router } from '@angular/router';
 import { ToastrService } from '@iqx-limited/ngx-toastr';
-import { ParameterService } from 'app/core/services/parameter.service';
+import { NgSelectComponent } from '@ng-select/ng-select';
+import { PageI, PagePaginationResquestI } from 'app/core/interfaces/page.interface';
+import { MicrosityService } from 'app/core/services/micrositie.service';
+import { PageService } from 'app/core/services/pages.service';
 import { PaginationComponent } from 'app/shared/components/pagination/pagination';
 import { PermissionComponent } from 'app/shared/components/permission/permission';
-import { LanguageI } from 'app/shared/interfaces/language.interfaces';
-import { PaginationResquestI } from 'app/shared/interfaces/response.interface';
-import { LanguageService } from 'app/shared/services/language.service';
-import { findParameter } from 'app/shared/utils/parameter.utils';
 import { PermissionCode, validAction } from 'app/shared/utils/permission.utils';
-import { debounceTime, Subject, takeUntil } from 'rxjs';
-import { SitieLanguagesDetailsComponent } from './details/details';
-import { NgSelectComponent } from '@ng-select/ng-select';
+import { Subject, debounceTime, takeUntil } from 'rxjs';
 
 @Component({
-  selector: 'sitie-languages',
-  templateUrl: './languages.html',
+  selector: 'pages',
+  templateUrl: './list.html',
   imports: [
     FormsModule,
     ReactiveFormsModule,
-    TitleCasePipe,
-    UpperCasePipe,
-    PermissionComponent,
     PaginationComponent,
-    SitieLanguagesDetailsComponent,
     NgSelectComponent,
+    PermissionComponent,
     NgClass,
   ],
 })
-export class SitieLanguagesComponent implements OnInit {
-  permission = PermissionCode;
+export class PagesList implements OnInit, OnDestroy {
+  limit = signal<number>(10);
+  showDetails = signal<boolean>(false);
+  selectedUser = signal<PageI | null>(null);
+
   searchInputControl: UntypedFormControl = new UntypedFormControl();
   statusControl: FormControl = new FormControl(0);
 
-  urlStatics = signal<string>('');
-  limit = signal<number>(10);
-  showDetails = signal<boolean>(false);
-  selectedLanguage = signal<LanguageI | null>(null);
+  permission = PermissionCode;
 
   private _unsubscribeAll: Subject<any> = new Subject<any>();
 
-  private _parameterService = inject(ParameterService);
-  private _languageService = inject(LanguageService);
-  private _toastrService = inject(ToastrService);
+  private readonly _pageService = inject(PageService);
+  private readonly _microsityService = inject(MicrosityService);
+  private readonly _router = inject(Router);
+  private readonly _toastrService = inject(ToastrService);
 
-  readonly parameters = toSignal(this._parameterService.parameter$, {
-    initialValue: [],
-  });
-  readonly languages = toSignal(this._languageService.languages$, {
+  readonly pages = toSignal(this._pageService.pages$, {
     initialValue: { records: [], total: 0, page: 0, totalPage: 0 },
   });
+  readonly micrositie = toSignal(this._microsityService.micrositie$, { initialValue: null });
 
-  readonly totalLanguage = computed(() => this.languages().total);
+  readonly totalPage = computed(() => this.pages().total);
 
   /**
    * Constructor
@@ -68,9 +62,6 @@ export class SitieLanguagesComponent implements OnInit {
    * On init
    */
   ngOnInit(): void {
-    // Get the languages
-    this.urlStatics.set(findParameter('APP_STATICS_URL', this.parameters())!.value);
-
     // Subscribe to search input field value changes
     this.searchInputControl.valueChanges
       .pipe(debounceTime(700), takeUntil(this._unsubscribeAll))
@@ -118,13 +109,14 @@ export class SitieLanguagesComponent implements OnInit {
    * @param page
    */
   getAll(page: number, search: string | null = null, status: boolean | null = null) {
-    const params: PaginationResquestI = {
+    const params: PagePaginationResquestI = {
       page,
       limit: this.limit(),
+      micrositieId: null,
       search,
       status,
     };
-    this._languageService
+    this._pageService
       .getAll(params)
       .pipe(takeUntil(this._unsubscribeAll))
       .subscribe({
@@ -139,9 +131,14 @@ export class SitieLanguagesComponent implements OnInit {
    *
    * @param data
    */
-  openDetailsModal(language: LanguageI | null): void {
-    this.selectedLanguage.set(language);
-    this.showDetails.set(true);
+  openDetailsModal(page: PageI | null): void {
+    this._pageService.page = null;
+    this._router.navigateByUrl('/admin/content/pages/detail', {
+      state: {
+        id: page === null ? 0 : page.id,
+        micrositieId: this.micrositie() !== null ? this.micrositie()!.id : 0,
+      },
+    });
   }
 
   /**
@@ -149,22 +146,6 @@ export class SitieLanguagesComponent implements OnInit {
    */
   validPermission(code: string) {
     return validAction(code);
-  }
-
-  /**
-   * Get icon
-   * @returns
-   */
-  getICon(icon: string) {
-    return `${this.urlStatics()}/${icon}`;
-  }
-
-  /**
-   * Clear input search
-   */
-  clearSearch() {
-    this.searchInputControl.reset();
-    this.getAll(1, null, null);
   }
 
   /**
@@ -185,11 +166,10 @@ export class SitieLanguagesComponent implements OnInit {
   }
 
   /**
-   * Close modal
+   * Clear input search
    */
-  closeModal(load: boolean) {
-    this.selectedLanguage.set(null);
-    this.showDetails.set(false);
-    if (load) this.getAll(1, null, null);
+  clearSearch() {
+    this.searchInputControl.reset();
+    this.getAll(1, null, null);
   }
 }

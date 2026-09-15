@@ -1,0 +1,56 @@
+<div class="flex-1 flex flex-col min-w-0 overflow-hidden bg-slate-50">
+  <section
+    data-aos="fade-left"
+    data-aos-duration="1000"
+    class="flex-1 flex flex-col min-w-0 overflow-y-auto rounded-2xl border border-slate-200/80 bg-white shadow-sm overflow-hidden"
+  >
+    <div class="p-6 pb-4 bg-white">
+      <!-- Page Title Header -->
+      <div
+        class="mb-8 flex flex-col md:flex-row md:items-end md:justify-between gap-4 border-b border-slate-200/80 pb-6"
+      >
+        <div data-aos="fade-up" data-aos-duration="1000" class="flex flex-wrap gap-4">
+          <button
+            (click)="goToBack()"
+            aria-label="regresar"
+            class="cursor-pointer w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors focus:outline-none focus:ring-2 focus:ring-slate-300"
+            type="button"
+          >
+            <i class="fa-solid fa-arrow-left"></i>
+          </button>
+          <div>
+            <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900">
+              {{ page() ? 'Página' : 'Nueva página' }}
+            </h1>
+            <p class="mt-1 text-sm text-slate-500 leading-relaxed max-w-2xl">
+              Configura y administra la información de tu cuenta, incluyendo tus datos de perfil y
+              cambio de contraseñas.
+            </p>
+          </div>
+        </div>
+      </div>
+      <!-- Main Layout Grid: Segmented Floating Rail & Main Form Content -->
+      <div class="w-full flex-1">
+        <drawer-component [panels]="panels()" (selectedPanelEvent)="goToPanel($event)">
+          @if (validPermission(permission.viewPage)) {
+            @switch (selectedPanel()) {
+              <!-- Information -->
+              @case ('information') {
+                <pages-information />
+              }
+              <!-- Languages -->
+              @case ('languages') {
+                <pages-languages />
+              }
+              @case ('drawer') {
+                <!-- <pages-drawer (fullscreemToggle)="drawer.toggle()" /> -->
+              }
+            }
+          } @else {
+            <permission-component />
+          }
+        </drawer-component>
+      </div>
+    </div>
+  </section>
+</div>

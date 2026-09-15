@@ -1,4 +1,4 @@
-import { Routes } from '@angular/router';
+import { Router, Routes } from '@angular/router';
 import { inject } from '@angular/core';
 import { Layout } from './layout/layout';
 import { LanguageService } from './shared/services/language.service';
@@ -12,6 +12,11 @@ import { TemplateService } from './core/services/templates.service';
 import { ParameterService } from './core/services/parameter.service';
 import { RoleService } from './shared/services/role.service';
 import { UserService } from './core/services/user.service';
+import { FileManagerService } from './core/services/file-manager.service';
+import { MicrosityService } from './core/services/micrositie.service';
+import { PageService } from './core/services/pages.service';
+import { PagesDetail } from './pages/admin/pages/detail/detail';
+import { PagesList } from './pages/admin/pages/list';
 
 export const routes: Routes = [
   // Redirect empty path to 'default sitie'
@@ -141,11 +146,54 @@ export const routes: Routes = [
           //             'app/modules/admin/microsities/micrositie.routes'
           //         ),
           // },
-          // {
-          //     path: 'pages',
-          //     loadChildren: () =>
-          //         import('app/modules/admin/pages/pages.routes'),
-          // },
+          {
+            path: 'pages',
+            children: [
+              {
+                path: '',
+                component: PagesList,
+                resolve: {
+                  pages: () =>
+                    inject(PageService).getAll({
+                      limit: 10,
+                      page: 1,
+                      search: null,
+                      status: null,
+                      micrositieId: null,
+                    }),
+                },
+              },
+              {
+                path: 'detail',
+                component: PagesDetail,
+                resolve: {
+                  page: () =>
+                    inject(PageService).find(
+                      inject(Router)!.currentNavigation()?.extras?.state!['id'],
+                    ),
+                  micrositie: () =>
+                    inject(MicrosityService).find(
+                      inject(Router).currentNavigation()?.extras?.state!['micrositieId'],
+                    ),
+                  sitie: () => inject(SitieService).find(),
+                  languages: () =>
+                    inject(LanguageService).getAll({
+                      limit: 99999,
+                      page: 1,
+                      search: null,
+                      status: true,
+                    }),
+                  // elements: () =>
+                  //   inject(ElementService).getAll({
+                  //     limit: 99999,
+                  //     page: 1,
+                  //     search: null,
+                  //     status: true,
+                  //   }),
+                },
+              },
+            ],
+          },
           // {
           //     path: 'templates',
           //     loadChildren: () =>
@@ -153,13 +201,21 @@ export const routes: Routes = [
           //             'app/modules/admin/templates/templates.routes'
           //         ),
           // },
-          // {
-          //     path: 'file-manager',
-          //     loadChildren: () =>
-          //         import(
-          //             'app/modules/admin/file-manager/file-manager.routes'
-          //         ),
-          // },
+          {
+            path: 'file-manager',
+            loadComponent: () =>
+              import('./pages/admin/file-manager/list').then((m) => m.FileManagerList),
+            resolve: {
+              files: () =>
+                inject(FileManagerService).getFiles({
+                  page: 1,
+                  limit: 10,
+                  search: null,
+                  status: null,
+                }),
+              parameters: () => inject(ParameterService).getAll(),
+            },
+          },
           // {
           //     path: 'review-pages',
           //     loadChildren: () =>
@@ -181,7 +237,7 @@ export const routes: Routes = [
                   limit: 10,
                   page: 1,
                   search: null,
-                  status: true,
+                  status: null,
                 }),
               roles: () => inject(RoleService).getAll(),
             },

@@ -2,13 +2,13 @@ import { HttpClient } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { PaginationResponseI, ResponseI } from 'app/shared/interfaces/response.interface';
 import { environment } from 'environments/environment';
-import { EMPTY, Observable, ReplaySubject, tap } from 'rxjs';
 import {
   PageI,
   PagePaginationResquestI,
   GetPageI,
   PageRenderI,
 } from '../interfaces/page.interface';
+import { Observable, of, ReplaySubject, tap } from 'rxjs';
 
 @Injectable({ providedIn: 'root' })
 export class PageService {
@@ -18,7 +18,7 @@ export class PageService {
   private _pages: ReplaySubject<PaginationResponseI<PageI[]>> = new ReplaySubject<
     PaginationResponseI<PageI[]>
   >(1);
-  private _page: ReplaySubject<PageI> = new ReplaySubject<PageI>(1);
+  private _page: ReplaySubject<PageI | null> = new ReplaySubject<PageI | null>(1);
 
   private _httpClient = inject(HttpClient);
 
@@ -50,12 +50,12 @@ export class PageService {
    *
    * @param value
    */
-  set page(value: PageI) {
+  set page(value: PageI | null) {
     // Store the value
     this._page.next(value);
   }
 
-  get page$(): Observable<PageI> {
+  get page$(): Observable<PageI | null> {
     return this._page.asObservable();
   }
 
@@ -90,8 +90,8 @@ export class PageService {
    * @param pageId
    * @returns
    */
-  find(pageId: number): Observable<ResponseI<PageI>> {
-    if (!pageId) return EMPTY;
+  find(pageId: number): Observable<ResponseI<PageI> | null> {
+    if (pageId === 0) return of(null);
     return this._httpClient
       .get<ResponseI<PageI>>(`${this.url}/${this.prefix}/pages/${pageId}`)
       .pipe(

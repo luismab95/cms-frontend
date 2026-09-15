@@ -2,28 +2,32 @@
   <section
     data-aos="fade-left"
     data-aos-duration="1000"
-    class="flex-1 flex flex-col min-w-0 overflow-y-auto rounded-2xl border border-slate-200/80 bg-white shadow-sm overflow-hidden"
+    class="flex-1 flex flex-col min-w-0 min-h-0 overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-sm"
   >
-    <div class="p-6 pb-4 bg-white">
-      <!-- header -->
-      <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+    <!-- HEADER + FILTROS -->
+    <div class="shrink-0 p-6 pb-0 bg-white">
+      <!-- Header -->
+      <div
+        data-aos="fade-up"
+        data-aos-duration="1000"
+        class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4"
+      >
         <div>
           <div class="flex items-center gap-3">
-            <h1 class="text-xl font-bold text-slate-900 tracking-tight">Idiomas</h1>
+            <h1 class="text-xl font-bold text-slate-900 tracking-tight">Páginas</h1>
             <span
               class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-bold bg-indigo-50 text-indigo-700 border border-indigo-200"
             >
-              {{ totalLanguage() }} {{ totalLanguage() === 1 ? 'idioma' : 'idiomas' }}
+              {{ totalPage() }} {{ totalPage() === 1 ? 'página' : 'páginas' }}
             </span>
           </div>
           <p class="text-sm text-slate-500 mt-1">
-            Configuración y diccionario multilingüe para las paginas del sitio.
+            Gestiona y administra las páginas y contenidos del sitio web.
           </p>
         </div>
         <!-- Global Action Group -->
         <div class="flex items-center gap-2">
-          @if (validPermission(permission.createLanguage)) {
-            <!-- Add language button -->
+          @if (validPermission(permission.createPage)) {
             <button
               (click)="openDetailsModal(null)"
               class="cursor-pointer w-full flex justify-center items-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-semibold text-white bg-indigo-500 hover:bg-indigo-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 active:transform active:scale-[0.99] transition duration-150 ease-in-out disabled:cursor-not-allowed disabled:bg-indigo-300"
@@ -37,14 +41,16 @@
           }
         </div>
       </div>
-      <!-- Filters Row -->
+
+      <!-- Filters -->
       <div
+        data-aos="fade-left"
+        data-aos-duration="1000"
         class="mt-4 flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 pt-4 border-t border-slate-100"
       >
-        <!-- Search, Filters, Columns & View Switcher -->
         <div class="flex items-center flex-row justify-between gap-2 w-full">
-          @if (validPermission(permission.listLanguage)) {
-            <!-- Inline Search -->
+          @if (validPermission(permission.listPage)) {
+            <!-- Search -->
             <div class="relative w-full">
               <span
                 class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-[20px] pointer-events-none"
@@ -54,7 +60,7 @@
               <input
                 [formControl]="searchInputControl"
                 class="w-full h-12 pl-10 pr-10 py-2 rounded-lg font-normal leading-4 bg-white border border-slate-200 text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-slate-500 focus:border-slate-500"
-                placeholder="Buscar idioma..."
+                placeholder="Buscar página..."
                 type="text"
               />
               @if (searchInputControl.value && searchInputControl.value !== '') {
@@ -88,13 +94,17 @@
           }
         </div>
       </div>
-      <!-- table -->
-      <div class="flex-1 px-1 lg:px-0 py-3 pb-2">
-        <div
-          class="bg-white border border-slate-200 rounded-xl shadow-xs overflow-hidden flex flex-col"
-        >
-          @let records = languages().records;
-          @if (validPermission(permission.listLanguage)) {
+    </div>
+
+    <!-- CONTENIDO -->
+    <div data-aos="fade-left" data-aos-duration="1000" class="flex-1 flex flex-col min-h-0">
+      @let records = pages().records;
+      @if (validPermission(permission.listPage)) {
+        <!-- TABLA -->
+        <div class="flex-1 min-h-0 overflow-auto px-1 lg:px-6 py-3 pb-2">
+          <div
+            class="bg-white border border-slate-200 rounded-xl shadow-xs overflow-hidden flex flex-col"
+          >
             <!-- Table Responsive Wrapper -->
             <div class="overflow-x-auto">
               <table class="w-full text-left border-collapse text-xs">
@@ -103,14 +113,15 @@
                   <tr
                     class="bg-slate-50/90 border-b border-slate-200 text-slate-600 font-semibold text-[11px] uppercase tracking-wider select-none"
                   >
-                    <th class="px-4 py-3 text-left w-24">Acciones</th>
-                    <th class="w-14 px-2 py-3 text-center">Imágen</th>
-                    <th class="px-3 py-3 w-32">Idioma</th>
-                    <th class="px-3 py-3 w-24">Código</th>
+                    <th class="px-4 py-3 text-left w-14">Acciones</th>
+                    <th class="px-3 py-3 w-32">Nombre</th>
+                    <th class="px-3 py-3 w-32">Ruta</th>
                     <th class="px-3 py-3 w-24">Estado</th>
                   </tr>
                 </thead>
+
                 <tbody class="divide-y divide-slate-100 font-normal text-slate-700">
+                  <!-- Empty state -->
                   @if (records.length === 0) {
                     <tr>
                       <td colspan="6" class="px-2 py-2.5 text-center">
@@ -123,21 +134,17 @@
                             >
                               <i class="fa-solid fa-magnifying-glass text-indigo-500 fa-2xl"></i>
                             </div>
-
                             <span
                               class="absolute -top-1 -right-1 w-3.5 h-3.5 rounded-full bg-amber-400 ring-4 ring-white"
                             ></span>
-
                             <span
                               class="absolute -bottom-1 -left-1 w-2.5 h-2.5 rounded-full bg-blue-400 ring-2 ring-white"
                             ></span>
                           </div>
-
                           @if (searchInputControl.value) {
                             <h2 class="text-xl font-bold text-slate-900 tracking-tight mb-2">
                               No se encontraron coincidencias para tu búsqueda
                             </h2>
-
                             <p class="text-sm text-slate-500 max-w-md mx-auto leading-relaxed mb-6">
                               No existen resultados que coincidan con
                               <span class="font-medium text-slate-700">
@@ -148,57 +155,55 @@
                             <h2 class="text-xl font-bold text-slate-900 tracking-tight mb-2">
                               No se encontraron registros
                             </h2>
-
                             <p class="text-sm text-slate-500 max-w-md mx-auto leading-relaxed mb-6">
-                              No existen resultados. Intenta agregar un nuevo idioma.
+                              No existen resultados. Intenta agregar una nueva página.
                             </p>
                           }
                         </div>
                       </td>
                     </tr>
                   }
-                  @for (language of records; track $index) {
+                  <!-- Records -->
+                  @for (page of records; track $index) {
                     <tr
                       class="hover:bg-slate-50/80 transition hover:border-l-4 hover:border-l-indigo-600 cursor-pointer"
                     >
-                      <td class="px-4 py-2.5 text-left whitespace-nowrap">
+                      <!-- Actions -->
+                      <td class="px-4 py-2.5 whitespace-nowrap">
                         <div class="inline-flex items-center gap-1">
                           <button
-                            (click)="openDetailsModal(language)"
+                            (click)="openDetailsModal(page)"
                             class="cursor-pointer p-1 rounded hover:bg-slate-200 text-slate-500 hover:text-slate-800 transition"
                             title="Más opciones"
+                            type="button"
                           >
                             <i class="fa-solid fa-ellipsis-vertical"></i>
                           </button>
                         </div>
                       </td>
-                      <td class="px-2 py-2.5 text-center">
-                        <div
-                          class="w-10 h-10 rounded-lg border border-slate-200 flex items-center justify-center p-1 bg-white shadow-2xs mx-auto"
-                        >
-                          <img class="w-8" [alt]="'image'" [src]="getICon(language.icon)" />
+                      <td class="px-4 py-2.5">
+                        <div class="flex flex-col">
+                          <span class="font-semibold text-slate-900 hover:text-slate-600">
+                            {{ page.name }}
+                          </span>
                         </div>
                       </td>
                       <td class="px-4 py-2.5">
                         <div class="flex flex-col">
-                          <span class="font-semibold text-slate-900 hover:text-slate-600">
-                            {{ language.name | titlecase }}
+                          <span class="font-normal text-slate-900 hover:text-slate-600">
+                            {{ page.path }}
                           </span>
                         </div>
-                      </td>
-                      <td class="px-3 py-2.5 font-medium text-slate-800 font-mono text-[11px]">
-                        {{ language.lang | uppercase }}
                       </td>
                       <td class="px-3 py-2.5">
                         <span
                           [ngClass]="{
-                            'text-emerald-700 bg-emerald-50 border border-emerald-200':
-                              language.status,
-                            'text-red-700 bg-red-50 border border-red-200': !language.status,
+                            'text-emerald-700 bg-emerald-50 border border-emerald-200': page.status,
+                            'text-red-700 bg-red-50 border border-red-200': !page.status,
                           }"
                           class="inline-flex items-center gap-1 text-[11px] font-medium px-2 py-0.5 rounded-full"
                         >
-                          @if (language.status) {
+                          @if (page.status) {
                             <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
                             Activo
                           } @else {
@@ -212,27 +217,26 @@
                 </tbody>
               </table>
             </div>
-          } @else {
-            <permission-component />
-          }
+          </div>
         </div>
-      </div>
-    </div>
+        <br /><br />
 
-    @if (records.length > 0) {
-      <pagination-component
-        [page]="languages().page"
-        [limit]="limit()"
-        [total]="languages().total"
-        [pages]="languages().totalPage"
-        (pageEvent)="onPageChange($event)"
-        (limitEvent)="onLimitChange($event)"
-      />
-    }
+        <!-- PAGINATION -->
+        @if (records.length > 0) {
+          <pagination-component
+            [page]="pages().page"
+            [limit]="limit()"
+            [total]="pages().total"
+            [pages]="pages().totalPage"
+            (pageEvent)="onPageChange($event)"
+            (limitEvent)="onLimitChange($event)"
+          />
+        }
+      } @else {
+        <div class="flex-1 min-h-0 flex items-center justify-center">
+          <permission-component />
+        </div>
+      }
+    </div>
   </section>
 </div>
-
-<!-- MODAL NEW/EDIT -->
-@if (showDetails()) {
-  <sitie-languages-details [language]="selectedLanguage()" (closeModalEvent)="closeModal($event)" />
-}

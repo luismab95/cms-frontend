@@ -23,9 +23,10 @@ export class FileService {
    * Update file
    * @returns
    */
-  uploadFile(file: File): Observable<ResponseI<FileUploadI>> {
+  uploadFile(file: File, saveInfo: boolean = true): Observable<ResponseI<FileUploadI>> {
     const formData = new FormData();
     formData.append('file', file, file.name);
+    formData.append('saveInfo', String(saveInfo));
 
     return this._httpClient.post<ResponseI<FileUploadI>>(
       `${this.url}/${this.prefix}/file/upload`,
