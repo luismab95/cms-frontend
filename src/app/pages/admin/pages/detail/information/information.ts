@@ -7,6 +7,8 @@ import {
   UntypedFormGroup,
   Validators,
 } from '@angular/forms';
+import { DomSanitizer } from '@angular/platform-browser';
+import { Router } from '@angular/router';
 import { ToastrService } from '@iqx-limited/ngx-toastr';
 import { PageDataMongoI } from 'app/core/interfaces/page.interface';
 import { MicrosityService } from 'app/core/services/micrositie.service';
@@ -28,6 +30,8 @@ export class PagesInformationComponent implements OnInit, OnDestroy {
   private readonly _pageService = inject(PageService);
   private readonly _microsityService = inject(MicrosityService);
   private readonly _toastrService = inject(ToastrService);
+  private readonly _domSanitizer = inject(DomSanitizer);
+  private readonly _router = inject(Router);
 
   private _unsubscribeAll: Subject<any> = new Subject<any>();
 
@@ -88,6 +92,18 @@ export class PagesInformationComponent implements OnInit, OnDestroy {
    */
   visit(): void {
     window.open(`${this.getDomain()}${this.page()?.path}`, '_blank');
+  }
+
+  /**
+   * Go to Canvas
+   */
+  goToCanvas(): void {
+    this._router.navigateByUrl('/admin/content/pages/canvas', {
+      state: {
+        id: this.page() === null ? 0 : this.page()!.id,
+        micrositieId: this.micrositie() !== null ? this.micrositie()!.id : 0,
+      },
+    });
   }
 
   /**
@@ -208,5 +224,13 @@ export class PagesInformationComponent implements OnInit, OnDestroy {
    */
   validPermission(code: string): boolean {
     return validAction(code);
+  }
+
+  /**
+   * Safe url
+   * @returns
+   */
+  previewPage() {
+    return this._domSanitizer.bypassSecurityTrustResourceUrl(this.getDomain() + this.page()?.path);
   }
 }

@@ -44,6 +44,7 @@ export interface PageI {
   micrositieId?: number | null;
   mode?: ModeEnum;
   status?: boolean;
+  dataReview?: PageDataMongoI;
   data?: PageDataMongoI;
   draft?: PageDataMongoI;
   details?: PageDetailReferenceI[];
@@ -76,3 +77,5 @@ export interface GetPageI {
   page: string;
   micrositie?: string;
 }
+
+export type PreviewModeT = 'none' | 'mobile' | 'tablet' | 'desktop';

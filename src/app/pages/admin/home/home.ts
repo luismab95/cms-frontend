@@ -40,12 +40,9 @@ export class Home {
   private readonly _homeService = inject(HomeService);
   private readonly _userService = inject(UserService);
   private readonly _toastrService = inject(ToastrService);
+  private readonly _domSanitizer = inject(DomSanitizer);
 
   readonly permission = PermissionCode;
-
-  // --------------------------------------------------------------------------
-  // Signals
-  // --------------------------------------------------------------------------
 
   readonly parameters = toSignal(this._parameterService.parameter$, {
     initialValue: null,
@@ -54,34 +51,24 @@ export class Home {
   readonly user = toSignal(this._userService.userLogin$, {
     initialValue: null,
   });
-
   readonly countElements = toSignal(this._homeService.countElements$, {
     initialValue: null,
   });
-
   readonly dataServiceWeek = toSignal(this._homeService.weekVisit$, {
     initialValue: null,
   });
-
   readonly dataServiceYear = toSignal(this._homeService.yearVisit$, {
     initialValue: null,
   });
-
   readonly dataServiceTop10 = toSignal(this._homeService.top10Pages$, {
     initialValue: [],
   });
-
   readonly notifications = toSignal(this._notificationsService.notifications$, {
     initialValue: [],
   });
-
   readonly sitie = toSignal(this._sitieService.sitie$, {
     initialValue: null,
   });
-
-  // --------------------------------------------------------------------------
-  // Computed
-  // --------------------------------------------------------------------------
 
   readonly top3Pages = computed(() => {
     return [...this.dataServiceTop10()]
@@ -90,7 +77,7 @@ export class Home {
       .slice(0, 3)
       .map((item) => ({
         ...item,
-        safePath: this.sanitizer.bypassSecurityTrustResourceUrl(item.path),
+        safePath: this._domSanitizer.bypassSecurityTrustResourceUrl(item.path),
       }));
   });
 
@@ -116,8 +103,6 @@ export class Home {
     const total = dataServiceWeek.micrositie + dataServiceWeek.page + dataServiceWeek.sitie;
     return total > 0 ? total : 1;
   });
-
-  constructor(private sanitizer: DomSanitizer) {}
 
   // --------------------------------------------------------------------------
   // Public methods

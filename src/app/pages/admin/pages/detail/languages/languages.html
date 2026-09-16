@@ -16,221 +16,201 @@
         </div>
       </div>
       <!-- Content -->
-      <div class="p-6 space-y-6">
+      <div class="lg:p-6 p-2 space-y-6">
         <!-- Language tabs -->
-        <div
-          aria-label="Idiomas"
-          class="rounded-t-xl border-b border-slate-200 bg-white px-2 pt-2 shadow-sm"
-        >
-          <div class="flex items-center gap-1 overflow-x-auto no-scrollbar sm:gap-2">
-            @for (language of languages().records; track language.id; let i = $index) {
-              <button
-                type="button"
-                (click)="selectLanguage(i)"
-                [attr.aria-selected]="selectedLanguage() === language.id"
-                class="cursor-pointer"
-                [class]="
-                  selectedLanguage() === i
-                    ? 'group flex items-center gap-2 whitespace-nowrap rounded-t-lg border-b-2 border-indigo-600 bg-indigo-50/50 px-3.5 py-3 text-sm font-semibold text-indigo-600 transition-colors'
-                    : 'group flex items-center gap-2 whitespace-nowrap rounded-t-lg border-b-2 border-transparent px-3.5 py-3 text-sm font-medium text-slate-600 transition-colors hover:bg-slate-50 hover:text-indigo-600'
-                "
+        <tabs-component [tabs]="tabs()" (selectedTabEvent)="selectLanguage($event)">
+          <!-- Language content -->
+          <div class="grid grid-cols-1 gap-6">
+            <div formArrayName="languages" class="col-span-1 lg:col-span-12 space-y-6">
+              <!-- Warning -->
+              <div
+                class="bg-amber-50/80 border border-amber-200 rounded-xl p-4 flex items-start gap-3 text-amber-900"
               >
-                <img class="w-4 object-fill" [src]="getICon(language.icon)" [alt]="language.lang" />
-                <span>
-                  {{ language.name }}
-                </span>
-              </button>
-            }
-          </div>
-        </div>
-        <!-- Language content -->
-        <div class="grid grid-cols-1 gap-6 pt-0 px-4">
-          <div
-            formArrayName="languages"
-            class="col-span-12 space-y-6"
-            data-purpose="settings-form-column"
-          >
-            <!-- Warning -->
-            <div
-              class="bg-amber-50/80 border border-amber-200 rounded-xl p-4 flex items-start gap-3 text-amber-900"
-            >
-              <i class="fa-solid fa-triangle-exclamation text-amber-600 mt-0.5 shrink-0"></i>
-              <div class="text-xs sm:text-sm">
-                <span class="font-bold text-amber-900"> Visibilidad pública: </span>
-                La información ingresada en esta sección se proyecta públicamente en los metadatos
-                de las páginas generados por el CMS.
+                <i class="fa-solid fa-triangle-exclamation text-amber-600 mt-0.5 shrink-0"></i>
+                <div class="text-xs sm:text-sm">
+                  <span class="font-bold text-amber-900"> Visibilidad pública: </span>
+                  La información ingresada en esta sección se proyecta públicamente en los metadatos
+                  de las páginas generados por el CMS.
+                </div>
               </div>
-            </div>
-            <!-- Selected language -->
-            @for (language of languages().records; track language.id; let i = $index) {
-              <div data-aos="fade-left" data-aos-duration="1000" [formGroupName]="i" [class.hidden]="selectedLanguage() !== i" class="space-y-6">
-                <!-- Alias -->
-                <div>
-                  <label
-                    [class.text-red-500!]="validateFormControl(selectedLanguageForm(), 'alias')"
-                    class="block text-xs font-semibold uppercase tracking-wider text-slate-700 mb-1.5"
-                    for="alias"
-                  >
-                    Alias
-
-                    <span class="text-rose-500 font-bold"> * </span>
-                  </label>
-
-                  <div class="relative rounded-lg shadow-sm">
-                    <div
-                      class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400"
+              <!-- Selected language -->
+              @for (language of languages().records; track language.id; let i = $index) {
+                <div
+                  [formGroupName]="i"
+                  [class.hidden]="selectedLanguage() !== i"
+                  class="space-y-6"
+                >
+                  <!-- Alias -->
+                  <div>
+                    <label
+                      [class.text-red-500!]="validateFormControl(selectedLanguageForm(), 'alias')"
+                      class="block text-xs font-semibold uppercase tracking-wider text-slate-700 mb-1.5"
+                      for="alias"
                     >
-                      <i
-                        class="fa-solid fa-align-right"
+                      Alias
+
+                      <span class="text-rose-500 font-bold"> * </span>
+                    </label>
+
+                    <div class="relative rounded-lg shadow-sm">
+                      <div
+                        class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400"
+                      >
+                        <i
+                          class="fa-solid fa-align-right"
+                          [class.text-red-500!]="
+                            validateFormControl(selectedLanguageForm(), 'alias')
+                          "
+                        ></i>
+                      </div>
+
+                      <input
+                        formControlName="alias"
+                        class="block w-full pl-10 pr-3.5 py-2.5 sm:py-3 text-sm text-slate-900 placeholder-slate-400 bg-slate-50/50 border border-slate-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-slate-600 focus:border-slate-600 focus:bg-white transition-colors"
+                        [class.border-red-500!.text-red-500!]="
+                          validateFormControl(selectedLanguageForm(), 'alias')
+                        "
                         [class.text-red-500!]="validateFormControl(selectedLanguageForm(), 'alias')"
-                      ></i>
+                        [class.placeholder:text-red-500!]="
+                          validateFormControl(selectedLanguageForm(), 'alias')
+                        "
+                        id="alias"
+                        name="alias"
+                        type="text"
+                        required
+                      />
                     </div>
 
-                    <input
-                      formControlName="alias"
-                      class="block w-full pl-10 pr-3.5 py-2.5 sm:py-3 text-sm text-slate-900 placeholder-slate-400 bg-slate-50/50 border border-slate-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-slate-600 focus:border-slate-600 focus:bg-white transition-colors"
-                      [class.border-red-500!.text-red-500!]="
-                        validateFormControl(selectedLanguageForm(), 'alias')
-                      "
-                      [class.text-red-500!]="validateFormControl(selectedLanguageForm(), 'alias')"
-                      [class.placeholder:text-red-500!]="
-                        validateFormControl(selectedLanguageForm(), 'alias')
-                      "
-                      id="alias"
-                      name="alias"
-                      type="text"
-                      required
-                    />
+                    <!-- Errors -->
+
+                    @if (getErrorMessage(selectedLanguageForm(), 'alias') !== '') {
+                      <p class="mt-1.5 flex items-center gap-1 text-sm text-red-600">
+                        <i class="fa-solid fa-circle-exclamation"></i>
+
+                        <span>
+                          {{ getErrorMessage(selectedLanguageForm(), 'alias') }}
+                        </span>
+                      </p>
+                    }
                   </div>
-
-                  <!-- Errors -->
-
-                  @if (getErrorMessage(selectedLanguageForm(), 'alias') !== '') {
-                    <p class="mt-1.5 flex items-center gap-1 text-sm text-red-600">
-                      <i class="fa-solid fa-circle-exclamation"></i>
-
-                      <span>
-                        {{ getErrorMessage(selectedLanguageForm(), 'alias') }}
-                      </span>
-                    </p>
-                  }
-                </div>
-                <!-- Description -->
-                <div>
-                  <label
-                    [class.text-red-500!]="
-                      validateFormControl(selectedLanguageForm(), 'description')
-                    "
-                    class="block text-xs font-semibold uppercase tracking-wider text-slate-700 mb-1.5"
-                    for="description"
-                  >
-                    Descripción
-
-                    <span class="text-rose-500 font-bold"> * </span>
-                  </label>
-
-                  <div class="relative rounded-lg shadow-sm">
-                    <div
-                      class="absolute left-0 top-4 pl-3.5 flex items-center pointer-events-none text-slate-400"
+                  <!-- Description -->
+                  <div>
+                    <label
+                      [class.text-red-500!]="
+                        validateFormControl(selectedLanguageForm(), 'description')
+                      "
+                      class="block text-xs font-semibold uppercase tracking-wider text-slate-700 mb-1.5"
+                      for="description"
                     >
-                      <i
-                        class="fa-solid fa-align-justify"
+                      Descripción
+
+                      <span class="text-rose-500 font-bold"> * </span>
+                    </label>
+
+                    <div class="relative rounded-lg shadow-sm">
+                      <div
+                        class="absolute left-0 top-4 pl-3.5 flex items-center pointer-events-none text-slate-400"
+                      >
+                        <i
+                          class="fa-solid fa-align-justify"
+                          [class.text-red-500!]="
+                            validateFormControl(selectedLanguageForm(), 'description')
+                          "
+                        ></i>
+                      </div>
+
+                      <textarea
+                        formControlName="description"
+                        class="block w-full pl-10 pr-3.5 py-2.5 sm:py-3 text-sm text-slate-900 placeholder-slate-400 bg-slate-50/50 border border-slate-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-slate-600 focus:border-slate-600 focus:bg-white transition-colors"
+                        [class.border-red-500!.text-red-500!]="
+                          validateFormControl(selectedLanguageForm(), 'description')
+                        "
                         [class.text-red-500!]="
                           validateFormControl(selectedLanguageForm(), 'description')
                         "
-                      ></i>
+                        [class.placeholder:text-red-500!]="
+                          validateFormControl(selectedLanguageForm(), 'description')
+                        "
+                        id="description"
+                        name="description"
+                        rows="5"
+                        required
+                      ></textarea>
                     </div>
 
-                    <textarea
-                      formControlName="description"
-                      class="block w-full pl-10 pr-3.5 py-2.5 sm:py-3 text-sm text-slate-900 placeholder-slate-400 bg-slate-50/50 border border-slate-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-slate-600 focus:border-slate-600 focus:bg-white transition-colors"
-                      [class.border-red-500!.text-red-500!]="
-                        validateFormControl(selectedLanguageForm(), 'description')
-                      "
-                      [class.text-red-500!]="
-                        validateFormControl(selectedLanguageForm(), 'description')
-                      "
-                      [class.placeholder:text-red-500!]="
-                        validateFormControl(selectedLanguageForm(), 'description')
-                      "
-                      id="description"
-                      name="description"
-                      rows="5"
-                      required
-                    ></textarea>
+                    <!-- Errors -->
+
+                    @if (getErrorMessage(selectedLanguageForm(), 'description') !== '') {
+                      <p class="mt-1.5 flex items-center gap-1 text-sm text-red-600">
+                        <i class="fa-solid fa-circle-exclamation"></i>
+
+                        <span>
+                          {{ getErrorMessage(selectedLanguageForm(), 'description') }}
+                        </span>
+                      </p>
+                    }
                   </div>
-
-                  <!-- Errors -->
-
-                  @if (getErrorMessage(selectedLanguageForm(), 'description') !== '') {
-                    <p class="mt-1.5 flex items-center gap-1 text-sm text-red-600">
-                      <i class="fa-solid fa-circle-exclamation"></i>
-
-                      <span>
-                        {{ getErrorMessage(selectedLanguageForm(), 'description') }}
-                      </span>
-                    </p>
-                  }
-                </div>
-                <!-- Keywords -->
-                <div>
-                  <label
-                    [class.text-red-500!]="validateFormControl(selectedLanguageForm(), 'keywords')"
-                    class="block text-xs font-semibold uppercase tracking-wider text-slate-700 mb-1.5"
-                    for="keywords"
-                  >
-                    Palabras clave
-
-                    <span class="text-rose-500 font-bold"> * </span>
-                  </label>
-
-                  <div class="relative rounded-lg shadow-sm">
-                    <div
-                      class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400"
+                  <!-- Keywords -->
+                  <div>
+                    <label
+                      [class.text-red-500!]="
+                        validateFormControl(selectedLanguageForm(), 'keywords')
+                      "
+                      class="block text-xs font-semibold uppercase tracking-wider text-slate-700 mb-1.5"
+                      for="keywords"
                     >
-                      <i
-                        class="fa-solid fa-align-right"
+                      Palabras clave
+
+                      <span class="text-rose-500 font-bold"> * </span>
+                    </label>
+
+                    <div class="relative rounded-lg shadow-sm">
+                      <div
+                        class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400"
+                      >
+                        <i
+                          class="fa-solid fa-align-right"
+                          [class.text-red-500!]="
+                            validateFormControl(selectedLanguageForm(), 'keywords')
+                          "
+                        ></i>
+                      </div>
+
+                      <input
+                        formControlName="keywords"
+                        class="block w-full pl-10 pr-3.5 py-2.5 sm:py-3 text-sm text-slate-900 placeholder-slate-400 bg-slate-50/50 border border-slate-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-slate-600 focus:border-slate-600 focus:bg-white transition-colors"
+                        [class.border-red-500!.text-red-500!]="
+                          validateFormControl(selectedLanguageForm(), 'keywords')
+                        "
                         [class.text-red-500!]="
                           validateFormControl(selectedLanguageForm(), 'keywords')
                         "
-                      ></i>
+                        [class.placeholder:text-red-500!]="
+                          validateFormControl(selectedLanguageForm(), 'keywords')
+                        "
+                        id="keywords"
+                        name="keywords"
+                        type="text"
+                        required
+                      />
                     </div>
 
-                    <input
-                      formControlName="keywords"
-                      class="block w-full pl-10 pr-3.5 py-2.5 sm:py-3 text-sm text-slate-900 placeholder-slate-400 bg-slate-50/50 border border-slate-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-slate-600 focus:border-slate-600 focus:bg-white transition-colors"
-                      [class.border-red-500!.text-red-500!]="
-                        validateFormControl(selectedLanguageForm(), 'keywords')
-                      "
-                      [class.text-red-500!]="
-                        validateFormControl(selectedLanguageForm(), 'keywords')
-                      "
-                      [class.placeholder:text-red-500!]="
-                        validateFormControl(selectedLanguageForm(), 'keywords')
-                      "
-                      id="keywords"
-                      name="keywords"
-                      type="text"
-                      required
-                    />
+                    <!-- Errors -->
+                    @if (getErrorMessage(selectedLanguageForm(), 'keywords') !== '') {
+                      <p class="mt-1.5 flex items-center gap-1 text-sm text-red-600">
+                        <i class="fa-solid fa-circle-exclamation"></i>
+
+                        <span>
+                          {{ getErrorMessage(selectedLanguageForm(), 'keywords') }}
+                        </span>
+                      </p>
+                    }
                   </div>
-
-                  <!-- Errors -->
-
-                  @if (getErrorMessage(selectedLanguageForm(), 'keywords') !== '') {
-                    <p class="mt-1.5 flex items-center gap-1 text-sm text-red-600">
-                      <i class="fa-solid fa-circle-exclamation"></i>
-
-                      <span>
-                        {{ getErrorMessage(selectedLanguageForm(), 'keywords') }}
-                      </span>
-                    </p>
-                  }
                 </div>
-              </div>
-            }
+              }
+            </div>
           </div>
-        </div>
+        </tabs-component>
       </div>
     </section>
 

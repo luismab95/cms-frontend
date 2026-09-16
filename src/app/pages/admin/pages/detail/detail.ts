@@ -20,7 +20,6 @@ import { Subject } from 'rxjs';
     PermissionComponent,
     PagesInformationComponent,
     PagesLangugesComponent,
-    // PagesDrawerComponent,
   ],
 })
 export class PagesDetail implements OnInit, OnDestroy {
@@ -62,12 +61,7 @@ export class PagesDetail implements OnInit, OnDestroy {
             description:
               'Administra la información de los meta tags de página en los diferentes idiomas del sitio.',
           },
-          {
-            id: 'drawer',
-            icon: 'fa-solid fa-paintbrush',
-            title: 'Personalizar',
-            description: 'Personaliza el contenido de tu página.',
-          },
+
         ]);
       }
     });

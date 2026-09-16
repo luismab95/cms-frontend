@@ -1,246 +1,331 @@
 <form [formGroup]="pageForm">
-    <div class="flex flex-col gap-8 lg:p-4 p-0" data-aos="fade-left" data-aos-duration="1000">
-      @let edit = page();
-      @let isEditing = edit !== null;
-      @let canEdit = validPermission(permission.editPage);
-      @let canCreate = validPermission(permission.createPage);
-      @let canSave = isEditing ? canEdit : canCreate;
+  <div class="flex flex-col gap-8 lg:p-4 p-0" data-aos="fade-left" data-aos-duration="1000">
+    @let edit = page();
+    @let isEditing = edit !== null;
+    @let canEdit = validPermission(permission.editPage);
+    @let canCreate = validPermission(permission.createPage);
+    @let canSave = isEditing ? canEdit : canCreate;
 
-      <!-- Section 1: General sitie Information -->
-      <section class="rounded-2xl border border-slate-200/80 bg-white shadow-sm overflow-hidden">
+    <!-- Section 1: General sitie Information -->
+    <section class="rounded-2xl border border-slate-200/80 bg-white shadow-sm overflow-hidden">
+      <div class="border-b border-slate-100 bg-white px-6 py-5">
+        <div class="flex items-center justify-between">
+          <div>
+            <h2 class="text-base font-bold text-slate-900">Información General</h2>
+            <p class="text-xs text-slate-500 mt-0.5">
+              Información básica y general de tu página. Comprende datos como el nombre y ruta.
+            </p>
+          </div>
+        </div>
+      </div>
+      <div class="p-6 space-y-6">
+        <!-- Nombre -->
+        <div>
+          <label
+            [class.text-red-500!]="validateFormControl(pageForm, 'name')"
+            class="block text-xs font-semibold uppercase tracking-wider text-slate-700 mb-1.5"
+            for="name"
+          >
+            Nombre <span class="text-rose-500 font-bold">*</span>
+          </label>
+          <div class="relative rounded-lg shadow-sm">
+            <div
+              class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400"
+            >
+              <i
+                class="fa-solid fa-heading"
+                [class.text-red-500!]="validateFormControl(pageForm, 'name')"
+              ></i>
+            </div>
+            <input
+              formControlName="name"
+              class="block w-full pl-10 pr-3.5 py-2.5 sm:py-3 text-sm text-slate-900 placeholder-slate-400 bg-slate-50/50 border border-slate-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-slate-600 focus:border-slate-600 focus:bg-white transition-colors"
+              [class.border-red-500!.text-red-500!]="validateFormControl(pageForm, 'name')"
+              [class.text-red-500!]="validateFormControl(pageForm, 'name')"
+              [class.placeholder:text-red-500!]="validateFormControl(pageForm, 'name')"
+              id="name"
+              name="name"
+              required=""
+              type="text"
+            />
+          </div>
+
+          <!-- Errores -->
+          @if (getErrorMessage(pageForm, 'name') !== '') {
+            <p class="mt-1.5 flex items-center gap-1 text-sm text-red-600">
+              <i class="fa-solid fa-circle-exclamation"></i>
+              <span>{{ getErrorMessage(pageForm, 'name') }}</span>
+            </p>
+          }
+        </div>
+        <!-- url -->
+        <div>
+          <label
+            [class.text-red-500!]="validateFormControl(pageForm, 'path')"
+            class="block text-xs font-semibold uppercase tracking-wider text-slate-700 mb-1.5"
+            for="path"
+          >
+            Ruta <span class="text-rose-500 font-bold">*</span>
+          </label>
+
+          <div class="flex rounded-lg shadow-sm">
+            <span
+              [class.border-red-500!.text-red-500!]="validateFormControl(pageForm, 'path')"
+              [class.text-red-500!]="validateFormControl(pageForm, 'path')"
+              class="inline-flex items-center rounded-l-lg border border-r-0 border-slate-300 bg-slate-50 px-3.5 text-slate-400 text-sm"
+            >
+              <span [class.text-red-500!]="validateFormControl(pageForm, 'path')">
+                {{ getDomain() }}
+              </span>
+            </span>
+            <input
+              formControlName="path"
+              class="block w-full pl-4 py-2.5 sm:py-3 rounded-e-lg text-sm text-slate-900 placeholder-slate-400 bg-slate-50/50 border border-slate-300 focus:outline-none focus:ring-1 focus:ring-slate-600 focus:border-slate-600 focus:bg-white transition-colors"
+              [class.border-red-500!.text-red-500!]="validateFormControl(pageForm, 'path')"
+              [class.text-red-500!]="validateFormControl(pageForm, 'path')"
+              [class.placeholder:text-red-500!]="validateFormControl(pageForm, 'path')"
+              id="path"
+              name="path"
+              required=""
+              type="text"
+            />
+          </div>
+
+          <!-- Errores -->
+          @if (getErrorMessage(pageForm, 'path') !== '') {
+            <p class="mt-1.5 flex items-center gap-1 text-sm text-red-600">
+              <i class="fa-solid fa-circle-exclamation"></i>
+              <span>{{ getErrorMessage(pageForm, 'path') }}</span>
+            </p>
+          }
+        </div>
+
+        <!-- preview -->
+        @if (isEditing) {
+          <div>
+            <span
+              class="block text-xs font-semibold uppercase tracking-wider text-slate-700 mb-1.5"
+            >
+              Previsualización
+            </span>
+
+            <div
+              class="bg-white rounded-xl border border-slate-300 shadow-lg overflow-hidden flex flex-col"
+            >
+              <!-- Browser Address Bar Chrome -->
+              <div
+                class="bg-slate-100 px-4 py-2.5 border-b border-slate-200 flex items-center space-x-3 select-none"
+              >
+                <div class="flex items-center space-x-1.5">
+                  <span class="w-2.5 h-2.5 rounded-full bg-red-400 inline-block"></span>
+                  <span class="w-2.5 h-2.5 rounded-full bg-amber-400 inline-block"></span>
+                  <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 inline-block"></span>
+                </div>
+                <div
+                  class="flex-1 bg-white border border-slate-200 rounded-md py-1 px-3 text-xs text-slate-600 font-mono flex items-center justify-between"
+                >
+                  <div class="flex items-center space-x-1.5 truncate">
+                    <i class="fa-solid fa-lock text-emerald-600 shrink-0"></i>
+                    <span class="text-slate-400">{{ this.getDomain() }}</span>
+                    <span class="font-bold text-slate-800">{{ this.page()?.path }}</span>
+                  </div>
+                  <span class="text-[10px] text-slate-400 bg-slate-100 px-1 rounded">200 OK</span>
+                </div>
+              </div>
+              <!-- Canvas Preview Inner Content (Matches image elements: Flag, CMS logo, Personalizar button, Bienvenido headline) -->
+              <div
+                class="relative bg-slate-300 min-h-125 h-125 flex flex-col items-center justify-center text-center overflow-hidden group backdrop-blur-2xl"
+              >
+                <!-- Quick Edit Overlay Helper -->
+                <div
+                  class="absolute top-4 right-4 z-20 opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+                >
+                  <span
+                    class="bg-slate-900/80 backdrop-blur-xs text-white text-[11px] font-medium px-2.5 py-1.2 rounded shadow"
+                  >
+                    Previsualización interactiva
+                  </span>
+                </div>
+                <!-- Interactive Floating 'Personalizar' Button from image -->
+                <div
+                  class="absolute w-full h-full flex items-center justify-center bg-transparent z-20"
+                >
+                  <button
+                    (click)="goToCanvas()"
+                    class="cursor-pointer gap-1.5 group/btn inline-flex items-center px-6 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-sm shadow-lg shadow-indigo-600/30 hover:shadow-indigo-600/50 transition-all duration-200 transform hover:-translate-y-0.5 active:translate-y-0 focus:outline-none"
+                    type="button"
+                  >
+                    <i
+                      class="text-indigo-200 group-hover/btn:rotate-12 transition-transform fa-solid fa-wand-magic-sparkles"
+                    ></i>
+                    <span>Personalizar</span>
+                  </button>
+                </div>
+                <!-- Page Canvas Content Box -->
+                <div
+                  class="w-full h-full relative flex flex-col items-center z-10 bg-white/20 opacity-50"
+                >
+                  <iframe
+                    [src]="previewPage()"
+                    class="w-full h-full"
+                    frameborder="0"
+                    loading="lazy"
+                  ></iframe>
+                </div>
+              </div>
+              <!-- Bottom Preview Bar with Quick Actions -->
+              <div
+                class="bg-white p-3 border-t border-slate-200 flex flex-wrap items-center justify-between gap-2 text-xs"
+              >
+                <div class="flex items-center space-x-2 text-slate-500">
+                  <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+                  <span>Motor de plantillas sincronizado en tiempo real</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+    </section>
+
+    @if (isEditing) {
+      <!-- Section 2: Zona de peligro -->
+      <section class="rounded-2xl border-2 border-red-500 bg-white shadow-sm overflow-hidden">
         <div class="border-b border-slate-100 bg-white px-6 py-5">
           <div class="flex items-center justify-between">
             <div>
-              <h2 class="text-base font-bold text-slate-900">Información General</h2>
+              <h2 class="text-base font-bold text-slate-p00">Zona de peligro</h2>
               <p class="text-xs text-slate-500 mt-0.5">
-                Información básica y general de tu página. Comprende datos como el nombre y ruta.
+                Las opciones disponibles en esta sección corresponden a funciones de administración
+                y configuración general de la página. Estos ajustes pueden afectar el
+                funcionamiento, la estructura o la información visible para los usuarios, por lo que
+                se recomienda utilizarlos con precaución y verificar los cambios antes de
+                guardarlos.
               </p>
             </div>
           </div>
         </div>
         <div class="p-6 space-y-6">
-          <!-- Nombre -->
-          <div>
-            <label
-              [class.text-red-500!]="validateFormControl(pageForm, 'name')"
-              class="block text-xs font-semibold uppercase tracking-wider text-slate-700 mb-1.5"
-              for="name"
-            >
-              Nombre <span class="text-rose-500 font-bold">*</span>
-            </label>
-            <div class="relative rounded-lg shadow-sm">
-              <div
-                class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400"
-              >
-                <i
-                  class="fa-solid fa-heading"
-                  [class.text-red-500!]="validateFormControl(pageForm, 'name')"
-                ></i>
+          <!--Desactivar -->
+          <div class="px-6 transition hover:bg-slate-50/60">
+            @let status = pageForm.get('status')?.value;
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div class="space-y-1.5 max-w-xl">
+                <div class="flex items-center gap-2.5 flex-wrap">
+                  <h3 class="text-sm font-bold text-slate-900">Deshabilita/Habilita la página</h3>
+                  <span
+                    [class.bg-slate-100]="!status"
+                    [class.bg-emerald-100]="status"
+                    [class.text-slate-600]="!status"
+                    [class.text-emerald-600]="status"
+                    [class.ring-slate-200]="!status"
+                    [class.ring-emerald-200]="status"
+                    class="inline-flex items-center rounded-md bg-slate-100 px-2 py-0.5 text-[11px] font-semibold ring-1 ring-inset"
+                  >
+                    <span
+                      [class.bg-slate-400]="!status"
+                      [class.bg-emerald-400]="status"
+                      class="h-1.5 w-1.5 rounded-full mr-1.5"
+                    ></span>
+                    @if (!status) {
+                      Inactivo
+                    } @else {
+                      En Línea
+                    }
+                  </span>
+                </div>
+                <p class="text-xs text-slate-500 leading-relaxed">
+                  Desactiva temporalmente el acceso para usuarios mostrando la pantalla de cortesía
+                  HTTP 404. Los administradores podrán continuar gestionando la información de la
+                  página.
+                </p>
+                <div
+                  class="flex items-center gap-1.5 text-[11px] text-amber-700 bg-amber-50 px-2.5 py-1 rounded-md w-fit ring-1 ring-inset ring-amber-600/20"
+                >
+                  <i class="fa-solid fa-triangle-exclamation text-amber-600"></i>
+                  <span>Activar este switch desactivará la página y toda su contenido.</span>
+                </div>
               </div>
-              <input
-                formControlName="name"
-                class="block w-full pl-10 pr-3.5 py-2.5 sm:py-3 text-sm text-slate-900 placeholder-slate-400 bg-slate-50/50 border border-slate-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-slate-600 focus:border-slate-600 focus:bg-white transition-colors"
-                [class.border-red-500!.text-red-500!]="validateFormControl(pageForm, 'name')"
-                [class.text-red-500!]="validateFormControl(pageForm, 'name')"
-                [class.placeholder:text-red-500!]="validateFormControl(pageForm, 'name')"
-                id="name"
-                name="name"
-                required=""
-                type="text"
-              />
-            </div>
-
-            <!-- Errores -->
-            @if (getErrorMessage(pageForm, 'name') !== '') {
-              <p class="mt-1.5 flex items-center gap-1 text-sm text-red-600">
-                <i class="fa-solid fa-circle-exclamation"></i>
-                <span>{{ getErrorMessage(pageForm, 'name') }}</span>
-              </p>
-            }
-          </div>
-          <!-- url -->
-          <div>
-            <label
-              [class.text-red-500!]="validateFormControl(pageForm, 'path')"
-              class="block text-xs font-semibold uppercase tracking-wider text-slate-700 mb-1.5"
-              for="path"
-            >
-              Ruta <span class="text-rose-500 font-bold">*</span>
-            </label>
-
-            <div class="flex rounded-lg shadow-sm">
-              <span
-                [class.border-red-500!.text-red-500!]="validateFormControl(pageForm, 'path')"
-                [class.text-red-500!]="validateFormControl(pageForm, 'path')"
-                class="inline-flex items-center rounded-l-lg border border-r-0 border-slate-300 bg-slate-50 px-3.5 text-slate-400 text-sm"
+              <!-- Switch Toggle Anatomy: OFF (slate-200) -->
+              <button
+                (click)="pageForm.get('status')?.setValue(!status)"
+                aria-checked="false"
+                [class.bg-indigo-600]="status"
+                [class.bg-slate-200]="!status"
+                class="relative inline-flex h-7 w-14 shrink-0 cursor-pointer rounded-full border-2 border-transparent p-0.5 transition-colors duration-200 ease-in-out focus:outline-none focus:ring-1 focus:ring-slate-500 focus:ring-offset-2 self-start sm:self-center"
+                role="switch"
+                type="button"
               >
-                <span [class.text-red-500!]="validateFormControl(pageForm, 'path')">
-                  {{ getDomain() }}
+                <!-- Thumb -->
+                <span
+                  [class.translate-x-7]="status"
+                  [class.translate-x-0]="!status"
+                  class="pointer-events-none inline-flex h-6 w-6 transform items-center justify-center rounded-full bg-white shadow-md ring-0 transition duration-200 ease-in-out"
+                >
+                  @if (!status) {
+                    <i class="fa-solid fa-xmark text-slate-400 fa-2xs"></i>
+                  } @else {
+                    <i class="fa-solid fa-check text-indigo-400 fa-2xs"></i>
+                  }
                 </span>
-              </span>
-              <input
-                formControlName="path"
-                class="block w-full pl-4 py-2.5 sm:py-3 rounded-e-lg text-sm text-slate-900 placeholder-slate-400 bg-slate-50/50 border border-slate-300 focus:outline-none focus:ring-1 focus:ring-slate-600 focus:border-slate-600 focus:bg-white transition-colors"
-                [class.border-red-500!.text-red-500!]="validateFormControl(pageForm, 'path')"
-                [class.text-red-500!]="validateFormControl(pageForm, 'path')"
-                [class.placeholder:text-red-500!]="validateFormControl(pageForm, 'path')"
-                id="path"
-                name="path"
-                required=""
-                type="text"
-              />
+              </button>
             </div>
-
-            <!-- Errores -->
-            @if (getErrorMessage(pageForm, 'path') !== '') {
-              <p class="mt-1.5 flex items-center gap-1 text-sm text-red-600">
-                <i class="fa-solid fa-circle-exclamation"></i>
-                <span>{{ getErrorMessage(pageForm, 'path') }}</span>
-              </p>
-            }
           </div>
         </div>
       </section>
+    }
 
-      @if (isEditing) {
-        <!-- Section 2: Zona de peligro -->
-        <section class="rounded-2xl border-2 border-red-500 bg-white shadow-sm overflow-hidden">
-          <div class="border-b border-slate-100 bg-white px-6 py-5">
-            <div class="flex items-center justify-between">
-              <div>
-                <h2 class="text-base font-bold text-slate-p00">Zona de peligro</h2>
-                <p class="text-xs text-slate-500 mt-0.5">
-                  Las opciones disponibles en esta sección corresponden a funciones de
-                  administración y configuración general de la página. Estos ajustes pueden afectar
-                  el funcionamiento, la estructura o la información visible para los usuarios, por
-                  lo que se recomienda utilizarlos con precaución y verificar los cambios antes de
-                  guardarlos.
-                </p>
-              </div>
-            </div>
-          </div>
-          <div class="p-6 space-y-6">
-            <!--Desactivar -->
-            <div class="px-6 transition hover:bg-slate-50/60">
-              @let status = pageForm.get('status')?.value;
-              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                <div class="space-y-1.5 max-w-xl">
-                  <div class="flex items-center gap-2.5 flex-wrap">
-                    <h3 class="text-sm font-bold text-slate-900">Deshabilita/Habilita la página</h3>
-                    <span
-                      [class.bg-slate-100]="!status"
-                      [class.bg-emerald-100]="status"
-                      [class.text-slate-600]="!status"
-                      [class.text-emerald-600]="status"
-                      [class.ring-slate-200]="!status"
-                      [class.ring-emerald-200]="status"
-                      class="inline-flex items-center rounded-md bg-slate-100 px-2 py-0.5 text-[11px] font-semibold ring-1 ring-inset"
-                    >
-                      <span
-                        [class.bg-slate-400]="!status"
-                        [class.bg-emerald-400]="status"
-                        class="h-1.5 w-1.5 rounded-full mr-1.5"
-                      ></span>
-                      @if (!status) {
-                        Inactivo
-                      } @else {
-                        En Línea
-                      }
-                    </span>
-                  </div>
-                  <p class="text-xs text-slate-500 leading-relaxed">
-                    Desactiva temporalmente el acceso para usuarios mostrando la pantalla de
-                    cortesía HTTP 404. Los administradores podrán continuar gestionando la
-                    información de la página.
-                  </p>
-                  <div
-                    class="flex items-center gap-1.5 text-[11px] text-amber-700 bg-amber-50 px-2.5 py-1 rounded-md w-fit ring-1 ring-inset ring-amber-600/20"
-                  >
-                    <i class="fa-solid fa-triangle-exclamation text-amber-600"></i>
-                    <span>Activar este switch desactivará la página y toda su contenido.</span>
-                  </div>
-                </div>
-                <!-- Switch Toggle Anatomy: OFF (slate-200) -->
-                <button
-                  (click)="pageForm.get('status')?.setValue(!status)"
-                  aria-checked="false"
-                  [class.bg-indigo-600]="status"
-                  [class.bg-slate-200]="!status"
-                  class="relative inline-flex h-7 w-14 shrink-0 cursor-pointer rounded-full border-2 border-transparent p-0.5 transition-colors duration-200 ease-in-out focus:outline-none focus:ring-1 focus:ring-slate-500 focus:ring-offset-2 self-start sm:self-center"
-                  role="switch"
-                  type="button"
-                >
-                  <!-- Thumb -->
-                  <span
-                    [class.translate-x-7]="status"
-                    [class.translate-x-0]="!status"
-                    class="pointer-events-none inline-flex h-6 w-6 transform items-center justify-center rounded-full bg-white shadow-md ring-0 transition duration-200 ease-in-out"
-                  >
-                    @if (!status) {
-                      <i class="fa-solid fa-xmark text-slate-400 fa-2xs"></i>
-                    } @else {
-                      <i class="fa-solid fa-check text-indigo-400 fa-2xs"></i>
-                    }
-                  </span>
-                </button>
-              </div>
-            </div>
-          </div>
-        </section>
-      }
-
-      @if (canSave) {
-        <div class="flex w-full flex-col items-center justify-between gap-3 md:flex-row">
-          <!-- Left actions -->
-          <div class="flex w-full items-center justify-start">
-            @if (isEditing) {
-              <button
-                type="button"
-                (click)="visit()"
-                class="flex w-full cursor-pointer items-center justify-center gap-2 rounded-lg border border-indigo-300 bg-white px-4 py-3 text-sm font-semibold text-indigo-700 shadow-sm transition duration-150 ease-in-out hover:bg-indigo-50 focus:outline-none focus:ring-2 focus:ring-indigo-50 focus:ring-offset-2 active:scale-[0.99] md:w-auto"
-              >
-                <i class="fa-solid fa-link"></i>
-                <span>Visitar</span>
-              </button>
-            }
-          </div>
-
-          <!-- Right actions -->
-          <div class="flex w-full flex-col items-center justify-end gap-3 md:flex-row">
-            @if (isEditing) {
-              <button
-                type="button"
-                (click)="cancel()"
-                class="flex w-full cursor-pointer items-center justify-center rounded-lg border border-slate-300 bg-white px-4 py-3 text-sm font-semibold text-slate-700 shadow-sm transition duration-150 ease-in-out hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-slate-50 focus:ring-offset-2 active:scale-[0.99] md:w-auto"
-              >
-                Descartar
-              </button>
-            }
-
-            <!-- Save -->
+    @if (canSave) {
+      <div class="flex w-full flex-col items-center justify-between gap-3 md:flex-row">
+        <!-- Left actions -->
+        <div class="flex w-full items-center justify-start">
+          @if (isEditing) {
             <button
               type="button"
-              (click)="update()"
-              [disabled]="pageForm.disabled"
-              class="flex w-full cursor-pointer items-center justify-center rounded-lg border border-transparent bg-indigo-500 px-4 py-3 text-sm font-semibold text-white shadow-sm transition duration-150 ease-in-out hover:bg-indigo-600 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 active:scale-[0.99] disabled:cursor-not-allowed disabled:bg-indigo-300 md:w-auto"
+              (click)="visit()"
+              class="flex w-full cursor-pointer items-center justify-center gap-2 rounded-lg border border-indigo-300 bg-white px-4 py-3 text-sm font-semibold text-indigo-700 shadow-sm transition duration-150 ease-in-out hover:bg-indigo-50 focus:outline-none focus:ring-2 focus:ring-indigo-50 focus:ring-offset-2 active:scale-[0.99] md:w-auto"
             >
-              <span class="flex items-center justify-center gap-2">
-                @if (pageForm.disabled) {
-                  <span
-                    class="h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent"
-                  ></span>
-                } @else {
-                  <i class="fa-solid fa-floppy-disk"></i>
-                }
-
-                <span>Guardar</span>
-              </span>
+              <i class="fa-solid fa-link"></i>
+              <span>Visitar</span>
             </button>
-          </div>
+          }
         </div>
-      } @else {
-        <permission-component [show]="true" />
-      }
-    </div>
-  
+
+        <!-- Right actions -->
+        <div class="flex w-full flex-col items-center justify-end gap-3 md:flex-row">
+          @if (isEditing) {
+            <button
+              type="button"
+              (click)="cancel()"
+              class="flex w-full cursor-pointer items-center justify-center rounded-lg border border-slate-300 bg-white px-4 py-3 text-sm font-semibold text-slate-700 shadow-sm transition duration-150 ease-in-out hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-slate-50 focus:ring-offset-2 active:scale-[0.99] md:w-auto"
+            >
+              Descartar
+            </button>
+          }
+
+          <!-- Save -->
+          <button
+            type="button"
+            (click)="update()"
+            [disabled]="pageForm.disabled"
+            class="flex w-full cursor-pointer items-center justify-center rounded-lg border border-transparent bg-indigo-500 px-4 py-3 text-sm font-semibold text-white shadow-sm transition duration-150 ease-in-out hover:bg-indigo-600 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 active:scale-[0.99] disabled:cursor-not-allowed disabled:bg-indigo-300 md:w-auto"
+          >
+            <span class="flex items-center justify-center gap-2">
+              @if (pageForm.disabled) {
+                <span
+                  class="h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent"
+                ></span>
+              } @else {
+                <i class="fa-solid fa-floppy-disk"></i>
+              }
+
+              <span>Guardar</span>
+            </span>
+          </button>
+        </div>
+      </div>
+    } @else {
+      <permission-component [show]="true" />
+    }
+  </div>
 </form>

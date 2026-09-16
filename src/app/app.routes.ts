@@ -17,6 +17,7 @@ import { MicrosityService } from './core/services/micrositie.service';
 import { PageService } from './core/services/pages.service';
 import { PagesDetail } from './pages/admin/pages/detail/detail';
 import { PagesList } from './pages/admin/pages/list';
+import { PagesCanvas } from './pages/admin/pages/canvas/canvas';
 
 export const routes: Routes = [
   // Redirect empty path to 'default sitie'
@@ -166,6 +167,35 @@ export const routes: Routes = [
               {
                 path: 'detail',
                 component: PagesDetail,
+                resolve: {
+                  page: () =>
+                    inject(PageService).find(
+                      inject(Router)!.currentNavigation()?.extras?.state!['id'],
+                    ),
+                  micrositie: () =>
+                    inject(MicrosityService).find(
+                      inject(Router).currentNavigation()?.extras?.state!['micrositieId'],
+                    ),
+                  sitie: () => inject(SitieService).find(),
+                  languages: () =>
+                    inject(LanguageService).getAll({
+                      limit: 99999,
+                      page: 1,
+                      search: null,
+                      status: true,
+                    }),
+                  // elements: () =>
+                  //   inject(ElementService).getAll({
+                  //     limit: 99999,
+                  //     page: 1,
+                  //     search: null,
+                  //     status: true,
+                  //   }),
+                },
+              },
+              {
+                path: 'canvas',
+                component: PagesCanvas,
                 resolve: {
                   page: () =>
                     inject(PageService).find(

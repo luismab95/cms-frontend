@@ -1,0 +1,261 @@
+<div
+  class="sections"
+  cdkDropList
+  cdkDropListOrientation="vertical"
+  (cdkDropListDropped)="drop($event, sections())"
+>
+  <!-- Sections -->
+  @for (section of sections(); track section.uuid; let i = $index) {
+    <section
+      cdkDragBoundary=".sections"
+      cdkDrag
+      [cdkDragDisabled]="preview()"
+      class="{{ 'grid-section-' + section.uuid }} relative my-2"
+      [ngClass]="{
+        'group/sec border-2 border-indigo-500 bg-indigo-50/20 rounded-xl p-5 pt-7 ring-1 ring-indigo-600/10 ':
+          !preview(),
+
+        'border-0 bg-transparent rounded-none p-0 ring-0': preview(),
+      }"
+    >
+      <!-- Section Floating Controls Header -->
+      @if (!preview()) {
+        <div
+          class="absolute -top-3.5 left-4 flex items-center gap-1.5 bg-indigo-600 text-white text-xs font-semibold px-2.5 py-0.5 rounded shadow-sm"
+        >
+          <i cdkDragHandle class="fa-solid fa-grip-vertical text-indigo-200 cursor-grab"></i>
+          <span>Sección {{ i + 1 }}</span>
+          <span class="text-[10px] font-normal opacity-80 pl-1"> ({{ section.uuid }}) </span>
+        </div>
+
+        <!-- Quick action toolbar for Section -->
+        <div
+          class="absolute -top-3.5 right-4 items-center hidden group-hover/sec:flex bg-white border border-slate-200 rounded-md shadow-sm divide-x divide-slate-100 text-slate-600 text-xs"
+        >
+          <button
+            (click)="openSettingsModal(section, 'sección', false)"
+            class="cursor-pointer px-2 py-1 hover:text-slate-600 hover:bg-slate-50 flex items-center gap-1"
+            title="Configurar"
+          >
+            <i class="fa-solid fa-sliders text-slate-600"></i>
+          </button>
+
+          @if (editDesign()) {
+            <button
+              (click)="addRow(section)"
+              class="cursor-pointer px-2 py-1 hover:text-slate-600 hover:bg-slate-50 flex items-center gap-1"
+              title="Nueva fila"
+            >
+              <i class="fa-solid fa-plus text-slate-600"></i>
+            </button>
+
+            <button
+              (click)="deleteSection(section.uuid)"
+              class="cursor-pointer px-2 py-1 hover:text-rose-600 hover:bg-rose-50 flex items-center gap-1"
+              title="Eliminar sección"
+            >
+              <i class="fa-solid fa-trash text-rose-500"></i>
+            </button>
+          }
+        </div>
+      }
+
+      <div
+        class="rows"
+        cdkDropList
+        cdkDropListOrientation="vertical"
+        (cdkDropListDropped)="drop($event, section.rows)"
+      >
+        <!-- Rows -->
+        @for (row of section.rows; track row.uuid; let rowIndex = $index) {
+          <!-- Row -->
+          <div
+            cdkDragBoundary=".rows"
+            cdkDrag
+            [cdkDragDisabled]="preview()"
+            class="{{ 'grid-row-' + row.uuid }} relative my-2"
+            [ngClass]="{
+              'group/row border border-dashed border-amber-300 hover:border-amber-400 bg-amber-50/20 rounded-lg p-4 pt-6 ':
+                !preview(),
+              'border-0 bg-transparent rounded-none p-0': preview(),
+            }"
+          >
+            <!-- Row Badge -->
+            @if (!preview()) {
+              <div
+                class="absolute -top-2.5 left-3 bg-amber-500 text-white text-[10px] font-semibold px-2 py-0.5 rounded-full flex items-center gap-1 shadow-sm"
+              >
+                <i cdkDragHandle class="fa-solid fa-grip-vertical cursor-grab"></i>
+                <span> Fila {{ rowIndex + 1 }} ({{ row.uuid }}) </span>
+                <span class="text-[9px] opacity-75"> columnas: {{ row.columns.length }} </span>
+              </div>
+
+              <!-- Quick action toolbar for Row -->
+              <div
+                class="absolute -top-3.5 right-4 items-center hidden group-hover/row:flex bg-white border border-slate-200 rounded-md shadow-sm divide-x divide-slate-100 text-slate-600 text-xs"
+              >
+                <button
+                  (click)="openSettingsModal(row, 'fila', false)"
+                  class="cursor-pointer px-2 py-1 hover:text-slate-600 hover:bg-slate-50 flex items-center gap-1"
+                  title="Configurar"
+                >
+                  <i class="fa-solid fa-sliders text-slate-600"></i>
+                </button>
+
+                @if (editDesign()) {
+                  <button
+                    (click)="addColumn(row)"
+                    class="cursor-pointer px-2 py-1 hover:text-slate-600 hover:bg-slate-50 flex items-center gap-1"
+                    title="Nueva columna"
+                  >
+                    <i class="fa-solid fa-plus"></i>
+                  </button>
+                  <button
+                    (click)="deleteRow(row.uuid, section)"
+                    class="cursor-pointer px-2 py-1 hover:text-rose-600 hover:bg-rose-50 flex items-center gap-1"
+                    title="Eliminar fila"
+                  >
+                    <i class="fa-solid fa-trash text-rose-500"></i>
+                  </button>
+                }
+              </div>
+            }
+
+            <!-- Columns Container -->
+            <div
+              cdkDropList
+              cdkDropListOrientation="horizontal"
+              (cdkDropListDropped)="drop($event, row.columns)"
+              [ngClass]="{
+                'flex-row': previewType() === 'desktop' || previewType() === 'none',
+                'flex-col': previewType() !== 'desktop' && previewType() !== 'none',
+              }"
+              class="flex columns w-full gap-3"
+            >
+              <!-- Columns -->
+              @for (column of row.columns; track column.uuid; let columnIndex = $index) {
+                <div
+                  cdkDragBoundary=".columns"
+                  cdkDrag
+                  [cdkDragDisabled]="preview()"
+                  class="{{ 'grid-column-' + column.uuid }} flex flex-col justify-between relative"
+                  [ngClass]="{
+                    'w-full!': previewType() !== 'desktop' && previewType() !== 'none',
+                    'group/column border border-dashed border-slate-300 rounded-lg p-4 min-h-40 bg-white/40 hover:bg-white hover:border-slate-400 ':
+                      !preview(),
+                    'border-0 rounded-none p-0 min-h-0 bg-transparent': preview(),
+                  }"
+                >
+                  <!-- Column Top Controls -->
+                  @if (!preview()) {
+                    <div
+                      class="flex flex-row items-center justify-between text-[11px] text-slate-400 pb-2 border-b border-slate-100 mb-2 w-full"
+                    >
+                      <i cdkDragHandle class="fa-solid fa-grip-vertical cursor-grab"></i>
+                      <span class="font-medium text-slate-500"> Columna {{ column.uuid }} </span>
+                      @if (column.element !== null) {
+                        <div class="flex items-center gap-1">
+                          <span
+                            class="text-[9px] bg-indigo-100 text-indigo-700 px-1.5 py-0.5 rounded font-bold"
+                          >
+                            Elemento {{ column.element.name }}
+                          </span>
+                          <i
+                            class="w-3.5 h-3.5 text-slate-400 hover:text-slate-600 cursor-pointer"
+                          ></i>
+                        </div>
+                      }
+                      <i class="fa-solid fa-ellipsis-vertical text-slate-400 cursor-pointer"></i>
+                    </div>
+
+                    <!-- Quick action toolbar for Row -->
+                    <div
+                      class="absolute -top-3.5 right-4 items-center hidden group-hover/column:flex bg-white border border-slate-200 rounded-md shadow-sm divide-x divide-slate-100 text-slate-600 text-xs"
+                    >
+                      <button
+                        (click)="openSettingsModal(column, 'columna', false)"
+                        class="cursor-pointer px-2 py-1 hover:text-slate-600 hover:bg-slate-50 flex items-center gap-1"
+                        title="Configurar"
+                      >
+                        <i class="fa-solid fa-sliders text-slate-600"></i>
+                      </button>
+
+                      @if (editDesign()) {
+                        <button
+                          (click)="deleteColumn(column.uuid, row)"
+                          class="cursor-pointer px-2 py-1 hover:text-rose-600 hover:bg-rose-50 flex items-center gap-1"
+                          title="Eliminar columna"
+                        >
+                          <i class="fa-solid fa-trash text-rose-500"></i>
+                        </button>
+                      }
+                    </div>
+                  }
+
+                  <!-- Empty Column -->
+                  @if (column.element == null) {
+                    @if (!preview()) {
+                      <div
+                        (click)="openElementsMangerModal(column)"
+                        class="text-center py-6 text-slate-400 hover:text-indigo-600 cursor-pointer flex flex-col items-center gap-1 w-full m-auto"
+                      >
+                        <div
+                          class="w-7 h-7 rounded-full border border-dashed border-slate-300 flex items-center justify-center"
+                        >
+                          <i class="fa-solid fa-plus"></i>
+                        </div>
+                        <span class="text-[10px]"> Espacio vacío para contenido </span>
+                      </div>
+                    }
+                  } @else {
+                    <!-- Element -->
+                    <div
+                      class="w-full relative flex flex-col items-center justify-center group/element"
+                      [ngClass]="{
+                        'py-2 border border-dashed border-indigo-200 bg-slate-50/50 rounded-lg p-3':
+                          !preview(),
+                        'border-0 bg-transparent rounded-none p-0': preview(),
+                      }"
+                    >
+                      @if (!refreshElement()) {
+                        <elements
+                          class="w-full h-auto"
+                          [languageId]="languageId()!"
+                          [element]="column.element"
+                        />
+                      }
+
+                      <!-- Element Overlay / Controls -->
+                      @if (!preview()) {
+                        <div
+                          class="absolute inset-0 bg-black/20 backdrop-blur-[1px] opacity-0 group-hover/element:opacity-100 rounded-lg flex items-center justify-center gap-2 transition-opacity"
+                        >
+                          <button
+                            (click)="openSettingsModal(column.element, column.element.name, true)"
+                            class="cursor-pointer bg-white text-slate-800 text-[11px] font-semibold px-2.5 py-1 rounded shadow-md hover:bg-slate-50 flex items-center gap-1"
+                          >
+                            <i class="fa-solid fa-sliders text-indigo-600"></i>
+                            Configurar
+                          </button>
+                          @if (editDesign()) {
+                            <button
+                              (click)="deleteElement(column)"
+                              class="cursor-pointer bg-white text-slate-800 text-[11px] font-semibold px-2.5 py-1 rounded shadow-md hover:bg-slate-50 flex items-center gap-1"
+                            >
+                              <i class="fa-solid fa-trash text-indigo-600"></i>
+                              Eliminar
+                            </button>
+                          }
+                        </div>
+                      }
+                    </div>
+                  }
+                </div>
+              }
+            </div>
+          </div>
+        }
+      </div>
+    </section>
+  }
+</div>

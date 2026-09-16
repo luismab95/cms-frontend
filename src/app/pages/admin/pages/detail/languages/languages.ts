@@ -22,16 +22,19 @@ import { findParameter } from 'app/shared/utils/parameter.utils';
 import { ParameterService } from 'app/core/services/parameter.service';
 import { CmsValidators } from 'app/shared/utils/validators.util';
 import { PermissionCode, validAction } from 'app/shared/utils/permission.utils';
+import { TabsComponent } from 'app/shared/components/tabs/tabs';
+import { TabI } from 'app/shared/interfaces/drawer.interface';
 import { Subject, takeUntil } from 'rxjs';
 
 @Component({
   selector: 'pages-languages',
   templateUrl: './languages.html',
-  imports: [FormsModule, ReactiveFormsModule, PermissionComponent],
+  imports: [FormsModule, ReactiveFormsModule, PermissionComponent, TabsComponent],
 })
 export class PagesLangugesComponent implements OnDestroy {
   urlStatics = signal<string>('');
   selectedLanguage = signal<number>(0);
+  tabs = signal<TabI[]>([]);
 
   languageForm!: UntypedFormGroup;
   permission = PermissionCode;
@@ -88,6 +91,19 @@ export class PagesLangugesComponent implements OnDestroy {
       if (this.selectedLanguage() >= languages.length) {
         this.selectedLanguage.set(0);
       }
+
+      const tabs: TabI[] = languages.map(
+        (lang, index) =>
+          ({
+            id: index,
+            icon: this.getICon(lang.icon),
+            type: 'image',
+            title: lang.name,
+            description: lang.lang,
+          }) as TabI,
+      );
+
+      this.tabs.set(tabs);
     });
 
     effect(() => {

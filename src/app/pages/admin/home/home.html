@@ -198,8 +198,8 @@
       <permission-component />
     }
 
+    <!-- 3. Sección de Gráficos de Visitas & Rendimiento -->
     @if (validPermission(permission.visitPanel)) {
-      <!-- 3. Sección de Gráficos de Visitas & Rendimiento -->
       <section class="grid grid-cols-1 gap-6 lg:grid-cols-12">
         <!-- Gráfico Principal: Visitas semanales -->
         <div
@@ -439,8 +439,12 @@
           </div>
         </div>
       </section>
+    } @else {
+      <permission-component />
+    }
 
-      <!-- 4. Páginas más visitadas: Tarjetas de Podio / Top 3 -->
+    <!-- 4. Páginas más visitadas: Tarjetas de Podio / Top 3 -->
+    @if (validPermission(permission.visitPanel)) {
       <section class="space-y-4">
         <div class="flex items-center justify-between">
           <div>
@@ -456,6 +460,7 @@
           </button>
         </div>
         <!-- Grid de tarjetas podio Top 3 -->
+
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
           @for (item of top3Pages(); track item.path; let i = $index) {
             <div
@@ -516,8 +521,12 @@
           }
         </div>
       </section>
+    } @else {
+      <permission-component />
+    }
+    <!-- 5 Tabla Enriquecida de Ranking y Gestión -->
 
-      <!-- 5 Tabla Enriquecida de Ranking y Gestión -->
+    @if (validPermission(permission.visitPanel)) {
       <section class="overflow-hidden rounded-xl bg-white shadow-sm">
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-6 pb-4">
           <div>

@@ -1,7 +1,6 @@
 import { TemplatePortal } from '@angular/cdk/portal';
 import { Overlay, OverlayRef } from '@angular/cdk/overlay';
 import {
-  ChangeDetectorRef,
   Component,
   ElementRef,
   inject,
@@ -12,10 +11,10 @@ import {
   ViewContainerRef,
 } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
-import { UserI, RoleI } from 'app/core/interfaces/user.interface';
 import { AuthService } from 'app/core/services/auth.service';
 import { UserService } from 'app/core/services/user.service';
-import { Subject, takeUntil } from 'rxjs';
+import { Subject } from 'rxjs';
+import { toSignal } from '@angular/core/rxjs-interop';
 
 @Component({
   selector: 'user-component',
@@ -27,18 +26,17 @@ export class User implements OnInit, OnDestroy {
   @ViewChild('userPanel')
   private _userPanel!: TemplateRef<any>;
 
-  user!: UserI;
-  role!: RoleI;
-
   private _overlayRef!: OverlayRef;
   private _unsubscribeAll: Subject<any> = new Subject<any>();
 
-  private _changeDetectorRef = inject(ChangeDetectorRef);
   private _router = inject(Router);
   private _userService = inject(UserService);
   private _authService = inject(AuthService);
   private _overlay = inject(Overlay);
   private _viewContainerRef = inject(ViewContainerRef);
+
+  readonly user = toSignal(this._userService.userLogin$, { initialValue: null });
+  readonly role = toSignal(this._userService.role$, { initialValue: null });
 
   /**
    * Constructor
@@ -54,21 +52,6 @@ export class User implements OnInit, OnDestroy {
    */
   ngOnInit(): void {
     // Subscribe to user changes
-    this._userService.userLogin$
-      .pipe(takeUntil(this._unsubscribeAll))
-      .subscribe((userLogin: UserI) => {
-        this.user = userLogin;
-
-        // Mark for check
-        this._changeDetectorRef.markForCheck();
-      });
-
-    this._userService.role$.pipe(takeUntil(this._unsubscribeAll)).subscribe((role: RoleI) => {
-      this.role = role;
-
-      // Mark for check
-      this._changeDetectorRef.markForCheck();
-    });
   }
 
   /**

@@ -5,6 +5,7 @@ import { PageService } from 'app/core/services/pages.service';
 import { DeviceDetectorService, DeviceType } from 'ngx-device-detector';
 import { Subject, takeUntil } from 'rxjs';
 import { PageDetailReferenceI } from 'app/core/interfaces/page.interface';
+import { GridComponent } from 'app/shared/components/grid/grid';
 
 @Component({
   selector: 'landing-router',
@@ -34,7 +35,7 @@ import { PageDetailReferenceI } from 'app/core/interfaces/page.interface';
       box-shadow: inset 0 0 0 20px rgba(0, 0, 0, 0.37);
     }
   `,
-  imports: [],
+  imports: [GridComponent],
 })
 export class LandingRouterComponent implements OnInit, OnDestroy {
   header = signal<any>([]);
@@ -61,13 +62,10 @@ export class LandingRouterComponent implements OnInit, OnDestroy {
     switch (deviceType) {
       case DeviceType.Mobile:
         return 'mobile';
-
       case DeviceType.Tablet:
         return 'tablet';
-
       case DeviceType.Desktop:
         return 'desktop';
-
       default:
         return 'desktop';
     }
