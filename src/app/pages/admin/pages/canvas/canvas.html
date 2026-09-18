@@ -18,12 +18,42 @@
         >
           <i class="fa-solid fa-arrow-left"></i>
         </button>
+        <div class="h-4 w-px bg-slate-200 mx-1"></div>
+
+        <!-- info page -->
+        <div class="flex flex-col">
+          <span
+            class="font-semibold text-slate-800 text-[11px] leading-tight text-ellipsis line-clamp-1 max-w-40"
+            >{{ page.name }}
+          </span>
+          <span
+            [class.text-emerald-600]="!previewMode()"
+            [class.text-amber-600]="previewMode()"
+            class="text-[10px] flex items-center gap-1"
+          >
+            <span
+              [class.bg-emerald-500]="!previewMode()"
+              [class.bg-amber-500]="previewMode()"
+              class="w-1.5 h-1.5 rounded-full"
+            ></span>
+            @if (!previewMode()) {
+              Editando ({{ preview }})
+            } @else {
+              Previsualizando ({{ preview }})
+            }
+          </span>
+        </div>
+
         @if (!page.review) {
           <div class="h-4 w-px bg-slate-200"></div>
           @if (!previewMode()) {
             <!-- Live Preview -->
             <button
-              class="cursor-pointer h-10 flex items-center gap-2 px-3 py-1.5 text-xs font-medium text-slate-700 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors border border-slate-200"
+              [disabled]="
+                !validPermission(permission.editContentPage) &&
+                !validPermission(permission.editDesignPage)
+              "
+              class="cursor-pointer h-10 flex items-center gap-2 px-3 py-1.5 text-xs font-medium text-slate-700 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors border border-slate-200 disabled:cursor-not-allowed"
               title="Abrir vista previa interactiva"
               (click)="togglePreviewMode()"
             >
@@ -45,16 +75,19 @@
       </div>
 
       <!-- Center: Viewport & Canvas Controls -->
-      <div class="h-4 w-px bg-slate-200 mx-1"></div>
       <div class="flex items-center gap-2">
         <div
           class="flex items-center bg-slate-100 p-0.5 rounded-lg border border-slate-200 shadow-inner"
         >
           <button
+            [disabled]="
+              !validPermission(permission.editContentPage) &&
+              !validPermission(permission.editDesignPage)
+            "
             [ngClass]="{
               'font-semibold! bg-white! text-indigo-600! shadow-sm!': preview === 'mobile',
             }"
-            class="cursor-pointer flex h-10 items-center gap-1.5 px-2.5 py-1.5 rounded-md text-xs font-medium text-slate-600 hover:text-slate-900 hover:bg-white/60 transition-all"
+            class="cursor-pointer flex h-10 items-center gap-1.5 px-2.5 py-1.5 rounded-md text-xs font-medium text-slate-600 hover:text-slate-900 hover:bg-white/60 transition-all disabled:cursor-not-allowed"
             (click)="setPreviewMode('mobile')"
             title="Móvil (390px)"
             type="button"
@@ -65,10 +98,14 @@
             >
           </button>
           <button
+            [disabled]="
+              !validPermission(permission.editContentPage) &&
+              !validPermission(permission.editDesignPage)
+            "
             [ngClass]="{
               'font-semibold! bg-white! text-indigo-600! shadow-sm!': preview === 'tablet',
             }"
-            class="cursor-pointer h-10 flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-xs font-medium text-slate-600 hover:text-slate-900 hover:bg-white/60 transition-all"
+            class="cursor-pointer h-10 flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-xs font-medium text-slate-600 hover:text-slate-900 hover:bg-white/60 transition-all disabled:cursor-not-allowed"
             (click)="setPreviewMode('tablet')"
             title="Tablet (834px)"
             type="button"
@@ -79,10 +116,14 @@
             >
           </button>
           <button
+            [disabled]="
+              !validPermission(permission.editContentPage) &&
+              !validPermission(permission.editDesignPage)
+            "
             [ngClass]="{
               'font-semibold! bg-white! text-indigo-600! shadow-sm!': preview === 'desktop',
             }"
-            class="cursor-pointer h-10 flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-xs font-medium text-slate-600 hover:text-slate-900 hover:bg-white/60 transition-all"
+            class="cursor-pointer h-10 flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-xs font-medium text-slate-600 hover:text-slate-900 hover:bg-white/60 transition-all disabled:cursor-not-allowed"
             (click)="setPreviewMode('desktop')"
             title="Desktop (1440px)"
             type="button"
@@ -102,16 +143,24 @@
           #languageSelect
           [clearable]="false"
           [searchable]="false"
-          [items]="languages().records"
+          [items]="activeLanguages()"
           [ngModel]="languageId()"
           (ngModelChange)="setLanguageId($event)"
           bindLabel="name"
           bindValue="id"
+          [disabled]="
+            !validPermission(permission.editContentPage) &&
+            !validPermission(permission.editDesignPage)
+          "
         >
           <ng-template ng-label-tmp let-item="item">
-            <div
+            <button
+              [disabled]="
+                !validPermission(permission.editContentPage) &&
+                !validPermission(permission.editDesignPage)
+              "
               (click)="openLanguageSelect()"
-              class="cursor-pointer flex items-center h-10 gap-1.5 px-2.5 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-100 rounded-lg border border-slate-200 transition-colors"
+              class="cursor-pointer flex items-center h-10 gap-1.5 px-2.5 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-100 rounded-lg border border-slate-200 transition-colors disabled:cursor-not-allowed"
               title="Cambiar idioma de edición"
             >
               <span
@@ -125,11 +174,47 @@
                 title="Traducción 100% sincronizada"
               ></span>
               <i class="fa-solid fa-chevron-down text-slate-400"></i>
-            </div>
+            </button>
           </ng-template>
         </ng-select>
       </div>
 
+      <!-- autosave -->
+      @if (
+        (validPermission(permission.editContentPage) ||
+          validPermission(permission.editDesignPage)) &&
+        !autosave()
+      ) {
+        <div
+          [class.border-emerald-200]="!previewMode()"
+          [class.border-rose-200]="previewMode()"
+          [class.bg-emerald-50/70]="!previewMode()"
+          [class.bg-rose-50/70]="previewMode()"
+          class="hidden lg:flex items-center space-x-2 px-3 py-1 bg-emerald-50/70 border border-emerald-200 text-xs rounded-full shadow-xs"
+          title="Todos los cambios locales están replicados en tiempo real"
+        >
+          <span
+            [class.text-emerald-700]="!previewMode()"
+            [class.text-rose-700]="previewMode()"
+            class="flex items-center text-emerald-700 text-[11px] gap-x-2 gap-y-1"
+          >
+            <span class="relative flex h-2 w-2">
+              <span
+                [class.animate-ping]="!previewMode()"
+                [class.bg-emerald-500]="!previewMode()"
+                [class.bg-rose-500]="previewMode()"
+                class="absolute inline-flex h-full w-full rounded-full opacity-75"
+              ></span>
+              <span
+                [class.bg-emerald-500]="!previewMode()"
+                [class.bg-rose-500]="previewMode()"
+                class="relative inline-flex rounded-full h-2 w-2"
+              ></span>
+            </span>
+            Auto-guardado {{ previewMode() ? 'inactivo' : 'activo' }}
+          </span>
+        </div>
+      }
       <!-- Preview & Publishing Actions -->
       <div class="h-4 w-px bg-slate-200 mx-1"></div>
       <div class="flex items-center gap-3">
@@ -147,20 +232,21 @@
           <!-- Publish Group Button -->
           <div class="inline-flex rounded-lg shadow-sm">
             <button
-              [disabled]="page.review"
+              [disabled]="page.review || saveAction()"
               (click)="confirmUpdatePage()"
               class="cursor-pointer h-10 inline-flex items-center gap-x-2 gap-y-1 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold px-3.5 py-1.5 rounded-lg transition-colors focus:ring-2 focus:ring-indigo-500/20 disabled:cursor-not-allowed disabled:bg-indigo-300"
               type="button"
             >
-              @if (!saveAction()) {
-                <i class="fa-regular fa-paper-plane fa-xs"></i>
+              <span class="flex items-center justify-center gap-2">
+                @if (!saveAction()) {
+                  <i class="fa-regular fa-paper-plane fa-xs"></i>
+                } @else {
+                  <span
+                    class="h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent"
+                  ></span>
+                }
                 <span>Enviar a revisión</span>
-              }
-              @if (saveAction()) {
-                <span
-                  class="h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent"
-                ></span>
-              }
+              </span>
             </button>
           </div>
         }
@@ -169,208 +255,21 @@
   </section>
 
   @if (validPermission(permission.editContentPage) || validPermission(permission.editDesignPage)) {
-    <!-- Breadcrumb badge floating on canvas -->
-    <section class="overflow-hidden w-full flex items-center justify-center flex-col">
-      @if (page.review) {
-        <review-mode />
-      } @else {
-        <div
-          class="inline-flex items-center gap-2 px-3 py-2 bg-white/90 backdrop-blur-md rounded-full shadow-sm border border-slate-200 text-xs font-medium text-slate-600"
-        >
-          <span
-            [class.bg-emerald-600]="!previewMode()"
-            [class.bg-red-600]="previewMode()"
-            class="w-2 h-2 rounded-full"
-          ></span>
-          <span
-            >Modo Edición {{ previewMode() ? 'Inactiva' : 'Activa' }}:
-            <strong> Lienzo Responsivo ({{ preview }})</strong></span
-          >
-          @if (autosave()) {
-            <div class="animate-bounce flex flex-row gap-1.5 items-center">
-              <span class="not-visited:relative flex size-3">
-                <span
-                  class="absolute inline-flex h-full w-full animate-ping rounded-full bg-indigo-400 opacity-75"
-                ></span>
-                <span class="relative inline-flex size-3 rounded-full bg-indigo-500"></span>
-              </span>
-              <span class="text-indigo-500">Guardando cambios en modo borrador...</span>
-            </div>
-          } @else {
-            <span class="text-slate-300">•</span>
-            <span class="text-slate-500"
-              >Auto-guardado {{ previewMode() ? 'inactivo' : 'activo' }}</span
-            >
-          }
-        </div>
-      }
-
-      @if (page.lastChangeReject && reviewChanges()) {
-        <review-mode
-          [comment]="page.commentReject ?? ''"
-          [lastChangeReject]="page.lastChangeReject"
-          (deleteChangeEvent)="setReviewData()"
-        />
-      }
-    </section>
     <!-- content -->
     <section
-      [class.max-h-90]="height() <= 639"
-      [class.max-h-190]="height() > 639"
-      class="rounded-2xl border border-slate-200/80 bg-white shadow-sm max-h-90 overflow-y-auto"
+      [class.h-100]="height() <= 639"
+      [class.h-190]="height() > 639"
+      class="rounded-2xl border border-slate-200/80 bg-white shadow-sm overflow-hidden"
     >
-      <div class="flex flex-row justify-between items-start">
-        <aside
-          class="w-80 bg-white border-r border-slate-200 flex flex-col shrink-0 select-none z-20"
-          data-purpose="primary-sidebar-editor"
-        >
-          <!-- Secondary Subtabs: Layers Tree vs Components Library -->
-          <div class="px-4 pt-3 pb-2 border-b border-slate-100 flex items-center justify-between">
-            <div class="flex items-center gap-3">
-              <button
-                class="text-xs font-bold text-slate-900 border-b-2 border-brand-600 pb-1.5 -mb-2 flex items-center gap-1.5"
-              >
-                <i class="w-3.5 h-3.5 text-brand-600" data-lucide="layers"></i>
-                <span>Capas &amp; Estructura</span>
-              </button>
-              <button
-                class="text-xs font-medium text-slate-500 hover:text-slate-800 pb-1.5 -mb-2 flex items-center gap-1.5"
-              >
-                <i class="w-3.5 h-3.5 text-slate-400" data-lucide="layout-grid"></i>
-                <span>Componentes</span>
-              </button>
-            </div>
-            <button
-              class="p-1 text-slate-400 hover:text-slate-600 rounded hover:bg-slate-100"
-              title="Añadir nuevo bloque"
-            >
-              <i class="w-4 h-4" data-lucide="plus"></i>
-            </button>
-          </div>
-          <!-- Layers Tree / Hierarchy Inspector View -->
-          <div class="flex-1 overflow-y-auto p-3 space-y-1 text-xs">
-            <div
-              class="text-[10px] font-bold text-slate-400 uppercase tracking-wider px-2 py-1 flex justify-between items-center"
-            >
-              <span>Árbol DOM del Documento</span>
-              <span class="font-mono text-slate-400">3 Secciones</span>
-            </div>
-            <!-- Layer Item: Header Encabezado -->
-            <div
-              class="flex items-center justify-between px-2 py-1.5 rounded text-slate-600 hover:bg-slate-100 group cursor-pointer transition-colors"
-            >
-              <div class="flex items-center gap-2">
-                <i class="w-3.5 h-3.5 text-slate-400" data-lucide="chevron-right"></i>
-                <i class="w-3.5 h-3.5 text-slate-500" data-lucide="panel-top"></i>
-                <span class="font-medium text-slate-700">Encabezado Global</span>
-              </div>
-              <i
-                class="w-3.5 h-3.5 text-slate-400 opacity-0 group-hover:opacity-100"
-                data-lucide="eye"
-              ></i>
-            </div>
-            <!-- Layer Item: Active Section "Hero Principal" (MrDzKPM0) -->
-            <div class="space-y-1">
-              <div
-                class="flex items-center justify-between px-2 py-1.5 rounded-lg bg-blue-50/70 border border-blue-200/80 text-brand-900 font-semibold cursor-pointer"
-              >
-                <div class="flex items-center gap-2">
-                  <i class="w-3.5 h-3.5 text-brand-600" data-lucide="chevron-down"></i>
-                  <i class="w-3.5 h-3.5 text-brand-600" data-lucide="layout-template"></i>
-                  <span>Sección Hero Principal</span>
-                </div>
-                <span class="text-[10px] font-mono text-blue-500 bg-blue-100 px-1.5 py-0.5 rounded"
-                  >#hero</span
-                >
-              </div>
-              <!-- Nested Rows and Columns -->
-              <div class="ml-4 pl-2 border-l border-blue-200 space-y-1">
-                <!-- Row 1: Logo Row (t0726Vnl) -->
-                <div class="space-y-0.5">
-                  <div
-                    class="flex items-center justify-between px-2 py-1 text-slate-700 hover:bg-slate-100 rounded cursor-pointer"
-                  >
-                    <div class="flex items-center gap-1.5">
-                      <i class="w-3 h-3 text-slate-400" data-lucide="chevron-down"></i>
-                      <i class="w-3 h-3 text-amber-500" data-lucide="rows-3"></i>
-                      <span class="font-medium">Fila Superior (3 Col)</span>
-                    </div>
-                  </div>
-                  <!-- Columns inside Row 1 -->
-                  <div class="ml-3 pl-2 border-l border-slate-200 space-y-0.5 text-slate-600">
-                    <div
-                      class="flex items-center justify-between px-2 py-1 hover:bg-slate-100 rounded cursor-pointer text-[11px]"
-                    >
-                      <span class="flex items-center gap-1.5 text-slate-500">
-                        <i class="w-3 h-3" data-lucide="columns-3"></i> Columna Izq (Vacía)
-                      </span>
-                    </div>
-                    <!-- Active Central Column (el6twpJL) with Image -->
-                    <div
-                      class="flex items-center justify-between px-2 py-1 bg-amber-50 text-amber-900 border border-amber-200 rounded cursor-pointer text-[11px] font-medium"
-                    >
-                      <span class="flex items-center gap-1.5">
-                        <i class="w-3 h-3 text-amber-600" data-lucide="image"></i>
-                        <span>Logo Corporativo CMS</span>
-                      </span>
-                      <span class="text-[9px] font-mono text-amber-600 bg-amber-100 px-1 rounded"
-                        >IMG</span
-                      >
-                    </div>
-                    <div
-                      class="flex items-center justify-between px-2 py-1 hover:bg-slate-100 rounded cursor-pointer text-[11px]"
-                    >
-                      <span class="flex items-center gap-1.5 text-slate-500">
-                        <i class="w-3 h-3" data-lucide="columns-3"></i> Columna Der (Vacía)
-                      </span>
-                    </div>
-                  </div>
-                </div>
-                <!-- Row 2: Headline Row (oO18yTal) -->
-                <div class="space-y-0.5 mt-2">
-                  <div
-                    class="flex items-center justify-between px-2 py-1 text-slate-700 hover:bg-slate-100 rounded cursor-pointer"
-                  >
-                    <div class="flex items-center gap-1.5">
-                      <i class="w-3 h-3 text-slate-400" data-lucide="chevron-down"></i>
-                      <i class="w-3 h-3 text-emerald-500" data-lucide="rows-3"></i>
-                      <span class="font-medium">Fila Título Principal</span>
-                    </div>
-                  </div>
-                  <div class="ml-3 pl-2 border-l border-slate-200 space-y-0.5 text-slate-600">
-                    <div
-                      class="flex items-center justify-between px-2 py-1 hover:bg-slate-100 rounded cursor-pointer text-[11px]"
-                    >
-                      <span class="flex items-center gap-1.5 text-slate-700 font-medium">
-                        <i class="w-3 h-3 text-emerald-600" data-lucide="type"></i>
-                        <span>Título: "Bienvenido..."</span>
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <!-- Layer Item: Footer -->
-            <div
-              class="flex items-center justify-between px-2 py-1.5 rounded text-slate-600 hover:bg-slate-100 group cursor-pointer transition-colors mt-2"
-            >
-              <div class="flex items-center gap-2">
-                <i class="w-3.5 h-3.5 text-slate-400" data-lucide="chevron-right"></i>
-                <i class="w-3.5 h-3.5 text-slate-500" data-lucide="panel-bottom"></i>
-                <span class="font-medium text-slate-700">Pie de Página (Footer)</span>
-              </div>
-              <i
-                class="w-3.5 h-3.5 text-slate-400 opacity-0 group-hover:opacity-100"
-                data-lucide="eye"
-              ></i>
-            </div>
-          </div>
-        </aside>
+      <div class="flex flex-row h-full min-h-0 overflow-hidden">
+        <!-- LEFT PANEL - ÁRBOL -->
+        <layer-component [showComponetsPanel]="openElementPanel()" (elementSelected)="setElementSelectedInColumn($event)" />
 
+        <!-- CENTER PANEL - CANVAS -->
         <div
-          class="flex-1 bg-slate-200/75  relative p-2 lg:p-6 flex flex-col items-center justify-start bg-dot-grid"
+          class="flex-1 min-w-0 min-h-0 h-full overflow-y-auto overflow-x-auto bg-slate-200/75 relative p-2 lg:p-6 flex flex-col items-center justify-start bg-dot-grid"
         >
-          <!-- The Real Webpage Container / Artboard -->
+          <!-- CANVAS -->
           <div
             [ngClass]="{
               'w-full': preview === 'none' || preview === 'desktop',
@@ -378,18 +277,17 @@
               'w-97.5': preview === 'mobile',
               'px-1': !previewMode(),
             }"
-            class="bg-white rounded-xl overflow-auto border border-slate-300/80 transition-all duration-300 relative flex flex-col min-h-195"
+            class="shrink-0 rounded-xl overflow-hidden border border-slate-300/80 transition-all duration-300 relative flex flex-col bg-white"
           >
-            <!-- CONTENT GOES HERE -->
-            <!-- Watermark/Header representation of the actual site -->
+            <!-- HEADER REPRESENTATION -->
             <div
-              class="cursor-not-allowed h-40 px-8 border-b border-slate-100 flex items-center justify-between text-xs text-slate-400 bg-white/60"
+              class="cursor-not-allowed h-40 shrink-0 px-8 border-b border-slate-100 flex items-center justify-between text-xs text-slate-400 bg-white/60"
             >
               <span class="-rotate-45 text-xl text-center w-full"> ENCABEZADO </span>
             </div>
 
-            <!-- Main Editable Area (Contenido) -->
-            <div class="p-6 relative flex-1">
+            <!-- MAIN EDITABLE AREA -->
+            <div class="p-6 relative">
               <div
                 [ngStyle]="getStyles()"
                 [ngClass]="{
@@ -398,15 +296,15 @@
                 class="body relative border-2 border-dashed border-slate-300 hover:border-slate-400 rounded-xl p-6 transition-all group/body"
               >
                 @if (!previewMode()) {
-                  <!-- body Tag -->
+                  <!-- Body tag -->
                   <div
                     class="absolute -top-3 left-4 bg-slate-700 text-white text-[10px] font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wider flex items-center gap-1.5 shadow-sm"
                   >
                     <i class="fa-solid fa-boxes-stacked"></i>
-                    <span>Contenedor: Contenido Principal</span>
+                    <span> Contenedor: Contenido Principal </span>
                   </div>
 
-                  <!-- Quick body toolbar for body -->
+                  <!-- Body toolbar -->
                   <div
                     class="absolute -top-3.5 right-4 hidden group-hover/body:flex items-center bg-white border border-slate-200 rounded-md shadow-sm divide-x divide-slate-100 text-slate-600 text-xs"
                   >
@@ -420,22 +318,23 @@
                   </div>
                 }
 
-                <!-- SECTION LEVEL -->
-                @if (!refreshLanguage()) {
+                <!-- GRID -->
+                @if (!refreshGrid()) {
                   <grid
                     [editContent]="validPermission(permission.editContentPage)"
                     [editDesign]="validPermission(permission.editDesignPage)"
                     [gridType]="'body'"
+                    [canvasEdit]="true"
                     [languageId]="languageId()"
-                    [grid]="body()"
                     [previewType]="preview"
                     [preview]="previewMode()"
                     (deleteSectionEvent)="setGrid($event)"
+                    (openElementPanel)="toggleElementPanel($event)"
                   />
                 }
 
+                <!-- ADD SECTION -->
                 @if (!previewMode()) {
-                  <!-- Interactive Dropzone -->
                   <div
                     (click)="addSection()"
                     class="mt-4 border-2 border-dashed border-slate-300 hover:border-indigo-500 hover:bg-indigo-50/20 rounded-xl p-6 text-center transition-all cursor-pointer group"
@@ -449,11 +348,12 @@
 
                       <div>
                         <h4 class="text-xs font-bold text-slate-700 group-hover:text-indigo-700">
-                          Añadir nueva Sección o Bloque al Contenido
+                          Añadir nueva Sección a tu Página
                         </h4>
+
                         <p class="text-[11px] text-slate-400">
-                          Arrastra elementos desde la barra lateral o elige una plantilla
-                          prediseñada
+                          Haz clic aquí para agregar una sección a tu página. Puedes personalizar su
+                          contenido después.
                         </p>
                       </div>
                     </div>
@@ -462,269 +362,17 @@
               </div>
             </div>
 
-            <!-- Watermark / Footer representation -->
+            <!-- FOOTER REPRESENTATION -->
             <div
-              class="h-40 cursor-not-allowed not-last:px-8 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-400 bg-slate-50/50 mt-auto"
+              class="cursor-not-allowed h-40 shrink-0 px-8 border-t border-slate-100 flex items-center justify-between text-xs text-slate-400 bg-white/60"
             >
               <span class="-rotate-45 text-xl text-center w-full"> PIE DE PÁGINA </span>
             </div>
           </div>
-          <br /><br /><br />
         </div>
 
-        <aside
-          class="w-80 bg-white border-l border-slate-200 flex flex-col shrink-0 select-none z-20"
-          data-purpose="properties-dock-inspector"
-        >
-          <!-- Inspector Header -->
-          <div
-            class="px-4 py-3 border-b border-slate-200 flex items-center justify-between bg-slate-50/70"
-          >
-            <div class="flex items-center gap-2">
-              <div
-                class="w-6 h-6 rounded bg-brand-100 text-brand-700 flex items-center justify-center"
-              >
-                <i class="w-3.5 h-3.5" data-lucide="image"></i>
-              </div>
-              <div>
-                <h3 class="text-xs font-bold text-slate-900 leading-none">Elemento Imagen</h3>
-                <span class="text-[10px] text-slate-400 font-mono">ID: el6twpJL</span>
-              </div>
-            </div>
-            <span
-              class="px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-brand-50 text-brand-700 border border-brand-200"
-              >Activo</span
-            >
-          </div>
-          <!-- Properties Scroll Area -->
-          <div class="flex-1 overflow-y-auto divide-y divide-slate-100 text-xs">
-            <!-- SECTION 1: Layout & Flexbox Configuration -->
-            <div class="p-4 space-y-3">
-              <div class="flex items-center justify-between">
-                <label class="text-[11px] font-bold text-slate-700 uppercase tracking-wide"
-                  >Alineación y Flexbox</label
-                >
-                <i
-                  class="w-3 h-3 text-slate-400 cursor-help"
-                  data-lucide="info"
-                  title="Configuración de flexbox para el contenedor"
-                ></i>
-              </div>
-              <!-- Alignment Buttons -->
-              <div>
-                <span class="text-[10px] text-slate-500 font-medium block mb-1.5"
-                  >Alineación Horizontal</span
-                >
-                <div class="grid grid-cols-3 gap-1 bg-slate-100 p-1 rounded-lg">
-                  <button
-                    class="py-1 text-slate-600 hover:text-slate-900 flex justify-center rounded"
-                  >
-                    <i class="w-3.5 h-3.5" data-lucide="align-left"></i>
-                  </button>
-                  <button
-                    class="py-1 bg-white text-brand-600 shadow-xs font-bold flex justify-center rounded"
-                  >
-                    <i class="w-3.5 h-3.5" data-lucide="align-center"></i>
-                  </button>
-                  <button
-                    class="py-1 text-slate-600 hover:text-slate-900 flex justify-center rounded"
-                  >
-                    <i class="w-3.5 h-3.5" data-lucide="align-right"></i>
-                  </button>
-                </div>
-              </div>
-              <!-- Column Width Specifier -->
-              <div class="grid grid-cols-2 gap-2 pt-1">
-                <div>
-                  <span class="text-[10px] text-slate-500 font-medium block mb-1"
-                    >Ancho Columna</span
-                  >
-                  <div
-                    class="flex items-center border border-slate-200 rounded-lg px-2 py-1 bg-white"
-                  >
-                    <input
-                      class="w-full border-0 p-0 text-xs font-mono font-medium focus:ring-0 text-slate-700"
-                      type="text"
-                      value="33.3%"
-                    />
-                    <span class="text-[10px] text-slate-400 font-mono">%</span>
-                  </div>
-                </div>
-                <div>
-                  <span class="text-[10px] text-slate-500 font-medium block mb-1">Altura Min.</span>
-                  <div
-                    class="flex items-center border border-slate-200 rounded-lg px-2 py-1 bg-white"
-                  >
-                    <input
-                      class="w-full border-0 p-0 text-xs font-mono font-medium focus:ring-0 text-slate-700"
-                      type="text"
-                      value="160"
-                    />
-                    <span class="text-[10px] text-slate-400 font-mono">px</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <!-- SECTION 2: CSS Box Model (Margins & Paddings Visual Widget) -->
-            <div class="p-4 space-y-3" data-purpose="box-model-widget">
-              <div class="flex items-center justify-between">
-                <label class="text-[11px] font-bold text-slate-700 uppercase tracking-wide"
-                  >Espaciado (Caja CSS)</label
-                >
-                <span class="text-[10px] font-mono text-slate-400">px</span>
-              </div>
-              <!-- Interactive Visual Box Model -->
-              <div
-                class="bg-slate-50 border border-slate-200 rounded-lg p-3 text-[10px] font-mono flex flex-col items-center justify-center relative"
-              >
-                <span class="absolute top-1 left-2 text-[9px] font-bold text-amber-600 uppercase"
-                  >Margin</span
-                >
-                <input
-                  class="w-7 h-5 text-center border border-slate-200 rounded text-[10px] p-0 bg-white mb-1 shadow-2xs"
-                  type="text"
-                  value="0"
-                />
-                <div class="w-full flex items-center justify-between px-2">
-                  <input
-                    class="w-8 h-5 text-center border border-slate-200 rounded text-[10px] p-0 bg-white shadow-2xs"
-                    type="text"
-                    value="auto"
-                  />
-                  <!-- Inner Padding Box -->
-                  <div
-                    class="bg-blue-50/80 border border-blue-200 rounded-md p-2 flex-1 mx-2 flex flex-col items-center relative"
-                  >
-                    <span
-                      class="absolute top-0.5 left-1 text-[8px] font-bold text-blue-600 uppercase"
-                      >Padding</span
-                    >
-                    <input
-                      class="w-7 h-4 text-center border border-blue-200 rounded text-[9px] p-0 bg-white mb-1"
-                      type="text"
-                      value="12"
-                    />
-                    <div class="w-full flex items-center justify-between">
-                      <input
-                        class="w-6 h-4 text-center border border-blue-200 rounded text-[9px] p-0 bg-white"
-                        type="text"
-                        value="12"
-                      />
-                      <div
-                        class="w-8 h-4 bg-white border border-dashed border-slate-300 rounded flex items-center justify-center text-[8px] text-slate-400"
-                      >
-                        OBJ
-                      </div>
-                      <input
-                        class="w-6 h-4 text-center border border-blue-200 rounded text-[9px] p-0 bg-white"
-                        type="text"
-                        value="12"
-                      />
-                    </div>
-                    <input
-                      class="w-7 h-4 text-center border border-blue-200 rounded text-[9px] p-0 bg-white mt-1"
-                      type="text"
-                      value="12"
-                    />
-                  </div>
-                  <input
-                    class="w-8 h-5 text-center border border-slate-200 rounded text-[10px] p-0 bg-white shadow-2xs"
-                    type="text"
-                    value="auto"
-                  />
-                </div>
-                <input
-                  class="w-7 h-5 text-center border border-slate-200 rounded text-[10px] p-0 bg-white mt-1 shadow-2xs"
-                  type="text"
-                  value="0"
-                />
-              </div>
-            </div>
-            <!-- SECTION 3: Visual Styles (Border, Shadow, Radius) -->
-            <div class="p-4 space-y-3">
-              <label class="text-[11px] font-bold text-slate-700 uppercase tracking-wide block"
-                >Estilos Visuales</label
-              >
-              <div class="space-y-2">
-                <div class="flex items-center justify-between">
-                  <span class="text-slate-600 text-[11px]">Radio de Borde</span>
-                  <div
-                    class="flex items-center border border-slate-200 rounded-md px-2 py-0.5 w-24 bg-white"
-                  >
-                    <i class="w-3 h-3 text-slate-400 mr-1" data-lucide="square"></i>
-                    <input
-                      class="w-full border-0 p-0 text-right font-mono text-xs focus:ring-0"
-                      type="text"
-                      value="8px"
-                    />
-                  </div>
-                </div>
-                <div class="flex items-center justify-between">
-                  <span class="text-slate-600 text-[11px]">Color de Fondo</span>
-                  <div
-                    class="flex items-center gap-1.5 border border-slate-200 rounded-md p-1 w-24 bg-white"
-                  >
-                    <span class="w-3.5 h-3.5 rounded bg-white border border-slate-300"></span>
-                    <span class="font-mono text-[10px] text-slate-600 uppercase">#FFFFFF</span>
-                  </div>
-                </div>
-                <div class="flex items-center justify-between">
-                  <span class="text-slate-600 text-[11px]">Opacidad</span>
-                  <div class="flex items-center gap-2 w-28">
-                    <input
-                      class="w-full accent-brand-600 h-1 bg-slate-200 rounded cursor-pointer"
-                      max="100"
-                      min="0"
-                      type="range"
-                      value="100"
-                    />
-                    <span class="text-[10px] font-mono text-slate-500">100%</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <!-- SECTION 4: Image Attributes & Alt Text -->
-            <div class="p-4 space-y-3">
-              <label class="text-[11px] font-bold text-slate-700 uppercase tracking-wide block"
-                >Metadatos de Imagen</label
-              >
-              <div class="space-y-2">
-                <div>
-                  <span class="text-[10px] text-slate-500 font-medium block mb-1"
-                    >Texto Alternativo (Alt Text - SEO)</span
-                  >
-                  <input
-                    class="w-full border border-slate-200 rounded-md px-2.5 py-1 text-xs text-slate-700 focus:border-brand-500 focus:ring-1 focus:ring-brand-500"
-                    type="text"
-                    value="Logo multicolor oficial CMS Enterprise"
-                  />
-                </div>
-                <div class="flex items-center justify-between pt-1">
-                  <span class="text-[11px] text-slate-600">Carga diferida (Lazy Load)</span>
-                  <input
-                    checked=""
-                    class="rounded text-brand-600 focus:ring-brand-500 h-4 w-4"
-                    type="checkbox"
-                  />
-                </div>
-              </div>
-            </div>
-          </div>
-          <!-- Inspector Footer / Actions -->
-          <div class="p-3 border-t border-slate-200 bg-slate-50 flex items-center justify-between">
-            <button
-              class="text-rose-600 hover:text-rose-700 hover:bg-rose-50 px-2 py-1 rounded text-xs font-semibold flex items-center gap-1"
-            >
-              <i class="w-3.5 h-3.5" data-lucide="trash-2"></i>
-              <span>Eliminar Elemento</span>
-            </button>
-            <button
-              class="bg-slate-200 hover:bg-slate-300 text-slate-700 px-3 py-1 rounded text-xs font-semibold"
-            >
-              Resetear
-            </button>
-          </div>
-        </aside>
+        <!-- RIGHT PANEL - INSPECTOR -->
+        <inspector-component [class.hidden]="previewMode()" />
       </div>
     </section>
   } @else {

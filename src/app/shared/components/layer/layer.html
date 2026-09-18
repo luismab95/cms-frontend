@@ -1,0 +1,354 @@
+<div
+  [class.w-80]="!layersCollapsed()"
+  [class.w-8]="!layersCollapsed()"
+  class="flex h-full min-h-0 shrink-0 flex-col border-r border-slate-200 bg-white select-none z-20 transition-all duration-300 overflow-hidden w-80"
+>
+  @if (showComponetsPanel()) {
+    <!-- HEADER -->
+    <div class="flex h-12 shrink-0 items-center justify-between border-b border-slate-200 px-3">
+      <div [class.hidden]="layersCollapsed()" class="flex items-center gap-2">
+        <i class="fa-solid fa-boxes-stacked text-indigo-500"></i>
+        <span class="text-sm font-semibold text-slate-700"> Elementos </span>
+      </div>
+      <button
+        type="button"
+        (click)="closeElementPanel()"
+        class="cursor-pointer relative mt-1 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-700"
+        appTooltip="Cerrar Panel"
+      >
+        <i class="fa-solid text-sm fa-xmark"></i>
+      </button>
+    </div>
+    <!-- componets -->
+    <div class="flex-1 min-h-0 overflow-y-auto overflow-x-hidden p-3 text-xs">
+      <elements-manager-component (elementSelected)="selectElementPanel($event)" />
+    </div>
+  } @else {
+    <!-- HEADER -->
+    <div class="flex h-12 shrink-0 items-center justify-between border-b border-slate-200 px-3">
+      <div [class.hidden]="layersCollapsed()" class="flex items-center gap-2">
+        <i class="fa-solid fa-layer-group text-indigo-500"></i>
+        <span class="text-sm font-semibold text-slate-700"> Capas &amp; Estructura </span>
+      </div>
+      <button
+        type="button"
+        (click)="toggleLayers()"
+        class="cursor-pointer relative mt-1 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-700"
+        appTooltip="Colapsar Panel"
+      >
+        <i
+          class="fa-solid text-sm"
+          [ngClass]="layersCollapsed() ? 'fa-angles-right text-indigo-500' : 'fa-angles-left'"
+        ></i>
+
+        @if (layersCollapsed()) {
+          <span
+            class="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full bg-indigo-500 text-white text-[10px] flex items-center justify-center font-bold"
+          >
+            {{ sections().length }}
+          </span>
+        }
+      </button>
+    </div>
+
+    <!-- ÁRBOL -->
+    @if (!layersCollapsed()) {
+      <div class="flex-1 min-h-0 overflow-y-auto overflow-x-hidden p-3 text-xs">
+        <!-- HEADER -->
+        <div
+          class="flex items-center justify-between px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-slate-400"
+        >
+          <span>Árbol DOM del Documento</span>
+          <span class="text-slate-400">
+            {{ sections().length }}
+            {{ sections().length > 1 ? 'Secciones' : 'Sección' }}
+          </span>
+        </div>
+
+        @if (!refreshLayer()) {
+          <!-- SECTIONS -->
+          <div
+            cdkDropList
+            cdkDropListOrientation="vertical"
+            (cdkDropListDropped)="drop($event, sections())"
+            class="mt-1 space-y-1 sections-layer"
+          >
+            <div class="space-y-1">
+              <div class="flex items-center gap-2 px-2 py-1.5">
+                <i class="fa-solid size-3 text-slate-400 fa-chevron-right"></i>
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  class="text-slate-400"
+                >
+                  <rect width="18" height="7" x="3" y="3" rx="1" />
+                  <rect width="9" height="7" x="3" y="14" rx="1" />
+                  <rect width="5" height="7" x="16" y="14" rx="1" />
+                </svg>
+                <span class="font-medium text-slate-700">Encabezado Global</span>
+              </div>
+            </div>
+            @for (section of sections(); track section.uuid; let sectionIndex = $index) {
+              <!-- SECTION -->
+              <div class="space-y-1">
+                <div
+                  cdkDragBoundary=".sections-layer"
+                  cdkDrag
+                  class="group flex cursor-pointer items-center justify-between rounded-lg px-2 py-1.5 hover:bg-slate-100"
+                  [ngClass]="{
+                    'border border-indigo-200/80 bg-indigo-50/70! text-indigo-900 font-semibold':
+                      isSectionSelected(section.uuid),
+                  }"
+                  (click)="selectSection(section)"
+                >
+                  <div class="flex min-w-0 items-center gap-2">
+                    <i
+                      class="fa-solid size-3.5 text-indigo-600"
+                      [ngClass]="
+                        isSectionExpanded(section.uuid) ? 'fa-chevron-down' : 'fa-chevron-right'
+                      "
+                    ></i>
+                    <i class="fa-solid fa-table size-3.5 text-indigo-600"></i>
+                    <span class="truncate"> Sección {{ sectionIndex + 1 }} </span>
+                  </div>
+                  <span
+                    class="shrink-0 rounded bg-indigo-100 px-1.5 py-0.5 text-[10px] text-indigo-600"
+                  >
+                    #{{ section.uuid }}
+                  </span>
+                </div>
+
+                <!-- ROWS -->
+                @if (isSectionExpanded(section.uuid)) {
+                  <div
+                    class="rows-layer"
+                    cdkDropList
+                    cdkDropListOrientation="vertical"
+                    (cdkDropListDropped)="drop($event, section.rows)"
+                    class="ml-4 space-y-1 border-l border-indigo-200 pl-2"
+                  >
+                    @for (row of section.rows; track row.uuid; let rowIndex = $index) {
+                      <!-- ROW -->
+                      <div cdkDragBoundary=".rows-layer" cdkDrag class="space-y-0.5">
+                        <div
+                          class="flex cursor-pointer items-center justify-between rounded px-2 py-1 text-slate-700 hover:bg-slate-100"
+                          [class.border]="isRowSelected(row.uuid)"
+                          [class.border-amber-200]="isRowSelected(row.uuid)"
+                          [class.bg-amber-50]="isRowSelected(row.uuid)"
+                          [class.hover:bg-amber-50!]="isRowSelected(row.uuid)"
+                          (click)="selectRow(row)"
+                        >
+                          <div class="flex min-w-0 items-center gap-1.5">
+                            <i
+                              class="fa-solid size-3 text-slate-400"
+                              [ngClass]="
+                                isRowExpanded(row.uuid) ? 'fa-chevron-down' : 'fa-chevron-right'
+                              "
+                            ></i>
+                            <i class="fa-solid fa-table-list size-3 text-amber-500"></i>
+                            <span class="truncate font-medium">
+                              Fila {{ rowIndex + 1 }}
+                              <span class="text-[9px]"> {{ row.columns.length }}(columnas) </span>
+                            </span>
+                          </div>
+                          <span
+                            class="shrink-0 rounded bg-amber-100 px-1.5 py-0.5 text-[9px] text-amber-600"
+                          >
+                            #{{ row.uuid }}
+                          </span>
+                        </div>
+
+                        <!-- COLUMNS -->
+                        @if (isRowExpanded(row.uuid)) {
+                          <div
+                            cdkDropList
+                            cdkDropListOrientation="vertical"
+                            (cdkDropListDropped)="drop($event, row.columns)"
+                            class="columns-layer ml-3 space-y-0.5 border-l border-slate-200 pl-2 text-slate-600"
+                          >
+                            @for (
+                              column of row.columns;
+                              track column.uuid;
+                              let columnIndex = $index
+                            ) {
+                              <!-- COLUMN -->
+                              <div
+                                cdkDragBoundary=".columns-layer"
+                                cdkDrag
+                                class="space-y-0.5 pl-3"
+                              >
+                                <div
+                                  class="flex cursor-pointer items-center justify-between rounded px-2 py-1 text-[11px] hover:bg-slate-100"
+                                  [class.border]="isColumnSelected(column.uuid)"
+                                  [class.border-slate-200]="isColumnSelected(column.uuid)"
+                                  [class.bg-slate-50]="isColumnSelected(column.uuid)"
+                                  (click)="selectColumn(column)"
+                                >
+                                  <span
+                                    class="flex min-w-0 items-center gap-1.5"
+                                    [class.text-slate-900]="isColumnSelected(column.uuid)"
+                                    [class.text-slate-500]="!isColumnSelected(column.uuid)"
+                                  >
+                                    <i
+                                      class="fa-solid fa-table-columns size-3"
+                                      [class.text-slate-600]="isColumnSelected(column.uuid)"
+                                    ></i>
+                                    <span class="truncate"> Columna {{ columnIndex + 1 }} </span>
+                                  </span>
+                                  <span
+                                    class="shrink-0 rounded bg-slate-100 px-1.5 py-0.5 text-[8px] text-slate-600"
+                                  >
+                                    #{{ column.uuid }}
+                                  </span>
+                                </div>
+
+                                <!-- ELEMENT -->
+                                @if (column.element) {
+                                  <div class="ml-3 border-l border-slate-100 pl-2">
+                                    <div
+                                      class="flex cursor-pointer items-center justify-between rounded px-2 py-1 text-[11px] hover:bg-slate-100"
+                                      [class.border]="isElementSelected(column.element.uuid)"
+                                      [class.border-emerald-200]="
+                                        isElementSelected(column.element.uuid)
+                                      "
+                                      [class.bg-emerald-50]="isElementSelected(column.element.uuid)"
+                                      (click)="selectElement(column.element)"
+                                    >
+                                      <span
+                                        class="flex min-w-0 items-center gap-1.5"
+                                        [class.font-medium]="isElementSelected(column.element.uuid)"
+                                        [class.text-emerald-900]="
+                                          isElementSelected(column.element.uuid)
+                                        "
+                                        [class.text-slate-500]="
+                                          !isElementSelected(column.element.uuid)
+                                        "
+                                      >
+                                        <i
+                                          class="text-emerald-600 size-3"
+                                          [ngClass]="getElementIcon(column.element)"
+                                        ></i>
+                                        <span
+                                          [class.text-emerald-900]="
+                                            isElementSelected(column.element.uuid)
+                                          "
+                                          class="truncate"
+                                        >
+                                          {{ column.element.name }}
+                                        </span>
+                                      </span>
+                                      <span
+                                        class="shrink-0 rounded bg-emerald-100 px-1 text-[7px] text-emerald-600"
+                                      >
+                                        #{{ column.element.uuid }}
+                                      </span>
+                                    </div>
+                                  </div>
+                                }
+                              </div>
+                            }
+                          </div>
+                        }
+                      </div>
+                    }
+                  </div>
+                }
+              </div>
+            }
+            <div class="space-y-1">
+              <div class="flex items-center gap-2 px-2 py-1.5">
+                <i class="fa-solid size-3 text-slate-400 fa-chevron-right"></i>
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  class="text-slate-400"
+                >
+                  <rect width="18" height="18" x="3" y="3" rx="2" />
+                  <path d="M3 15h18" />
+                </svg>
+                <span class="font-medium text-slate-700">Pie de Página (Footer)</span>
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+    } @else {
+      <div class="flex-1 min-h-0 overflow-y-auto overflow-x-hidden p-1 text-xs">
+        <!-- HEADER -->
+        <div
+          class="flex items-center justify-center p-2 text-[10px] font-bold uppercase tracking-wider text-slate-400"
+        >
+          <span>DOM</span>
+        </div>
+
+        @if (!refreshLayer()) {
+          <!-- SECTIONS -->
+          <div
+            (click)="toggleLayers()"
+            class="flex items-center justify-center flex-col gap-2 mt-2"
+          >
+            <div class="flex items-center gap-2 p-2">
+              <svg
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                class="text-slate-400"
+              >
+                <rect width="18" height="7" x="3" y="3" rx="1" />
+                <rect width="9" height="7" x="3" y="14" rx="1" />
+                <rect width="5" height="7" x="16" y="14" rx="1" />
+              </svg>
+            </div>
+            @for (section of sections(); track section.uuid; let sectionIndex = $index) {
+              <!-- SECTION -->
+              <div
+                class="flex cursor-pointer items-center justify-between rounded-lg py-4 px-2 hover:bg-slate-100"
+                [ngClass]="{
+                  'border border-indigo-200/80 bg-indigo-50/70! text-indigo-900 font-semibold':
+                    isSectionSelected(section.uuid),
+                }"
+                (click)="selectSection(section)"
+                [appTooltip]="'#' + section.uuid"
+              >
+                <i class="fa-solid fa-table fa-2xl text-indigo-600"></i>
+              </div>
+            }
+            <div class="flex items-center p-2">
+              <svg
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                class="text-slate-400"
+              >
+                <rect width="18" height="18" x="3" y="3" rx="2" />
+                <path d="M3 15h18" />
+              </svg>
+            </div>
+          </div>
+        }
+      </div>
+    }
+  }
+</div>

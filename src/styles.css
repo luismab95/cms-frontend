@@ -419,6 +419,12 @@ ngx-otp-input {
   --ng-select-container-hover-shadow: var(--color-slate-600);
   --ng-select-value-font-size: 14px;
   --ng-select-height: 46px;
+  --ng-select-disabled-bg: var(--color-white);
+}
+
+.ng-select-container {
+  background-color: transparent !important;
+  padding: unset;
 
 }
 

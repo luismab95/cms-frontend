@@ -88,7 +88,7 @@ export class PagesLangugesComponent implements OnDestroy {
         });
       }
 
-      if (this.selectedLanguage() >= languages.length) {
+      if (languages.length > 0) {
         this.selectedLanguage.set(0);
       }
 

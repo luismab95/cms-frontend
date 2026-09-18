@@ -19,16 +19,20 @@ import { DialogService } from 'app/core/services/dialog.service';
 import { MicrosityService } from 'app/core/services/micrositie.service';
 import { PageService } from 'app/core/services/pages.service';
 import { ParameterService } from 'app/core/services/parameter.service';
-import { SectionI } from 'app/shared/interfaces/grid.interface';
+import { ColumnI, SectionI } from 'app/shared/interfaces/grid.interface';
 import { LanguageService } from 'app/shared/services/language.service';
-import { validGrid } from 'app/shared/utils/grid.utils';
+import { updateColumn, validGrid } from 'app/shared/utils/grid.utils';
 import { findParameter } from 'app/shared/utils/parameter.utils';
 import { PermissionCode, validAction } from 'app/shared/utils/permission.utils';
 import { generateRandomString } from 'app/shared/utils/random.utils';
 import { PermissionComponent } from 'app/shared/components/permission/permission';
 import { ReviewModeComponent } from 'app/shared/components/review-mode/review-mode';
 import { GridComponent } from 'app/shared/components/grid/grid';
+import { LayerComponent } from 'app/shared/components/layer/layer';
+import { InspectorComponent } from 'app/shared/components/inspector/inspector';
 import { Subject, takeUntil } from 'rxjs';
+import { LanguageI } from 'app/shared/interfaces/language.interfaces';
+import { ElementCMSI } from 'app/shared/interfaces/element.interface';
 
 @Component({
   selector: 'pages-canvas',
@@ -57,7 +61,9 @@ import { Subject, takeUntil } from 'rxjs';
     NgSelectComponent,
     NgLabelTemplateDirective,
     ReviewModeComponent,
-    GridComponent
+    GridComponent,
+    LayerComponent,
+    InspectorComponent,
   ],
 })
 export class PagesCanvas implements OnInit {
@@ -74,17 +80,18 @@ export class PagesCanvas implements OnInit {
   isFullscreen = signal<boolean>(false);
   preview = signal<PreviewModeT>('desktop');
   previewMode = signal<boolean>(false);
+  openElementPanel = signal<boolean>(false);
   reviewChanges = signal<boolean>(false);
-  body = signal<SectionI[]>([]);
   autosave = signal<boolean>(false);
   saveAction = signal<boolean>(false);
   urlStatics = signal<string>('');
   languageId = signal<number>(0);
   page = signal<PageI | null>(null);
   originPage = signal<PageI | null>(null);
-  refreshLanguage = signal<boolean>(false);
+  refreshGrid = signal<boolean>(false);
   height = signal<number>(window.innerHeight);
-
+  activeLanguages = signal<LanguageI[]>([]);
+  currentColumn = signal<ColumnI | null>(null);
   autosaveTimer: number | undefined;
   permission = PermissionCode;
 
@@ -101,6 +108,7 @@ export class PagesCanvas implements OnInit {
   readonly _page = toSignal(this._pageService.page$, { initialValue: null });
   readonly parameters = toSignal(this._parameterService.parameter$, { initialValue: [] });
   readonly micrositie = toSignal(this._microsityService.micrositie$, { initialValue: null });
+  readonly body = toSignal(this._pageService.sections$, { initialValue: [] });
   readonly languages = toSignal(this._languageService.languages$, {
     initialValue: { records: [], total: 0, page: 0, totalPage: 0 },
   });
@@ -112,11 +120,12 @@ export class PagesCanvas implements OnInit {
     // autosave logic
     this.autosaveTimer = setInterval(() => {
       this.updateDraft();
-    }, 300000);
+    }, 300_000);
 
     effect(() => {
-      const languages = this.languages();
-      if (languages.records.length > 0) this.languageId.set(languages.records[0].id!);
+      const languages = this.languages().records.filter((lang) => lang.status);
+      if (languages.length > 0) this.languageId.set(languages[0].id!);
+      this.activeLanguages.set(languages);
     });
 
     effect(() => {
@@ -138,7 +147,7 @@ export class PagesCanvas implements OnInit {
         this.reviewChanges.set(false);
       }
 
-      if(page.review) this.previewMode.set(true);
+      if (page.review) this.previewMode.set(true);
 
       if (page.draft !== null) {
         this.confirmDraft();
@@ -165,7 +174,7 @@ export class PagesCanvas implements OnInit {
     this._unsubscribeAll.next(null);
     this._unsubscribeAll.complete();
     if (this.autosaveTimer) {
-      clearTimeout(this.autosaveTimer);
+      clearInterval(this.autosaveTimer);
     }
   }
 
@@ -185,12 +194,12 @@ export class PagesCanvas implements OnInit {
    * Load template data from the server and update the component properties accordingly.
    */
   loadPageData() {
-    this.refreshLanguage.set(true);
+    this.refreshGrid.set(true);
     this.loadGridData();
     this.loadStyles();
 
     setTimeout(() => {
-      this.refreshLanguage.set(false);
+      this.refreshGrid.set(false);
     }, 100);
   }
 
@@ -198,6 +207,12 @@ export class PagesCanvas implements OnInit {
    * Update draft page
    */
   updateDraft() {
+    if (
+      !this.validPermission(this.permission.editContentPage) &&
+      !this.validPermission(this.permission.editDesignPage)
+    )
+      return;
+
     if (this.page()!.review) {
       return;
     }
@@ -222,6 +237,10 @@ export class PagesCanvas implements OnInit {
         next: () => {
           this.saveAction.set(false);
           this.autosave.set(false);
+          this._toastrService.success(
+            'Tus cambios se guardaron automáticamente como borrador.',
+            'Borrador actualizado',
+          );
         },
         error: (response) => {
           this.saveAction.set(false);
@@ -344,7 +363,15 @@ export class PagesCanvas implements OnInit {
    * Toggle preview mode
    */
   togglePreviewMode() {
-    this.previewMode.update((prev) => !prev);
+    this.previewMode.update((preview) => !preview);
+
+    clearInterval(this.autosaveTimer);
+
+    if (!this.previewMode()) {
+      this.autosaveTimer = setInterval(() => {
+        this.updateDraft();
+      }, 300_000);
+    }
   }
 
   /**
@@ -400,9 +427,7 @@ export class PagesCanvas implements OnInit {
         },
       ],
     } as unknown as SectionI;
-    this.body.update((values) => {
-      return [...values, newSection];
-    });
+    this._pageService.sections = [...this.body(), newSection];
   }
 
   /**
@@ -410,7 +435,7 @@ export class PagesCanvas implements OnInit {
    * @param grid
    */
   setGrid(grid: SectionI[]) {
-    this.body.set(grid);
+    this._pageService.sections = grid;
   }
 
   /**
@@ -513,11 +538,11 @@ export class PagesCanvas implements OnInit {
    */
   setLanguageId(id: number) {
     this.languageId.set(id);
-    this.refreshLanguage.set(true);
+    this.refreshGrid.set(true);
 
     setTimeout(() => {
-      this.refreshLanguage.set(false);
-    }, 100);
+      this.refreshGrid.set(false);
+    }, 1);
   }
 
   /**
@@ -547,9 +572,47 @@ export class PagesCanvas implements OnInit {
       if (result) {
         const page = this.originPage();
         this.page.set(page);
-        this.deleteDraft(); 
+        this.deleteDraft();
         this.loadPageData();
       }
     });
+  }
+
+  /**
+   * toggle element panel
+   */
+  toggleElementPanel(column: ColumnI) {
+    this.currentColumn.set(column);
+    this.openElementPanel.set(true);
+  }
+
+  /**
+   * set element
+   */
+  setElementSelectedInColumn(element: ElementCMSI | null) {
+    this.openElementPanel.set(false);
+    const column = this.currentColumn();
+    if (element === null) {
+      this.currentColumn.set(null);
+      return;
+    }
+
+    if (column === null) return;
+
+    const elementUuid = generateRandomString(8);
+    column.element = {
+      uuid: elementUuid,
+      name: element.name,
+      css: `.${element.css}-${elementUuid}{}`,
+      config: element.config,
+      text: element.text,
+      dataText: []
+    };
+    console.log(column);
+    
+
+    const sectionsUpdate = updateColumn(this.body(), column.uuid, column);
+
+    this._pageService.sections = sectionsUpdate;
   }
 }

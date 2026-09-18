@@ -10,6 +10,7 @@ import { UserService } from 'app/core/services/user.service';
 })
 export class PermissionComponent {
   show = input<boolean>(true);
+  style = input<'full' | 'minimal'>('full');
 
   private readonly _userService = inject(UserService);
 

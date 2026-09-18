@@ -10,8 +10,6 @@ function loadImagenPlugin(idPlugin) {
         ? imagenPlugin.querySelector('#imageContent')
         : null;
 
-        console.log(data.properties.urlStatics,data.properties.config.image);
-
     if (data.properties !== undefined) {
         // Load data
         imagen.style.backgroundImage = `url('${data.properties.urlStatics}${data.properties.config.image.replace(/\\/g, "/")}')`;

@@ -9,6 +9,7 @@ import {
   PageRenderI,
 } from '../interfaces/page.interface';
 import { Observable, of, ReplaySubject, tap } from 'rxjs';
+import { SectionI, SelectedItemsInGridI } from 'app/shared/interfaces/grid.interface';
 
 @Injectable({ providedIn: 'root' })
 export class PageService {
@@ -19,6 +20,9 @@ export class PageService {
     PaginationResponseI<PageI[]>
   >(1);
   private _page: ReplaySubject<PageI | null> = new ReplaySubject<PageI | null>(1);
+  private _sections: ReplaySubject<SectionI[] | []> = new ReplaySubject<SectionI[] | []>(1);
+  private _selectedItemsInGrid: ReplaySubject<SelectedItemsInGridI | null> =
+    new ReplaySubject<SelectedItemsInGridI | null>(1);
 
   private _httpClient = inject(HttpClient);
 
@@ -30,6 +34,34 @@ export class PageService {
   // -----------------------------------------------------------------------------------------------------
   // @ Accessors
   // -----------------------------------------------------------------------------------------------------
+
+  /**
+   * Setter & getter for _selectedItemsInGridI
+   *
+   * @param value
+   */
+  set selectedItemsInGrid(value: SelectedItemsInGridI) {
+    // Store the value
+    this._selectedItemsInGrid.next(value);
+  }
+
+  get selectedItemsInGrid$(): Observable<SelectedItemsInGridI | null> {
+    return this._selectedItemsInGrid.asObservable();
+  }
+
+  /**
+   * Setter & getter for sections
+   *
+   * @param value
+   */
+  set sections(value: SectionI[]) {
+    // Store the value
+    this._sections.next(value);
+  }
+
+  get sections$(): Observable<SectionI[] | []> {
+    return this._sections.asObservable();
+  }
 
   /**
    * Setter & getter for pages

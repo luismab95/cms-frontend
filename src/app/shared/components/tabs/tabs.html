@@ -1,20 +1,41 @@
 <!-- Language tabs -->
-<div aria-label="Idiomas" class="rounded-t-xl bg-white px-2 pt-2 shadow-sm">
-  <div class="flex items-center gap-1 overflow-x-auto no-scrollbar sm:gap-2">
-    @for (tab of tabs(); track tab.id; let i = $index) {
+<div aria-label="Idiomas" class="relative rounded-t-xl bg-white px-2 pt-2 shadow-sm">
+  <!-- Flecha izquierda -->
+  @if (showLeftArrow()) {
+    <button
+      type="button"
+      (click)="scrollTabs('left')"
+      aria-label="Anterior"
+      class="cursor-pointer absolute left-1 top-1/2 z-10 flex size-7 -translate-y-1/2 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-500 shadow-sm transition hover:bg-slate-50 hover:text-indigo-600"
+    >
+      <i class="fa-solid fa-chevron-left text-[10px]"></i>
+    </button>
+  }
+
+  <!-- Tabs -->
+  <div
+    #tabsContainer
+    class="flex items-center gap-1 overflow-x-hidden no-scrollbar scroll-smooth sm:gap-2"
+    (scroll)="checkTabsScroll()"
+  >
+    @for (tab of tabs(); track tab.id;) {
       <button
         type="button"
-        (click)="onSelectTab(i)"
+        (click)="onSelectTab(tab.id)"
         [attr.aria-selected]="selectedTab() === tab.id"
-        class="cursor-pointer"
-        [class]="
-          selectedTab() === i
-            ? 'group flex items-center gap-2 whitespace-nowrap rounded-t-lg border-b-2 border-indigo-600 bg-indigo-50/50 px-3.5 py-3 text-sm font-semibold text-indigo-600 transition-colors'
-            : 'group flex items-center gap-2 whitespace-nowrap rounded-t-lg border-b-2 border-transparent px-3.5 py-3 text-sm font-medium text-slate-600 transition-colors hover:bg-slate-50 hover:text-indigo-600'
-        "
+        class="group flex shrink-0 cursor-pointer items-center gap-2 whitespace-nowrap rounded-t-lg border-b-2 px-3.5 py-3 text-sm transition-colors"
+        [class.border-indigo-600]="selectedTab() === tab.id"
+        [class.bg-indigo-50/50]="selectedTab() === tab.id"
+        [class.font-semibold]="selectedTab() === tab.id"
+        [class.text-indigo-600]="selectedTab() === tab.id"
+        [class.border-transparent]="selectedTab() !== tab.id"
+        [class.font-medium]="selectedTab() !== tab.id"
+        [class.text-slate-600]="selectedTab() !== tab.id"
+        [class.hover:bg-slate-50]="selectedTab() !== tab.id"
+        [class.hover:text-indigo-600]="selectedTab() !== tab.id"
       >
         @if (tab.type === 'image') {
-          <img class="w-4 object-fill" [src]="tab.icon" [alt]="tab.description" />
+          <img class="size-4 object-contain" [src]="tab.icon" [alt]="tab.description" />
         } @else {
           <i [class]="tab.icon"></i>
         }
@@ -24,8 +45,19 @@
       </button>
     }
   </div>
-</div>
 
+  <!-- Flecha derecha -->
+  @if (showRightArrow()) {
+    <button
+      type="button"
+      (click)="scrollTabs('right')"
+      aria-label="Siguiente"
+      class="cursor-pointer absolute right-1 top-1/2 z-10 flex size-7 -translate-y-1/2 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-500 shadow-sm transition hover:bg-slate-50 hover:text-indigo-600"
+    >
+      <i class="fa-solid fa-chevron-right text-[10px]"></i>
+    </button>
+  }
+</div>
 <div #contentScroll class="p-4 space-y-6 min-h-90 h-auto overflow-y-auto overflow-x-hidden">
   <ng-content />
 </div>

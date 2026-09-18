@@ -1,5 +1,12 @@
 import { ElementDataI } from './element.interface';
 
+export interface SelectedItemsInGridI {
+  section: SectionI | null;
+  row: RowI | null;
+  column: ColumnI | null;
+  element: ElementI | null;
+}
+
 export interface PageElementsI {
   css: string;
   data: SectionI[];
