@@ -263,7 +263,10 @@
     >
       <div class="flex flex-row h-full min-h-0 overflow-hidden">
         <!-- LEFT PANEL - ÁRBOL -->
-        <layer-component [showComponetsPanel]="openElementPanel()" (elementSelected)="setElementSelectedInColumn($event)" />
+        <layer-component
+          [showComponetsPanel]="openElementPanel()"
+          (elementSelected)="setElementSelectedInColumn($event)"
+        />
 
         <!-- CENTER PANEL - CANVAS -->
         <div
@@ -318,21 +321,22 @@
                   </div>
                 }
 
-                <!-- GRID -->
-                @if (!refreshGrid()) {
-                  <grid
-                    [editContent]="validPermission(permission.editContentPage)"
-                    [editDesign]="validPermission(permission.editDesignPage)"
-                    [gridType]="'body'"
-                    [canvasEdit]="true"
-                    [languageId]="languageId()"
-                    [previewType]="preview"
-                    [preview]="previewMode()"
-                    (deleteSectionEvent)="setGrid($event)"
-                    (openElementPanel)="toggleElementPanel($event)"
-                  />
-                }
-
+                <div class="relative">
+                  <!-- GRID -->
+                  @if (!refreshGrid()) {
+                    <grid
+                      [editContent]="validPermission(permission.editContentPage)"
+                      [editDesign]="validPermission(permission.editDesignPage)"
+                      [gridType]="'body'"
+                      [canvasEdit]="true"
+                      [languageId]="languageId()"
+                      [previewType]="preview"
+                      [preview]="previewMode()"
+                      (deleteSectionEvent)="setGrid($event)"
+                      (openElementPanel)="toggleElementPanel($event)"
+                    />
+                  }
+                </div>
                 <!-- ADD SECTION -->
                 @if (!previewMode()) {
                   <div

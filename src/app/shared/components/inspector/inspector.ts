@@ -20,7 +20,13 @@ import { distinctUntilChanged, Subject, takeUntil } from 'rxjs';
 @Component({
   selector: 'inspector-component',
   templateUrl: './inspector.html',
-  imports: [NgClass, TooltipDirective, LangugesInspectorComponent, PermissionComponent,PropertiesInspectorComponent],
+  imports: [
+    NgClass,
+    TooltipDirective,
+    LangugesInspectorComponent,
+    PermissionComponent,
+    PropertiesInspectorComponent,
+  ],
 })
 export class InspectorComponent implements OnInit, OnDestroy {
   refreshLayer = signal<boolean>(false);
@@ -249,15 +255,6 @@ export class InspectorComponent implements OnInit, OnDestroy {
    */
   validPermission(code: string) {
     return validAction(code);
-  }
-
-  /**
-   * Set data text
-   * @param dataText
-   */
-  setDataText(dataText: ElementDataI[]) {
-    // this.dataText.set(dataText);
-    console.log(dataText);
   }
 
   /**

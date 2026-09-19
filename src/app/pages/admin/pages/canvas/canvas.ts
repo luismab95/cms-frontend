@@ -4,6 +4,7 @@ import {
   HostListener,
   OnInit,
   ViewChild,
+  computed,
   effect,
   inject,
   signal,
@@ -19,7 +20,7 @@ import { DialogService } from 'app/core/services/dialog.service';
 import { MicrosityService } from 'app/core/services/micrositie.service';
 import { PageService } from 'app/core/services/pages.service';
 import { ParameterService } from 'app/core/services/parameter.service';
-import { ColumnI, SectionI } from 'app/shared/interfaces/grid.interface';
+import { ColumnI, SectionI, SelectedItemsInGridI } from 'app/shared/interfaces/grid.interface';
 import { LanguageService } from 'app/shared/services/language.service';
 import { updateColumn, validGrid } from 'app/shared/utils/grid.utils';
 import { findParameter } from 'app/shared/utils/parameter.utils';
@@ -108,10 +109,12 @@ export class PagesCanvas implements OnInit {
   readonly _page = toSignal(this._pageService.page$, { initialValue: null });
   readonly parameters = toSignal(this._parameterService.parameter$, { initialValue: [] });
   readonly micrositie = toSignal(this._microsityService.micrositie$, { initialValue: null });
-  readonly body = toSignal(this._pageService.sections$, { initialValue: [] });
+  readonly bodySections = toSignal(this._pageService.sections$, { initialValue: [] });
   readonly languages = toSignal(this._languageService.languages$, {
     initialValue: { records: [], total: 0, page: 0, totalPage: 0 },
   });
+
+  readonly body = computed(() => this.bodySections());
 
   /**
    * Constructor
@@ -154,6 +157,15 @@ export class PagesCanvas implements OnInit {
       } else {
         this.loadPageData();
       }
+    });
+
+    this._pageService.sections$.pipe(takeUntil(this._unsubscribeAll)).subscribe({
+      next: () => {
+        this.refreshGrid.set(true);
+        setTimeout(() => {
+          this.refreshGrid.set(false);
+        }, 1);
+      },
     });
   }
 
@@ -574,8 +586,22 @@ export class PagesCanvas implements OnInit {
         this.page.set(page);
         this.deleteDraft();
         this.loadPageData();
+        this.updateSelectionItem({
+          section: null,
+          row: null,
+          column: null,
+          element: null,
+        });
       }
     });
+  }
+
+  /**
+   * Selected items
+   * @param selectedItemsInGrid
+   */
+  updateSelectionItem(selectedItemsInGrid: SelectedItemsInGridI) {
+    this._pageService.selectedItemsInGrid = selectedItemsInGrid;
   }
 
   /**
@@ -606,8 +632,8 @@ export class PagesCanvas implements OnInit {
       css: `.${element.css}-${elementUuid}{}`,
       config: element.config,
       text: element.text,
-      dataText: []
-    };    
+      dataText: [],
+    };
 
     const sectionsUpdate = updateColumn(this.body(), column.uuid, column);
 

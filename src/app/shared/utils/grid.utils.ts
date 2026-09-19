@@ -1,9 +1,24 @@
 import { RegisteredFieldTypes } from '@ng-forge/dynamic-forms';
-import { ColumnI, SectionI } from '../interfaces/grid.interface';
+import { ColumnI, ElementI, RowI, SectionI } from '../interfaces/grid.interface';
 
 export function validGrid(data: any): boolean {
   let result: boolean = true;
   return result;
+}
+
+export function updateSection(
+  sections: SectionI[],
+  sectionUuid: string,
+  updatedSection: SectionI,
+): SectionI[] {
+  return sections.map((section) => (section.uuid === sectionUuid ? updatedSection : section));
+}
+
+export function updateRow(sections: SectionI[], rowUuid: string, updatedRow: RowI): SectionI[] {
+  return sections.map((section) => ({
+    ...section,
+    rows: section.rows.map((row) => (row.uuid === rowUuid ? updatedRow : row)),
+  }));
 }
 
 export function updateColumn(
@@ -16,6 +31,23 @@ export function updateColumn(
     rows: section.rows.map((row) => ({
       ...row,
       columns: row.columns.map((column) => (column.uuid === columnUuid ? updatedColumn : column)),
+    })),
+  }));
+}
+
+export function updateElement(
+  sections: SectionI[],
+  elementUuid: string,
+  updatedElement: ElementI,
+): SectionI[] {
+  return sections.map((section) => ({
+    ...section,
+    rows: section.rows.map((row) => ({
+      ...row,
+      columns: row.columns.map((column) => ({
+        ...column,
+        element: column.element?.uuid === elementUuid ? updatedElement : column.element,
+      })),
     })),
   }));
 }

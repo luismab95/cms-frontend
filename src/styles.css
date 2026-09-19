@@ -462,7 +462,7 @@ ngx-otp-input {
     0 4px 6px -2px rgba(15, 23, 42, 0.08),
     0 10px 20px -5px rgba(15, 23, 42, 0.12),
     0 25px 45px -12px rgba(15, 23, 42, 0.18);
-  opacity: 0.97;
+  opacity: 1;
   pointer-events: none;
   will-change: transform;
   z-index: 9999;

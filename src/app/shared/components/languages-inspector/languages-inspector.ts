@@ -15,7 +15,10 @@ import { ElementDataI } from 'app/shared/interfaces/element.interface';
 import { LanguageI } from 'app/shared/interfaces/language.interfaces';
 import { TabI } from 'app/shared/interfaces/drawer.interface';
 import { CmsValidators } from 'app/shared/utils/validators.util';
-import { Subject, takeUntil } from 'rxjs';
+import { debounceTime, distinctUntilChanged, Subject, takeUntil } from 'rxjs';
+import { PageService } from 'app/core/services/pages.service';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { updateElement } from 'app/shared/utils/grid.utils';
 
 @Component({
   selector: 'languages-inspector-component',
@@ -27,7 +30,6 @@ export class LangugesInspectorComponent implements OnInit, OnDestroy {
   text = input.required<{ [key: string]: string }>();
   tabs = input.required<TabI[]>();
   languages = input.required<LanguageI[]>();
-  dataEvent = output<ElementDataI[]>();
 
   selectedLanguage = signal<number>(0);
   hasTextToEdit = signal<number>(0);
@@ -36,7 +38,18 @@ export class LangugesInspectorComponent implements OnInit, OnDestroy {
   getErrorMessage = CmsValidators.getErrorMessageFormControl;
 
   private _unsubscribeAll = new Subject<void>();
-  
+
+  private readonly _pageService = inject(PageService);
+  readonly sectionsInCanvas = toSignal(this._pageService.sections$, { initialValue: [] });
+  readonly selectedItemsInGrid = toSignal(this._pageService.selectedItemsInGrid$, {
+    initialValue: {
+      section: null,
+      row: null,
+      column: null,
+      element: null,
+    },
+  });
+
   private _formBuilder = inject(UntypedFormBuilder);
 
   /**
@@ -95,9 +108,11 @@ export class LangugesInspectorComponent implements OnInit, OnDestroy {
    * @returns
    */
   ngOnInit(): void {
-    this.languageForm.valueChanges.pipe(takeUntil(this._unsubscribeAll)).subscribe((value) => {
-      this.dataEvent.emit(value.languages);
-    });
+    this.languageForm.valueChanges
+      .pipe(debounceTime(300), distinctUntilChanged(), takeUntil(this._unsubscribeAll))
+      .subscribe((value) => {
+        this.updateItem(value);
+      });
   }
 
   /**
@@ -159,5 +174,18 @@ export class LangugesInspectorComponent implements OnInit, OnDestroy {
    */
   selectLanguage(index: number): void {
     this.selectedLanguage.set(index);
+  }
+
+  /**
+   * Update item
+   * @param value
+   */
+  updateItem(value: { languages: ElementDataI[] }) {
+    const element = this.selectedItemsInGrid()?.element;
+    if (element) {
+      element.dataText = value.languages;
+      const sections = updateElement(this.sectionsInCanvas(), element.uuid, element);
+      this._pageService.sections = sections;
+    }
   }
 }

@@ -141,7 +141,7 @@
                 (click)="selectFile(file)"
               >
                 <!-- SELECTED -->
-                @if (file.status) {
+                @if (file.id === selectedFile()?.id) {
                   <div
                     class="absolute right-2 top-2 z-10 flex h-6 w-6 items-center justify-center rounded-full bg-indigo-600 text-white shadow-md"
                   >

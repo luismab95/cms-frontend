@@ -1,5 +1,12 @@
 import { AsyncPipe, NgClass } from '@angular/common';
-import { ChangeDetectionStrategy, Component, inject, input, signal } from '@angular/core';
+import {
+  AfterViewInit,
+  ChangeDetectionStrategy,
+  Component,
+  inject,
+  input,
+  signal,
+} from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { FormField } from '@angular/forms/signals';
 import {
@@ -142,11 +149,10 @@ interface FileFieldProps extends Record<string, unknown> {
 
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export default class TailwindFileFieldComponent {
+export default class TailwindFileFieldComponent implements AfterViewInit {
   protected readonly ngf = injectNgForgeField<string>();
 
   readonly props = input<FileFieldProps>();
-  readonly field = this.ngf.field();
 
   urlStatics = signal<string>('');
   isOpenFileManager = signal<boolean>(false);
@@ -164,6 +170,14 @@ export default class TailwindFileFieldComponent {
   }
 
   /**
+   * AfterViewInit
+   */
+  ngAfterViewInit(): void {
+    const value = this.getFieldValue();
+    if (value() !== '' && value() !== undefined && value() !== 'null') this.previewUrl.set(value());
+  }
+
+  /**
    * Get image
    */
   getImage() {
@@ -173,10 +187,9 @@ export default class TailwindFileFieldComponent {
   /**
    * Open file manager
    */
-  toggleFileManager(path: string | null) {
-    if (path != null) {
+  toggleFileManager(path: string | null) {    
+    if (path !== null) {
       this.previewUrl.set(path);
-
       this.setFieldValue(path);
     }
 
@@ -188,11 +201,25 @@ export default class TailwindFileFieldComponent {
    */
   clearFile() {
     this.previewUrl.set(null);
-    this.setFieldValue('');
+    this.setFieldValue('null');
+    this.toggleFileManager(null);
   }
 
+  /**
+   * Set value
+   */
   private setFieldValue(value: string) {
-    const field = this.ngf.field;
-    // todo ????
+    const field = this.ngf.field();
+    const state = field();
+    state.value.set(value);
+  }
+
+  /**
+   * Get Values
+   */
+  private getFieldValue() {
+    const field = this.ngf.field();
+    const state = field();
+    return state.value;
   }
 }
