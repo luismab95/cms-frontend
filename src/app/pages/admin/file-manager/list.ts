@@ -5,11 +5,10 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { ToastrService } from '@iqx-limited/ngx-toastr';
 import { PaginationComponent } from 'app/shared/components/pagination/pagination';
 import { PermissionComponent } from 'app/shared/components/permission/permission';
-import { PaginationResquestI } from 'app/shared/interfaces/response.interface';
 import { PermissionCode, validAction } from 'app/shared/utils/permission.utils';
 import { Subject, takeUntil, debounceTime } from 'rxjs';
 import { FileManagerDetailsComponent } from './details/details';
-import { FileI } from 'app/core/interfaces/file.interface';
+import { FileI, FilePaginationResquestI } from 'app/core/interfaces/file.interface';
 import { FileManagerService } from 'app/core/services/file-manager.service';
 import { NgSelectComponent } from '@ng-select/ng-select';
 
@@ -108,11 +107,12 @@ export class FileManagerList implements OnInit, OnDestroy {
    * @param page
    */
   getAll(page: number, search: string | null = null, status: boolean | null = null) {
-    const params: PaginationResquestI = {
+    const params: FilePaginationResquestI = {
       page,
       limit: this.limit(),
       search,
       status,
+      mimeType: null,
     };
     this._fileManagerService
       .getFiles(params)

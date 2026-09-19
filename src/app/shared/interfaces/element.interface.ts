@@ -1,3 +1,5 @@
+import { RegisteredFieldTypes } from "@ng-forge/dynamic-forms";
+
 export declare enum TypeElementEnum {
   HEADER = 'header',
   BODY = 'body',
@@ -17,7 +19,7 @@ export interface ElementCMSI {
     [key: string]: any;
   };
   status: boolean;
-  type: TypeElementEnum[];
+  type: RegisteredFieldTypes[];
   dataText?: ElementDataI[];
 }
 

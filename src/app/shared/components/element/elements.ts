@@ -1,8 +1,6 @@
-import { HttpClient } from '@angular/common/http';
 import {
   AfterViewInit,
   Component,
-  effect,
   ElementRef,
   inject,
   input,
@@ -10,205 +8,247 @@ import {
   signal,
   ViewChild,
 } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { lastValueFrom } from 'rxjs';
+import { toSignal } from '@angular/core/rxjs-interop';
 import { ParameterService } from 'app/core/services/parameter.service';
 import { ElementI } from 'app/shared/interfaces/grid.interface';
 import { findParameter } from 'app/shared/utils/parameter.utils';
-import { toSignal } from '@angular/core/rxjs-interop';
-import { lastValueFrom, Subject } from 'rxjs';
+import { PluginLoaderService } from 'app/core/services/plugin-loader.service';
+import { environment } from 'environments/environment';
+
+type PluginEvent = (uuid: string) => void;
 
 declare global {
   interface Window {
-    [key: string]: unknown;
+    [key: `${string}PluginEvent`]: PluginEvent;
   }
 }
 
 @Component({
   selector: 'elements',
+  standalone: true,
   templateUrl: './elements.html',
-  imports: [],
 })
-export class ElementsComponent implements OnDestroy, AfterViewInit {
-  @ViewChild('pluginContainer') pluginContainer!: ElementRef<HTMLDivElement>;
+export class ElementsComponent implements AfterViewInit, OnDestroy {
+  @ViewChild('pluginContainer', {
+    static: true,
+  })
+  pluginContainer!: ElementRef<HTMLDivElement>;
 
-  element = input.required<ElementI>();
-  languageId = input.required<number>();
+  readonly element = input.required<ElementI>();
+  readonly languageId = input.required<number>();
 
-  urlStatics = signal<string>('');
+  readonly loading = signal(true);
+  readonly error = signal<string | null>(null);
+  readonly urlStatics = signal('');
 
-  private _httpClient = inject(HttpClient);
-  private _parameterService = inject(ParameterService);
+  private readonly http = inject(HttpClient);
+  private readonly parameterService = inject(ParameterService);
+  private readonly pluginLoader = inject(PluginLoaderService);
 
-  readonly parameters = toSignal(this._parameterService.parameter$, { initialValue: [] });
+  readonly parameters = toSignal(this.parameterService.parameter$, {
+    initialValue: [],
+  });
 
-  private _unsubscribeAll: Subject<any> = new Subject<any>();
+  private destroyed = false;
 
-  /**
-   * Constructor
-   */
-  constructor() {
-    effect(() => {
-      const parameters = this.parameters();
-      this.urlStatics.set(findParameter('APP_STATICS_URL', parameters)?.value!);
-    });
+  async ngAfterViewInit(): Promise<void> {
+    await this.loadPlugin();
   }
 
-  // -----------------------------------------------------------------------------------------------------
-  // @ Lifecycle hooks
-  // -----------------------------------------------------------------------------------------------------
-
   /**
-   * After Init
+   * On Destroy
    */
-  async ngAfterViewInit() {
-    // Verificar si pluginContainer es null antes de acceder a appendChild
-    let dataService: any = [];
+  ngOnDestroy(): void {
+    this.destroyed = true;
+    this.destroyPluginStyles();
+  }
 
-    if (this.pluginContainer.nativeElement) {
-      // load text languages
-      let componentText = this.element().text;
-      if (this.element()?.dataText?.length! > 0) {
-        this.element().dataText!.forEach((element) => {
-          if (Number(element['languageId']) === this.languageId()) {
-            const { languageId, ...rest } = element;
-            componentText = {
-              ...rest,
-            };
-          }
-        });
+  // --------------------------------------------------
+  // LOAD PLUGIN
+  // --------------------------------------------------
+  private async loadPlugin(): Promise<void> {
+    this.loading.set(true);
+    this.error.set(null);
+
+    try {
+      const element = this.element();
+
+      const pluginName = element.name.toLowerCase();
+
+      // URL STATIC
+      const parameters = this.parameters();
+      this.urlStatics.set(findParameter('APP_STATICS_URL', parameters)?.value ?? '');
+
+      // COMPONENT TEXT
+      const componentText = this.getComponentText();
+
+      // LOAD SERVICE DATA
+      let dataService: unknown = null;
+      if ('service' in element.config) {
+        dataService = await this.loadData(`${environment.apiUrl}${element.config['service']}`);
       }
 
-      // load data
-      if ('service' in this.element().config) {
-        dataService = await this.loadData(this.element().config['service']);
+      if ('custom-service' in element.config) {
+        dataService = await this.loadData(element.config['custom-service']);
       }
 
-      // load css
-      const className = this.element().css.split('{')[0];
+      if (this.destroyed) {
+        return;
+      }
 
-      // load html
-      const html = await this.loadHTMLFile(
-        `/plugins/${this.element().name.toLowerCase()}/${this.element().name.toLowerCase()}.html`,
-      );
+      // LOAD HTML
+      const html = await this.loadHTMLFile(`/plugins/${pluginName}/${pluginName}.html`);
+      if (!html) {
+        throw new Error(`No se pudo cargar el HTML de ${pluginName}`);
+      }
+      if (this.destroyed) {
+        return;
+      }
 
+      // CREATE PLUGIN CONTAINER
       const div = document.createElement('div');
-      div.id = `div-${this.element().uuid}`;
+      div.id = `div-${element.uuid}`;
       div.style.width = '100%';
       div.style.height = 'auto';
+
+      // PLUGIN PROPERTIES
       div.setAttribute(
         'data-properties',
         JSON.stringify({
           properties: {
-            config: this.element().config,
+            config: element.config,
             text: componentText,
-            css: this.element().css,
-            uuid: this.element().uuid,
-            class: className.split('.')[1],
+            css: element.css,
+            uuid: element.uuid,
+            class: this.getClassName(element.css),
             data: dataService,
             urlStatics: this.urlStatics(),
           },
         }),
       );
-      div.innerHTML = html!;
 
-      // Agregar el div al contenedor del plugin
-      this.pluginContainer.nativeElement.appendChild(div);
+      div.innerHTML = html;
 
-      // load script
-      await this.loadScript(
-        `/plugins/${this.element().name.toLowerCase()}/${this.element().name.toLowerCase()}.js`,
-        this.element().name.toLowerCase(),
-      );
+      // INSERT HTML
+      this.pluginContainer.nativeElement.replaceChildren(div);
 
-      // load data
-      this.handleScriptLoaded(this.element().name.toLowerCase(), this.element().uuid);
-    } else {
-      console.error('No se pudo cargar el plugin');
-    }
-  }
+      // LOAD JS
+      await this.pluginLoader.load(`/plugins/${pluginName}/${pluginName}.js`, pluginName);
+      if (this.destroyed) {
+        return;
+      }
+      if (this.destroyed) {
+        return;
+      }
 
-  /**
-   * On destroy
-   */
-  ngOnDestroy(): void {
-    // Unsubscribe from all subscriptions
-    this._unsubscribeAll.next(null);
-    this._unsubscribeAll.complete();
-
-    // Remove all scripts
-    //todo
-  }
-
-  // -----------------------------------------------------------------------------------------------------
-  // @ Public methods
-  // -----------------------------------------------------------------------------------------------------
-
-  /**
-   * Load data
-   */
-  async loadData(url: string) {
-    try {        
-      const data = await lastValueFrom(this._httpClient.get(url));
-      return data;
+      // INITIALIZE PLUGIN
+      this.handleScriptLoaded(pluginName, element.uuid);
+      this.loading.set(false);
     } catch (error) {
-      console.error('Error al obtener los datos:', error);
-      return null;
+      console.error('Error cargando plugin:', error);
+      this.error.set('No se pudo cargar el plugin ' + this.element().name);
+      this.loading.set(false);
     }
   }
 
   /**
-   * Método para cargar el archivo HTML
+   * Text
+   * @returns
    */
-  async loadHTMLFile(filePath: string) {
+  private getComponentText(): unknown {
+    const element = this.element();
+
+    if (!element.dataText?.length) {
+      return element.text;
+    }
+
+    const translation = element.dataText.find(
+      (item) => Number(item['languageId']) === this.languageId(),
+    );
+
+    if (!translation) {
+      return element.text;
+    }
+
+    const { languageId, ...rest } = translation;
+
+    return rest;
+  }
+
+  /**
+   * Class
+   * @param css
+   * @returns
+   */
+  private getClassName(css: string): string {
+    const selector = css.split('{')[0]?.trim() ?? '';
+
+    return selector.split('.')[1] ?? '';
+  }
+
+  /**
+   * Data
+   * @param url
+   * @returns
+   */
+  private async loadData(url: string): Promise<unknown> {
     try {
-      const html = await lastValueFrom(this._httpClient.get(filePath, { responseType: 'text' }));
-      return html;
+      return await lastValueFrom(this.http.get(url));
     } catch (error) {
-      console.error('Error al cargar el plugin:', error);
+      console.error(`Error obteniendo datos desde ${url}`, error);
+
       return null;
     }
   }
 
   /**
-   * Load script dynamically
-   * @param src
-   * @param scriptName
+   * Html
+   * @param filePath
+   * @returns
    */
-  async loadScript(src: string, scriptName: string) {
-    if (document.getElementById(`js-${scriptName}`)) {
-      return;
+  private async loadHTMLFile(filePath: string): Promise<string | null> {
+    try {
+      return await lastValueFrom(
+        this.http.get(filePath, {
+          responseType: 'text',
+        }),
+      );
+    } catch (error) {
+      console.error(`Error cargando HTML: ${filePath}`, error);
+
+      return null;
     }
-
-    const script = document.createElement('script');
-    script.src = src;
-    script.type = 'text/javascript';
-    script.id = `js-${scriptName}`;
-    script.setAttribute('data-id', this.element().uuid);
-    script.async = true;
-    document.body.appendChild(script);
-
-    await new Promise<void>((resolve, reject) => {
-      script.onload = () => {
-        resolve();
-      };
-
-      script.onerror = () => {
-        console.error(`Error al cargar el script ${src} con ID: ${scriptName}`);
-        reject(new Error(`Error al cargar el script ${scriptName}`)); // Rechaza la promesa si hay un error
-      };
-    });
   }
 
   /**
-   * Load uuid js
-   * @param name
-   * @param value
+   * Events
+   * @param pluginName
+   * @param uuid
    */
-  handleScriptLoaded(name: string, value: string): void {
-    const eventName = `${name}PluginEvent`;
+  private handleScriptLoaded(pluginName: string, uuid: string): void {
+    const eventName = `${pluginName}PluginEvent` as `${string}PluginEvent`;
+
     const event = window[eventName];
 
     if (typeof event === 'function') {
-      event(value);
+      event(uuid);
+    } else {
+      console.error(`No existe ${eventName}`);
     }
+  }
+
+  /**
+   * Destroy
+   * @returns
+   */
+  private destroyPluginStyles(): void {
+    const uuid = this.element()?.uuid;
+    if (!uuid) {
+      return;
+    }
+    const style = document.getElementById(`style-${uuid}`);
+    style?.remove();
   }
 }

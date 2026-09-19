@@ -1,3 +1,5 @@
+import { PaginationResquestI } from "app/shared/interfaces/response.interface";
+
 export interface FileI {
   id?: number;
   name?: string;
@@ -19,4 +21,8 @@ export interface FileUploadI {
   filename: string;
   path: string;
   size: number;
+}
+
+export interface FilePaginationResquestI extends PaginationResquestI {
+  mimeType: string | null;
 }

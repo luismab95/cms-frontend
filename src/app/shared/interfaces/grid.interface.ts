@@ -27,7 +27,7 @@ export interface ColumnI {
   uuid: string;
   css: string;
   config: { [key: string]: any };
-  element: ElementI;
+  element: ElementI | null;
 }
 
 export interface RowI {

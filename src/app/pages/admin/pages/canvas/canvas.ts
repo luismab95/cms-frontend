@@ -607,9 +607,7 @@ export class PagesCanvas implements OnInit {
       config: element.config,
       text: element.text,
       dataText: []
-    };
-    console.log(column);
-    
+    };    
 
     const sectionsUpdate = updateColumn(this.body(), column.uuid, column);
 

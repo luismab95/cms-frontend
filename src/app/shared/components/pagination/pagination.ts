@@ -14,6 +14,7 @@ export class PaginationComponent {
   readonly pages = input<number>(1);
   readonly limit = input<number>(10);
   readonly total = input<number>(0);
+  readonly showLimit = input<boolean>(true);
   readonly pageEvent = output<number>();
   readonly limitEvent = output<number>();
 

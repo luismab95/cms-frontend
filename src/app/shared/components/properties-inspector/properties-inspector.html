@@ -1,0 +1,24 @@
+@if (config().fields.length === 0) {
+  <div
+    class="p-5 text-center flex h-full flex-col items-center justify-center bg-slate-50/50 flex-1"
+  >
+    <div
+      class="w-12 h-12 rounded-xl bg-white border border-dashed border-slate-300 flex items-center justify-center text-slate-400 mb-3 shadow-sm"
+    >
+      <i class="fa-solid fa-info text-indigo-500"></i>
+    </div>
+    <h4 class="text-xs font-bold text-slate-800 mb-1">No hay propiedades para configurar.</h4>
+    <p class="text-[11px] text-slate-500 leading-relaxed max-w-60">
+      @switch (typeItem()) {
+        @case ('element') {
+          El elemento
+        }
+      }
+      no tiene propiedades para configurar.
+    </p>
+  </div>
+} @else {
+  <div class="w-full flex px-4 py-6">
+    <form [dynamic-form]="$any(config())"></form>
+  </div>
+}

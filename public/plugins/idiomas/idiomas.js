@@ -54,15 +54,16 @@ function loadIdiomasPlugin(idPlugin) {
     const idiomas = idiomasPlugin
         ? idiomasPlugin.querySelector('#languageContent')
         : null;
-
+        
     if (data.properties !== undefined) {
         const btn = document.getElementById('toggle-btn');
         const langOptions = document.getElementById('lang-options');
         const currentLang =
-            localStorage.getItem('lang') || data.properties.data[0].lang;
+            localStorage.getItem('lang') || propertiesData[0].lang;
 
         // Load data
-        data.properties.data.forEach((lang) => {
+        const propertiesData =  data.properties.data ?? [];
+        propertiesData.forEach((lang) => {
             const itemOption = document.createElement('div');
             itemOption.classList.add('item-option');
             itemOption.setAttribute('data-lang', lang.lang);
@@ -74,13 +75,13 @@ function loadIdiomasPlugin(idPlugin) {
             itemOption.appendChild(img);
             langOptions.appendChild(itemOption);
         });
-        btn.src = data.properties.data.find(
+        btn.src = propertiesData.find(
             (language) => language.lang === currentLang
-        ).icon;
+        )?.icon;
         btn.style.width = '60px';
-        btn.alt = data.properties.data.find(
+        btn.alt = propertiesData.find(
             (language) => language.lang === currentLang
-        ).lang;
+        )?.lang;
 
         // Load events
         btn.addEventListener('click', function (event) {
@@ -97,10 +98,10 @@ function loadIdiomasPlugin(idPlugin) {
             item.addEventListener('click', function () {
                 const lang = item.getAttribute('data-lang');
                 localStorage.setItem('lang', lang);
-                btn.src = data.properties.data.find(
+                btn.src = propertiesData.find(
                     (language) => language.lang === lang
                 ).icon;
-                btn.alt = data.properties.data.find(
+                btn.alt = propertiesData.find(
                     (language) => language.lang === lang
                 ).lang;
                 langOptions.classList.remove('show');

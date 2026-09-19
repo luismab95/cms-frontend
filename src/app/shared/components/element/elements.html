@@ -1,2 +1,39 @@
-<div class="w-full h-auto" #pluginContainer></div>
+<div class="relative w-full h-auto">
+  <!-- Loading -->
+  @if (loading()) {
+    <div
+      class="flex min-h-24 w-full flex-col items-center justify-center gap-3 rounded-xl px-4 py-6 text-center"
+    >
+      <div
+        class="flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-100 text-indigo-600"
+      >
+        <i class="fa-solid fa-spinner fa-spin text-lg"></i>
+      </div>
+      <div class="space-y-1">
+        <p class="text-sm font-semibold text-gray-800">Cargando plugin</p>
+        <p class="text-xs text-gray-500">Preparando el contenido...</p>
+      </div>
+      <div class="h-1 w-32 overflow-hidden rounded-full bg-indigo-100 relative">
+        <div class="absolute inset-y-0 left-0 bg-indigo-600 h-1 wave-line" style="width: 85%"></div>
+      </div>
+    </div>
+  }
 
+  <!-- Error -->
+  @if (error()) {
+    <div
+      class="flex min-h-24 w-full flex-col items-center justify-center gap-3 rounded-xl px-4 py-6 text-center"
+    >
+      <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-red-100 text-red-600">
+        <i class="fa-solid fa-plug-circle-xmark fa-beat"></i>
+      </div>
+      <div class="space-y-1">
+        <p class="text-sm font-semibold text-gray-800">Error al cargar</p>
+        <p class="text-xs text-gray-500">{{ error() }}</p>
+      </div>
+    </div>
+  }
+
+  <!-- Plugin -->
+  <div #pluginContainer class="h-auto w-full" [class.hidden]="loading() || error()"></div>
+</div>

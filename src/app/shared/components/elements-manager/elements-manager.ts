@@ -8,20 +8,6 @@ import { Subject, debounceTime, takeUntil } from 'rxjs';
 @Component({
   selector: 'elements-manager-component',
   templateUrl: './elements-manager.html',
-  styles: [
-    `
-      .card-component {
-        transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
-      }
-      .card-component:hover {
-        transform: translateY(-2px);
-        box-shadow:
-          0 8px 20px -4px rgba(99, 102, 241, 0.12),
-          0 4px 6px -2px rgba(0, 0, 0, 0.04);
-        border-color: #a5b4fc;
-      }
-    `,
-  ],
   imports: [ReactiveFormsModule, FormsModule],
 })
 export class ElementsManagerComponent implements OnInit, OnDestroy {
@@ -45,7 +31,7 @@ export class ElementsManagerComponent implements OnInit, OnDestroy {
    */
   constructor() {
     effect(() => {
-      const elements = this.elements().records;
+      const elements = this.elements().records.filter((element) => element.status);
       this.elementsSearch.set(elements);
     });
   }

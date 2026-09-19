@@ -233,10 +233,10 @@ export class LayerComponent implements OnInit, OnDestroy {
   toggleRow(uuid: string): void {
     this.expandedRows.update((current) => {
       const next = new Set(current);
-
       if (next.has(uuid)) {
         next.delete(uuid);
       } else {
+        next.clear();
         next.add(uuid);
       }
 
@@ -350,6 +350,7 @@ export class LayerComponent implements OnInit, OnDestroy {
         return current;
       }
       const next = new Set(current);
+      next.clear();
       next.add(uuid);
       return next;
     });

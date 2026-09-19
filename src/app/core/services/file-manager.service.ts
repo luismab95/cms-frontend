@@ -1,11 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { FileI } from '../interfaces/file.interface';
-import {
-  PaginationResponseI,
-  PaginationResquestI,
-  ResponseI,
-} from 'app/shared/interfaces/response.interface';
+import { FileI, FilePaginationResquestI } from '../interfaces/file.interface';
+import { PaginationResponseI, ResponseI } from 'app/shared/interfaces/response.interface';
 import { environment } from 'environments/environment';
 import { Observable, ReplaySubject, tap } from 'rxjs';
 
@@ -48,10 +44,11 @@ export class FileManagerService {
   /**
    * Get files
    */
-  getFiles(params: PaginationResquestI): Observable<ResponseI<PaginationResponseI<FileI[]>>> {
+  getFiles(params: FilePaginationResquestI): Observable<ResponseI<PaginationResponseI<FileI[]>>> {
     let queryParams: string = `?limit=${params.limit}&page=${params.page}&`;
     if (params.search !== null) queryParams += `search=${params.search}&`;
     if (params.status !== null) queryParams += `status=${params.status}&`;
+    if (params.mimeType !== null) queryParams += `mimeType=${params.mimeType}&`;
 
     return this._httpClient
       .get<ResponseI<PaginationResponseI<FileI[]>>>(

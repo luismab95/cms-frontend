@@ -5,7 +5,6 @@ import { ElementService } from 'app/core/services/element.service';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { PageService } from 'app/core/services/pages.service';
 import { TooltipDirective } from 'app/shared/directives/tooltip.directive';
-import { distinctUntilChanged, Subject, takeUntil } from 'rxjs';
 import { LanguageService } from 'app/shared/services/language.service';
 import { TabI } from 'app/shared/interfaces/drawer.interface';
 import { ParameterService } from 'app/core/services/parameter.service';
@@ -14,11 +13,14 @@ import { findParameter } from 'app/shared/utils/parameter.utils';
 import { PermissionComponent } from '../permission/permission';
 import { LangugesInspectorComponent } from '../languages-inspector/languages-inspector';
 import { ElementDataI } from 'app/shared/interfaces/element.interface';
+import { deleteColumn, deleteElement, deleteRow } from 'app/shared/utils/grid.utils';
+import { PropertiesInspectorComponent } from '../properties-inspector/properties-inspector';
+import { distinctUntilChanged, Subject, takeUntil } from 'rxjs';
 
 @Component({
   selector: 'inspector-component',
   templateUrl: './inspector.html',
-  imports: [NgClass, TooltipDirective, LangugesInspectorComponent, PermissionComponent],
+  imports: [NgClass, TooltipDirective, LangugesInspectorComponent, PermissionComponent,PropertiesInspectorComponent],
 })
 export class InspectorComponent implements OnInit, OnDestroy {
   refreshLayer = signal<boolean>(false);
@@ -256,5 +258,75 @@ export class InspectorComponent implements OnInit, OnDestroy {
   setDataText(dataText: ElementDataI[]) {
     // this.dataText.set(dataText);
     console.log(dataText);
+  }
+
+  /**
+   * Delete Item
+   */
+  deleteItem() {
+    switch (this.typeItem()) {
+      case 'section':
+        this.deleteSection(this.selectedItemsInGrid()?.section?.uuid!);
+        break;
+      case 'row':
+        this.deleteRow(this.selectedItemsInGrid()?.row?.uuid!);
+        break;
+      case 'column':
+        this.deleteColumn(this.selectedItemsInGrid()?.column?.uuid!);
+        break;
+      case 'element':
+        this.deleteElement(this.selectedItemsInGrid()?.element?.uuid!);
+        break;
+    }
+
+    this.resetSelectedItem();
+  }
+
+  /**
+   * Reset selected item
+   */
+  resetSelectedItem() {
+    this._pageService.selectedItemsInGrid = {
+      section: null,
+      row: null,
+      column: null,
+      element: null,
+    };
+  }
+
+  /**
+   * Delete section to grid
+   * @param uuid
+   */
+  deleteSection(uuid: string) {
+    const grid = this.sectionsInCanvas().filter((item) => item.uuid !== uuid);
+    this._pageService.sections = grid;
+  }
+
+  /**
+   * Delete row to section
+   * @param uuid
+   */
+  deleteRow(uuid: string) {
+    const grid = deleteRow(this.sectionsInCanvas(), uuid);
+    this._pageService.sections = grid;
+  }
+
+  /**
+   * Delete column to row
+   * @param uuid
+   */
+  deleteColumn(uuid: string) {
+    const grid = deleteColumn(this.sectionsInCanvas(), uuid);
+    this._pageService.sections = grid;
+  }
+
+  /**
+   * Delete element to column
+   * @param uuid
+   */
+  deleteElement(uuid: string) {
+    const grid = deleteElement(this.sectionsInCanvas(), uuid);
+    this._pageService.sections = grid;
   }
 }
