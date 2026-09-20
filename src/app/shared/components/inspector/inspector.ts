@@ -1,6 +1,6 @@
 import { Component, OnInit, signal, inject, OnDestroy, effect, computed } from '@angular/core';
 import { NgClass } from '@angular/common';
-import { ElementI, SelectedItemsInGridI } from 'app/shared/interfaces/grid.interface';
+import { ElementI, SectionI, SelectedItemsInGridI } from 'app/shared/interfaces/grid.interface';
 import { ElementService } from 'app/core/services/element.service';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { PageService } from 'app/core/services/pages.service';
@@ -12,9 +12,9 @@ import { PermissionCode, validAction } from 'app/shared/utils/permission.utils';
 import { findParameter } from 'app/shared/utils/parameter.utils';
 import { PermissionComponent } from '../permission/permission';
 import { LangugesInspectorComponent } from '../languages-inspector/languages-inspector';
-import { ElementDataI } from 'app/shared/interfaces/element.interface';
 import { deleteColumn, deleteElement, deleteRow } from 'app/shared/utils/grid.utils';
 import { PropertiesInspectorComponent } from '../properties-inspector/properties-inspector';
+import { HistoryService } from 'app/core/services/history-canvas.service';
 import { distinctUntilChanged, Subject, takeUntil } from 'rxjs';
 
 @Component({
@@ -29,7 +29,6 @@ import { distinctUntilChanged, Subject, takeUntil } from 'rxjs';
   ],
 })
 export class InspectorComponent implements OnInit, OnDestroy {
-  refreshLayer = signal<boolean>(false);
   selectedItemsInGrid = signal<SelectedItemsInGridI | null>(null);
   tabsLanguages = signal<TabI[]>([]);
   tabs = signal<TabI[]>([
@@ -67,6 +66,7 @@ export class InspectorComponent implements OnInit, OnDestroy {
   private readonly _pageService = inject(PageService);
   private readonly _languageService = inject(LanguageService);
   private readonly _parameterService = inject(ParameterService);
+  private readonly _historyService = inject(HistoryService);
 
   readonly languages = toSignal(this._languageService.languages$, {
     initialValue: {
@@ -135,9 +135,7 @@ export class InspectorComponent implements OnInit, OnDestroy {
 
   tabsComputed = computed(() => {
     const selectedItem = this.selectedItemsInGrid();
-
     const tabs = this.tabs().filter((tab) => tab.id !== 2);
-
     if (selectedItem?.element !== null) {
       tabs.push({
         id: 2,
@@ -191,10 +189,7 @@ export class InspectorComponent implements OnInit, OnDestroy {
       .pipe(distinctUntilChanged(), takeUntil(this._unsubscribeAll))
       .subscribe({
         next: (selectedItemsInGrid) => {
-          this.refreshLayer.set(true);
           this.selectedItemsInGrid.set(selectedItemsInGrid);
-          this.selectedTab.set(0);
-          this.refreshLayer.set(false);
         },
       });
   }
@@ -221,12 +216,6 @@ export class InspectorComponent implements OnInit, OnDestroy {
   getElementIcon(element: ElementI) {
     return this.elements().records.find((f) => f.name === element.name)?.icon ?? 'fa-solid fa-cube';
   }
-
-  /**
-   * update items config
-   * @param selectedItemsInGrid
-   */
-  updateConfigInItem() {}
 
   /**
    * select tab
@@ -292,12 +281,25 @@ export class InspectorComponent implements OnInit, OnDestroy {
   }
 
   /**
+   * Update secctions in canvas grid
+   * @param previous
+   * @param next
+   */
+  updateSectionsInGrid(previous: SectionI[], next: SectionI[]) {
+    this._pageService.sections = next;
+    this._historyService.commit(previous, next);
+    // this._pageService._currentInspectorTab.set(0);
+  }
+
+  /**
    * Delete section to grid
    * @param uuid
    */
   deleteSection(uuid: string) {
+    const previous = structuredClone(this.sectionsInCanvas());
     const grid = this.sectionsInCanvas().filter((item) => item.uuid !== uuid);
-    this._pageService.sections = grid;
+    const next = structuredClone(grid);
+    this.updateSectionsInGrid(previous, next);
   }
 
   /**
@@ -305,8 +307,10 @@ export class InspectorComponent implements OnInit, OnDestroy {
    * @param uuid
    */
   deleteRow(uuid: string) {
+    const previous = structuredClone(this.sectionsInCanvas());
     const grid = deleteRow(this.sectionsInCanvas(), uuid);
-    this._pageService.sections = grid;
+    const next = structuredClone(grid);
+    this.updateSectionsInGrid(previous, next);
   }
 
   /**
@@ -314,8 +318,10 @@ export class InspectorComponent implements OnInit, OnDestroy {
    * @param uuid
    */
   deleteColumn(uuid: string) {
+    const previous = structuredClone(this.sectionsInCanvas());
     const grid = deleteColumn(this.sectionsInCanvas(), uuid);
-    this._pageService.sections = grid;
+    const next = structuredClone(grid);
+    this.updateSectionsInGrid(previous, next);
   }
 
   /**
@@ -323,7 +329,9 @@ export class InspectorComponent implements OnInit, OnDestroy {
    * @param uuid
    */
   deleteElement(uuid: string) {
+    const previous = structuredClone(this.sectionsInCanvas());
     const grid = deleteElement(this.sectionsInCanvas(), uuid);
-    this._pageService.sections = grid;
+    const next = structuredClone(grid);
+    this.updateSectionsInGrid(previous, next);
   }
 }

@@ -347,7 +347,7 @@ function loadIdiomasPlugin(idPlugin) {
      * ---------------------------------------------
      */
 
-    const savedLang = localStorage.getItem('lang');
+    const savedLang = properties.lang ?? 'es';
     const currentLanguage =
         languages.find(
             language => language.lang === savedLang
@@ -604,10 +604,6 @@ function loadIdiomasPlugin(idPlugin) {
             return;
         }
 
-        localStorage.setItem(
-            'lang',
-            language.lang
-        );
 
         renderCurrentLanguage(language);
 
@@ -621,18 +617,14 @@ function loadIdiomasPlugin(idPlugin) {
             );
 
         items.forEach(item => {
-
             const itemLang =
                 item.getAttribute('data-lang');
-
             const active =
                 itemLang === language.lang;
-
             item.classList.toggle(
                 'active',
                 active
             );
-
             item.setAttribute(
                 'aria-selected',
                 active ? 'true' : 'false'
@@ -648,17 +640,21 @@ function loadIdiomasPlugin(idPlugin) {
          * al cambio de idioma.
          */
 
-        idiomasPlugin.dispatchEvent(
-            new CustomEvent(
-                'languageChange',
-                {
-                    detail: {
-                        lang: language.lang,
-                        language
-                    }
-                }
-            )
-        );
+        changeLanguage(language.lang);
+    }
+
+    /*
+      * ---------------------------------------------
+      * change language
+      * ---------------------------------------------
+      */
+    function changeLanguage(lang) {
+        const path = window.location.pathname;
+        const segments = path.split('/');
+        segments[1] = lang;
+        const newPath = segments.join('/');
+        window.history.pushState({}, '', newPath);
+        window.dispatchEvent(new PopStateEvent('popstate'));
     }
 
     /*

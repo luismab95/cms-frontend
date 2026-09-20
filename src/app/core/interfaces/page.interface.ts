@@ -76,6 +76,7 @@ export interface GetPageI {
   lang?: string;
   page: string;
   micrositie?: string;
+  preview:boolean
 }
 
 export type PreviewModeT = 'none' | 'mobile' | 'tablet' | 'desktop';

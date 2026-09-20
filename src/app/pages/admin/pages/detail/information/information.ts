@@ -91,7 +91,7 @@ export class PagesInformationComponent implements OnInit, OnDestroy {
    * Go to Sitie
    */
   visit(): void {
-    window.open(`${this.getDomain()}${this.page()?.path}`, '_blank');
+    window.open(`${this.sitie()?.domain}/${this.page()?.path}`, '_blank');
   }
 
   /**
@@ -113,9 +113,16 @@ export class PagesInformationComponent implements OnInit, OnDestroy {
   getDomain() {
     if (this.micrositie() !== null) {
       const micrositiePath = this.micrositie()?.path.split('/')[0];
-      return `${this.sitie()!.domain}/${micrositiePath}/`;
+      return `${this.sitie()!.domain}/preview/${micrositiePath}/`;
     }
-    return `${this.sitie()!.domain}/`;
+    return `${this.sitie()!.domain}/preview/`;
+  }
+
+  /**
+   * Remove preview in path
+   */
+  removePreviewPath() {
+    return this.getDomain().replace('/preview', '');
   }
 
   /**

@@ -20,6 +20,7 @@ import { generateRandomString } from 'app/shared/utils/random.utils';
 import { TooltipDirective } from 'app/shared/directives/tooltip.directive';
 import { PageService } from 'app/core/services/pages.service';
 import { Subject, takeUntil } from 'rxjs';
+import { HistoryService } from 'app/core/services/history-canvas.service';
 
 @Component({
   selector: 'grid',
@@ -50,6 +51,7 @@ export class GridComponent implements OnInit {
   sectionsInCanvas = signal<SectionI[]>([]);
 
   private readonly _pageService = inject(PageService);
+  private readonly _historyService = inject(HistoryService);
 
   readonly sectionsHeader = this._pageService.sectionsHeader;
   readonly sections = this._pageService.sections;
@@ -144,8 +146,9 @@ export class GridComponent implements OnInit {
    * @param item
    */
   drop<T>(event: CdkDragDrop<string[]>, items: T[]) {
+    const previous = structuredClone(this.sectionsInCanvas());
     moveItemInArray(items, event.previousIndex, event.currentIndex);
-    this.updateSectionsInGrid();
+    this.updateSectionsInGrid(previous);
   }
 
   /**
@@ -153,6 +156,7 @@ export class GridComponent implements OnInit {
    * @param row
    */
   addRow(section: SectionI) {
+    const previous = structuredClone(this.sectionsInCanvas());
     const rowUuid = generateRandomString(8);
     section.rows.push({
       uuid: rowUuid,
@@ -161,7 +165,7 @@ export class GridComponent implements OnInit {
       columns: [],
     });
 
-    this.updateSectionsInGrid();
+    this.updateSectionsInGrid(previous);
   }
 
   /**
@@ -169,6 +173,7 @@ export class GridComponent implements OnInit {
    * @param row
    */
   addColumn(row: RowI) {
+    const previous = structuredClone(this.sectionsInCanvas());
     const columnUuid = generateRandomString(8);
     row.columns.push({
       uuid: columnUuid,
@@ -176,24 +181,7 @@ export class GridComponent implements OnInit {
       config: { backgroundImage: '' },
       element: null!,
     });
-    this.updateSectionsInGrid();
-  }
-
-  /**
-   * Add element to columns
-   * @param column
-   */
-  addElement(column: ColumnI, element: ElementCMSI) {
-    const elementUuid = generateRandomString(8);
-    column.element = {
-      uuid: elementUuid,
-      name: element.name,
-      css: `.${element.css}-${elementUuid}{}`,
-      config: element.config,
-      text: element.text,
-    };
-
-    this.updateSectionsInGrid();
+    this.updateSectionsInGrid(previous);
   }
 
   /**
@@ -207,8 +195,10 @@ export class GridComponent implements OnInit {
   /**
    * Update secctions in canvas grid
    */
-  updateSectionsInGrid() {
-    this._pageService.sections = [...this.sectionsInCanvas()];
+  updateSectionsInGrid(previous: SectionI[]) {
+    const next = structuredClone(this.sectionsInCanvas());
+    this._pageService.sections = next;
+    this._historyService.commit(previous, next);
   }
 
   /**

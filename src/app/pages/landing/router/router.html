@@ -3,7 +3,7 @@
     <div class="w-full header sticky z-99">
       <grid
         [gridType]="'header'"
-        [languageId]="languageId"
+        [languageId]="languageId()"
         [preview]="true"
         [previewType]="previewType()"
       />
@@ -11,7 +11,7 @@
     <div class="w-full body">
       <grid
         [gridType]="'body'"
-        [languageId]="languageId"
+        [languageId]="languageId()"
         [preview]="true"
         [previewType]="previewType()"
       />
@@ -19,7 +19,7 @@
     <div class="w-full footer">
       <grid
         [gridType]="'footer'"
-        [languageId]="languageId"
+        [languageId]="languageId()"
         [preview]="true"
         [previewType]="previewType()"
       />

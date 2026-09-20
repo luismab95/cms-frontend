@@ -13,8 +13,9 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { PageService } from 'app/core/services/pages.service';
 import { TooltipDirective } from 'app/shared/directives/tooltip.directive';
 import { ElementsManagerComponent } from '../elements-manager/elements-manager';
-import { distinctUntilChanged, Subject, takeUntil } from 'rxjs';
 import { ElementCMSI } from 'app/shared/interfaces/element.interface';
+import { HistoryService } from 'app/core/services/history-canvas.service';
+import { distinctUntilChanged, Subject, takeUntil } from 'rxjs';
 
 @Component({
   selector: 'layer-component',
@@ -38,6 +39,7 @@ export class LayerComponent implements OnInit, OnDestroy {
 
   private readonly _elementService = inject(ElementService);
   private readonly _pageService = inject(PageService);
+  private readonly _historyService = inject(HistoryService);
 
   readonly sectionsInCanvas = this._pageService.sections;
 
@@ -309,8 +311,11 @@ export class LayerComponent implements OnInit, OnDestroy {
    * @param item
    */
   drop<T>(event: CdkDragDrop<string[]>, items: T[]) {
+    const previous = structuredClone(this.sectionsInCanvas());
     moveItemInArray(items, event.previousIndex, event.currentIndex);
-    this._pageService.sections = [...this.sectionsInCanvas()];
+    const next = structuredClone(this.sectionsInCanvas());
+    this._pageService.sections = next;
+    this._historyService.commit(previous, next);
   }
 
   /**

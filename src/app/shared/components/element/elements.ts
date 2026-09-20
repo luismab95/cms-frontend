@@ -39,19 +39,14 @@ export class ElementsComponent implements AfterViewInit, OnDestroy {
   pluginContainer!: ElementRef<HTMLDivElement>;
 
   readonly element = input.required<ElementI>();
-
   readonly languageId = input.required<number>();
 
   readonly loading = signal(true);
-
   readonly error = signal<string | null>(null);
-
   readonly urlStatics = signal('');
 
   private readonly http = inject(HttpClient);
-
   private readonly parameterService = inject(ParameterService);
-
   private readonly pluginLoader = inject(PluginLoaderService);
 
   readonly parameters = toSignal(this.parameterService.parameter$, {
@@ -108,7 +103,7 @@ export class ElementsComponent implements AfterViewInit, OnDestroy {
         return;
       }
 
-      void this.reloadPlugin(element, languageId);
+       this.reloadPlugin(element, languageId);
     });
   }
 
@@ -222,17 +217,15 @@ export class ElementsComponent implements AfterViewInit, OnDestroy {
       const properties = {
         properties: {
           config: element.config,
-
           text: componentText,
-
           css: element.css,
-
           uuid: element.uuid,
-
           class: this.getClassName(element.css),
-
           data: dataService,
-
+          lang:
+            window.location.pathname.split('/')[1].length == 2
+              ? window.location.pathname.split('/')[1]
+              : 'es',
           urlStatics: this.urlStatics(),
         },
       };

@@ -82,6 +82,50 @@ export function deleteElement(sections: SectionI[], elementUuid: string): Sectio
   }));
 }
 
+export function findSectionByUuid(sections: SectionI[], uuid: string): SectionI | null {
+  return sections.find((section) => section.uuid === uuid) ?? null;
+}
+
+export function findRowByUuid(sections: SectionI[], uuid: string): RowI | null {
+  for (const section of sections) {
+    const row = section.rows.find((row) => row.uuid === uuid);
+
+    if (row) {
+      return row;
+    }
+  }
+
+  return null;
+}
+
+export function findColumnByUuid(sections: SectionI[], uuid: string): ColumnI | null {
+  for (const section of sections) {
+    for (const row of section.rows) {
+      const column = row.columns.find((column) => column.uuid === uuid);
+
+      if (column) {
+        return column;
+      }
+    }
+  }
+
+  return null;
+}
+
+export function findElementByUuid(sections: SectionI[], uuid: string): ElementI | null {
+  for (const section of sections) {
+    for (const row of section.rows) {
+      for (const column of row.columns) {
+        if (column.element?.uuid === uuid) {
+          return column.element;
+        }
+      }
+    }
+  }
+
+  return null;
+}
+
 export const SECTIONFORMTYPESCONFIG = [] as RegisteredFieldTypes[];
 export const COLUMNFORMTYPESCONFIG = [] as RegisteredFieldTypes[];
 export const ROWFORMTYPESCONFIG = [] as RegisteredFieldTypes[];

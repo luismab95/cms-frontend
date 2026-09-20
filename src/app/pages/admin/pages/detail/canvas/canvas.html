@@ -135,9 +135,63 @@
           </button>
         </div>
       </div>
+      @if (
+        (validPermission(permission.editContentPage) ||
+          validPermission(permission.editDesignPage)) &&
+        !autosave() &&
+        !page.review
+      ) {
+        <!-- undo/redo -->
+        <div class="flex items-center text-slate-500 gap-1">
+          <button
+            (click)="undo()"
+            [disabled]="!canUndo()"
+            class="cursor-pointer p-1.5 hover:bg-slate-100 rounded hover:text-slate-800 disabled:opacity-40 disabled:cursor-not-allowed"
+            appTooltip="Deshacer"
+          >
+            <svg
+              class="w-6 h-6"
+              xmlns="http://www.w3.org/2000/svg"
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path d="M9 14 4 9l5-5" />
+              <path d="M4 9h10.5a5.5 5.5 0 0 1 5.5 5.5a5.5 5.5 0 0 1-5.5 5.5H11" />
+            </svg>
+          </button>
+          <button
+            (click)="redo()"
+            [disabled]="!canRedo()"
+            class="cursor-pointer p-1.5 hover:bg-slate-100 rounded hover:text-slate-800 disabled:opacity-40 disabled:cursor-not-allowed"
+            appTooltip="Rehacer"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              class="w-6 h-6"
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path d="m15 14 5-5-5-5" />
+              <path d="M20 9H9.5A5.5 5.5 0 0 0 4 14.5A5.5 5.5 0 0 0 9.5 20H13" />
+            </svg>
+          </button>
+        </div>
+      }
 
-      <!-- Language Switcher -->
       <div class="h-4 w-px bg-slate-200 mx-1"></div>
+      <!-- Language Switcher -->
       <div class="flex items-center gap-3">
         <ng-select
           #languageSelect
@@ -263,7 +317,8 @@
     >
       <div class="flex flex-row h-full min-h-0 overflow-hidden">
         <!-- LEFT PANEL - ÁRBOL -->
-        <layer-component #layer
+        <layer-component
+          #layer
           [showComponetsPanel]="openElementPanel()"
           (elementSelected)="setElementSelectedInColumn($event)"
         />

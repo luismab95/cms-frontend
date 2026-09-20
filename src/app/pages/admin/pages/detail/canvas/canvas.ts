@@ -12,7 +12,14 @@ import { PageService } from 'app/core/services/pages.service';
 import { ParameterService } from 'app/core/services/parameter.service';
 import { ColumnI, SectionI, SelectedItemsInGridI } from 'app/shared/interfaces/grid.interface';
 import { LanguageService } from 'app/shared/services/language.service';
-import { updateColumn, validGrid } from 'app/shared/utils/grid.utils';
+import {
+  findColumnByUuid,
+  findElementByUuid,
+  findRowByUuid,
+  findSectionByUuid,
+  updateColumn,
+  validGrid,
+} from 'app/shared/utils/grid.utils';
 import { findParameter } from 'app/shared/utils/parameter.utils';
 import { PermissionCode, validAction } from 'app/shared/utils/permission.utils';
 import { generateRandomString } from 'app/shared/utils/random.utils';
@@ -23,6 +30,8 @@ import { LayerComponent } from 'app/shared/components/layer/layer';
 import { InspectorComponent } from 'app/shared/components/inspector/inspector';
 import { LanguageI } from 'app/shared/interfaces/language.interfaces';
 import { ElementCMSI } from 'app/shared/interfaces/element.interface';
+import { HistoryService } from 'app/core/services/history-canvas.service';
+import { TooltipDirective } from 'app/shared/directives/tooltip.directive';
 import { Subject, takeUntil } from 'rxjs';
 
 @Component({
@@ -55,6 +64,7 @@ import { Subject, takeUntil } from 'rxjs';
     GridComponent,
     LayerComponent,
     InspectorComponent,
+    TooltipDirective,
   ],
 })
 export class PagesCanvas implements OnInit {
@@ -89,16 +99,22 @@ export class PagesCanvas implements OnInit {
   private readonly _pageService = inject(PageService);
   private readonly _toastrService = inject(ToastrService);
   private readonly _languageService = inject(LanguageService);
+  private readonly _historyService = inject(HistoryService);
 
   readonly bodySections = this._pageService.sections;
 
   readonly _page = toSignal(this._pageService.page$, { initialValue: null });
+  readonly _selectedItemsInGrid = toSignal(this._pageService.selectedItemsInGrid$, {
+    initialValue: null,
+  });
   readonly parameters = toSignal(this._parameterService.parameter$, { initialValue: [] });
   readonly micrositie = toSignal(this._microsityService.micrositie$, { initialValue: null });
   readonly languages = toSignal(this._languageService.languages$, {
     initialValue: { records: [], total: 0, page: 0, totalPage: 0 },
   });
 
+  readonly canRedo = computed(() => this._historyService.canRedo());
+  readonly canUndo = computed(() => this._historyService.canUndo());
   readonly body = computed(() => this.bodySections());
 
   /**
@@ -109,6 +125,12 @@ export class PagesCanvas implements OnInit {
     this.autosaveTimer = setInterval(() => {
       this.updateDraft();
     }, 300_000);
+
+    effect(() => {
+      const languages = this.languages().records.filter((lang) => lang.status);
+      if (languages.length > 0) this.languageId.set(languages[0].id!);
+      this.activeLanguages.set(languages);
+    });
 
     effect(() => {
       const languages = this.languages().records.filter((lang) => lang.status);
@@ -416,7 +438,11 @@ export class PagesCanvas implements OnInit {
         },
       ],
     } as unknown as SectionI;
-    this._pageService.sections = [...this.body(), newSection];
+
+    const previous = structuredClone(this.body());
+    const next = structuredClone([...this.body(), newSection]);
+    this._pageService.sections = next;
+    this._historyService.commit(previous, next);
   }
 
   /**
@@ -541,6 +567,7 @@ export class PagesCanvas implements OnInit {
           column: null,
           element: null,
         });
+        this._historyService.clear();
       }
     });
   }
@@ -574,6 +601,7 @@ export class PagesCanvas implements OnInit {
 
     if (column === null) return;
 
+    const previous = structuredClone(this.body());
     const elementUuid = generateRandomString(8);
     column.element = {
       uuid: elementUuid,
@@ -586,12 +614,51 @@ export class PagesCanvas implements OnInit {
 
     const sectionsUpdate = updateColumn(this.body(), column.uuid, column);
 
-    this._pageService.sections = sectionsUpdate;
+    const next = structuredClone(sectionsUpdate);
+    this._pageService.sections = next;
+    this._historyService.commit(previous, next);
     this._pageService.selectedItemsInGrid = {
       section: null,
       column: null,
       row: null,
       element: column.element,
+    };
+  }
+
+  /**
+   * Undo Changes
+   */
+  undo() {
+    const state = this._historyService.undo();
+    if (state) {
+      this._pageService.sections = state;
+      this.refreshSelectedItemsInGrid(state);
+    }
+  }
+
+  /**
+   * Redo changes
+   */
+  redo() {
+    const state = this._historyService.redo();
+    if (state) {
+      this._pageService.sections = state;
+      this.refreshSelectedItemsInGrid(state);
+    }
+  }
+
+  /**
+   * Refresh selections
+   */
+  refreshSelectedItemsInGrid(state: SectionI[]) {
+    const selectedItemsInGrid = this._selectedItemsInGrid();
+
+    if (selectedItemsInGrid === null) return;
+    this._pageService.selectedItemsInGrid = {
+      section: findSectionByUuid(state, selectedItemsInGrid?.section?.uuid ?? ''),
+      row: findRowByUuid(state, selectedItemsInGrid?.row?.uuid ?? ''),
+      column: findColumnByUuid(state, selectedItemsInGrid?.column?.uuid ?? ''),
+      element: findElementByUuid(state, selectedItemsInGrid?.element?.uuid ?? ''),
     };
   }
 }

@@ -229,6 +229,7 @@ export class PageService {
     let queryParams: string = `?lang=${params.lang}&`;
     if (params.page !== null) queryParams += `page=${params.page}&`;
     if (params.micrositie !== null) queryParams += `micrositie=${params.micrositie}&`;
+    queryParams += `preview=${params.preview ? 'true' : 'false'}&`;
 
     return this._httpClient.get<ResponseI<PageRenderI>>(
       `${this.url}/${this.prefix}/public/page${queryParams}`,

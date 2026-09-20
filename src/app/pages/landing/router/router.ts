@@ -1,9 +1,9 @@
-import { Component, OnDestroy, OnInit, computed, inject, signal } from '@angular/core';
-import { Router } from '@angular/router';
+import { Component, OnDestroy, OnInit, computed, effect, inject, signal } from '@angular/core';
+import { NavigationEnd, Router } from '@angular/router';
 import { Meta, Title } from '@angular/platform-browser';
 import { PageService } from 'app/core/services/pages.service';
 import { DeviceDetectorService, DeviceType } from 'ngx-device-detector';
-import { Subject, takeUntil } from 'rxjs';
+import { distinctUntilChanged, filter, Subject, takeUntil } from 'rxjs';
 import { PageDetailReferenceI } from 'app/core/interfaces/page.interface';
 import { GridComponent } from 'app/shared/components/grid/grid';
 import { SectionI } from 'app/shared/interfaces/grid.interface';
@@ -40,14 +40,14 @@ import { SectionI } from 'app/shared/interfaces/grid.interface';
 })
 export class LandingRouterComponent implements OnInit, OnDestroy {
   loading = signal<boolean>(true);
-  languageId!: number;
-  lang!: string;
-  page: string | null = null;
-  micrositie: string | null = null;
-  interval: any;
+  previousLangValue = signal<string>(window.location.pathname.split('/')[1]);
+
+  languageId = signal<number | undefined>(undefined);
+  lang = signal<string | undefined>(undefined);
+  page = signal<string | null>(null);
+  micrositie = signal<string | null>(null);
 
   private _unsubscribeAll: Subject<any> = new Subject<any>();
-  private previousLangValue: string | null = localStorage.getItem('lang');
 
   private _deviceDetectorService = inject(DeviceDetectorService);
   private readonly _pageService = inject(PageService);
@@ -72,7 +72,23 @@ export class LandingRouterComponent implements OnInit, OnDestroy {
   /**
    * Constructor
    */
-  constructor() {}
+  constructor() {
+    this._router.events
+      .pipe(
+        filter((event) => event instanceof NavigationEnd),
+        distinctUntilChanged(),
+      )
+      .subscribe((event: NavigationEnd) => {
+        const urlSplit = event.urlAfterRedirects.split('/');
+        const lang = urlSplit[1];
+        if (!this.loading() && lang !== this.previousLangValue()) {
+          this.previousLangValue.set(lang);
+          this._router
+            .navigateByUrl(`/${lang}/${urlSplit.slice(2).join('/')}`)
+            .then(() => this.getPage());
+        }
+      });
+  }
 
   /**
    * On init
@@ -89,7 +105,6 @@ export class LandingRouterComponent implements OnInit, OnDestroy {
     // Unsubscribe from all subscriptions
     this._unsubscribeAll.next(null);
     this._unsubscribeAll.complete();
-    if (this.interval) clearInterval(this.interval);
   }
 
   // -----------------------------------------------------------------------------------------------------
@@ -97,59 +112,46 @@ export class LandingRouterComponent implements OnInit, OnDestroy {
   // -----------------------------------------------------------------------------------------------------
 
   /**
-   * Toggle language
-   */
-  toggleLanguage() {
-    const url = window.location.pathname;
-    const urlSplit = url.split('/');
-
-    this.interval = setInterval(() => {
-      const currentLangValue = localStorage.getItem('lang');
-      if (!this.loading() && currentLangValue !== this.previousLangValue) {
-        this.previousLangValue = currentLangValue;
-        this._router
-          .navigateByUrl(`/${currentLangValue}/${urlSplit.slice(2).join('/')}`)
-          .then(() => this.getPage());
-      }
-    }, 1000);
-  }
-
-  /**
    * Get page
    */
   getPage() {
     this.loading.set(true);
+    let preview = false;
     const url = window.location.pathname;
     const urlSplit = url.split('/');
 
+    if (urlSplit[2] === 'preview') {
+      preview = true;
+      urlSplit.splice(2, 1);
+    }
+
     switch (urlSplit.length) {
       case 2:
-        this.lang = urlSplit[1];
+        this.lang.set(urlSplit[1]);
         break;
       case 3:
-        this.page = urlSplit[2];
-        this.lang = urlSplit[1];
+        this.page.set(urlSplit[2]);
+        this.lang.set(urlSplit[1]);
         break;
       case 4:
-        this.page = urlSplit[3];
-        this.lang = urlSplit[1];
-        this.micrositie = urlSplit[2];
+        this.page.set(urlSplit[3]);
+        this.lang.set(urlSplit[1]);
+        this.micrositie.set(urlSplit[2]);
     }
 
     this._pageService
       .getPage({
-        lang: this.lang,
-        page: this.page!,
-        micrositie: this.micrositie!,
+        lang: this.lang()!,
+        page: this.page()!,
+        micrositie: this.micrositie()!,
+        preview,
       })
       .pipe(takeUntil(this._unsubscribeAll))
       .subscribe({
         next: (res) => {
-          this.languageId = res.message.languageId;
-          this.previousLangValue = res.message.languageCode;
-          localStorage.setItem('lang', res.message.languageCode);
+          this.languageId.set(res.message.languageId);
 
-          this.updateMetaTags(this.languageId, res.message.details!);
+          this.updateMetaTags(this.languageId()!, res.message.details!);
 
           this.setGrid(res.message.template.data?.header.data!, 'header');
           this.setGrid(res.message.data?.body.data!, 'body');
@@ -160,7 +162,6 @@ export class LandingRouterComponent implements OnInit, OnDestroy {
           styleElement.textContent = `${res.message.data?.body.css} ${res.message.template.data?.header.css} ${res.message.template.data?.footer.css}`;
           document.head.appendChild(styleElement);
           this.loading.set(false);
-          if (!this.interval) this.toggleLanguage();
         },
         error: (err) => {
           if (err.status === 503) {

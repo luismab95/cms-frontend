@@ -11,7 +11,7 @@ import {
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { ElementService } from 'app/core/services/element.service';
 import { toObservable, toSignal } from '@angular/core/rxjs-interop';
-import { SelectedItemsInGridI } from 'app/shared/interfaces/grid.interface';
+import { SectionI, SelectedItemsInGridI } from 'app/shared/interfaces/grid.interface';
 import {
   COLUMNFORMTYPESCONFIG,
   ROWFORMTYPESCONFIG,
@@ -23,7 +23,8 @@ import {
 } from 'app/shared/utils/grid.utils';
 import { DynamicForm, EventDispatcher, RegisteredFieldTypes } from '@ng-forge/dynamic-forms';
 import { PageService } from 'app/core/services/pages.service';
-import { debounceTime, distinctUntilChanged, Subject, takeUntil } from 'rxjs';
+import { HistoryService } from 'app/core/services/history-canvas.service';
+import { pairwise, skip, Subject, takeUntil } from 'rxjs';
 
 @Component({
   providers: [EventDispatcher],
@@ -41,6 +42,7 @@ export class PropertiesInspectorComponent implements OnInit, OnDestroy {
 
   private readonly _elementService = inject(ElementService);
   private readonly _pageService = inject(PageService);
+  private readonly _historyService = inject(HistoryService);
 
   readonly sectionsInCanvas = this._pageService.sections;
 
@@ -74,9 +76,12 @@ export class PropertiesInspectorComponent implements OnInit, OnDestroy {
    */
   constructor() {
     toObservable(this.formValue)
-      .pipe(debounceTime(300), distinctUntilChanged(), takeUntil(this._unsubscribeAll))
-      .subscribe((value) => {
-        this.updateItem(value);
+      .pipe(skip(1), pairwise(), takeUntil(this._unsubscribeAll))
+      .subscribe(([previous, current]) => {
+        const changed = Object.keys(current).some((key) => previous[key] !== current[key]);
+        if (changed) {
+          this.updateItem(current);
+        }
       });
 
     effect(() => {
@@ -123,17 +128,28 @@ export class PropertiesInspectorComponent implements OnInit, OnDestroy {
   }
 
   /**
+   * Update secctions in canvas grid
+   * @param next
+   */
+  updateSectionsInGrid(previous: SectionI[], next: SectionI[]) {
+    this._pageService.sections = next;
+    this._historyService.commit(previous, next);
+  }
+
+  /**
    * Update item
    * @param value
    */
   updateItem(value: Record<string, unknown>) {
+    const previous = structuredClone(this.sectionsInCanvas());
+    let next = structuredClone(this.sectionsInCanvas());
     switch (this.typeItem()) {
       case 'section':
         const section = this.itemSelectedInGrid()?.section;
         if (section) {
           section.config = value;
           const sections = updateSection(this.sectionsInCanvas(), section.uuid, section);
-          this._pageService.sections = [...sections];
+          next = structuredClone(sections);
         }
         break;
       case 'row':
@@ -141,7 +157,7 @@ export class PropertiesInspectorComponent implements OnInit, OnDestroy {
         if (row) {
           row.config = value;
           const sections = updateRow(this.sectionsInCanvas(), row.uuid, row);
-          this._pageService.sections = [...sections];
+          next = structuredClone(sections);
         }
         break;
       case 'column':
@@ -149,7 +165,7 @@ export class PropertiesInspectorComponent implements OnInit, OnDestroy {
         if (column) {
           column.config = value;
           const sections = updateColumn(this.sectionsInCanvas(), column.uuid, column);
-          this._pageService.sections = [...sections];
+          next = structuredClone(sections);
         }
         break;
       case 'element':
@@ -157,9 +173,10 @@ export class PropertiesInspectorComponent implements OnInit, OnDestroy {
         if (element) {
           element.config = value;
           const sections = updateElement(this.sectionsInCanvas(), element.uuid, element);
-          this._pageService.sections = [...sections];
+          next = structuredClone(sections);
         }
         break;
     }
+    this.updateSectionsInGrid(previous, next);
   }
 }

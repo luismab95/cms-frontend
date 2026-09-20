@@ -20,16 +20,17 @@ import {
   UntypedFormGroup,
   Validators,
 } from '@angular/forms';
+import { toSignal } from '@angular/core/rxjs-interop';
 import { TabsComponent } from '../tabs/tabs';
 import { ElementDataI } from 'app/shared/interfaces/element.interface';
 import { LanguageI } from 'app/shared/interfaces/language.interfaces';
 import { TabI } from 'app/shared/interfaces/drawer.interface';
 import { CmsValidators } from 'app/shared/utils/validators.util';
+import { HistoryService } from 'app/core/services/history-canvas.service';
 import { PageService } from 'app/core/services/pages.service';
-import { toSignal } from '@angular/core/rxjs-interop';
 import { updateElement } from 'app/shared/utils/grid.utils';
 import { ElementI } from 'app/shared/interfaces/grid.interface';
-import { debounceTime, distinctUntilChanged, Subject, takeUntil } from 'rxjs';
+import { pairwise, Subject, takeUntil } from 'rxjs';
 
 @Component({
   selector: 'languages-inspector-component',
@@ -51,6 +52,7 @@ export class LangugesInspectorComponent implements OnInit, AfterViewInit, OnDest
   private _unsubscribeAll = new Subject<void>();
 
   private readonly _pageService = inject(PageService);
+  private readonly _historyService = inject(HistoryService);
 
   readonly sectionsInCanvas = this._pageService.sections;
 
@@ -82,8 +84,8 @@ export class LangugesInspectorComponent implements OnInit, AfterViewInit, OnDest
 
     effect(() => {
       const languages = this.languages();
-      const text = this.text();
       const data = this.data();
+      const text = this.text();
 
       if (!languages.length || !Object.keys(text).length) {
         return;
@@ -106,9 +108,12 @@ export class LangugesInspectorComponent implements OnInit, AfterViewInit, OnDest
    */
   ngAfterViewInit(): void {
     this.languageForm.valueChanges
-      .pipe(debounceTime(300), distinctUntilChanged(), takeUntil(this._unsubscribeAll))
-      .subscribe((value) => {
-        this.updateItem(value);
+      .pipe(pairwise(), takeUntil(this._unsubscribeAll))
+      .subscribe(([previous, current]) => {
+        const changed = JSON.stringify(previous) !== JSON.stringify(current);
+        if (changed) {
+          this.updateItem(current);
+        }
       });
   }
 
@@ -179,7 +184,7 @@ export class LangugesInspectorComponent implements OnInit, AfterViewInit, OnDest
    * Update item
    * @param value
    */
-  updateItem(value: { languages: ElementDataI[] }): void {
+  updateItem(value: { languages: ElementDataI[] }): void {     
     const selectedElement = this.selectedItemsInGrid()?.element;
 
     if (!selectedElement) {
@@ -197,6 +202,10 @@ export class LangugesInspectorComponent implements OnInit, AfterViewInit, OnDest
       updatedElement,
     );
 
-    this._pageService.sections = updatedSections;
+    const previous = structuredClone(this.sectionsInCanvas());
+    const next = structuredClone(updatedSections);
+    this._pageService.sections = next;
+    //todo ver cambios de textos en historial
+    // this._historyService.commit(previous, next);
   }
 }

@@ -114,6 +114,13 @@ export interface YearVisitI {
   thisYear: YearVisitDataI[];
 }
 
+export interface VisitI {
+  total: number;
+  pages: number;
+  microsities: number;
+  sitie: number;
+}
+
 export interface YearVisitDataI {
   name: string;
   data: { x: string; y: number }[];
@@ -210,6 +217,8 @@ export const yearVisit = (data: YearVisitI) =>
   }) as unknown as ApexOptionsI;
 
 export interface Top10PagesI {
+  pageId: number;
+  micrositieId: number | null;
   name: string;
   lang: string;
   micrositie: string;
@@ -217,15 +226,15 @@ export interface Top10PagesI {
   visits: number;
 }
 
-export const distributionOrigen = (data: CountElementsI) => {
+export const distributionOrigen = (data: VisitI) => {
   return {
-    series: [data.microsities + data.pages, data.microsities, data.pages],
+    series: [data.microsities, data.pages],
     chart: {
       type: 'donut',
       width: 250,
     },
-    labels: ['Sitio', 'Micrositio', 'Páginas'],
-    colors: ['#432dd7', '#00bc7d', '#62748e'],
+    labels: ['Micrositio', 'Páginas'],
+    colors: ['#00bc7d', '#62748e'],
     dataLabels: {
       enabled: false,
     },

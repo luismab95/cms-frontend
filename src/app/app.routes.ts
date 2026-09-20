@@ -362,6 +362,21 @@ export const routes: Routes = [
           import('./pages/landing/router/router').then((m) => m.LandingRouterComponent),
       },
       {
+        path: 'preview',
+        loadComponent: () =>
+          import('./pages/landing/router/router').then((m) => m.LandingRouterComponent),
+      },
+      {
+        path: 'preview/:page',
+        loadComponent: () =>
+          import('./pages/landing/router/router').then((m) => m.LandingRouterComponent),
+      },
+       {
+        path: 'preview/:micrositie/:page',
+        loadComponent: () =>
+          import('./pages/landing/router/router').then((m) => m.LandingRouterComponent),
+      },
+      {
         path: ':page',
         loadComponent: () =>
           import('./pages/landing/router/router').then((m) => m.LandingRouterComponent),

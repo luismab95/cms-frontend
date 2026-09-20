@@ -193,7 +193,7 @@ export class MicrositieInformationComponent implements OnInit {
    */
   previewDefaultPage() {
     return this._domSanitizer.bypassSecurityTrustResourceUrl(
-      `${this.sitie()?.domain}/${this.micrositie()?.path}`,
+      `${this.sitie()?.domain}/preview/${this.micrositie()?.path}`,
     );
   }
 }

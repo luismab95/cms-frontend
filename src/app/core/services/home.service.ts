@@ -4,6 +4,7 @@ import { ResponseI } from 'app/shared/interfaces/response.interface';
 import {
   CountElementsI,
   Top10PagesI,
+  VisitI,
   WeekVisitI,
   YearVisitI,
 } from 'app/core/interfaces/home.interface';
@@ -17,7 +18,7 @@ export class HomeService {
   private _countElements: ReplaySubject<CountElementsI> = new ReplaySubject<CountElementsI>(1);
   private _weekVisit: ReplaySubject<WeekVisitI> = new ReplaySubject<WeekVisitI>(1);
   private _yearVisit: ReplaySubject<YearVisitI> = new ReplaySubject<YearVisitI>(1);
-  private _visitVsPages: ReplaySubject<YearVisitI> = new ReplaySubject<YearVisitI>(1);
+  private _visitVsPages: ReplaySubject<VisitI> = new ReplaySubject<VisitI>(1);
   private _top10Pages: ReplaySubject<Top10PagesI[]> = new ReplaySubject<Top10PagesI[]>(1);
 
   /**
@@ -62,12 +63,12 @@ export class HomeService {
    *
    * @param value
    */
-  set visitVsPages(value: YearVisitI) {
+  set visitVsPages(value: VisitI) {
     // Store the value
     this._visitVsPages.next(value);
   }
 
-  get visitVsPages$(): Observable<YearVisitI> {
+  get visitVsPages$(): Observable<VisitI> {
     return this._visitVsPages.asObservable();
   }
 
@@ -145,9 +146,9 @@ export class HomeService {
   /**
    * Get visitors vs page views
    */
-  getVisitVsPages(): Observable<ResponseI<YearVisitI>> {
+  getVisitVsPages(): Observable<ResponseI<VisitI>> {
     return this._httpClient
-      .get<ResponseI<YearVisitI>>(`${this.url}/${this.prefix}/dashboard/visits-vs-pages`)
+      .get<ResponseI<VisitI>>(`${this.url}/${this.prefix}/dashboard/visits`)
       .pipe(
         tap((response) => {
           this._visitVsPages.next(response.message);

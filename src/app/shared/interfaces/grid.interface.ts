@@ -43,3 +43,8 @@ export interface SectionI {
   config: { [key: string]: any };
   rows: RowI[];
 }
+
+export interface HistoryChangeI {
+  previous: SectionI[];
+  next: SectionI[];
+}

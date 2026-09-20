@@ -1,16 +1,18 @@
 import { DomSanitizer } from '@angular/platform-browser';
 import { ClipboardModule } from '@angular/cdk/clipboard';
-import { DecimalPipe } from '@angular/common';
+import { DecimalPipe, NgClass } from '@angular/common';
 import { Component, computed, inject, signal } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { ApexOptions, NgApexchartsModule } from 'ng-apexcharts';
 import { PermissionCode, validAction } from 'app/shared/utils/permission.utils';
 import {
   ApexOptionsI,
   distributionOrigen,
+  Top10PagesI,
   weekVisit,
   yearVisit,
+  YearVisitDataI,
 } from 'app/core/interfaces/home.interface';
 import { HomeService } from 'app/core/services/home.service';
 import { UserService } from 'app/core/services/user.service';
@@ -21,11 +23,21 @@ import { ParameterService } from 'app/core/services/parameter.service';
 import { findParameter } from 'app/shared/utils/parameter.utils';
 import { SitieService } from 'app/core/services/sitie.service';
 import { formatNumber } from 'app/shared/utils/number.utils';
+import { TooltipDirective } from 'app/shared/directives/tooltip.directive';
+import { forkJoin } from 'rxjs';
 
 @Component({
   selector: 'home',
   templateUrl: './home.html',
-  imports: [RouterLink, ClipboardModule, NgApexchartsModule, PermissionComponent, DecimalPipe],
+  imports: [
+    RouterLink,
+    ClipboardModule,
+    NgApexchartsModule,
+    PermissionComponent,
+    DecimalPipe,
+    TooltipDirective,
+    NgClass,
+  ],
 })
 export class Home {
   weekVisitButton = signal<'lastWeek' | 'thisWeek'>('thisWeek');
@@ -41,6 +53,7 @@ export class Home {
   private readonly _userService = inject(UserService);
   private readonly _toastrService = inject(ToastrService);
   private readonly _domSanitizer = inject(DomSanitizer);
+  private readonly _router = inject(Router);
 
   readonly permission = PermissionCode;
 
@@ -60,6 +73,9 @@ export class Home {
   readonly dataServiceYear = toSignal(this._homeService.yearVisit$, {
     initialValue: null,
   });
+  readonly visitVsPages = toSignal(this._homeService.visitVsPages$, {
+    initialValue: null,
+  });
   readonly dataServiceTop10 = toSignal(this._homeService.top10Pages$, {
     initialValue: [],
   });
@@ -74,10 +90,20 @@ export class Home {
     return [...this.dataServiceTop10()]
       .sort((a, b) => b.visits - a.visits)
       .slice(0, 3)
-      .slice(0, 3)
       .map((item) => ({
         ...item,
-        safePath: this._domSanitizer.bypassSecurityTrustResourceUrl(item.path),
+        safePreviewPath: this._domSanitizer.bypassSecurityTrustResourceUrl(
+          `${this.getDomain()}/${item.lang}/preview${item.path}`,
+        ),
+      }));
+  });
+
+  readonly top10Pages = computed(() => {
+    return [...this.dataServiceTop10()]
+      .sort((a, b) => b.visits - a.visits)
+      .map((item) => ({
+        ...item,
+        url: `${this.getDomain()}/${item.lang}${item.path}`,
       }));
   });
 
@@ -94,7 +120,7 @@ export class Home {
   });
 
   readonly distributionOrigen = computed<ApexOptions>(() => {
-    const data = this.countElements();
+    const data = this.visitVsPages();
     return data ? distributionOrigen(data) : {};
   });
 
@@ -131,5 +157,38 @@ export class Home {
    */
   getCompanyInfo(code: string) {
     return findParameter(code, this.parameters()!);
+  }
+
+  /**
+   * Go To canvas
+   */
+  goToCanvas(page: Top10PagesI) {
+    this._router.navigateByUrl('/admin/content/pages/canvas', {
+      state: {
+        id: page.pageId,
+        micrositieId: page.micrositieId === null ? 0 : page.micrositieId,
+      },
+    });
+  }
+
+  /**
+   * Get only domain
+   */
+  getDomain() {
+    const url = new URL(this.sitie()?.domain!);
+    return url.origin;
+  }
+
+  /**
+   * Refresh data in dashboard
+   */
+  refreshData() {
+    forkJoin({
+      top10: this._homeService.getTop10Pages(),
+      weekVisit: this._homeService.getWeekVisit(),
+      yearVisit: this._homeService.getYearVisit(),
+      visitVsPages: this._homeService.getVisitVsPages(),
+      countElements: this._homeService.getCountElements(),
+    }).subscribe();
   }
 }
