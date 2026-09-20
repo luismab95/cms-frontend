@@ -2,46 +2,36 @@ import { Component, inject, OnDestroy, OnInit, signal, effect } from '@angular/c
 import { toSignal } from '@angular/core/rxjs-interop';
 import { Router } from '@angular/router';
 import { MicrosityService } from 'app/core/services/micrositie.service';
-import { PageService } from 'app/core/services/pages.service';
 import { DrawerComponent } from 'app/shared/components/drawer/drawer';
 import { PermissionComponent } from 'app/shared/components/permission/permission';
 import { DrawerI } from 'app/shared/interfaces/drawer.interface';
 import { PermissionCode, validAction } from 'app/shared/utils/permission.utils';
-import { PagesInformationComponent } from './information/information';
-import { PagesLangugesComponent } from './languages/languages';
+import { MicrositieInformationComponent } from './information/information';
+import { PagesList } from '../../pages/list';
 import { Subject } from 'rxjs';
 
 @Component({
-  selector: 'pages-detail',
+  selector: 'microsities-detail',
   templateUrl: './detail.html',
-  imports: [
-    DrawerComponent,
-    PermissionComponent,
-    PagesInformationComponent,
-    PagesLangugesComponent,
-  ],
+  imports: [DrawerComponent, PermissionComponent, MicrositieInformationComponent, PagesList],
 })
-export class PagesDetail implements OnInit, OnDestroy {
+export class MicrositiesDetail implements OnInit, OnDestroy {
   permission = PermissionCode;
   panels = signal<DrawerI[]>([
     {
       id: 'information',
       icon: 'fa-solid fa-circle-info',
       title: 'Información',
-      description: 'Gestiona la información de tu página.',
+      description: 'Gestiona la información de tu micrositio.',
     },
   ]);
   selectedPanel = signal<string>('');
 
   private _unsubscribeAll: Subject<any> = new Subject<any>();
 
-  private readonly _pageService = inject(PageService);
   private readonly _microsityService = inject(MicrosityService);
   private readonly _router = inject(Router);
 
-  readonly page = toSignal(this._pageService.page$, {
-    initialValue: null,
-  });
   readonly micrositie = toSignal(this._microsityService.micrositie$, { initialValue: null });
 
   /**
@@ -49,16 +39,15 @@ export class PagesDetail implements OnInit, OnDestroy {
    */
   constructor() {
     effect(() => {
-      const page = this.page();
-      if (page != null && this.panels().length === 1) {
+      const micrositie = this.micrositie();
+      if (micrositie != null && this.panels().length === 1) {
         this.panels.update((prev) => [
           ...prev,
           {
-            id: 'languages',
-            icon: 'fa-solid fa-language',
-            title: 'Seo',
-            description:
-              'Administra la información de los meta tags de página en los diferentes idiomas del sitio.',
+            id: 'pages',
+            icon: 'fa-solid fa-file-fragment',
+            title: 'Páginas',
+            description: 'Gestiona las páginas de tu micrositio.',
           },
         ]);
       }
@@ -83,6 +72,8 @@ export class PagesDetail implements OnInit, OnDestroy {
     // Unsubscribe from all subscriptions
     this._unsubscribeAll.next(null);
     this._unsubscribeAll.complete();
+
+    // this._microsityService.micrositie = null!;
   }
 
   // -----------------------------------------------------------------------------------------------------
@@ -109,12 +100,6 @@ export class PagesDetail implements OnInit, OnDestroy {
    * Go to back
    */
   goToBack() {
-    if (this.micrositie()) {
-      this._router.navigateByUrl('/admin/content/microsities/detail', {
-        state: { micrositieId: this.micrositie()?.id },
-      });
-    } else {
-      this._router.navigateByUrl('/admin/content/pages');
-    }
+    this._router.navigateByUrl('/admin/content/microsities');
   }
 }

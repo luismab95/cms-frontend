@@ -46,7 +46,7 @@ export function updateElement(
       ...row,
       columns: row.columns.map((column) => ({
         ...column,
-        element: column.element?.uuid === elementUuid ? updatedElement : column.element,
+        element: column.element?.uuid === elementUuid ? { ...updatedElement } : column.element,
       })),
     })),
   }));

@@ -263,7 +263,7 @@
     >
       <div class="flex flex-row h-full min-h-0 overflow-hidden">
         <!-- LEFT PANEL - ÁRBOL -->
-        <layer-component
+        <layer-component #layer
           [showComponetsPanel]="openElementPanel()"
           (elementSelected)="setElementSelectedInColumn($event)"
         />
@@ -312,7 +312,6 @@
                     class="absolute -top-3.5 right-4 hidden group-hover/body:flex items-center bg-white border border-slate-200 rounded-md shadow-sm divide-x divide-slate-100 text-slate-600 text-xs"
                   >
                     <button
-                      (click)="openSettingsModal('Contenido')"
                       class="cursor-pointer px-2 py-1 hover:text-slate-600 hover:bg-slate-50 flex items-center gap-1"
                       title="Configurar"
                     >
@@ -323,19 +322,16 @@
 
                 <div class="relative">
                   <!-- GRID -->
-                  @if (!refreshGrid()) {
-                    <grid
-                      [editContent]="validPermission(permission.editContentPage)"
-                      [editDesign]="validPermission(permission.editDesignPage)"
-                      [gridType]="'body'"
-                      [canvasEdit]="true"
-                      [languageId]="languageId()"
-                      [previewType]="preview"
-                      [preview]="previewMode()"
-                      (deleteSectionEvent)="setGrid($event)"
-                      (openElementPanel)="toggleElementPanel($event)"
-                    />
-                  }
+                  <grid
+                    [editContent]="validPermission(permission.editContentPage)"
+                    [editDesign]="validPermission(permission.editDesignPage)"
+                    [gridType]="'body'"
+                    [languageId]="languageId()"
+                    [previewType]="preview"
+                    [preview]="previewMode()"
+                    (deleteSectionEvent)="setGrid($event)"
+                    (openElementPanel)="toggleElementPanel($event)"
+                  />
                 </div>
                 <!-- ADD SECTION -->
                 @if (!previewMode()) {

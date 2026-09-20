@@ -19,21 +19,12 @@
             <i class="fa-solid fa-arrow-left"></i>
           </button>
           <div>
-          <div class="flex items-center gap-3">
-              <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900">
-                {{ page() ? 'Página' : 'Nueva página' }}
-              </h1>
-              @if (micrositie() !== null) {
-                <span
-                  class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-bold bg-indigo-50 text-indigo-700 border border-indigo-200"
-                >
-                  micrositio
-                </span>
-              }
-            </div>
+            <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900">
+              {{ micrositie() ? 'Micrositio' : 'Nuevo micrositio' }}
+            </h1>
             <p class="mt-1 text-sm text-slate-500 leading-relaxed max-w-2xl">
-              Configura y administra la información de tus páginas, incluyendo nombre, ruta, estado,
-              información SEO y opciones de personalización visual.
+              Configura y administra la información de tus micrositios, incluyendo sus datos
+              generales y administación de páginas.
             </p>
           </div>
         </div>
@@ -41,15 +32,15 @@
       <!-- Main Layout Grid: Segmented Floating Rail & Main Form Content -->
       <div class="w-full flex-1">
         <drawer-component [panels]="panels()" (selectedPanelEvent)="goToPanel($event)">
-          @if (validPermission(permission.viewPage)) {
+          @if (validPermission(permission.viewMicrosite)) {
             @switch (selectedPanel()) {
               <!-- Information -->
               @case ('information') {
-                <pages-information />
+                <microsities-information />
               }
-              <!-- Languages -->
-              @case ('languages') {
-                <pages-languages />
+              <!-- pages -->
+              @case ('pages') {
+                <pages />
               }
             }
           } @else {

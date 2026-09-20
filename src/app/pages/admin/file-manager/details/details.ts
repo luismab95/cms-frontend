@@ -159,8 +159,8 @@ export class FileManagerDetailsComponent implements OnInit, OnDestroy {
         error: (response) => {
           this.fileForm.enable();
           this._toastrService.error(
-            response.error?.message || 'No fue posible crear el archivo.',
-            'Error al crear',
+            response.error?.message || 'No fue posible cargar el archivo.',
+            'Error al cargar',
           );
         },
       });

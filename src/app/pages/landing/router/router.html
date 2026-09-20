@@ -1,10 +1,9 @@
 @if (!loading()) {
   <div class="w-screen h-screen">
-    <div class="w-full header">
+    <div class="w-full header sticky z-99">
       <grid
         [gridType]="'header'"
         [languageId]="languageId"
-        [grid]="header()"
         [preview]="true"
         [previewType]="previewType()"
       />
@@ -13,7 +12,6 @@
       <grid
         [gridType]="'body'"
         [languageId]="languageId"
-        [grid]="body()"
         [preview]="true"
         [previewType]="previewType()"
       />
@@ -22,7 +20,6 @@
       <grid
         [gridType]="'footer'"
         [languageId]="languageId"
-        [grid]="footer()"
         [preview]="true"
         [previewType]="previewType()"
       />

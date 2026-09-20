@@ -1,0 +1,99 @@
+<div
+  class="flex min-h-[calc(100vh-160px)] w-screen flex-col items-center justify-center px-4 py-16 sm:px-6 lg:px-8"
+>
+  <div class="relative mx-auto flex w-full max-w-170 select-none flex-col items-center text-center">
+    <!-- Subtle Ambient Glow -->
+    <div
+      class="pointer-events-none absolute -top-12 h-72 w-72 rounded-full bg-indigo-200/30 blur-3xl"
+    ></div>
+
+    <div
+      class="pointer-events-none absolute top-24 h-60 w-60 rounded-full bg-red-100/40 blur-2xl"
+    ></div>
+
+    <!-- Status Pill -->
+    <div
+      class="mb-8 inline-flex items-center gap-2 rounded-full border border-red-200 bg-red-50 px-4 py-1.5 shadow-sm"
+    >
+      <span class="h-2 w-2 animate-ping rounded-full bg-red-500"></span>
+
+      <span class="text-xs font-semibold uppercase tracking-wider text-red-500">
+        Error del Servidor
+      </span>
+
+      <span class="text-[10px] text-red-300">•</span>
+
+      <span class="text-xs font-medium text-red-500"> HTTP 500 </span>
+    </div>
+
+    <!-- Sculptural Hero 500 -->
+    <div class="relative my-1 flex scale-100 items-center justify-center sm:scale-110">
+      <!-- Massive 500 Numbers -->
+      <div class="flex select-none items-center leading-none tracking-tighter">
+        <span
+          class="text-[130px] font-extrabold leading-none tracking-tight text-slate-900 sm:text-[170px]"
+        >
+          5
+        </span>
+
+        <span
+          class="-mx-2 text-[130px] font-extrabold leading-none tracking-tight text-indigo-600 opacity-90 sm:-mx-3 sm:text-[170px]"
+        >
+          0
+        </span>
+
+        <span
+          class="text-[130px] font-extrabold leading-none tracking-tight text-slate-900 sm:text-[170px]"
+        >
+          0
+        </span>
+      </div>
+
+      <!-- Left botanical accents -->
+      <div
+        class="pointer-events-none absolute -left-6 top-1/2 flex -translate-y-1/2 flex-col gap-3 opacity-85 sm:-left-10"
+      >
+        <div class="h-4 w-4 -rotate-12 rounded-full bg-purple-400 shadow-sm"></div>
+
+        <div class="ml-2 h-3 w-3 rounded-full bg-indigo-300"></div>
+      </div>
+
+      <!-- Right botanical accents -->
+      <div
+        class="pointer-events-none absolute -right-6 top-1/2 flex -translate-y-1/2 flex-col gap-3 opacity-85 sm:-right-10"
+      >
+        <div class="h-4 w-4 rotate-45 rounded-full bg-purple-500 shadow-sm"></div>
+
+        <div class="mr-2 h-3 w-3 rounded-full bg-indigo-200"></div>
+      </div>
+    </div>
+
+    <!-- Editorial Heading -->
+    <div class="mb-8 mt-6 flex max-w-lg flex-col items-center gap-2">
+      <h1 class="text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">
+        Ups... Algo salió mal
+      </h1>
+
+      <p class="text-center text-base font-normal leading-relaxed text-slate-500 sm:text-lg">
+        Estamos experimentando una interrupción temporal en nuestros servidores. Ya estamos
+        trabajando en solucionarlo.
+      </p>
+    </div>
+
+    <!-- Action Buttons -->
+    <div
+      class="mb-8 flex w-full max-w-xs flex-col items-center justify-center gap-3 sm:max-w-md sm:flex-row"
+    >
+      <!-- Retry -->
+      <button
+        class="cursor-pointer inline-flex w-full items-center justify-center gap-2 rounded-lg bg-indigo-600 px-5 py-3 text-sm font-semibold text-white shadow-sm transition-all duration-200 hover:bg-indigo-700 hover:shadow active:scale-95 sm:w-auto"
+        id="btn-retry"
+        type="button"
+        [routerLink]="'/admin'"
+      >
+        <i class="fa-solid fa-house text-[18px]"></i>
+        <span> Volver al inicio </span>
+      </button>
+    </div>
+  </div>
+</div>

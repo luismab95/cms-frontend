@@ -17,11 +17,9 @@ import {
 } from 'app/shared/interfaces/grid.interface';
 import { ElementsComponent } from '../element/elements';
 import { generateRandomString } from 'app/shared/utils/random.utils';
-import * as _ from 'lodash';
-import { Subject, takeUntil } from 'rxjs';
 import { TooltipDirective } from 'app/shared/directives/tooltip.directive';
-import { toSignal } from '@angular/core/rxjs-interop';
 import { PageService } from 'app/core/services/pages.service';
+import { Subject, takeUntil } from 'rxjs';
 
 @Component({
   selector: 'grid',
@@ -32,11 +30,9 @@ export class GridComponent implements OnInit {
   preview = input<boolean>(false);
   editContent = input<boolean>(false);
   editDesign = input<boolean>(false);
-  canvasEdit = input<boolean>(false);
-  gridType = input<string>('body');
+  gridType = input.required<string>();
   languageId = input<number>();
   previewType = input<string>('none');
-  grid = input<SectionI[]>([]);
   deleteSectionEvent = output<SectionI[]>();
   openElementPanel = output<ColumnI>();
 
@@ -46,16 +42,18 @@ export class GridComponent implements OnInit {
     column: null,
     element: null,
   });
-  sections = signal<SectionI[]>([]);
   refreshGrid = signal<boolean>(false);
   selectedSection = signal<string | null>(null);
   selectedRow = signal<string | null>(null);
   selectedColumn = signal<string | null>(null);
   selectedElement = signal<string | null>(null);
+  sectionsInCanvas = signal<SectionI[]>([]);
 
   private readonly _pageService = inject(PageService);
 
-  readonly sectionsInCanvas = toSignal(this._pageService.sections$, { initialValue: [] });
+  readonly sectionsHeader = this._pageService.sectionsHeader;
+  readonly sections = this._pageService.sections;
+  readonly sectionsFooter = this._pageService.sectionsFooter;
 
   private _unsubscribeAll: Subject<any> = new Subject<any>();
 
@@ -64,28 +62,19 @@ export class GridComponent implements OnInit {
    */
   constructor() {
     effect(() => {
-      const grid = this.grid();
-      if (!this.canvasEdit()) {
-        this.sections.set(grid);
-        this.loadStyles();
+      const gridType = this.gridType();
+      switch (gridType) {
+        case 'header':
+          this.sectionsInCanvas.set(this.sectionsHeader());
+          break;
+        case 'body':
+          this.sectionsInCanvas.set(this.sections());
+          break;
+        case 'footer':
+          this.sectionsInCanvas.set(this.sectionsFooter());
+          break;
       }
-    });
-
-    effect(() => {
-      const grid = this.sectionsInCanvas();
-      if (this.canvasEdit()) {
-        this.sections.set(grid);
-        this.loadStyles();
-      }
-    });
-
-    this._pageService.sections$.pipe(takeUntil(this._unsubscribeAll)).subscribe({
-      next: (grid) => {
-        this.refreshGrid.set(true);
-        this.sections.set(grid);
-        this.loadStyles();
-        this.refreshGrid.set(false);
-      },
+      this.loadStyles();
     });
 
     this._pageService.selectedItemsInGrid$.pipe(takeUntil(this._unsubscribeAll)).subscribe({
@@ -132,7 +121,7 @@ export class GridComponent implements OnInit {
     const styleElement = document.createElement('style');
     styleElement.id = `${this.gridType}-dynamicSectionStyles`;
 
-    const grid = this.canvasEdit() ? this.sections() : this.grid();
+    const grid = this.sectionsInCanvas();
 
     grid.forEach((section) => {
       styleElement.textContent += `${section.css}`;
@@ -219,7 +208,7 @@ export class GridComponent implements OnInit {
    * Update secctions in canvas grid
    */
   updateSectionsInGrid() {
-    this._pageService.sections = this.sections();
+    this._pageService.sections = [...this.sectionsInCanvas()];
   }
 
   /**

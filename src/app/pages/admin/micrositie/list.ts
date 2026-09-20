@@ -1,34 +1,33 @@
-import { NgClass } from '@angular/common';
 import { Component, computed, inject, OnDestroy, OnInit, signal } from '@angular/core';
-import { toSignal } from '@angular/core/rxjs-interop';
+import { NgClass } from '@angular/common';
 import { FormControl, FormsModule, ReactiveFormsModule, UntypedFormControl } from '@angular/forms';
-import { Router } from '@angular/router';
+import { toSignal } from '@angular/core/rxjs-interop';
 import { ToastrService } from '@iqx-limited/ngx-toastr';
-import { NgSelectComponent } from '@ng-select/ng-select';
-import { PageI, PagePaginationResquestI } from 'app/core/interfaces/page.interface';
-import { MicrosityService } from 'app/core/services/micrositie.service';
-import { PageService } from 'app/core/services/pages.service';
 import { PaginationComponent } from 'app/shared/components/pagination/pagination';
 import { PermissionComponent } from 'app/shared/components/permission/permission';
+import { PaginationResquestI } from 'app/shared/interfaces/response.interface';
 import { PermissionCode, validAction } from 'app/shared/utils/permission.utils';
-import { Subject, debounceTime, takeUntil } from 'rxjs';
+import { Subject, takeUntil, debounceTime } from 'rxjs';
+import { NgSelectComponent } from '@ng-select/ng-select';
+import { MicrositieI } from 'app/core/interfaces/micrositie.interface';
+import { MicrosityService } from 'app/core/services/micrositie.service';
+import { Router } from '@angular/router';
 
 @Component({
-  selector: 'pages',
+  selector: 'microsities-list',
   templateUrl: './list.html',
   imports: [
     FormsModule,
     ReactiveFormsModule,
     PaginationComponent,
-    NgSelectComponent,
     PermissionComponent,
+    NgSelectComponent,
     NgClass,
   ],
 })
-export class PagesList implements OnInit, OnDestroy {
+export class MicrositieList implements OnInit, OnDestroy {
   limit = signal<number>(10);
-  showDetails = signal<boolean>(false);
-  selectedUser = signal<PageI | null>(null);
+  selectedMicrositie = signal<MicrositieI | null>(null);
 
   searchInputControl: UntypedFormControl = new UntypedFormControl();
   statusControl: FormControl = new FormControl(0);
@@ -37,17 +36,15 @@ export class PagesList implements OnInit, OnDestroy {
 
   private _unsubscribeAll: Subject<any> = new Subject<any>();
 
-  private readonly _pageService = inject(PageService);
   private readonly _microsityService = inject(MicrosityService);
-  private readonly _router = inject(Router);
   private readonly _toastrService = inject(ToastrService);
+  private readonly _router = inject(Router);
 
-  readonly pages = toSignal(this._pageService.pages$, {
+  readonly microsities = toSignal(this._microsityService.microsities$, {
     initialValue: { records: [], total: 0, page: 0, totalPage: 0 },
   });
-  readonly micrositie = toSignal(this._microsityService.micrositie$, { initialValue: null });
 
-  readonly totalPage = computed(() => this.pages().total);
+  readonly totalMicrosities = computed(() => this.microsities().total);
 
   /**
    * Constructor
@@ -109,14 +106,13 @@ export class PagesList implements OnInit, OnDestroy {
    * @param page
    */
   getAll(page: number, search: string | null = null, status: boolean | null = null) {
-    const params: PagePaginationResquestI = {
+    const params: PaginationResquestI = {
       page,
       limit: this.limit(),
-      micrositieId: null,
       search,
       status,
     };
-    this._pageService
+    this._microsityService
       .getAll(params)
       .pipe(takeUntil(this._unsubscribeAll))
       .subscribe({
@@ -127,16 +123,14 @@ export class PagesList implements OnInit, OnDestroy {
   }
 
   /**
-   * Open modal laguanges detail
+   * Open modal micrositie detail
    *
    * @param data
    */
-  openDetailsModal(page: PageI | null): void {
-    this._pageService.page = null;
-    this._router.navigateByUrl('/admin/content/pages/detail', {
+  openDetailsModal(micrositie: MicrositieI | null): void {
+    this._router.navigateByUrl('/admin/content/microsities/detail', {
       state: {
-        id: page === null ? 0 : page.id,
-        micrositieId: this.micrositie() === null ? 0 : this.micrositie()!.id,
+        micrositieId: micrositie?.id ?? 0,
       },
     });
   }
@@ -171,5 +165,13 @@ export class PagesList implements OnInit, OnDestroy {
   clearSearch() {
     this.searchInputControl.reset();
     this.getAll(1, null, null);
+  }
+
+  /**
+   * Close modal
+   */
+  closeModal(load: boolean) {
+    this.selectedMicrositie.set(null);
+    if (load) this.getAll(1, null, null);
   }
 }

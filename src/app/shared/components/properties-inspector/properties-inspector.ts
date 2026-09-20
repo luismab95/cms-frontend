@@ -42,7 +42,8 @@ export class PropertiesInspectorComponent implements OnInit, OnDestroy {
   private readonly _elementService = inject(ElementService);
   private readonly _pageService = inject(PageService);
 
-  readonly sectionsInCanvas = toSignal(this._pageService.sections$, { initialValue: [] });
+  readonly sectionsInCanvas = this._pageService.sections;
+
   readonly elements = toSignal(this._elementService.elements$, {
     initialValue: { records: [], total: 0, page: 0, totalPage: 0 },
   });
@@ -132,7 +133,7 @@ export class PropertiesInspectorComponent implements OnInit, OnDestroy {
         if (section) {
           section.config = value;
           const sections = updateSection(this.sectionsInCanvas(), section.uuid, section);
-          this._pageService.sections = sections;
+          this._pageService.sections = [...sections];
         }
         break;
       case 'row':
@@ -140,7 +141,7 @@ export class PropertiesInspectorComponent implements OnInit, OnDestroy {
         if (row) {
           row.config = value;
           const sections = updateRow(this.sectionsInCanvas(), row.uuid, row);
-          this._pageService.sections = sections;
+          this._pageService.sections = [...sections];
         }
         break;
       case 'column':
@@ -148,7 +149,7 @@ export class PropertiesInspectorComponent implements OnInit, OnDestroy {
         if (column) {
           column.config = value;
           const sections = updateColumn(this.sectionsInCanvas(), column.uuid, column);
-          this._pageService.sections = sections;
+          this._pageService.sections = [...sections];
         }
         break;
       case 'element':
@@ -156,7 +157,7 @@ export class PropertiesInspectorComponent implements OnInit, OnDestroy {
         if (element) {
           element.config = value;
           const sections = updateElement(this.sectionsInCanvas(), element.uuid, element);
-          this._pageService.sections = sections;
+          this._pageService.sections = [...sections];
         }
         break;
     }

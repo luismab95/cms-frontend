@@ -1,0 +1,175 @@
+<div
+  class="flex min-h-[calc(100vh-10rem)] w-screen flex-col items-center justify-center px-6 py-12"
+>
+  <div class="relative flex w-full max-w-2xl flex-col items-center text-center">
+    <!-- Ambient subtle background glow -->
+    <div
+      class="pointer-events-none absolute -top-16 -z-10 h-80 w-80 rounded-full bg-indigo-100/60 blur-3xl"
+    ></div>
+
+    <!-- Illustration -->
+    <div class="relative mb-8 flex h-56 w-72 select-none items-center justify-center">
+      <svg
+        class="h-full w-full drop-shadow-sm"
+        fill="none"
+        viewBox="0 0 320 240"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <!-- Left decorative elements -->
+        <g class="text-indigo-400 opacity-75">
+          <circle cx="58" cy="110" r="14" fill="currentColor" fill-opacity="0.35"></circle>
+
+          <path d="M58 98 C65 106 65 116 58 124 C51 116 51 106 58 98 Z" fill="currentColor"></path>
+
+          <circle cx="48" cy="148" r="10" fill="currentColor" fill-opacity="0.3"></circle>
+
+          <path
+            d="M48 140 C53 145 53 152 48 158 C43 152 43 145 48 140 Z"
+            fill="currentColor"
+          ></path>
+
+          <path
+            d="M58 124 Q54 140 48 148"
+            stroke="currentColor"
+            stroke-linecap="round"
+            stroke-width="1.5"
+          ></path>
+        </g>
+
+        <!-- Right decorative elements -->
+        <g class="text-indigo-400 opacity-75">
+          <circle cx="262" cy="95" r="15" fill="currentColor" fill-opacity="0.35"></circle>
+
+          <path
+            d="M262 82 C269 91 269 101 262 110 C255 101 255 91 262 82 Z"
+            fill="currentColor"
+          ></path>
+
+          <circle cx="272" cy="138" r="11" fill="currentColor" fill-opacity="0.3"></circle>
+
+          <path
+            d="M272 129 C278 135 278 143 272 149 C266 143 266 135 272 129 Z"
+            fill="currentColor"
+          ></path>
+
+          <circle cx="258" cy="168" r="8" fill="currentColor" fill-opacity="0.25"></circle>
+
+          <path
+            d="M262 110 Q268 126 272 138 T258 168"
+            stroke="currentColor"
+            stroke-linecap="round"
+            stroke-width="1.5"
+          ></path>
+        </g>
+
+        <!-- Portal -->
+        <ellipse
+          class="opacity-40"
+          cx="160"
+          cy="120"
+          rx="42"
+          ry="68"
+          fill="none"
+          stroke="#cbd5e1"
+          stroke-width="14"
+        ></ellipse>
+
+        <!-- Progress ring -->
+        <circle cx="160" cy="120" r="62" fill="none" stroke="#e2e8f0" stroke-width="3"></circle>
+
+        <circle
+          class="transition-all duration-1000"
+          cx="160"
+          cy="120"
+          r="62"
+          fill="none"
+          stroke="currentColor"
+          stroke-dasharray="390"
+          stroke-dashoffset="130"
+          stroke-linecap="round"
+          stroke-width="3.5"
+        ></circle>
+
+        <!-- Hourglass -->
+        <g class="origin-center transition-transform duration-700 ease-out hover:scale-105">
+          <path
+            d="M136 78 H184 M136 162 H184"
+            stroke="#1e293b"
+            stroke-linecap="round"
+            stroke-width="4.5"
+          ></path>
+
+          <path
+            d="M142 82 C142 104 154 114 157 120 C154 126 142 136 142 158"
+            fill="none"
+            stroke="#1e293b"
+            stroke-linecap="round"
+            stroke-width="3.5"
+          ></path>
+
+          <path
+            d="M178 82 C178 104 166 114 163 120 C166 126 178 136 178 158"
+            fill="none"
+            stroke="#1e293b"
+            stroke-linecap="round"
+            stroke-width="3.5"
+          ></path>
+
+          <!-- Sand -->
+          <path
+            class="fill-indigo-600 opacity-90"
+            d="M148 94 C152 92 168 92 172 94 L160 114 Z"
+          ></path>
+
+          <path class="fill-indigo-600" d="M146 156 C148 144 172 144 174 156 Z"></path>
+
+          <circle class="fill-indigo-600 animate-ping" cx="160" cy="130" r="1.5"></circle>
+
+          <circle class="fill-indigo-600" cx="160" cy="138" r="1.5"></circle>
+        </g>
+      </svg>
+
+      <!-- Version indicator -->
+      <div
+        class="absolute -bottom-2 flex items-center gap-2 rounded-full bg-white px-3 py-1.5 shadow-sm ring-1 ring-slate-200"
+      >
+        <span class="h-2 w-2 animate-pulse rounded-full bg-indigo-600"></span>
+
+        <span class="text-xs font-semibold tracking-wide text-indigo-600"> Actualizando </span>
+      </div>
+    </div>
+
+    <!-- Status Badge -->
+    <div class="mb-4 inline-flex items-center gap-2 rounded-full bg-indigo-50 px-4 py-1.5">
+      <i class="fa-solid fa-screwdriver-wrench text-sm text-indigo-600" aria-hidden="true"></i>
+
+      <span class="text-xs font-semibold uppercase tracking-wider text-slate-700">
+        Mantenimiento Programado
+      </span>
+    </div>
+
+    <!-- Main Headline -->
+    <h1 class="mb-2 text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">
+      Mejorando tu experiencia
+    </h1>
+
+    <!-- Description -->
+    <p class="mx-auto mb-8 max-w-lg text-base leading-relaxed text-slate-600 sm:text-lg">
+      El sistema se encuentra en una breve pausa por actualización de infraestructura. Estaremos de
+      vuelta en unos minutos.
+    </p>
+
+    <!-- Action Group -->
+    <div class="flex w-full flex-col items-center justify-center gap-4 sm:w-auto sm:flex-row">
+      <a
+        class="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-indigo-600 px-6 py-3 text-sm font-semibold text-white shadow-md transition-all hover:bg-indigo-700 hover:shadow-lg active:scale-95 sm:w-auto"
+        [routerLink]="'/'"
+      >
+        <i
+          class="fa-solid fa-refresh text-sm transition-transform group-hover:translate-x-0.5"
+        ></i>
+        <span>Reintentar</span>
+      </a>
+    </div>
+  </div>
+</div>

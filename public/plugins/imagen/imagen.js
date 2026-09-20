@@ -1,6 +1,6 @@
 const defaultImage = `
 <svg xmlns="http://www.w3.org/2000/svg" width="300" height="200" viewBox="0 0 300 200">
-  <rect width="300" height="200" fill="#f3f4f6"/>
+  <rect width="300" height="200" fill="none"/>
 
   <g transform="translate(150 75)">
     <rect x="-35" y="-25" width="70" height="50" rx="6"

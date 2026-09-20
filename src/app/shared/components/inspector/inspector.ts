@@ -76,7 +76,7 @@ export class InspectorComponent implements OnInit, OnDestroy {
       totalPage: 0,
     },
   });
-  readonly sectionsInCanvas = toSignal(this._pageService.sections$, { initialValue: [] });
+  readonly sectionsInCanvas = this._pageService.sections;
   readonly elements = toSignal(this._elementService.elements$, {
     initialValue: {
       records: [],

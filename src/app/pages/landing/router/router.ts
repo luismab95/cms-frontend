@@ -6,6 +6,7 @@ import { DeviceDetectorService, DeviceType } from 'ngx-device-detector';
 import { Subject, takeUntil } from 'rxjs';
 import { PageDetailReferenceI } from 'app/core/interfaces/page.interface';
 import { GridComponent } from 'app/shared/components/grid/grid';
+import { SectionI } from 'app/shared/interfaces/grid.interface';
 
 @Component({
   selector: 'landing-router',
@@ -38,9 +39,6 @@ import { GridComponent } from 'app/shared/components/grid/grid';
   imports: [GridComponent],
 })
 export class LandingRouterComponent implements OnInit, OnDestroy {
-  header = signal<any>([]);
-  body = signal<any>([]);
-  footer = signal<any>([]);
   loading = signal<boolean>(true);
   languageId!: number;
   lang!: string;
@@ -153,9 +151,9 @@ export class LandingRouterComponent implements OnInit, OnDestroy {
 
           this.updateMetaTags(this.languageId, res.message.details!);
 
-          this.setGrid(res.message.template.data?.header.data, 'header');
-          this.setGrid(res.message.data?.body.data, 'body');
-          this.setGrid(res.message.template.data?.footer.data, 'footer');
+          this.setGrid(res.message.template.data?.header.data!, 'header');
+          this.setGrid(res.message.data?.body.data!, 'body');
+          this.setGrid(res.message.template.data?.footer.data!, 'footer');
 
           // Load CSS
           const styleElement = document.createElement('style');
@@ -166,10 +164,10 @@ export class LandingRouterComponent implements OnInit, OnDestroy {
         },
         error: (err) => {
           if (err.status === 503) {
-            this._router.navigateByUrl('/maintenance');
+            this._router.navigateByUrl('/error/maintenance');
           } else if (err.status === 404) {
-            this._router.navigateByUrl('/404-not-found');
-          } else this._router.navigateByUrl('/500-error');
+            this._router.navigateByUrl('/error/404');
+          } else this._router.navigateByUrl('/error/500');
         },
       });
   }
@@ -179,10 +177,10 @@ export class LandingRouterComponent implements OnInit, OnDestroy {
    * @param grid
    * @param item
    */
-  setGrid(grid: any, item: 'header' | 'footer' | 'body') {
-    if (item === 'header') this.header.set(grid);
-    if (item === 'body') this.body.set(grid);
-    if (item === 'footer') this.footer.set(grid);
+  setGrid(grid: SectionI[], item: 'header' | 'footer' | 'body') {
+    if (item === 'header') this._pageService.sectionsHeader = grid;
+    if (item === 'body') this._pageService.sections = grid;
+    if (item === 'footer') this._pageService.sectionsFooter = grid;
   }
 
   /**

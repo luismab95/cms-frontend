@@ -1,4 +1,4 @@
-import { Component, inject, OnDestroy, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import {
   FormsModule,
@@ -8,11 +8,8 @@ import {
   Validators,
 } from '@angular/forms';
 import { DomSanitizer } from '@angular/platform-browser';
-import { Router } from '@angular/router';
 import { ToastrService } from '@iqx-limited/ngx-toastr';
-import { PageDataMongoI } from 'app/core/interfaces/page.interface';
 import { MicrosityService } from 'app/core/services/micrositie.service';
-import { PageService } from 'app/core/services/pages.service';
 import { SitieService } from 'app/core/services/sitie.service';
 import { PermissionComponent } from 'app/shared/components/permission/permission';
 import { PermissionCode, validAction } from 'app/shared/utils/permission.utils';
@@ -20,18 +17,16 @@ import { CmsValidators } from 'app/shared/utils/validators.util';
 import { Subject, takeUntil } from 'rxjs';
 
 @Component({
-  selector: 'pages-information',
+  selector: 'microsities-information',
   templateUrl: './information.html',
   imports: [FormsModule, ReactiveFormsModule, PermissionComponent],
 })
-export class PagesInformationComponent implements OnInit, OnDestroy {
+export class MicrositieInformationComponent implements OnInit {
   private readonly _formBuilder = inject(UntypedFormBuilder);
   private readonly _sitieService = inject(SitieService);
-  private readonly _pageService = inject(PageService);
   private readonly _microsityService = inject(MicrosityService);
   private readonly _toastrService = inject(ToastrService);
   private readonly _domSanitizer = inject(DomSanitizer);
-  private readonly _router = inject(Router);
 
   private _unsubscribeAll: Subject<any> = new Subject<any>();
 
@@ -41,11 +36,8 @@ export class PagesInformationComponent implements OnInit, OnDestroy {
 
   sitie = toSignal(this._sitieService.sitie$, { initialValue: null });
   micrositie = toSignal(this._microsityService.micrositie$, { initialValue: null });
-  page = toSignal(this._pageService.page$, {
-    initialValue: null,
-  });
 
-  pageForm!: UntypedFormGroup;
+  micrositieForm!: UntypedFormGroup;
 
   /**
    * Constructor
@@ -60,17 +52,17 @@ export class PagesInformationComponent implements OnInit, OnDestroy {
    * OnInit
    */
   ngOnInit(): void {
-    this.pageForm = this._formBuilder.group({
+    this.micrositieForm = this._formBuilder.group({
       name: ['', Validators.required],
-      path: ['', [Validators.required, Validators.pattern('^[a-z0-9]+(?:-[a-z0-9]+)*$')]],
+      description: ['', [Validators.required, Validators.maxLength(255)]],
+      sitieId: ['', Validators.required],
       status: [],
-      isHomePage: [],
     });
 
-    const page = this.page();
+    const micrositie = this.micrositie();
 
-    if (page) {
-      this.pageForm.patchValue({ ...page });
+    if (micrositie) {
+      this.micrositieForm.patchValue(micrositie);
     }
   }
 
@@ -91,74 +83,43 @@ export class PagesInformationComponent implements OnInit, OnDestroy {
    * Go to Sitie
    */
   visit(): void {
-    window.open(`${this.getDomain()}${this.page()?.path}`, '_blank');
-  }
+    const domain = `${this.sitie()?.domain}/${this.micrositie()?.path}`;
 
-  /**
-   * Go to Canvas
-   */
-  goToCanvas(): void {
-    this._router.navigateByUrl('/admin/content/pages/canvas', {
-      state: {
-        id: this.page() === null ? 0 : this.page()!.id,
-        micrositieId: this.micrositie() !== null ? this.micrositie()!.id : 0,
-      },
-    });
-  }
-
-  /**
-   * Get domain
-   * @returns
-   */
-  getDomain() {
-    if (this.micrositie() !== null) {
-      const micrositiePath = this.micrositie()?.path.split('/')[0];
-      return `${this.sitie()!.domain}/${micrositiePath}/`;
+    if (domain) {
+      window.open(domain, '_blank');
     }
-    return `${this.sitie()!.domain}/`;
   }
 
   /**
-   * Add page
+   * Add micrositie
    * @returns
    */
   create(): void {
-    if (this.pageForm.invalid) {
-      this.pageForm.markAllAsTouched();
+    if (this.micrositieForm.invalid) {
+      this.micrositieForm.markAllAsTouched();
       return;
     }
 
-    this.pageForm.disable();
+    this.micrositieForm.disable();
 
     // ADD data
-    this.pageForm.value.data = {
-      body: {
-        css: '.body{}',
-        data: [],
-        config: { backgroundImage: '' },
-      },
-    } as PageDataMongoI;
 
-    if (this.micrositie() !== null) {
-      this.pageForm.value['micrositieId'] = this.micrositie()!.id;
+    if (this.sitie() !== null) {
+      this.micrositieForm.value['sitieId'] = this.sitie()!.id;
     }
 
-    //Delete status isHomePage
-    delete this.pageForm.value.status;
-    delete this.pageForm.value.isHomePage;
-
-    this._pageService
-      .create(this.pageForm.value)
+    this._microsityService
+      .create(this.micrositieForm.value)
       .pipe(takeUntil(this._unsubscribeAll))
       .subscribe({
         next: () => {
-          this.pageForm.enable();
-          this._toastrService.success('La página se creó correctamente.', 'Página creada');
+          this.micrositieForm.enable();
+          this._toastrService.success('El micrositio se creó correctamente.', 'Micrositio creado');
         },
         error: (response) => {
-          this.pageForm.enable();
+          this.micrositieForm.enable();
           this._toastrService.error(
-            response.error?.message || 'No fue posible crear la página.',
+            response.error?.message || 'No fue posible crear el micrositio.',
             'Error al crear',
           );
         },
@@ -166,38 +127,38 @@ export class PagesInformationComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Update page
+   * Update micrositie
    */
   update() {
     // Return if the form is invalid
-    if (this.pageForm.invalid) {
-      this.pageForm.markAllAsTouched();
+    if (this.micrositieForm.invalid) {
+      this.micrositieForm.markAllAsTouched();
       return;
     }
 
-    const page = this.page();
+    const micrositie = this.micrositie();
 
-    if (!page === null) return;
+    if (!micrositie === null) return;
 
     // Disable the form
-    this.pageForm.disable();
+    this.micrositieForm.disable();
 
-    this._pageService
-      .update(page?.id!, this.pageForm.value)
+    this._microsityService
+      .update(micrositie?.id!, this.micrositieForm.value)
       .pipe(takeUntil(this._unsubscribeAll))
       .subscribe({
         next: () => {
-          this.pageForm.enable();
+          this.micrositieForm.enable();
           this._toastrService.success(
-            'La informacion de la página se actualizó correctamente.',
-            'Página actualizada',
+            'La informacion del micrositio se actualizó correctamente.',
+            'Micrositio actualizado',
           );
         },
         error: (response) => {
-          this.pageForm.enable();
+          this.micrositieForm.enable();
           // Set the alert
           this._toastrService.error(
-            response.error?.message || 'No fue posible actualizar la informacion de la página.',
+            response.error?.message || 'No fue posible actualizar la informacion del micrositio.',
             'Error al actualizar',
           );
         },
@@ -208,12 +169,12 @@ export class PagesInformationComponent implements OnInit, OnDestroy {
    * Cancel changes
    */
   cancel(): void {
-    const page = this.page();
+    const micrositie = this.micrositie();
 
-    this.pageForm.reset();
+    this.micrositieForm.reset();
 
-    if (page) {
-      this.pageForm.patchValue({ ...page });
+    if (micrositie) {
+      this.micrositieForm.patchValue(micrositie);
     }
   }
 
@@ -230,7 +191,9 @@ export class PagesInformationComponent implements OnInit, OnDestroy {
    * Safe url
    * @returns
    */
-  previewPage() {
-    return this._domSanitizer.bypassSecurityTrustResourceUrl(this.getDomain() + this.page()?.path);
+  previewDefaultPage() {
+    return this._domSanitizer.bypassSecurityTrustResourceUrl(
+      `${this.sitie()?.domain}/${this.micrositie()?.path}`,
+    );
   }
 }

@@ -2,11 +2,11 @@
   class="sections"
   cdkDropList
   cdkDropListOrientation="vertical"
-  (cdkDropListDropped)="drop($event, sections())"
+  (cdkDropListDropped)="drop($event, sectionsInCanvas())"
 >
   <!-- Sections -->
   @if (!refreshGrid()) {
-    @for (section of sections(); track section.uuid; let i = $index) {
+    @for (section of sectionsInCanvas(); track section.uuid; let i = $index) {
       <section
         cdkDragBoundary=".sections"
         cdkDrag
@@ -117,10 +117,14 @@
                     <!-- Column Top Controls -->
                     @if (!preview()) {
                       <div
-                        class="flex flex-row items-center justify-between text-[11px] text-slate-400 pb-2 border-b border-slate-100 mb-2 w-full"
+                        class="flex flex-col items-center justify-between text-[11px] text-slate-400 pb-2 border-b border-slate-100 mb-2 w-full"
                       >
-                        <i cdkDragHandle class="fa-solid fa-grip-vertical cursor-grab"></i>
-                        <span class="font-medium text-slate-500"> Columna {{ column.uuid }} </span>
+                        <div>
+                          <i cdkDragHandle class="fa-solid fa-grip-vertical cursor-grab"></i>
+                          <span class="font-medium text-slate-500">
+                            Columna {{ column.uuid }}
+                          </span>
+                        </div>
                         @if (column.element !== null) {
                           <div class="flex items-center gap-1">
                             <span

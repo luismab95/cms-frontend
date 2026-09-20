@@ -89,7 +89,10 @@ export class MicrosityService {
    * @returns
    */
   find(micrositieId: number): Observable<ResponseI<MicrositieI> | null> {
-    if (micrositieId === 0) return of(null);
+    if (micrositieId === 0) {
+      this._micrositie.next(null!);
+      return of(null);
+    }
     return this._httpClient
       .get<ResponseI<MicrositieI>>(`${this.url}/${this.prefix}/microsities/${micrositieId}`)
       .pipe(

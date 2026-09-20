@@ -1,5 +1,5 @@
 import { HttpClient } from '@angular/common/http';
-import { inject, Injectable } from '@angular/core';
+import { inject, Injectable, Signal, signal } from '@angular/core';
 import { PaginationResponseI, ResponseI } from 'app/shared/interfaces/response.interface';
 import { environment } from 'environments/environment';
 import {
@@ -20,9 +20,12 @@ export class PageService {
     PaginationResponseI<PageI[]>
   >(1);
   private _page: ReplaySubject<PageI | null> = new ReplaySubject<PageI | null>(1);
-  private _sections: ReplaySubject<SectionI[] | []> = new ReplaySubject<SectionI[] | []>(1);
   private _selectedItemsInGrid: ReplaySubject<SelectedItemsInGridI | null> =
     new ReplaySubject<SelectedItemsInGridI | null>(1);
+
+  private _sections = signal<SectionI[]>([]);
+  private _sectionsHeader = signal<SectionI[]>([]);
+  private _sectionsFooter = signal<SectionI[]>([]);
 
   private _httpClient = inject(HttpClient);
 
@@ -55,12 +58,27 @@ export class PageService {
    * @param value
    */
   set sections(value: SectionI[]) {
-    // Store the value
-    this._sections.next(value);
+    this._sections.set(value);
   }
 
-  get sections$(): Observable<SectionI[] | []> {
-    return this._sections.asObservable();
+  get sections(): Signal<SectionI[]> {
+    return this._sections.asReadonly();
+  }
+
+  set sectionsHeader(value: SectionI[]) {
+    this._sectionsHeader.set(value);
+  }
+
+  get sectionsHeader(): Signal<SectionI[]> {
+    return this._sectionsHeader.asReadonly();
+  }
+
+  set sectionsFooter(value: SectionI[]) {
+    this._sectionsFooter.set(value);
+  }
+
+  get sectionsFooter(): Signal<SectionI[]> {
+    return this._sectionsFooter.asReadonly();
   }
 
   /**

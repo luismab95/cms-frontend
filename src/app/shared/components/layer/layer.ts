@@ -27,8 +27,6 @@ export class LayerComponent implements OnInit, OnDestroy {
 
   layersCollapsed = signal<boolean>(false);
   isElementPanelOpen = signal<boolean>(false);
-  refreshLayer = signal<boolean>(false);
-  sections = signal<SectionI[]>([]);
   selectedSection = signal<string | null>(null);
   selectedRow = signal<string | null>(null);
   selectedColumn = signal<string | null>(null);
@@ -41,7 +39,8 @@ export class LayerComponent implements OnInit, OnDestroy {
   private readonly _elementService = inject(ElementService);
   private readonly _pageService = inject(PageService);
 
-  readonly sectionsInCanvas = toSignal(this._pageService.sections$, { initialValue: [] });
+  readonly sectionsInCanvas = this._pageService.sections;
+
   readonly elements = toSignal(this._elementService.elements$, {
     initialValue: {
       records: [],
@@ -61,26 +60,11 @@ export class LayerComponent implements OnInit, OnDestroy {
       this.layersCollapsed.set(false);
     });
 
-    effect(() => {
-      const grid = this.sectionsInCanvas();
-      this.sections.set(grid);
-    });
-
-    this._pageService.sections$.pipe(takeUntil(this._unsubscribeAll)).subscribe({
-      next: (grid) => {
-        this.refreshLayer.set(true);
-        this.sections.set(grid);
-        this.refreshLayer.set(false);
-      },
-    });
-
     this._pageService.selectedItemsInGrid$
       .pipe(distinctUntilChanged(), takeUntil(this._unsubscribeAll))
       .subscribe({
         next: (selectedItemsInGrid) => {
           if (selectedItemsInGrid == null) return;
-          this.refreshLayer.set(true);
-
           if (selectedItemsInGrid?.section !== null)
             this.selectSection(selectedItemsInGrid?.section!, false);
           if (selectedItemsInGrid?.row !== null) this.selectRow(selectedItemsInGrid?.row!, false);
@@ -88,8 +72,6 @@ export class LayerComponent implements OnInit, OnDestroy {
             this.selectColumn(selectedItemsInGrid?.column!, false);
           if (selectedItemsInGrid?.element !== null)
             this.selectElement(selectedItemsInGrid?.element!, false);
-
-          this.refreshLayer.set(false);
         },
       });
   }
@@ -113,6 +95,20 @@ export class LayerComponent implements OnInit, OnDestroy {
    */
   toggleLayers(): void {
     this.layersCollapsed.update((collapsed) => !collapsed);
+  }
+
+  /**
+   * open panel
+   */
+  openLayers(): void {
+    this.layersCollapsed.set(true);
+  }
+
+  /**
+   * close panel
+   */
+  closeLayers(): void {
+    this.layersCollapsed.set(false);
   }
 
   /**
@@ -314,7 +310,7 @@ export class LayerComponent implements OnInit, OnDestroy {
    */
   drop<T>(event: CdkDragDrop<string[]>, items: T[]) {
     moveItemInArray(items, event.previousIndex, event.currentIndex);
-    this._pageService.sections = this.sections();
+    this._pageService.sections = [...this.sectionsInCanvas()];
   }
 
   /**
@@ -376,7 +372,7 @@ export class LayerComponent implements OnInit, OnDestroy {
    * @returns
    */
   private findSectionByRow(rowUuid: string): SectionI | undefined {
-    const section = this.sections().find((section) =>
+    const section = this.sectionsInCanvas().find((section) =>
       section.rows?.some((row) => row.uuid === rowUuid),
     );
 
@@ -394,7 +390,7 @@ export class LayerComponent implements OnInit, OnDestroy {
    * @returns
    */
   private findRowByColumn(columnUuid: string): RowI | undefined {
-    for (const section of this.sections()) {
+    for (const section of this.sectionsInCanvas()) {
       const row = section.rows?.find((row) =>
         row.columns?.some((column) => column.uuid === columnUuid),
       );
@@ -412,7 +408,7 @@ export class LayerComponent implements OnInit, OnDestroy {
    * @returns
    */
   private findColumnByElement(columnElementUuid: string): ColumnI | undefined {
-    for (const section of this.sections()) {
+    for (const section of this.sectionsInCanvas()) {
       for (const row of section.rows ?? []) {
         const column = row.columns?.find((column) => column.element?.uuid === columnElementUuid);
         if (column) {

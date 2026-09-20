@@ -1,9 +1,37 @@
-<!-- HTML -->
-<div style="display: flex; align-items: center; justify-content: center; height: 100%; width: 100%;">
-    <div style="position: relative;" id="languageContent">
-        <img id="toggle-btn">
 
-        <!-- Options -->
-        <div id="lang-options"> </div>
-    </div>
+<div class="language-plugin">
+  <div class="language-content" id="languageContent">
+    <button
+      type="button"
+      class="language-toggle"
+      id="toggle-btn"
+      aria-label="Seleccionar idioma"
+      aria-haspopup="listbox"
+      aria-expanded="false"
+    >
+      <img class="language-current-icon" src="" alt="" />
+
+      <span class="language-current-code"></span>
+
+      <span class="language-chevron">
+        <svg
+          width="14"
+          height="14"
+          viewBox="0 0 24 24"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            d="M6 9L12 15L18 9"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          />
+        </svg>
+      </span>
+    </button>
+
+    <div id="lang-options" class="language-options" role="listbox" aria-label="Idiomas"></div>
+  </div>
 </div>

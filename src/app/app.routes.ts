@@ -15,9 +15,6 @@ import { UserService } from './core/services/user.service';
 import { FileManagerService } from './core/services/file-manager.service';
 import { MicrosityService } from './core/services/micrositie.service';
 import { PageService } from './core/services/pages.service';
-import { PagesDetail } from './pages/admin/pages/detail/detail';
-import { PagesList } from './pages/admin/pages/list';
-import { PagesCanvas } from './pages/admin/pages/canvas/canvas';
 import { ElementService } from './core/services/element.service';
 
 export const routes: Routes = [
@@ -141,19 +138,54 @@ export const routes: Routes = [
                 }),
             },
           },
-          // {
-          //     path: 'microsities',
-          //     loadChildren: () =>
-          //         import(
-          //             'app/modules/admin/microsities/micrositie.routes'
-          //         ),
-          // },
+          {
+            path: 'microsities',
+            children: [
+              {
+                path: '',
+                loadComponent: () =>
+                  import('app/pages/admin/micrositie/list').then((m) => m.MicrositieList),
+                resolve: {
+                  microsities: () =>
+                    inject(MicrosityService).getAll({
+                      page: 1,
+                      limit: 10,
+                      search: null,
+                      status: null,
+                    }),
+                },
+              },
+              {
+                path: 'detail',
+                loadComponent: () =>
+                  import('app/pages/admin/micrositie/detail/detail').then(
+                    (m) => m.MicrositiesDetail,
+                  ),
+                resolve: {
+                  micrositie: () =>
+                    inject(MicrosityService).find(
+                      inject(Router).currentNavigation()?.extras?.state!['micrositieId'],
+                    ),
+                  sitie: () => inject(SitieService).find(),
+                  pages: () =>
+                    inject(PageService).getAll({
+                      limit: 10,
+                      page: 1,
+                      search: null,
+                      status: null,
+                      micrositieId:
+                        inject(Router).currentNavigation()?.extras?.state!['micrositieId'],
+                    }),
+                },
+              },
+            ],
+          },
           {
             path: 'pages',
             children: [
               {
                 path: '',
-                component: PagesList,
+                loadComponent: () => import('app/pages/admin/pages/list').then((m) => m.PagesList),
                 resolve: {
                   pages: () =>
                     inject(PageService).getAll({
@@ -163,11 +195,13 @@ export const routes: Routes = [
                       status: null,
                       micrositieId: null,
                     }),
+                  microsities: () => inject(MicrosityService).find(0),
                 },
               },
               {
                 path: 'detail',
-                component: PagesDetail,
+                loadComponent: () =>
+                  import('app/pages/admin/pages/detail/detail').then((m) => m.PagesDetail),
                 resolve: {
                   page: () =>
                     inject(PageService).find(
@@ -185,18 +219,12 @@ export const routes: Routes = [
                       search: null,
                       status: true,
                     }),
-                  // elements: () =>
-                  //   inject(ElementService).getAll({
-                  //     limit: 99999,
-                  //     page: 1,
-                  //     search: null,
-                  //     status: true,
-                  //   }),
                 },
               },
               {
                 path: 'canvas',
-                component: PagesCanvas,
+                loadComponent: () =>
+                  import('app/pages/admin/pages/detail/canvas/canvas').then((m) => m.PagesCanvas),
                 resolve: {
                   page: () =>
                     inject(PageService).find(
@@ -296,6 +324,30 @@ export const routes: Routes = [
     ],
   },
 
+  {
+    path: 'error',
+    data: {
+      layout: 'empty',
+    },
+    component: Layout,
+    children: [
+      {
+        path: 'maintenance',
+        loadComponent: () =>
+          import('app/pages/error/maintenance/maintenance').then((m) => m.Maintenance),
+      },
+      {
+        path: '404',
+        pathMatch: 'full',
+        loadComponent: () => import('app/pages/error/error-404/error-404').then((m) => m.Error404),
+      },
+      {
+        path: '500',
+        pathMatch: 'full',
+        loadComponent: () => import('app/pages/error/error-500/error-500').then((m) => m.Error500),
+      },
+    ],
+  },
   // Landing routes
   {
     path: ':lang',
@@ -321,4 +373,6 @@ export const routes: Routes = [
       },
     ],
   },
+
+  { path: '**', redirectTo: '404-not-found' },
 ];
