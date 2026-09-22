@@ -41,7 +41,7 @@ ngx-otp-input {
   }
 
   .ngx-otp-input-box.ngx-otp-input-active {
-    border-color: var(--color-slate-500) !important;
+    border-color: var(--color-indigo-600) !important;
   }
 
   .ngx-otp-input-box.ngx-otp-input-failed {
@@ -414,9 +414,9 @@ ngx-otp-input {
   --ng-select-placeholder: var(--color-slate-500);
   --ng-select-selected: var(--color-indigo-50);
   --ng-select-box-shadow: none;
-  --ng-select-highlight: var(--color-slate-600);
-  --ng-select-selected-border: var(--color-slate-600);
-  --ng-select-container-hover-shadow: var(--color-slate-600);
+  --ng-select-highlight: var(--color-indigo-600);
+  --ng-select-selected-border: var(--color-indigo-600);
+  --ng-select-container-hover-shadow: var(--color-indigo-600);
   --ng-select-value-font-size: 14px;
   --ng-select-height: 40px;
   --ng-select-disabled-bg: var(--color-white);

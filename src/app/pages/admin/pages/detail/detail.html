@@ -1,62 +1,70 @@
-<div class="flex-1 flex flex-col min-w-0 overflow-hidden bg-slate-50">
+<div class="w-full h-full min-h-0 flex flex-col overflow-hidden">
   <section
     data-aos="fade-left"
     data-aos-duration="1000"
-    class="flex-1 flex flex-col min-w-0 overflow-y-auto rounded-2xl border border-slate-200/80 bg-white shadow-sm overflow-hidden"
+    class="w-full h-full min-h-0 flex flex-col overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-sm"
   >
-    <div class="p-6 pb-4 bg-white">
+    <div class="shrink-0 p-3 lg:p-6 pb-0 bg-white border-b border-slate-100">
       <!-- Page Title Header -->
+
       <div
-        class="mb-8 flex flex-col md:flex-row md:items-end md:justify-between gap-4 border-b border-slate-200/80 pb-6"
+        data-aos="fade-up"
+        data-aos-duration="1000"
+        class="flex flex-col md:flex-row md:items-center justify-between gap-3 pb-1"
       >
-        <div data-aos="fade-up" data-aos-duration="1000" class="flex flex-wrap gap-4">
-          <button
-            (click)="goToBack()"
-            aria-label="regresar"
-            class="cursor-pointer w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors focus:outline-none focus:ring-2 focus:ring-slate-300"
-            type="button"
-          >
-            <i class="fa-solid fa-arrow-left"></i>
-          </button>
-          <div>
+        <div>
           <div class="flex items-center gap-3">
-              <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900">
-                {{ page() ? 'Página' : 'Nueva página' }}
-              </h1>
-              @if (micrositie() !== null) {
-                <span
-                  class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-bold bg-indigo-50 text-indigo-700 border border-indigo-200"
-                >
-                  micrositio
-                </span>
-              }
+            <div class="flex items-center justify-center">
+              <button
+                (click)="goToBack()"
+                aria-label="regresar"
+                class="cursor-pointer w-10 h-10 rounded-lg flex items-center justify-center text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors focus:outline-none focus:ring-2 focus:ring-slate-300"
+                type="button"
+              >
+                <i class="fa-solid fa-arrow-left"></i>
+              </button>
             </div>
-            <p class="mt-1 text-sm text-slate-500 leading-relaxed max-w-2xl">
-              Configura y administra la información de tus páginas, incluyendo nombre, ruta, estado,
-              información SEO y opciones de personalización visual.
-            </p>
+            <div>
+              <h1
+                class="text-xl sm:text-2xl font-bold tracking-tight text-slate-900 flex items-center gap-2.5"
+              >
+                {{ page() ? 'Página' : 'Nueva página' }}
+                @if (micrositie() !== null) {
+                  <span
+                    class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-bold bg-indigo-50 text-indigo-700 border border-indigo-200"
+                  >
+                    micrositio
+                  </span>
+                }
+              </h1>
+              <p class="text-xs sm:text-sm text-slate-500 font-normal">
+                Configura y administra la información de tus páginas, incluyendo nombre, ruta,
+                estado, información SEO y opciones de personalización visual.
+              </p>
+            </div>
           </div>
         </div>
       </div>
-      <!-- Main Layout Grid: Segmented Floating Rail & Main Form Content -->
-      <div class="w-full flex-1">
-        <drawer-component [panels]="panels()" (selectedPanelEvent)="goToPanel($event)">
-          @if (validPermission(permission.viewPage)) {
-            @switch (selectedPanel()) {
-              <!-- Information -->
-              @case ('information') {
-                <pages-information />
-              }
-              <!-- Languages -->
-              @case ('languages') {
-                <pages-languages />
-              }
+    </div>
+
+    <!-- Main Layout Grid: Segmented Floating Rail & Main Form Content -->
+    <div class="flex-1 min-h-0 flex flex-col overflow-hidden p-2 lg:p-6">
+      <drawer-component [panels]="panels()" (selectedPanelEvent)="goToPanel($event)">
+        @if (validPermission(permission.viewPage)) {
+          @switch (selectedPanel()) {
+            <!-- Information -->
+            @case ('information') {
+              <pages-information />
             }
-          } @else {
-            <permission-component />
+            <!-- Languages -->
+            @case ('languages') {
+              <pages-languages />
+            }
           }
-        </drawer-component>
-      </div>
+        } @else {
+          <permission-component />
+        }
+      </drawer-component>
     </div>
   </section>
 </div>

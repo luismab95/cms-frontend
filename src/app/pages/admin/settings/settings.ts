@@ -4,10 +4,11 @@ import { UserService } from 'app/core/services/user.service';
 import { DrawerComponent } from 'app/shared/components/drawer/drawer';
 import { PermissionComponent } from 'app/shared/components/permission/permission';
 import { DrawerI } from 'app/shared/interfaces/drawer.interface';
+import { TitleHeaderComponent } from 'app/shared/components/title-header/title-header';
 import { PermissionCode, validAction } from 'app/shared/utils/permission.utils';
 import { SettingsAccountComponent } from './account/account';
-import { Subject } from 'rxjs';
 import { SettingsSecurityComponent } from './security/security';
+import { Subject } from 'rxjs';
 
 @Component({
   selector: 'settings',
@@ -17,6 +18,7 @@ import { SettingsSecurityComponent } from './security/security';
     DrawerComponent,
     SettingsAccountComponent,
     SettingsSecurityComponent,
+    TitleHeaderComponent,
   ],
 })
 export class Settings implements OnInit, OnDestroy {

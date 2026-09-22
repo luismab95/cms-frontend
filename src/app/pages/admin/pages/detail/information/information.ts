@@ -1,4 +1,4 @@
-import { Component, inject, OnDestroy, OnInit } from '@angular/core';
+import { Component, computed, inject, OnDestroy, OnInit } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import {
   FormsModule,
@@ -46,6 +46,13 @@ export class PagesInformationComponent implements OnInit, OnDestroy {
   });
 
   pageForm!: UntypedFormGroup;
+
+  previewPage = computed(() => {
+    const page = this.page();
+    return this._domSanitizer.bypassSecurityTrustResourceUrl(
+      `${this.sitie()?.domain}/preview/${page?.path}`,
+    );
+  });
 
   /**
    * Constructor
@@ -231,13 +238,5 @@ export class PagesInformationComponent implements OnInit, OnDestroy {
    */
   validPermission(code: string): boolean {
     return validAction(code);
-  }
-
-  /**
-   * Safe url
-   * @returns
-   */
-  previewPage() {
-    return this._domSanitizer.bypassSecurityTrustResourceUrl(this.getDomain() + this.page()?.path);
   }
 }

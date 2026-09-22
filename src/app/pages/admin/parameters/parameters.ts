@@ -6,6 +6,7 @@ import { ParametersCompanyComponent } from './company/company';
 import { DrawerI } from 'app/shared/interfaces/drawer.interface';
 import { ParameterService } from 'app/core/services/parameter.service';
 import { DrawerComponent } from 'app/shared/components/drawer/drawer';
+import { TitleHeaderComponent } from 'app/shared/components/title-header/title-header';
 import { ParametersEmailComponent } from './email/email';
 import { ParametersSecurityComponent } from './security/security';
 import { ParametersLogosComponent } from './logos/logos';
@@ -21,7 +22,8 @@ import { Subject, takeUntil } from 'rxjs';
     ParametersCompanyComponent,
     PermissionComponent,
     DrawerComponent,
-  ],
+    TitleHeaderComponent
+],
 })
 export class Parameters implements OnInit, OnDestroy {
   permission = PermissionCode;
