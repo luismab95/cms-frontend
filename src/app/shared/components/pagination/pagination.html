@@ -1,15 +1,15 @@
 <div
-  class="mt-auto border-t border-slate-200 bg-white px-6 py-3.5 flex flex-col sm:flex-row items-center justify-between gap-4"
+  class="mt-auto border-t border-slate-200 bg-white px-6 py-3.5 flex flex-col sm:flex-row items-center justify-center lg:justify-between gap-4"
 >
   <!-- Información -->
   @if (showLimit()) {
-    <div class="flex items-center flex-col lg:flex-row gap-3 text-xs text-slate-600">
+    <div class="hidden lg:flex items-center flex-col lg:flex-row gap-3 text-xs text-slate-600">
       <span class="font-medium"> Registros por página: </span>
       <ng-select
         (change)="changeLimit($event)"
         [clearable]="false"
         [formField]="limitForm.limit"
-        [items]="[1, 10, 25, 50, 100]"
+        [items]="[10, 25, 50, 100]"
       >
       </ng-select>
 

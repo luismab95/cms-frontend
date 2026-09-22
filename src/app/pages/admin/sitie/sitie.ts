@@ -8,6 +8,7 @@ import { SitieInformationComponent } from './information/information';
 import { SitieLanguagesComponent } from './languages/languages';
 import { PermissionComponent } from 'app/shared/components/permission/permission';
 import { Subject } from 'rxjs';
+import { TitleHeaderComponent } from 'app/shared/components/title-header/title-header';
 
 @Component({
   selector: 'sitie',
@@ -17,6 +18,7 @@ import { Subject } from 'rxjs';
     SitieInformationComponent,
     SitieLanguagesComponent,
     PermissionComponent,
+    TitleHeaderComponent
   ],
 })
 export class Sitie implements OnInit, OnDestroy {

@@ -1,4 +1,6 @@
-<div class="w-full h-screen bg-slate-50 px-6 pb-6 py-2 mx-auto max-w-full overflow-y-auto">
+<div
+  class="w-full h-full min-h-0 flex flex-col overflow-hidden overflow-y-auto bg-slate-50 px-6 pb-6 py-2 mx-auto max-w-full"
+>
   <div class="flex flex-col w-full space-y-8">
     <!-- 1. Encabezado de perfil y métricas ejecutivas en vivo -->
     <section
@@ -48,7 +50,6 @@
               </svg>
             </div>
             <div class="flex items-center gap-2 mt-1">
-              <span class="w-2 h-2 rounded-full bg-indigo-700 inline-block"></span>
               <p class="text-xs leading-4 text-slate-500 font-medium">
                 Tienes
                 <span class="font-bold"> {{ unreadNotify() }} notificaciones nuevas.</span>
@@ -64,7 +65,7 @@
             <button
               (click)="refreshData()"
               type="button"
-              class="flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-600 shadow-sm transition-all duration-150 hover:border-indigo-200 hover:bg-indigo-50 hover:text-indigo-600 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 active:scale-[0.98]"
+              class="flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-600 shadow-sm transition-all duration-150 hover:border-indigo-200 hover:bg-indigo-50 hover:text-indigo-600"
               appTooltip="Recargar"
             >
               <i class="fa-solid fa-rotate"></i>
@@ -381,7 +382,7 @@
               <i class="fa-solid fa-chart-pie text-slate-500"></i>
             </div>
             <p class="text-xs leading-4 text-slate-500 pb-4">
-              Canales que alimentan el tráfico en esta semana
+              Canales que alimentan el tráfico en el sitio
             </p>
 
             <div class="pt-4 flex items-center justify-center">
@@ -454,8 +455,7 @@
                   </div>
                 </div>
                 <div class="text-right">
-                  @let percentagePages =
-                     (visitVsPages()!.pages * 100) / visitVsPages()!.total;
+                  @let percentagePages = (visitVsPages()!.pages * 100) / visitVsPages()!.total;
                   <span class="text-slate-900 font-semibold leading-none"
                     >{{ percentagePages | number: '1.0-2' }}%</span
                   >
@@ -490,7 +490,7 @@
         </div>
         <!-- Grid de tarjetas podio Top 3 -->
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-          @for (item of top3Pages(); track item.path; let i = $index) {
+          @for (item of top3Pages(); track $index; let i = $index) {
             <div
               class="group flex flex-col justify-between overflow-hidden rounded-xl bg-white shadow-sm hover:shadow-md transition-shadow p-6"
             >
@@ -699,7 +699,5 @@
     } @else {
       <permission-component />
     }
-
-    <br /><br /><br />
   </div>
 </div>

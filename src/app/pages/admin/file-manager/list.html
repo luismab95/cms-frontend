@@ -1,38 +1,28 @@
-<div class="flex-1 flex flex-col min-w-0 overflow-hidden bg-transparent">
+<div class="w-full h-full min-h-0 flex flex-col overflow-hidden">
   <section
     data-aos="fade-left"
     data-aos-duration="1000"
-    class="flex-1 flex flex-col min-w-0 min-h-0 overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-sm"
+    class="w-full h-full min-h-0 flex flex-col overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-sm"
   >
-    <!-- HEADER + FILTROS -->
-    <div class="shrink-0 p-6 pb-0 bg-white">
+    <div class="shrink-0 p-3 lg:p-6 pb-1! bg-white">
       <!-- Header -->
       <div
         data-aos="fade-up"
         data-aos-duration="1000"
-        class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4"
+        class="flex flex-col md:flex-row md:items-center justify-between gap-3 pb-1"
       >
-        <div>
-          <div class="flex items-center gap-3">
-            <h1 class="text-xl font-bold text-slate-900 tracking-tight">Multimedia</h1>
-            <span
-              class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-bold bg-indigo-50 text-indigo-700 border border-indigo-200"
-            >
-              {{ totalFiles() }} {{ totalFiles() === 1 ? 'archivo' : 'archivos' }}
-            </span>
-          </div>
-          <p class="text-sm text-slate-500 mt-1">
-            Gestiona y organiza los archivos multimedia utilizados en las diferentes páginas del
-            sitio.
-          </p>
-        </div>
-        <!-- Global Action Group -->
-        <div class="flex items-center gap-2">
+        <title-header-component
+          [total]="totalFiles()"
+          [info]="totalFiles() > 1 ? 'archivos' : 'archivo'"
+        />
+
+        <!-- Action -->
+        <div class="flex items-center justify-end gap-2">
           @if (validPermission(permission.createFiles)) {
             <button
               (click)="openDetailsModal(null)"
-              class="cursor-pointer w-full flex justify-center items-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-semibold text-white bg-indigo-500 hover:bg-indigo-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 active:transform active:scale-[0.99] transition duration-150 ease-in-out disabled:cursor-not-allowed disabled:bg-indigo-300"
               type="button"
+              class="cursor-pointer h-10 flex items-center justify-center py-3 px-4 rounded-lg shadow-sm text-sm font-semibold text-white bg-indigo-500 hover:bg-indigo-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 active:scale-[0.99] transition"
             >
               <span class="flex items-center justify-center gap-2">
                 <i class="fa-solid fa-plus"></i>
@@ -47,23 +37,25 @@
       <div
         data-aos="fade-left"
         data-aos-duration="1000"
-        class="mt-4 flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 pt-4 border-t border-slate-100"
+        class="mt-2 lg:mt-2 flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 pt-4 border-t border-slate-100"
       >
-        <div class="flex items-center flex-row justify-between gap-2 w-full">
+        <div class="flex items-center flex-col lg:flex-row justify-between gap-2 lg:gap-6 w-full">
           @if (validPermission(permission.listFiles)) {
             <!-- Search -->
-            <div class="relative w-full">
+            <div class="relative w-full max-w-full lg:max-w-3xl text-sm">
               <span
-                class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-[20px] pointer-events-none"
+                class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"
               >
-                <i class="fa-solid fa-magnifying-glass fa-xs"></i>
+                <i class="fa-solid fa-magnifying-glass"></i>
               </span>
+
               <input
                 [formControl]="searchInputControl"
-                class="w-full h-12 pl-10 pr-10 py-2 rounded-lg font-normal leading-4 bg-white border border-slate-200 text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-slate-500 focus:border-slate-500"
-                placeholder="Buscar archivo..."
+                class="w-full h-10 pl-10 pr-10 py-2 rounded-lg font-normal leading-4 bg-white border border-slate-200 text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-slate-500 focus:border-slate-500"
+                placeholder="Buscar archivo multimedia..."
                 type="text"
               />
+
               @if (searchInputControl.value && searchInputControl.value !== '') {
                 <button
                   type="button"
@@ -75,44 +67,68 @@
                 </button>
               }
             </div>
-            <!-- status -->
-            <div class="w-28">
-              <ng-select
-                id="status"
-                [clearable]="false"
-                [items]="[
-                  { id: 0, name: 'Todos' },
-                  { id: 1, name: 'Activos' },
-                  { id: 2, name: 'Inactivos' },
-                ]"
-                [formControl]="statusControl"
-                bindLabel="name"
-                bindValue="id"
-                notFoundText="No se encontraron elementos"
+
+            <!-- Status -->
+            <div
+              class="w-full lg:w-auto inline-flex items-center justify-center p-1 bg-slate-100/90 rounded-xl border border-slate-200/80 text-xs font-semibold text-slate-600"
+            >
+              <button
+                [ngClass]="{
+                  'bg-white text-slate-900  font-bold shadow-xs border border-slate-200/40':
+                    this.statusControl.value === null,
+                }"
+                (click)="onChangeStatus(null)"
+                class="cursor-pointer px-3.5 py-1.5 rounded-lg text-slate-600 hover:text-slate-900 transition-all flex items-center gap-1.5"
+                type="button"
               >
-              </ng-select>
+                <span>Todos</span>
+              </button>
+              <button
+                [ngClass]="{
+                  'bg-white text-slate-900  font-bold shadow-xs border border-slate-200/40':
+                    this.statusControl.value,
+                }"
+                (click)="onChangeStatus(true)"
+                class="cursor-pointer px-3.5 py-1.5 rounded-lg text-slate-600 hover:text-slate-900 transition-all flex items-center gap-1.5"
+                type="button"
+              >
+                <span class="inline-block w-2 h-2 rounded-full bg-emerald-500"></span>
+                <span>Activos</span>
+              </button>
+              <button
+                [ngClass]="{
+                  'bg-white text-slate-900  font-bold shadow-xs border border-slate-200/40':
+                    this.statusControl.value === false,
+                }"
+                (click)="onChangeStatus(false)"
+                class="cursor-pointer px-3.5 py-1.5 rounded-lg text-slate-600 hover:text-slate-900 transition-all flex items-center gap-1.5"
+                type="button"
+              >
+                <span class="inline-block w-2 h-2 rounded-full bg-slate-400"></span>
+                <span>Inactivos</span>
+              </button>
             </div>
           }
         </div>
       </div>
     </div>
 
-    <!-- CONTENIDO -->
-    <div data-aos="fade-left" data-aos-duration="1000" class="flex-1 flex flex-col min-h-0">
+    <!-- CONTENT -->
+    <div class="flex-1 min-h-0 flex flex-col overflow-hidden">
       @let records = files().records;
+
       @if (validPermission(permission.listFiles)) {
-        <!-- TABLA -->
-        <div class="flex-1 min-h-0 overflow-auto px-1 lg:px-6 py-3 pb-2">
+        <div class="flex-1 min-h-0 px-3 lg:px-6 py-3 pb-2 overflow-hidden mb-4">
           <div
-            class="bg-white border border-slate-200 rounded-xl shadow-xs overflow-hidden flex flex-col"
+            [class.max-h-100]="records.length === 0"
+            class="w-full h-full min-h-0 bg-white border border-slate-200 shadow-xs overflow-hidden flex flex-col rounded-xl"
           >
-            <!-- Table Responsive Wrapper -->
-            <div class="overflow-x-auto">
-              <table class="w-full text-left border-collapse text-xs">
-                <!-- Table Header -->
+            <!-- Table -->
+            <div class="flex-1 min-h-0 overflow-x-auto overflow-y-auto">
+              <table class="w-full min-w-200 text-left border-collapse text-xs">
                 <thead>
                   <tr
-                    class="bg-slate-50/90 border-b border-slate-200 text-slate-600 font-semibold text-[11px] uppercase tracking-wider select-none"
+                    class="rounded-xl sticky top-0 z-10 bg-slate-50/95 backdrop-blur-sm border-b border-slate-200 text-slate-600 font-semibold text-[11px] uppercase tracking-wider select-none"
                   >
                     <th class="px-4 py-3 text-left w-14">Acciones</th>
                     <th class="w-14 px-2 py-3 text-center">Archivo</th>
@@ -123,66 +139,23 @@
                   </tr>
                 </thead>
 
+                <!-- Body -->
                 <tbody class="divide-y divide-slate-100 font-normal text-slate-700">
-                  <!-- Empty state -->
-                  @if (records.length === 0) {
-                    <tr>
-                      <td colspan="6" class="px-2 py-2.5 text-center">
-                        <div
-                          class="min-h-full px-6 py-12 text-center flex flex-col items-center justify-center"
-                        >
-                          <div class="relative mb-6">
-                            <div
-                              class="w-20 h-20 rounded-2xl bg-linear-to-tr from-blue-50 to-indigo-100 flex items-center justify-center border border-blue-100 shadow-inner"
-                            >
-                              <i class="fa-solid fa-magnifying-glass text-indigo-500 fa-2xl"></i>
-                            </div>
-                            <span
-                              class="absolute -top-1 -right-1 w-3.5 h-3.5 rounded-full bg-amber-400 ring-4 ring-white"
-                            ></span>
-                            <span
-                              class="absolute -bottom-1 -left-1 w-2.5 h-2.5 rounded-full bg-blue-400 ring-2 ring-white"
-                            ></span>
-                          </div>
-                          @if (searchInputControl.value) {
-                            <h2 class="text-xl font-bold text-slate-900 tracking-tight mb-2">
-                              No se encontraron coincidencias para tu búsqueda
-                            </h2>
-                            <p class="text-sm text-slate-500 max-w-md mx-auto leading-relaxed mb-6">
-                              No existen resultados que coincidan con
-                              <span class="font-medium text-slate-700">
-                                “{{ searchInputControl.value }}” </span
-                              >. Intenta modificar tu búsqueda.
-                            </p>
-                          } @else {
-                            <h2 class="text-xl font-bold text-slate-900 tracking-tight mb-2">
-                              No se encontraron registros
-                            </h2>
-                            <p class="text-sm text-slate-500 max-w-md mx-auto leading-relaxed mb-6">
-                              No existen resultados. Intenta agregar un nuevo archivo.
-                            </p>
-                          }
-                        </div>
-                      </td>
-                    </tr>
-                  }
-                  <!-- Records -->
+                  <!-- RECORDS -->
                   @for (file of records; track $index) {
                     <tr
-                      class="hover:bg-slate-50/80 transition hover:border-l-4 hover:border-l-indigo-600 cursor-pointer"
+                      class="border-slate-200 border-b hover:bg-slate-50/80 transition hover:border-l-4 hover:border-l-indigo-600 cursor-pointer"
                     >
                       <!-- Actions -->
                       <td class="px-4 py-2.5 whitespace-nowrap">
-                        <div class="inline-flex items-center gap-1">
-                          <button
-                            (click)="openDetailsModal(file)"
-                            class="cursor-pointer p-1 rounded hover:bg-slate-200 text-slate-500 hover:text-slate-800 transition"
-                            title="Más opciones"
-                            type="button"
-                          >
-                            <i class="fa-solid fa-ellipsis-vertical"></i>
-                          </button>
-                        </div>
+                        <button
+                          (click)="openDetailsModal(file)"
+                          type="button"
+                          title="Más opciones"
+                          class="cursor-pointer p-1 rounded hover:bg-slate-200 text-slate-500 hover:text-slate-800 transition"
+                        >
+                          <i class="fa-solid fa-ellipsis-vertical"></i>
+                        </button>
                       </td>
                       <!-- File -->
                       <td class="px-2 py-2.5 text-center">
@@ -190,31 +163,9 @@
                           class="w-10 h-10 rounded-lg border border-slate-200 flex items-center justify-center p-1 bg-transparency-grid shadow-2xs mx-auto"
                         >
                           @if (file.mimeType?.toLowerCase().startsWith('image/')) {
-                            <img class="w-8 h-8 object-contain" [alt]="'image'" [src]="file.url" />
+                            <img class="w-8 h-8 object-contain" alt="image" [src]="file.url" />
                           } @else {
-                            <i
-                              class="fa-xl"
-                              [ngClass]="{
-                                'fa-solid fa-file-pdf text-red-600': file.mimeType
-                                  ?.toLowerCase()
-                                  .includes('pdf'),
-                                'fa-solid fa-file-audio text-blue-600': file.mimeType
-                                  ?.toLowerCase()
-                                  .startsWith('audio/'),
-                                'fa-solid fa-file-video text-green-600': file.mimeType
-                                  ?.toLowerCase()
-                                  .startsWith('video/'),
-                                'fa-solid fa-file-lines text-gray-600': file.mimeType
-                                  ?.toLowerCase()
-                                  .startsWith('text/'),
-                                'fa-solid fa-file text-gray-500':
-                                  file.mimeType?.toLowerCase() ||
-                                  (!file.mimeType?.toLowerCase().includes('pdf') &&
-                                    !file.mimeType?.toLowerCase().startsWith('audio/') &&
-                                    !file.mimeType?.toLowerCase().startsWith('video/') &&
-                                    !file.mimeType?.toLowerCase().startsWith('text/')),
-                              }"
-                            ></i>
+                            <i class="fa-xl" [ngClass]="getFileIcon(file.mimeType)"></i>
                           }
                         </div>
                       </td>
@@ -233,13 +184,11 @@
                       </td>
                       <!-- Description -->
                       <td class="px-4 py-2.5">
-                        <div class="flex flex-col">
-                          <span
-                            class="text-ellipsis line-clamp-2 font-normal text-slate-900 hover:text-slate-600"
-                          >
-                            {{ file.description }}
-                          </span>
-                        </div>
+                        <span
+                          class="text-ellipsis line-clamp-2 font-normal text-slate-900 hover:text-slate-600"
+                        >
+                          {{ file.description }}
+                        </span>
                       </td>
                       <!-- Type -->
                       <td class="px-3 py-2.5">
@@ -285,26 +234,71 @@
                         </span>
                       </td>
                     </tr>
+                  } @empty {
+                    <tr>
+                      <td colspan="6">
+                        <div
+                          class="px-24 py-12 text-center flex flex-col items-center justify-center gap-2"
+                        >
+                          <div class="relative mb-6">
+                            <div
+                              class="w-20 h-20 rounded-2xl bg-linear-to-tr from-blue-50 to-indigo-100 flex items-center justify-center border border-blue-100 shadow-inner"
+                            >
+                              <i class="fa-solid fa-magnifying-glass text-indigo-500 fa-3x"></i>
+                            </div>
+                            <span
+                              class="absolute -top-1 -right-1 w-3.5 h-3.5 rounded-full bg-amber-400 ring-4 ring-white"
+                            ></span>
+                            <span
+                              class="absolute -bottom-1 -left-1 w-2.5 h-2.5 rounded-full bg-blue-400 ring-2 ring-white"
+                            ></span>
+                          </div>
+
+                          <h2 class="text-xl font-bold text-slate-900 tracking-tight mb-2">
+                            {{
+                              searchInputControl.value
+                                ? 'No se encontraron coincidencias para tu búsqueda'
+                                : ' No se encontraron registros'
+                            }}
+                          </h2>
+                          <p class="text-sm text-slate-500 max-w-md mx-auto leading-relaxed mb-6">
+                            @if (searchInputControl.value) {
+                              No existen resultados que coincidan con
+                              <span class="font-medium text-slate-700">
+                                “{{ searchInputControl.value }}”.
+                              </span>
+                              <br />
+                              Intenta modificar tu búsqueda.
+                            } @else {
+                              No existen resultados. <br />
+                              Intenta agregar un nuevo archivo.
+                            }
+                          </p>
+                        </div>
+                      </td>
+                    </tr>
                   }
                 </tbody>
               </table>
             </div>
           </div>
         </div>
-        <br /><br />
 
         <!-- PAGINATION -->
         @if (records.length > 0) {
-          <pagination-component
-            [page]="files().page"
-            [limit]="limit()"
-            [total]="files().total"
-            [pages]="files().totalPage"
-            (pageEvent)="onPageChange($event)"
-            (limitEvent)="onLimitChange($event)"
-          />
+          <div class="shrink-0 px-1 lg:px-6 pb-2">
+            <pagination-component
+              [page]="files().page"
+              [limit]="limit()"
+              [total]="files().total"
+              [pages]="files().totalPage"
+              (pageEvent)="onPageChange($event)"
+              (limitEvent)="onLimitChange($event)"
+            />
+          </div>
         }
       } @else {
+        <!-- Permission -->
         <div class="flex-1 min-h-0 flex items-center justify-center">
           <permission-component />
         </div>
@@ -313,7 +307,7 @@
   </section>
 </div>
 
-<!-- MODAL NEW/EDIT -->
+<!-- Modal -->
 @if (showDetails()) {
   <files-details [file]="selectedFile()" (closeModalEvent)="closeModal($event)" />
 }

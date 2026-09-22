@@ -1,52 +1,64 @@
-<!-- screen loader  -->
 @if (isLoader()) {
   <loader-component (stopLoader)="stopLoader()" />
 } @else {
   <!-- Navigation -->
   <navigation-component />
 
-  <!-- Wrapper -->
-  <div [class.pl-65]="isOpen()" class="overflow-x-hidden">
+  <!-- Application wrapper -->
+  <div [class.pl-65]="isOpen()" class="h-screen overflow-hidden">
     <!-- Loading bar -->
     <loading-bar-component />
 
+    <!-- TOP HEADER -->
     <header
       [class.left-65!]="isOpen()"
       data-aos="fade-down"
       data-aos-duration="1000"
-      class="fixed top-0 right-0 h-17 left-0 bg-white/95 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)] z-40 flex items-center justify-between px-6"
+      class="fixed top-0 right-0 left-0 h-17 z-40 bg-white/95 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)] flex items-center justify-between px-6"
     >
       <div class="flex items-center justify-between gap-1 lg:gap-4 flex-1 w-full">
+        <!-- Left -->
         <div class="flex flex-row justify-between items-center gap-1 lg:gap-4">
           <button
             aria-label="bars"
+            type="button"
             (click)="toggleNavigation()"
             class="cursor-pointer relative p-2 rounded-lg text-[#565e74] hover:bg-[#eff4ff] hover:text-[#0b1c30] transition-colors"
           >
             <i class="fa-solid fa-bars"></i>
           </button>
+
           <search-component />
         </div>
+
+        <!-- Right -->
         <div class="flex items-center gap-0.5 lg:gap-4 px-2 py-1.5 rounded-lg text-[#0b1c30]">
           <div class="flex items-center gap-0.5 lg:gap-3">
             <notifications-component />
+
             <div class="h-6 w-px bg-[#dce9ff] mx-1"></div>
+
             <user-component />
           </div>
         </div>
       </div>
     </header>
 
-    <main class="w-full pt-17 max-h-screen bg-[#f8f9ff] mx-auto px-6 py-6 overflow-x-hidden lg:overflow-y-hidden">
-      <div data-aos="fade-down" data-aos-duration="1000" class="flex flex-col w-full space-y-3 overflow-x-hidden">
-        @if (true) {
-          <router-outlet />
-        }
+    <!-- MAIN AREA -->
+    <main
+      [class.left-65!]="isOpen()"
+      class="absolute top-17 right-0 bottom-0 left-0 bg-[#f8f9ff] p-6 overflow-hidden"
+    >
+      <!-- Router container -->
+      <div
+        data-aos="fade-down"
+        data-aos-duration="1000"
+        class="w-full h-full min-h-0 overflow-hidden"
+      >
+        <router-outlet />
       </div>
     </main>
-    
   </div>
 }
-
 
 <dialog-component />

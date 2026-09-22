@@ -196,14 +196,7 @@ export const yearVisit = (data: YearVisitI) =>
     xaxis: {
       type: 'datetime',
       labels: {
-        datetimeUTC: false,
-        formatter: (value: string, timestamp?: number) => {
-          const fecha = new Date(timestamp ?? value);
-          return fecha.toLocaleDateString('es-ES', {
-            day: '2-digit',
-            month: 'short',
-          });
-        },
+        datetimeUTC: true,
       },
     },
     tooltip: {

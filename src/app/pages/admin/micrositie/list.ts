@@ -1,4 +1,5 @@
 import { Component, computed, inject, OnDestroy, OnInit, signal } from '@angular/core';
+import { Router } from '@angular/router';
 import { NgClass } from '@angular/common';
 import { FormControl, FormsModule, ReactiveFormsModule, UntypedFormControl } from '@angular/forms';
 import { toSignal } from '@angular/core/rxjs-interop';
@@ -7,11 +8,10 @@ import { PaginationComponent } from 'app/shared/components/pagination/pagination
 import { PermissionComponent } from 'app/shared/components/permission/permission';
 import { PaginationResquestI } from 'app/shared/interfaces/response.interface';
 import { PermissionCode, validAction } from 'app/shared/utils/permission.utils';
-import { Subject, takeUntil, debounceTime } from 'rxjs';
-import { NgSelectComponent } from '@ng-select/ng-select';
 import { MicrositieI } from 'app/core/interfaces/micrositie.interface';
 import { MicrosityService } from 'app/core/services/micrositie.service';
-import { Router } from '@angular/router';
+import { TitleHeaderComponent } from 'app/shared/components/title-header/title-header';
+import { Subject, takeUntil, debounceTime } from 'rxjs';
 
 @Component({
   selector: 'microsities-list',
@@ -21,8 +21,8 @@ import { Router } from '@angular/router';
     ReactiveFormsModule,
     PaginationComponent,
     PermissionComponent,
-    NgSelectComponent,
     NgClass,
+    TitleHeaderComponent,
   ],
 })
 export class MicrositieList implements OnInit, OnDestroy {
@@ -30,7 +30,7 @@ export class MicrositieList implements OnInit, OnDestroy {
   selectedMicrositie = signal<MicrositieI | null>(null);
 
   searchInputControl: UntypedFormControl = new UntypedFormControl();
-  statusControl: FormControl = new FormControl(0);
+  statusControl: FormControl<boolean | null> = new FormControl(null);
 
   permission = PermissionCode;
 
@@ -63,23 +63,12 @@ export class MicrositieList implements OnInit, OnDestroy {
     this.searchInputControl.valueChanges
       .pipe(debounceTime(700), takeUntil(this._unsubscribeAll))
       .subscribe((search: string) => {
-        if (search) this.getAll(1, search === '' ? null : search, null);
+        if (search) this.getAll(1, search === '' ? null : search, this.statusControl.value);
       });
 
     this.statusControl.valueChanges
       .pipe(takeUntil(this._unsubscribeAll))
-      .subscribe((res: number) => {
-        let status: boolean | null;
-        switch (res) {
-          case 1:
-            status = true;
-            break;
-          case 2:
-            status = false;
-            break;
-          default:
-            status = null;
-        }
+      .subscribe((status: boolean | null) => {
         this.getAll(
           1,
           this.searchInputControl.value === '' ? null : this.searchInputControl.value,
@@ -147,7 +136,11 @@ export class MicrositieList implements OnInit, OnDestroy {
    * @param page
    */
   onPageChange(page: number): void {
-    this.getAll(page, null, null);
+    this.getAll(
+      page,
+      this.searchInputControl.value === '' ? null : this.searchInputControl.value,
+      this.statusControl.value,
+    );
   }
 
   /**
@@ -156,7 +149,11 @@ export class MicrositieList implements OnInit, OnDestroy {
    */
   onLimitChange(limit: number): void {
     this.limit.set(limit);
-    this.getAll(1, null, null);
+    this.getAll(
+      1,
+      this.searchInputControl.value === '' ? null : this.searchInputControl.value,
+      this.statusControl.value,
+    );
   }
 
   /**
@@ -164,7 +161,7 @@ export class MicrositieList implements OnInit, OnDestroy {
    */
   clearSearch() {
     this.searchInputControl.reset();
-    this.getAll(1, null, null);
+    this.getAll(1, null, this.statusControl.value);
   }
 
   /**
@@ -172,6 +169,14 @@ export class MicrositieList implements OnInit, OnDestroy {
    */
   closeModal(load: boolean) {
     this.selectedMicrositie.set(null);
-    if (load) this.getAll(1, null, null);
+    if (load) this.onChangeStatus(null);
+  }
+
+  /**
+   * Change status
+   * @param status
+   */
+  onChangeStatus(status: boolean | null) {
+    this.statusControl.setValue(status);
   }
 }

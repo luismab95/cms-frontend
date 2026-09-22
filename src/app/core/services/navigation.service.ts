@@ -37,9 +37,15 @@ export class NavigationService {
   // @ Public methods
   // -----------------------------------------------------------------------------------------------------
 
-  getCurrentNavigation(items: NavigationI[], link: string): NavigationI | null {
+  /**
+   * Get current link
+   * @param items 
+   * @param link 
+   * @returns 
+   */
+  getCurrentNavigation(items: NavigationI[], link: string): NavigationI | null {    
     for (const item of items) {
-      if (item.link === link) {
+      if (item?.link === link) {
         return item;
       }
 

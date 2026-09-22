@@ -4,26 +4,19 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { FormControl, FormsModule, ReactiveFormsModule, UntypedFormControl } from '@angular/forms';
 import { Router } from '@angular/router';
 import { ToastrService } from '@iqx-limited/ngx-toastr';
-import { NgSelectComponent } from '@ng-select/ng-select';
 import { PageI, PagePaginationResquestI } from 'app/core/interfaces/page.interface';
 import { MicrosityService } from 'app/core/services/micrositie.service';
 import { PageService } from 'app/core/services/pages.service';
 import { PaginationComponent } from 'app/shared/components/pagination/pagination';
 import { PermissionComponent } from 'app/shared/components/permission/permission';
 import { PermissionCode, validAction } from 'app/shared/utils/permission.utils';
+import { TitleHeaderComponent } from 'app/shared/components/title-header/title-header';
 import { Subject, debounceTime, takeUntil } from 'rxjs';
 
 @Component({
   selector: 'pages',
   templateUrl: './list.html',
-  imports: [
-    FormsModule,
-    ReactiveFormsModule,
-    PaginationComponent,
-    NgSelectComponent,
-    PermissionComponent,
-    NgClass,
-  ],
+  imports: [FormsModule, ReactiveFormsModule, PaginationComponent, PermissionComponent, NgClass, TitleHeaderComponent],
 })
 export class PagesList implements OnInit, OnDestroy {
   limit = signal<number>(10);
@@ -31,7 +24,7 @@ export class PagesList implements OnInit, OnDestroy {
   selectedUser = signal<PageI | null>(null);
 
   searchInputControl: UntypedFormControl = new UntypedFormControl();
-  statusControl: FormControl = new FormControl(0);
+  statusControl: FormControl<boolean | null> = new FormControl(null);
 
   permission = PermissionCode;
 
@@ -66,23 +59,12 @@ export class PagesList implements OnInit, OnDestroy {
     this.searchInputControl.valueChanges
       .pipe(debounceTime(700), takeUntil(this._unsubscribeAll))
       .subscribe((search: string) => {
-        if (search) this.getAll(1, search === '' ? null : search, null);
+        if (search) this.getAll(1, search === '' ? null : search, this.statusControl.value);
       });
 
     this.statusControl.valueChanges
       .pipe(takeUntil(this._unsubscribeAll))
-      .subscribe((res: number) => {
-        let status: boolean | null;
-        switch (res) {
-          case 1:
-            status = true;
-            break;
-          case 2:
-            status = false;
-            break;
-          default:
-            status = null;
-        }
+      .subscribe((status: boolean | null) => {
         this.getAll(
           1,
           this.searchInputControl.value === '' ? null : this.searchInputControl.value,
@@ -153,7 +135,11 @@ export class PagesList implements OnInit, OnDestroy {
    * @param page
    */
   onPageChange(page: number): void {
-    this.getAll(page, null, null);
+    this.getAll(
+      page,
+      this.searchInputControl.value === '' ? null : this.searchInputControl.value,
+      this.statusControl.value,
+    );
   }
 
   /**
@@ -162,7 +148,11 @@ export class PagesList implements OnInit, OnDestroy {
    */
   onLimitChange(limit: number): void {
     this.limit.set(limit);
-    this.getAll(1, null, null);
+    this.getAll(
+      1,
+      this.searchInputControl.value === '' ? null : this.searchInputControl.value,
+      this.statusControl.value,
+    );
   }
 
   /**
@@ -170,6 +160,14 @@ export class PagesList implements OnInit, OnDestroy {
    */
   clearSearch() {
     this.searchInputControl.reset();
-    this.getAll(1, null, null);
+    this.getAll(1, null, this.statusControl.value);
+  }
+
+  /**
+   * Change status
+   * @param status
+   */
+  onChangeStatus(status: boolean | null) {
+    this.statusControl.setValue(status);
   }
 }

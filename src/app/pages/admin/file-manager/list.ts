@@ -6,11 +6,11 @@ import { ToastrService } from '@iqx-limited/ngx-toastr';
 import { PaginationComponent } from 'app/shared/components/pagination/pagination';
 import { PermissionComponent } from 'app/shared/components/permission/permission';
 import { PermissionCode, validAction } from 'app/shared/utils/permission.utils';
-import { Subject, takeUntil, debounceTime } from 'rxjs';
 import { FileManagerDetailsComponent } from './details/details';
 import { FileI, FilePaginationResquestI } from 'app/core/interfaces/file.interface';
 import { FileManagerService } from 'app/core/services/file-manager.service';
-import { NgSelectComponent } from '@ng-select/ng-select';
+import { TitleHeaderComponent } from 'app/shared/components/title-header/title-header';
+import { Subject, takeUntil, debounceTime } from 'rxjs';
 
 @Component({
   selector: 'files-list',
@@ -21,9 +21,9 @@ import { NgSelectComponent } from '@ng-select/ng-select';
     PaginationComponent,
     PermissionComponent,
     FileManagerDetailsComponent,
-    NgSelectComponent,
     NgClass,
     TitleCasePipe,
+    TitleHeaderComponent,
   ],
 })
 export class FileManagerList implements OnInit, OnDestroy {
@@ -32,7 +32,7 @@ export class FileManagerList implements OnInit, OnDestroy {
   selectedFile = signal<FileI | null>(null);
 
   searchInputControl: UntypedFormControl = new UntypedFormControl();
-  statusControl: FormControl = new FormControl(0);
+  statusControl: FormControl<boolean | null> = new FormControl(null);
 
   permission = PermissionCode;
 
@@ -64,23 +64,12 @@ export class FileManagerList implements OnInit, OnDestroy {
     this.searchInputControl.valueChanges
       .pipe(debounceTime(700), takeUntil(this._unsubscribeAll))
       .subscribe((search: string) => {
-        if (search) this.getAll(1, search === '' ? null : search, null);
+        if (search) this.getAll(1, search === '' ? null : search, this.statusControl.value);
       });
 
     this.statusControl.valueChanges
       .pipe(takeUntil(this._unsubscribeAll))
-      .subscribe((res: number) => {
-        let status: boolean | null;
-        switch (res) {
-          case 1:
-            status = true;
-            break;
-          case 2:
-            status = false;
-            break;
-          default:
-            status = null;
-        }
+      .subscribe((status: boolean | null) => {
         this.getAll(
           1,
           this.searchInputControl.value === '' ? null : this.searchInputControl.value,
@@ -146,7 +135,11 @@ export class FileManagerList implements OnInit, OnDestroy {
    * @param page
    */
   onPageChange(page: number): void {
-    this.getAll(page, null, null);
+    this.getAll(
+      page,
+      this.searchInputControl.value === '' ? null : this.searchInputControl.value,
+      this.statusControl.value,
+    );
   }
 
   /**
@@ -155,7 +148,11 @@ export class FileManagerList implements OnInit, OnDestroy {
    */
   onLimitChange(limit: number): void {
     this.limit.set(limit);
-    this.getAll(1, null, null);
+    this.getAll(
+      1,
+      this.searchInputControl.value === '' ? null : this.searchInputControl.value,
+      this.statusControl.value,
+    );
   }
 
   /**
@@ -163,7 +160,7 @@ export class FileManagerList implements OnInit, OnDestroy {
    */
   clearSearch() {
     this.searchInputControl.reset();
-    this.getAll(1, null, null);
+    this.getAll(1, null, this.statusControl.value);
   }
 
   /**
@@ -172,6 +169,47 @@ export class FileManagerList implements OnInit, OnDestroy {
   closeModal(load: boolean) {
     this.selectedFile.set(null);
     this.showDetails.set(false);
-    if (load) this.getAll(1, null, null);
+    if (load) {
+      this.onChangeStatus(null);
+    }
+  }
+
+  /**
+   * Get icon
+   * @param mimeType
+   * @returns
+   */
+  getFileIcon(mimeType?: string): string {
+    const type = mimeType?.toLowerCase() ?? '';
+
+    if (type.includes('pdf')) {
+      return 'fa-solid fa-file-pdf text-red-600';
+    }
+
+    if (type.startsWith('audio/')) {
+      return 'fa-solid fa-file-audio text-blue-600';
+    }
+
+    if (type.startsWith('video/')) {
+      return 'fa-solid fa-file-video text-green-600';
+    }
+
+    if (type.startsWith('text/')) {
+      return 'fa-solid fa-file-lines text-gray-600';
+    }
+
+    if (type.startsWith('image/')) {
+      return 'fa-solid fa-file-image text-purple-600';
+    }
+
+    return 'fa-solid fa-file text-gray-500';
+  }
+
+  /**
+   * Change status
+   * @param status
+   */
+  onChangeStatus(status: boolean | null) {
+    this.statusControl.setValue(status);
   }
 }

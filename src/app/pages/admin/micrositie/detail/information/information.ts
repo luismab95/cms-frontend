@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, computed, inject } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import {
   FormsModule,
@@ -38,6 +38,13 @@ export class MicrositieInformationComponent implements OnInit {
   micrositie = toSignal(this._microsityService.micrositie$, { initialValue: null });
 
   micrositieForm!: UntypedFormGroup;
+
+  previewDefaultPage = computed(() => {
+    const micrositie = this.micrositie();
+    return this._domSanitizer.bypassSecurityTrustResourceUrl(
+      `${this.sitie()?.domain}/preview/${micrositie?.path}`,
+    );
+  });
 
   /**
    * Constructor
@@ -185,15 +192,5 @@ export class MicrositieInformationComponent implements OnInit {
    */
   validPermission(code: string): boolean {
     return validAction(code);
-  }
-
-  /**
-   * Safe url
-   * @returns
-   */
-  previewDefaultPage() {
-    return this._domSanitizer.bypassSecurityTrustResourceUrl(
-      `${this.sitie()?.domain}/preview/${this.micrositie()?.path}`,
-    );
   }
 }

@@ -10,9 +10,9 @@ import { PermissionComponent } from 'app/shared/components/permission/permission
 import { PaginationResquestI } from 'app/shared/interfaces/response.interface';
 import { RoleService } from 'app/shared/services/role.service';
 import { PermissionCode, validAction } from 'app/shared/utils/permission.utils';
-import { Subject, takeUntil, debounceTime } from 'rxjs';
 import { UsersDetailsComponent } from './details/details';
-import { NgSelectComponent } from '@ng-select/ng-select';
+import { TitleHeaderComponent } from 'app/shared/components/title-header/title-header';
+import { Subject, takeUntil, debounceTime } from 'rxjs';
 
 @Component({
   selector: 'users-list',
@@ -23,10 +23,10 @@ import { NgSelectComponent } from '@ng-select/ng-select';
     PaginationComponent,
     PermissionComponent,
     UsersDetailsComponent,
-    NgSelectComponent,
     NgClass,
     TitleCasePipe,
     UpperCasePipe,
+    TitleHeaderComponent,
   ],
 })
 export class UsersList implements OnInit, OnDestroy {
@@ -35,7 +35,7 @@ export class UsersList implements OnInit, OnDestroy {
   selectedUser = signal<UserI | null>(null);
 
   searchInputControl: UntypedFormControl = new UntypedFormControl();
-  statusControl: FormControl = new FormControl(0);
+  statusControl: FormControl<boolean | null> = new FormControl(null);
 
   permission = PermissionCode;
 
@@ -72,23 +72,12 @@ export class UsersList implements OnInit, OnDestroy {
     this.searchInputControl.valueChanges
       .pipe(debounceTime(700), takeUntil(this._unsubscribeAll))
       .subscribe((search: string) => {
-        if (search) this.getAll(1, search === '' ? null : search, null);
+        if (search) this.getAll(1, search === '' ? null : search, this.statusControl.value);
       });
 
     this.statusControl.valueChanges
       .pipe(takeUntil(this._unsubscribeAll))
-      .subscribe((res: number) => {
-        let status: boolean | null;
-        switch (res) {
-          case 1:
-            status = true;
-            break;
-          case 2:
-            status = false;
-            break;
-          default:
-            status = null;
-        }
+      .subscribe((status: boolean | null) => {
         this.getAll(
           1,
           this.searchInputControl.value === '' ? null : this.searchInputControl.value,
@@ -163,7 +152,11 @@ export class UsersList implements OnInit, OnDestroy {
    * @param page
    */
   onPageChange(page: number): void {
-    this.getAll(page, null, null);
+    this.getAll(
+      page,
+      this.searchInputControl.value === '' ? null : this.searchInputControl.value,
+      this.statusControl.value,
+    );
   }
 
   /**
@@ -172,7 +165,11 @@ export class UsersList implements OnInit, OnDestroy {
    */
   onLimitChange(limit: number): void {
     this.limit.set(limit);
-    this.getAll(1, null, null);
+    this.getAll(
+      1,
+      this.searchInputControl.value === '' ? null : this.searchInputControl.value,
+      this.statusControl.value,
+    );
   }
 
   /**
@@ -180,7 +177,7 @@ export class UsersList implements OnInit, OnDestroy {
    */
   clearSearch() {
     this.searchInputControl.reset();
-    this.getAll(1, null, null);
+    this.getAll(1, null, this.statusControl.value);
   }
 
   /**
@@ -189,6 +186,14 @@ export class UsersList implements OnInit, OnDestroy {
   closeModal(load: boolean) {
     this.selectedUser.set(null);
     this.showDetails.set(false);
-    if (load) this.getAll(1, null, null);
+    if (load) this.onChangeStatus(null);
+  }
+
+  /**
+   * Change status
+   * @param status
+   */
+  onChangeStatus(status: boolean | null) {
+    this.statusControl.setValue(status);
   }
 }

@@ -11,8 +11,7 @@ import {
   distributionOrigen,
   Top10PagesI,
   weekVisit,
-  yearVisit,
-  YearVisitDataI,
+  yearVisit
 } from 'app/core/interfaces/home.interface';
 import { HomeService } from 'app/core/services/home.service';
 import { UserService } from 'app/core/services/user.service';

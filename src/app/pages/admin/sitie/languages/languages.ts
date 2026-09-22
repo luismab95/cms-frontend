@@ -1,4 +1,4 @@
-import { AsyncPipe, TitleCasePipe, UpperCasePipe, NgClass } from '@angular/common';
+import { TitleCasePipe, UpperCasePipe, NgClass } from '@angular/common';
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { FormControl, FormsModule, ReactiveFormsModule, UntypedFormControl } from '@angular/forms';
@@ -13,7 +13,6 @@ import { findParameter } from 'app/shared/utils/parameter.utils';
 import { PermissionCode, validAction } from 'app/shared/utils/permission.utils';
 import { debounceTime, Subject, takeUntil } from 'rxjs';
 import { SitieLanguagesDetailsComponent } from './details/details';
-import { NgSelectComponent } from '@ng-select/ng-select';
 
 @Component({
   selector: 'sitie-languages',
@@ -26,14 +25,13 @@ import { NgSelectComponent } from '@ng-select/ng-select';
     PermissionComponent,
     PaginationComponent,
     SitieLanguagesDetailsComponent,
-    NgSelectComponent,
     NgClass,
   ],
 })
 export class SitieLanguagesComponent implements OnInit {
   permission = PermissionCode;
   searchInputControl: UntypedFormControl = new UntypedFormControl();
-  statusControl: FormControl = new FormControl(0);
+  statusControl: FormControl<boolean | null> = new FormControl(null);
 
   urlStatics = signal<string>('');
   limit = signal<number>(10);
@@ -75,23 +73,12 @@ export class SitieLanguagesComponent implements OnInit {
     this.searchInputControl.valueChanges
       .pipe(debounceTime(700), takeUntil(this._unsubscribeAll))
       .subscribe((search: string) => {
-        if (search) this.getAll(1, search === '' ? null : search, null);
+        if (search) this.getAll(1, search === '' ? null : search, this.statusControl.value);
       });
 
     this.statusControl.valueChanges
       .pipe(takeUntil(this._unsubscribeAll))
-      .subscribe((res: number) => {
-        let status: boolean | null;
-        switch (res) {
-          case 1:
-            status = true;
-            break;
-          case 2:
-            status = false;
-            break;
-          default:
-            status = null;
-        }
+      .subscribe((status: boolean | null) => {
         this.getAll(
           1,
           this.searchInputControl.value === '' ? null : this.searchInputControl.value,
@@ -164,7 +151,7 @@ export class SitieLanguagesComponent implements OnInit {
    */
   clearSearch() {
     this.searchInputControl.reset();
-    this.getAll(1, null, null);
+    this.getAll(1, null, this.statusControl.value);
   }
 
   /**
@@ -172,7 +159,11 @@ export class SitieLanguagesComponent implements OnInit {
    * @param page
    */
   onPageChange(page: number): void {
-    this.getAll(page, null, null);
+    this.getAll(
+      page,
+      this.searchInputControl.value === '' ? null : this.searchInputControl.value,
+      this.statusControl.value,
+    );
   }
 
   /**
@@ -181,7 +172,11 @@ export class SitieLanguagesComponent implements OnInit {
    */
   onLimitChange(limit: number): void {
     this.limit.set(limit);
-    this.getAll(1, null, null);
+    this.getAll(
+      1,
+      this.searchInputControl.value === '' ? null : this.searchInputControl.value,
+      this.statusControl.value,
+    );
   }
 
   /**
@@ -190,6 +185,14 @@ export class SitieLanguagesComponent implements OnInit {
   closeModal(load: boolean) {
     this.selectedLanguage.set(null);
     this.showDetails.set(false);
-    if (load) this.getAll(1, null, null);
+    if (load) this.onChangeStatus(null);
+  }
+
+  /**
+   * Change status
+   * @param status
+   */
+  onChangeStatus(status: boolean | null) {
+    this.statusControl.setValue(status);
   }
 }

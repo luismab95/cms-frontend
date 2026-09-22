@@ -1,33 +1,49 @@
-<div class="flex-1 flex flex-col min-w-0 overflow-hidden bg-transparent">
+<div class="w-full h-full min-h-0 flex flex-col overflow-hidden">
   <section
     data-aos="fade-left"
     data-aos-duration="1000"
-    class="flex-1 flex flex-col min-w-0 overflow-y-auto rounded-2xl border border-slate-200/80 bg-white shadow-sm overflow-hidden"
+    class="w-full h-full min-h-0 flex flex-col overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-sm"
   >
-    <div class="p-6 pb-4 bg-white">
-      <!-- header -->
-      <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+    <div class="shrink-0 p-3 lg:p-6 pb-1! bg-white">
+      <!-- Header -->
+      <div
+        data-aos="fade-up"
+        data-aos-duration="1000"
+        class="flex flex-col md:flex-row md:items-center justify-between gap-3 pb-1"
+      >
         <div>
           <div class="flex items-center gap-3">
-            <h1 class="text-xl font-bold text-slate-900 tracking-tight">Idiomas</h1>
-            <span
-              class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-bold bg-indigo-50 text-indigo-700 border border-indigo-200"
+            <div
+              class="w-16 h-10 lg:w-10 rounded-xl bg-indigo-600 text-white flex items-center justify-center shadow-sm shadow-blue-500/20"
             >
-              {{ totalLanguage() }} {{ totalLanguage() === 1 ? 'idioma' : 'idiomas' }}
-            </span>
+              <i class="fa-solid fa-language"></i>
+            </div>
+            <div>
+              <h1
+                class="text-xl sm:text-2xl font-bold tracking-tight text-slate-900 flex items-center gap-2.5"
+              >
+                Idiomas
+                <span
+                  class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-bold bg-indigo-50 text-indigo-700 border border-indigo-200"
+                >
+                  {{ totalLanguage() }}
+                  {{ totalLanguage() === 1 ? 'idioma' : 'idiomas' }}
+                </span>
+              </h1>
+              <p class="text-xs sm:text-sm text-slate-500 font-normal">
+                Gestiona y controla la configuración y diccionario multilingüe para las paginas del
+                sitio.
+              </p>
+            </div>
           </div>
-          <p class="text-sm text-slate-500 mt-1">
-            Configuración y diccionario multilingüe para las paginas del sitio.
-          </p>
         </div>
-        <!-- Global Action Group -->
-        <div class="flex items-center gap-2">
+        <!-- Action -->
+        <div class="flex items-center justify-end gap-2">
           @if (validPermission(permission.createLanguage)) {
-            <!-- Add language button -->
             <button
               (click)="openDetailsModal(null)"
-              class="cursor-pointer w-full flex justify-center items-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-semibold text-white bg-indigo-500 hover:bg-indigo-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 active:transform active:scale-[0.99] transition duration-150 ease-in-out disabled:cursor-not-allowed disabled:bg-indigo-300"
               type="button"
+              class="cursor-pointer h-10 flex items-center justify-center py-3 px-4 rounded-lg shadow-sm text-sm font-semibold text-white bg-indigo-500 hover:bg-indigo-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 active:scale-[0.99] transition"
             >
               <span class="flex items-center justify-center gap-2">
                 <i class="fa-solid fa-plus"></i>
@@ -37,26 +53,30 @@
           }
         </div>
       </div>
-      <!-- Filters Row -->
+
+      <!-- Filters -->
       <div
-        class="mt-4 flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 pt-4 border-t border-slate-100"
+        data-aos="fade-left"
+        data-aos-duration="1000"
+        class="mt-2 lg:mt-4 flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 pt-4 border-t border-slate-100"
       >
-        <!-- Search, Filters, Columns & View Switcher -->
-        <div class="flex items-center flex-row justify-between gap-2 w-full">
+        <div class="flex items-center flex-col lg:flex-row justify-between gap-2 lg:gap-6 w-full">
           @if (validPermission(permission.listLanguage)) {
-            <!-- Inline Search -->
-            <div class="relative w-full">
+            <!-- Search -->
+            <div class="relative w-full max-w-full lg:max-w-3xl text-sm">
               <span
-                class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-[20px] pointer-events-none"
+                class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"
               >
-                <i class="fa-solid fa-magnifying-glass fa-xs"></i>
+                <i class="fa-solid fa-magnifying-glass"></i>
               </span>
+
               <input
                 [formControl]="searchInputControl"
-                class="w-full h-12 pl-10 pr-10 py-2 rounded-lg font-normal leading-4 bg-white border border-slate-200 text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-slate-500 focus:border-slate-500"
+                class="w-full h-10 pl-10 pr-10 py-2 rounded-lg font-normal leading-4 bg-white border border-slate-200 text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-slate-500 focus:border-slate-500"
                 placeholder="Buscar idioma..."
                 type="text"
               />
+
               @if (searchInputControl.value && searchInputControl.value !== '') {
                 <button
                   type="button"
@@ -68,40 +88,68 @@
                 </button>
               }
             </div>
-            <!-- status -->
-            <div class="w-28">
-              <ng-select
-                id="status"
-                [clearable]="false"
-                [items]="[
-                  { id: 0, name: 'Todos' },
-                  { id: 1, name: 'Activos' },
-                  { id: 2, name: 'Inactivos' },
-                ]"
-                [formControl]="statusControl"
-                bindLabel="name"
-                bindValue="id"
-                notFoundText="No se encontraron elementos"
+
+            <!-- Status -->
+            <div
+              class="w-full lg:w-auto inline-flex items-center justify-center p-1 bg-slate-100/90 rounded-xl border border-slate-200/80 text-xs font-semibold text-slate-600"
+            >
+              <button
+                [ngClass]="{
+                  'bg-white text-slate-900  font-bold shadow-xs border border-slate-200/40':
+                    this.statusControl.value === null,
+                }"
+                (click)="onChangeStatus(null)"
+                class="cursor-pointer px-3.5 py-1.5 rounded-lg text-slate-600 hover:text-slate-900 transition-all flex items-center gap-1.5"
+                type="button"
               >
-              </ng-select>
+                <span>Todos</span>
+              </button>
+              <button
+                [ngClass]="{
+                  'bg-white text-slate-900  font-bold shadow-xs border border-slate-200/40':
+                    this.statusControl.value,
+                }"
+                (click)="onChangeStatus(true)"
+                class="cursor-pointer px-3.5 py-1.5 rounded-lg text-slate-600 hover:text-slate-900 transition-all flex items-center gap-1.5"
+                type="button"
+              >
+                <span class="inline-block w-2 h-2 rounded-full bg-emerald-500"></span>
+                <span>Activos</span>
+              </button>
+              <button
+                [ngClass]="{
+                  'bg-white text-slate-900  font-bold shadow-xs border border-slate-200/40':
+                    this.statusControl.value === false,
+                }"
+                (click)="onChangeStatus(false)"
+                class="cursor-pointer px-3.5 py-1.5 rounded-lg text-slate-600 hover:text-slate-900 transition-all flex items-center gap-1.5"
+                type="button"
+              >
+                <span class="inline-block w-2 h-2 rounded-full bg-slate-400"></span>
+                <span>Inactivos</span>
+              </button>
             </div>
           }
         </div>
       </div>
-      <!-- table -->
-      <div class="flex-1 px-1 lg:px-0 py-3 pb-2">
-        <div
-          class="bg-white border border-slate-200 rounded-xl shadow-xs overflow-hidden flex flex-col"
-        >
-          @let records = languages().records;
-          @if (validPermission(permission.listLanguage)) {
-            <!-- Table Responsive Wrapper -->
-            <div class="overflow-x-auto">
-              <table class="w-full text-left border-collapse text-xs">
-                <!-- Table Header -->
+    </div>
+
+    <!-- CONTENT -->
+    <div class="flex-1 min-h-0 flex flex-col overflow-hidden">
+      @let records = languages().records;
+
+      @if (validPermission(permission.listLanguage)) {
+        <div class="flex-1 min-h-0 px-3 lg:px-6 py-3 pb-2 overflow-hidden mb-4">
+          <div
+            [class.max-h-100]="records.length === 0"
+            class="w-full h-full min-h-0 bg-white border border-slate-200 shadow-xs overflow-hidden flex flex-col rounded-xl"
+          >
+            <!-- Table -->
+            <div class="flex-1 min-h-0 overflow-x-auto overflow-y-auto">
+              <table class="w-full min-w-200 text-left border-collapse text-xs">
                 <thead>
                   <tr
-                    class="bg-slate-50/90 border-b border-slate-200 text-slate-600 font-semibold text-[11px] uppercase tracking-wider select-none"
+                    class="rounded-xl sticky top-0 z-10 bg-slate-50/95 border-b! border-slate-200 text-slate-600 font-semibold text-[11px] uppercase tracking-wider select-none"
                   >
                     <th class="px-4 py-3 text-left w-24">Acciones</th>
                     <th class="w-14 px-2 py-3 text-center">Imágen</th>
@@ -110,56 +158,13 @@
                     <th class="px-3 py-3 w-24">Estado</th>
                   </tr>
                 </thead>
+
+                <!-- Body -->
                 <tbody class="divide-y divide-slate-100 font-normal text-slate-700">
-                  @if (records.length === 0) {
-                    <tr>
-                      <td colspan="6" class="px-2 py-2.5 text-center">
-                        <div
-                          class="min-h-full px-6 py-12 text-center flex flex-col items-center justify-center"
-                        >
-                          <div class="relative mb-6">
-                            <div
-                              class="w-20 h-20 rounded-2xl bg-linear-to-tr from-blue-50 to-indigo-100 flex items-center justify-center border border-blue-100 shadow-inner"
-                            >
-                              <i class="fa-solid fa-magnifying-glass text-indigo-500 fa-2xl"></i>
-                            </div>
-
-                            <span
-                              class="absolute -top-1 -right-1 w-3.5 h-3.5 rounded-full bg-amber-400 ring-4 ring-white"
-                            ></span>
-
-                            <span
-                              class="absolute -bottom-1 -left-1 w-2.5 h-2.5 rounded-full bg-blue-400 ring-2 ring-white"
-                            ></span>
-                          </div>
-
-                          @if (searchInputControl.value) {
-                            <h2 class="text-xl font-bold text-slate-900 tracking-tight mb-2">
-                              No se encontraron coincidencias para tu búsqueda
-                            </h2>
-
-                            <p class="text-sm text-slate-500 max-w-md mx-auto leading-relaxed mb-6">
-                              No existen resultados que coincidan con
-                              <span class="font-medium text-slate-700">
-                                “{{ searchInputControl.value }}” </span
-                              >. Intenta modificar tu búsqueda.
-                            </p>
-                          } @else {
-                            <h2 class="text-xl font-bold text-slate-900 tracking-tight mb-2">
-                              No se encontraron registros
-                            </h2>
-
-                            <p class="text-sm text-slate-500 max-w-md mx-auto leading-relaxed mb-6">
-                              No existen resultados. Intenta agregar un nuevo idioma.
-                            </p>
-                          }
-                        </div>
-                      </td>
-                    </tr>
-                  }
+                  <!-- RECORDS -->
                   @for (language of records; track $index) {
                     <tr
-                      class="hover:bg-slate-50/80 transition hover:border-l-4 hover:border-l-indigo-600 cursor-pointer"
+                      class="border-slate-200 border-b hover:bg-slate-50/80 transition hover:border-l-4 hover:border-l-indigo-600 cursor-pointer"
                     >
                       <td class="px-4 py-2.5 text-left whitespace-nowrap">
                         <div class="inline-flex items-center gap-1">
@@ -208,27 +213,76 @@
                         </span>
                       </td>
                     </tr>
+                  } @empty {
+                    <tr>
+                      <td colspan="6">
+                        <div
+                          class="px-24 py-12 text-center flex flex-col items-center justify-center gap-2"
+                        >
+                          <div class="relative mb-6">
+                            <div
+                              class="w-20 h-20 rounded-2xl bg-linear-to-tr from-blue-50 to-indigo-100 flex items-center justify-center border border-blue-100 shadow-inner"
+                            >
+                              <i class="fa-solid fa-magnifying-glass text-indigo-500 fa-3x"></i>
+                            </div>
+                            <span
+                              class="absolute -top-1 -right-1 w-3.5 h-3.5 rounded-full bg-amber-400 ring-4 ring-white"
+                            ></span>
+                            <span
+                              class="absolute -bottom-1 -left-1 w-2.5 h-2.5 rounded-full bg-blue-400 ring-2 ring-white"
+                            ></span>
+                          </div>
+
+                          <h2 class="text-xl font-bold text-slate-900 tracking-tight mb-2">
+                            {{
+                              searchInputControl.value
+                                ? 'No se encontraron coincidencias para tu búsqueda'
+                                : ' No se encontraron registros'
+                            }}
+                          </h2>
+                          <p class="text-sm text-slate-500 max-w-md mx-auto leading-relaxed mb-6">
+                            @if (searchInputControl.value) {
+                              No existen resultados que coincidan con
+                              <span class="font-medium text-slate-700">
+                                “{{ searchInputControl.value }}”.
+                              </span>
+                              <br />
+                              Intenta modificar tu búsqueda.
+                            } @else {
+                              No existen resultados. <br />
+                              Intenta agregar un nuevo idioma.
+                            }
+                          </p>
+                        </div>
+                      </td>
+                    </tr>
                   }
                 </tbody>
               </table>
             </div>
-          } @else {
-            <permission-component />
-          }
+          </div>
         </div>
-      </div>
-    </div>
 
-    @if (records.length > 0) {
-      <pagination-component
-        [page]="languages().page"
-        [limit]="limit()"
-        [total]="languages().total"
-        [pages]="languages().totalPage"
-        (pageEvent)="onPageChange($event)"
-        (limitEvent)="onLimitChange($event)"
-      />
-    }
+        <!-- PAGINATION -->
+        @if (records.length > 0) {
+          <div class="shrink-0 px-1 lg:px-6 pb-2">
+            <pagination-component
+              [page]="languages().page"
+              [limit]="limit()"
+              [total]="languages().total"
+              [pages]="languages().totalPage"
+              (pageEvent)="onPageChange($event)"
+              (limitEvent)="onLimitChange($event)"
+            />
+          </div>
+        }
+      } @else {
+        <!-- Permission -->
+        <div class="flex-1 min-h-0 flex items-center justify-center">
+          <permission-component />
+        </div>
+      }
+    </div>
   </section>
 </div>
 
