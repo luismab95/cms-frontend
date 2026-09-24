@@ -5,7 +5,7 @@
       <div class="border-b border-slate-100 bg-white px-6 py-5">
         <div class="flex items-center justify-between">
           <div>
-            <h2 class="text-base font-bold text-slate-900">Información General</h2>
+            <h2 class="text-xl font-bold text-slate-900">Información General</h2>
             <p class="text-xs text-slate-500 mt-0.5">
               Información básica y general del sitio web, incluyendo los elementos fundamentales
               necesarios para su correcta identificación. Comprende datos como el nombre del sitio,
@@ -24,7 +24,7 @@
           >
             Nombre <span class="text-rose-500 font-bold">*</span>
           </label>
-          <div class="relative rounded-lg shadow-sm">
+          <div class="relative rounded-lg">
             <div
               class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400"
             >
@@ -63,7 +63,7 @@
           >
             Dominio <span class="text-rose-500 font-bold">*</span>
           </label>
-          <div class="relative rounded-lg shadow-sm">
+          <div class="relative rounded-lg">
             <div
               class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400"
             >
@@ -102,7 +102,7 @@
           >
             Descripción <span class="text-rose-500 font-bold">*</span>
           </label>
-          <div class="relative rounded-lg shadow-sm">
+          <div class="relative rounded-lg">
             <div
               class="absolute left-0 top-4 pl-3.5 flex items-center pointer-events-none text-slate-400"
             >
@@ -143,64 +143,163 @@
       <div class="border-b border-slate-100 bg-white px-6 py-5">
         <div class="flex items-center justify-between">
           <div>
-            <h2 class="text-base font-bold text-slate-900">Diseño</h2>
+            <h2 class="text-xl font-bold text-slate-900">Plantilla</h2>
             <p class="text-xs text-slate-500 mt-0.5">
-              Base prediseñada para la estructuración y organización de los contenidos de todas las
-              páginas del sitio web, estableciendo una arquitectura visual y funcional consistente
-              que permita mantener la misma línea de diseño, distribución y jerarquía de información
-              en cada sección.
+              Define la plantilla estructural maestra que heredarán todas las páginas del sitio web
+              (Encabezado/Header y Pie de página/Footer globales).
             </p>
           </div>
         </div>
       </div>
       <div class="p-6 space-y-6">
         <!-- Template -->
-        <div>
-          <label
-            [class.text-red-500!]="validateFormControl(sitieForm, 'templateId')"
-            class="block text-xs font-semibold uppercase tracking-wider text-slate-700 mb-1.5"
-            for="templateId"
-          >
-            Plantilla <span class="text-rose-500 font-bold">*</span>
-          </label>
-          <div
-            [class.border-red-500!.text-red-500!]="validateFormControl(sitieForm, 'templateId')"
-            [class.border!]="validateFormControl(sitieForm, 'templateId')"
-            [class.text-red-500!]="validateFormControl(sitieForm, 'templateId')"
-            [class.placeholder:text-red-500!]="validateFormControl(sitieForm, 'templateId')"
-            class="h-10 block w-full text-sm text-slate-900 placeholder-slate-400 bg-slate-50/50 rounded-lg focus:outline-none focus:ring-0.5 focus:ring-indigo-600 focus:border-indigo-600 focus:bg-white transition-colors"
-          >
-            <ng-select
-              [class.border-red-500!.text-red-500!]="validateFormControl(sitieForm, 'templateId')"
-              [class.text-red-500!]="validateFormControl(sitieForm, 'templateId')"
-              [class.placeholder:text-red-500!]="validateFormControl(sitieForm, 'templateId')"
-              id="templateId"
-              [clearable]="false"
-              [searchable]="false"
-              [items]="templates().records"
-              [formControlName]="'templateId'"
-              bindLabel="name"
-              bindValue="id"
-              notFoundText="No se encontraron elementos"
+        <div class="relative w-full">
+          <!-- Carousel -->
+          <div class="overflow-hidden rounded-2xl">
+            @let template = currentTemplate;
+            <div
+              class="group w-full rounded-2xl border border-gray-200 bg-white shadow-sm transition-all duration-300 hover:shadow-md"
             >
-              <ng-template ng-label-tmp let-item="item">
-                <div class="flex items-center gap-2 text-sm text-slate-900 placeholder-slate-400">
-                  <i
-                    class="fa-solid fa-palette text-slate-400"
-                    [class.text-red-500!]="validateFormControl(sitieForm, 'templateId')"
-                  ></i>
-                  {{ item.name }}
+              <!-- Preview -->
+              <div class="h-56 lg:h-125 overflow-hidden w-full border-b border-slate-200">
+                <div
+                  class="h-full w-full relative transition-transform duration-500 group-hover:scale-105 overflow-y-auto"
+                >
+                  <div class="absolute w-full h-full flex items-center justify-center z-100"></div>
+
+                  <!-- header -->
+                  <div class="w-full header sticky z-99">
+                    <grid
+                      [gridType]="'header'"
+                      [languageId]="1"
+                      [preview]="true"
+                      [previewType]="'desktop'"
+                    />
+                  </div>
+                  <!-- fake content -->
+                  <div
+                    class="flex w-full flex-col items-center gap-6 py-10 border-t border-b border-slate-200 bg-gray-200"
+                  >
+                    <!-- Icon -->
+                    <div
+                      class="flex h-16 w-16 items-center justify-center rounded-2xl bg-gray-100 text-indigo-600 shadow-sm"
+                    >
+                      <i class="fa-solid fa-layer-group text-3xl"></i>
+                    </div>
+
+                    <!-- Content -->
+                    <div class="flex max-w-xl flex-col items-center gap-2 text-center">
+                      <!-- Badge -->
+                      <span
+                        class="rounded-full bg-indigo-50 px-3 py-1 text-xs font-semibold uppercase tracking-widest text-indigo-700"
+                      >
+                        Espacio Reservado de Contenido
+                      </span>
+
+                      <!-- Title -->
+                      <h3 class="text-2xl font-bold tracking-tight text-gray-900">
+                        Área Dinámica del Page Builder
+                      </h3>
+
+                      <!-- Description -->
+                      <p class="text-sm leading-6 text-gray-500">
+                        Aquí se renderiza el contenido particular de cada página (Página de Inicio,
+                        Catálogo de Productos, Blog, Checkout o Formularios) preservando Header y
+                        Footer unificados.
+                      </p>
+                    </div>
+                  </div>
+                  <!-- footer -->
+                  <div class="w-full footer">
+                    <grid
+                      [gridType]="'footer'"
+                      [languageId]="1"
+                      [preview]="true"
+                      [previewType]="'desktop'"
+                    />
+                  </div>
                 </div>
-              </ng-template>
-            </ng-select>
+
+                <!-- Status -->
+                @if (sitieForm.get('templateId')?.value === template.id) {
+                  <span
+                    class="absolute left-6 top-6 inline-flex items-center gap-1.5 rounded-lg bg-emerald-600 px-2.5 py-1 text-xs font-semibold text-white shadow-sm"
+                  >
+                    <span class="h-1.5 w-1.5 rounded-full bg-white"></span>
+                    Actualmente asignado
+                  </span>
+                } @else {
+                  <span
+                    class="absolute left-6 top-6 inline-flex items-center gap-1.5 rounded-lg bg-amber-600 px-2.5 py-1 text-xs font-semibold text-white shadow-sm"
+                  >
+                    <span class="h-1.5 w-1.5 rounded-full bg-white"></span>
+                    Disponible
+                  </span>
+                }
+              </div>
+              <!-- Header -->
+              <div class="mt-4 flex items-center justify-start gap-3 px-6">
+                @if (sitieForm.get('templateId')?.value === template?.id) {
+                  <i class="fa-solid fa-circle-check shrink-0 text-indigo-600"></i>
+                } @else {
+                  <div class="flex gap-2 items-center cursor-pointer justify-center">
+                    <input
+                      id="template"
+                      appTooltip="Seleccionar"
+                      type="checkbox"
+                      class="h-5 w-5 cursor-pointer appearance-none rounded-full border-2 border-gray-300 bg-white checked:border-indigo-600 checked:bg-indigo-600 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1 transition-all duration-200"
+                      (change)="onSelectTemplate(template.id!, $event)"
+                    />
+                  </div>
+                }
+                <h4 class="truncate text-lg font-bold text-gray-900">
+                  {{ template.name }}
+                </h4>
+              </div>
+              <!-- Description -->
+              <p class="mt-1 line-clamp-2 min-h-10 text-sm leading-5 text-gray-500 px-6">
+                {{ template.description }}
+              </p>
+              <br /><br />
+            </div>
           </div>
 
-          <!-- Errores -->
-          @if (getErrorMessage(sitieForm, 'templateId') !== '') {
-            <p class="mt-1.5 flex items-center gap-1 text-sm text-red-600">
-              <i class="fa-solid fa-circle-exclamation"></i>
-              <span>{{ getErrorMessage(sitieForm, 'templateId') }}</span>
-            </p>
+          @if (templates().records.length > 1) {
+            <!-- Previous -->
+            <button
+              type="button"
+              [disabled]="this.selectedTemplate() === 0"
+              (click)="previous()"
+              aria-label="Template anterior"
+              class="disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer absolute left-2 top-1/2 z-10 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-gray-200 bg-white text-gray-700 shadow-md transition hover:bg-indigo-50 hover:text-indigo-600 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            >
+              <i class="fa-solid fa-chevron-left"></i>
+            </button>
+            <!-- Next -->
+            <button
+              type="button"
+              [disabled]="this.selectedTemplate() === this.templates().records.length - 1"
+              (click)="next()"
+              aria-label="Siguiente template"
+              class="disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer absolute right-2 top-1/2 z-10 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-gray-200 bg-white text-gray-700 shadow-md transition hover:bg-indigo-50 hover:text-indigo-600 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            >
+              <i class="fa-solid fa-chevron-right"></i>
+            </button>
+            <!-- Dots -->
+            <div class="mt-4 flex items-center justify-center gap-2">
+              @for (item of templates().records; track item.id; let i = $index) {
+                <button
+                  type="button"
+                  (click)="selectTemplate(i)"
+                  [attr.aria-label]="'Seleccionar ' + item.name"
+                  class="cursor-pointer h-2 rounded-full transition-all duration-200"
+                  [class.w-6]="selectedTemplate() === i"
+                  [class.bg-indigo-600]="selectedTemplate() === i"
+                  [class.w-2]="selectedTemplate() !== i"
+                  [class.bg-gray-300]="selectedTemplate() !== i"
+                ></button>
+              }
+            </div>
           }
         </div>
       </div>
@@ -211,7 +310,7 @@
       <div class="border-b border-slate-100 bg-white px-6 py-5">
         <div class="flex items-center justify-between">
           <div>
-            <h2 class="text-base font-bold text-slate-p00">Zona de peligro</h2>
+            <h2 class="text-xl font-bold text-slate-p00">Zona de peligro</h2>
             <p class="text-xs text-slate-500 mt-0.5">
               Las opciones disponibles en esta sección corresponden a funciones de administración y
               configuración general del sitio web. Estos ajustes pueden afectar el funcionamiento,
@@ -223,7 +322,7 @@
       </div>
       <div class="p-6 space-y-6">
         <!--Desactivar -->
-        <div class="px-6 transition hover:bg-slate-50/60">
+        <div class="px-1 lg:px-6 transition hover:bg-slate-50/60">
           @let status = sitieForm.get('status')?.value;
           <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div class="space-y-1.5 max-w-xl">
@@ -288,7 +387,7 @@
         </div>
         <div class="border-b border-slate-100"></div>
         <!--Mantenimiento -->
-        <div class="px-6 transition hover:bg-slate-50/60">
+        <div class="px-1 lg:px-6 transition hover:bg-slate-50/60">
           @let maintenance = sitieForm.get('maintenance')?.value;
           <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div class="space-y-1.5 max-w-xl">

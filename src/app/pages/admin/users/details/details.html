@@ -58,7 +58,7 @@
             >
               Nombres <span class="text-red-500 font-bold">*</span>
             </label>
-            <div class="relative rounded-lg shadow-sm">
+            <div class="relative rounded-lg">
               <div
                 class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400"
               >
@@ -98,7 +98,7 @@
             >
               Apellidos <span class="text-red-500 font-bold">*</span>
             </label>
-            <div class="relative rounded-lg shadow-sm">
+            <div class="relative rounded-lg">
               <div
                 class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400"
               >
@@ -138,7 +138,7 @@
             >
               Dirección de correo electrónico <span class="text-rose-500 font-bold">*</span>
             </label>
-            <div class="relative rounded-lg shadow-sm">
+            <div class="relative rounded-lg">
               <div
                 class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400"
               >
@@ -178,14 +178,14 @@
             >
               Rol asignado <span class="text-rose-500 font-bold">*</span>
             </label>
-            <div class="relative w-full">
+            <div class="relative rounded-lg">
               @let selectedRole = getRole(userForm.get('roleId')?.value);
               <!-- Trigger -->
               <button
                 id="role-selector-trigger"
                 type="button"
                 (click)="toggleDropdown()"
-                class="cursor-pointer w-full rounded-xl border border-slate-200 bg-white pl-1 pr-4 py-4 text-left shadow-sm transition-all duration-200 hover:border-indigo-300 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-indigo-500/30"
+                class="cursor-pointer w-full rounded-xl border border-slate-200 bg-white pl-1 pr-4 py-4 text-left transition-all duration-200 hover:border-indigo-300 focus:outline-none focus:ring-2 focus:ring-indigo-500/30"
                 [class.border-indigo-500]="isOpen()"
                 [class.ring-2]="isOpen()"
                 [class.border-red-500!.text-red-500!]="validateFormControl(userForm, 'roleId')"
@@ -233,7 +233,7 @@
                       <div>
                         <span
                           [class.text-red-500!]="validateFormControl(userForm, 'roleId')"
-                          class="font-semibold text-slate-900"
+                          class="font-semibold text-slate-900 text-sm"
                         >
                           Seleccionar rol
                         </span>

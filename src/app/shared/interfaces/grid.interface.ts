@@ -1,3 +1,4 @@
+import { CanvasT } from 'app/core/interfaces/page.interface';
 import { ElementDataI } from './element.interface';
 
 export interface SelectedItemsInGridI {
@@ -5,6 +6,7 @@ export interface SelectedItemsInGridI {
   row: RowI | null;
   column: ColumnI | null;
   element: ElementI | null;
+  canvas: CanvasT;
 }
 
 export interface PageElementsI {

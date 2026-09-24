@@ -5,7 +5,7 @@
       <div class="border-b border-slate-100 bg-white px-6 py-5">
         <div class="flex items-center justify-between">
           <div>
-            <h2 class="text-base font-bold text-slate-900">Cambia tu contraseña</h2>
+            <h2 class="text-xl font-bold text-slate-900">Cambia tu contraseña</h2>
             <p class="text-xs text-slate-500 mt-0.5">
               Ingresa una nueva contraseña segura para proteger tu cuenta.
             </p>
@@ -24,7 +24,7 @@
               Nueva Contraseña
             </label>
           </div>
-          <div class="relative rounded-lg shadow-sm">
+          <div class="relative rounded-lg">
             <div
               class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400"
             >
@@ -245,7 +245,7 @@
               Confirmar nueva contraseña
             </label>
           </div>
-          <div class="relative rounded-lg shadow-sm">
+          <div class="relative rounded-lg">
             <div
               class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400"
             >
@@ -315,7 +315,7 @@
       <div class="border-b border-slate-100 bg-white px-6 py-5">
         <div class="flex items-center justify-between">
           <div>
-            <h2 class="text-base font-bold text-slate-p00">Preferencias de seguridad</h2>
+            <h2 class="text-xl font-bold text-slate-p00">Preferencias de seguridad</h2>
             <p class="text-xs text-slate-500 mt-0.5">
               Mantenga su cuenta más segura con las siguientes preferencias.
             </p>
@@ -324,7 +324,7 @@
       </div>
       <div class="p-6 space-y-6">
         <!--MFA -->
-        <div class="px-6 transition hover:bg-slate-50/60">
+        <div class="px-2 lg:px-6 transition hover:bg-slate-50/60">
           @let status = securityForm.get('twoFactorAuth')?.value;
           <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div class="space-y-1.5 max-w-xl">

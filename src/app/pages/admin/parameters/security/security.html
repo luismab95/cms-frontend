@@ -5,7 +5,7 @@
       <div class="border-b border-slate-100 bg-white px-6 py-5">
         <div class="flex items-center justify-between">
           <div>
-            <h2 class="text-base font-bold text-slate-900">Sesiones</h2>
+            <h2 class="text-xl font-bold text-slate-900">Sesiones</h2>
             <p class="text-xs text-slate-500 mt-0.5">
               Configura y administra las políticas relacionadas con las sesiones de los usuarios.
               Define parámetros como el tiempo de duración de las sesiones y el cierre automático
@@ -24,7 +24,7 @@
           >
             Números de intentos para inicio de sesión <span class="text-rose-500 font-bold">*</span>
           </label>
-          <div class="relative rounded-lg shadow-sm">
+          <div class="relative rounded-lg">
             <div
               class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400"
             >
@@ -64,7 +64,7 @@
             Tiempo cierre de sesión por inactividad (minutos)
             <span class="text-rose-500 font-bold">*</span>
           </label>
-          <div class="relative rounded-lg shadow-sm">
+          <div class="relative rounded-lg">
             <div
               class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400"
             >
@@ -104,7 +104,7 @@
       <div class="border-b border-slate-100 bg-white px-6 py-5">
         <div class="flex items-center justify-between">
           <div>
-            <h2 class="text-base font-bold text-slate-p00">Verificación de usuarios - OTP</h2>
+            <h2 class="text-xl font-bold text-slate-p00">Verificación de usuarios - OTP</h2>
             <p class="text-xs text-slate-500 mt-0.5">
               Configura y administra las políticas de verificación de usuarios mediante códigos de
               un solo uso (OTP). Define cómo y cuándo se solicitará la verificación adicional para
@@ -124,7 +124,7 @@
           >
             Longitud de código de verificación OTP <span class="text-rose-500 font-bold">*</span>
           </label>
-          <div class="relative rounded-lg shadow-sm">
+          <div class="relative rounded-lg">
             <div
               class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400"
             >
@@ -164,7 +164,7 @@
             Tiempo para validar reenvío de código OTP (segundos)
             <span class="text-rose-500 font-bold">*</span>
           </label>
-          <div class="relative rounded-lg shadow-sm">
+          <div class="relative rounded-lg">
             <div
               class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400"
             >
@@ -208,7 +208,7 @@
             [class.border!]="validateFormControl(securityForm, 'otpType')"
             [class.text-red-500!]="validateFormControl(securityForm, 'otpType')"
             [class.placeholder:text-red-500!]="validateFormControl(securityForm, 'otpType')"
-            class="relative rounded-sm shadow-sm"
+            class="relative rounded-lg"
           >
             <ng-select
               [class.border-red-500!.text-red-500!]="validateFormControl(securityForm, 'otpType')"
@@ -254,7 +254,7 @@
       <div class="border-b border-slate-100 bg-white px-6 py-5">
         <div class="flex items-center justify-between">
           <div>
-            <h2 class="text-base font-bold text-slate-p00">Contraseñas</h2>
+            <h2 class="text-xl font-bold text-slate-p00">Contraseñas</h2>
             <p class="text-xs text-slate-500 mt-0.5">
               Configura y administra las políticas de seguridad de las contraseñas de los usuarios.
               Define los requisitos mínimos de complejidad, longitud, caducidad y otras condiciones
@@ -274,7 +274,7 @@
           >
             Longitud mínima de contraseñas <span class="text-rose-500 font-bold">*</span>
           </label>
-          <div class="relative rounded-lg shadow-sm">
+          <div class="relative rounded-lg">
             <div
               class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400"
             >

@@ -167,6 +167,13 @@ export const routes: Routes = [
                       inject(Router).currentNavigation()?.extras?.state!['micrositieId'],
                     ),
                   sitie: () => inject(SitieService).find(),
+                  templates: () =>
+                    inject(TemplateService).getAll({
+                      page: 1,
+                      limit: 99999,
+                      search: null,
+                      status: true,
+                    }),
                   pages: () =>
                     inject(PageService).getAll({
                       limit: 10,
@@ -253,13 +260,62 @@ export const routes: Routes = [
               },
             ],
           },
-          // {
-          //     path: 'templates',
-          //     loadChildren: () =>
-          //         import(
-          //             'app/modules/admin/templates/templates.routes'
-          //         ),
-          // },
+          {
+            path: 'templates',
+            children: [
+              {
+                path: '',
+                loadComponent: () =>
+                  import('app/pages/admin/templates/list').then((m) => m.TemplatesList),
+                resolve: {
+                  templates: () =>
+                    inject(TemplateService).getAll({
+                      page: 1,
+                      limit: 10,
+                      search: null,
+                      status: null,
+                    }),
+                },
+              },
+              {
+                path: 'detail',
+                loadComponent: () =>
+                  import('app/pages/admin/templates/detail/detail').then((m) => m.TemplatesDetail),
+                resolve: {
+                  template: () =>
+                    inject(TemplateService).find(
+                      inject(Router).currentNavigation()?.extras?.state?.['id'],
+                    ),
+                  sitie: () => inject(SitieService).find(),
+                },
+              },
+              {
+                path: 'canvas',
+                loadComponent: () =>
+                  import('app/pages/admin/templates/detail/canvas/canvas').then((m) => m.TemplatesCanvas),
+                resolve: {
+                  template: () =>
+                    inject(TemplateService).find(
+                      inject(Router).currentNavigation()?.extras?.state?.['id'],
+                    ),
+                  languages: () =>
+                    inject(LanguageService).getAll({
+                      limit: 99999,
+                      page: 1,
+                      search: null,
+                      status: null,
+                    }),
+                  elements: () =>
+                    inject(ElementService).getAll({
+                      limit: 99999,
+                      page: 1,
+                      search: null,
+                      status: null,
+                    }),
+                },
+              },
+            ],
+          },
           {
             path: 'file-manager',
             loadComponent: () =>
@@ -371,7 +427,7 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./pages/landing/router/router').then((m) => m.LandingRouterComponent),
       },
-       {
+      {
         path: 'preview/:micrositie/:page',
         loadComponent: () =>
           import('./pages/landing/router/router').then((m) => m.LandingRouterComponent),

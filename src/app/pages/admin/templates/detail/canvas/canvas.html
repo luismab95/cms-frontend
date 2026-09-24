@@ -1,4 +1,4 @@
-@let page = this.page()!;
+@let template = this.template()!;
 @let preview = this.preview();
 <div
   data-aos="fade-left"
@@ -27,7 +27,7 @@
         <div class="flex flex-col">
           <span
             class="font-semibold text-slate-800 text-[11px] leading-tight text-ellipsis line-clamp-1 max-w-40"
-            >{{ page.name }}
+            >{{ template.name }}
           </span>
           <span
             [class.text-emerald-600]="!previewMode()"
@@ -47,33 +47,31 @@
           </span>
         </div>
 
-        @if (!page.review) {
-          <div class="h-4 w-px bg-slate-200"></div>
-          @if (!previewMode()) {
-            <!-- Live Preview -->
-            <button
-              [disabled]="
-                !validPermission(permission.editContentPage) &&
-                !validPermission(permission.editDesignPage)
-              "
-              class="cursor-pointer h-10 flex items-center gap-2 px-3 py-1.5 text-xs font-medium text-slate-700 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors border border-slate-200 disabled:cursor-not-allowed"
-              title="Abrir vista previa interactiva"
-              (click)="togglePreviewMode()"
-            >
-              <i class="text-slate-500 fa-regular fa-eye"></i>
-              <span>Vista Previa</span>
-            </button>
-          } @else {
-            <!-- edit -->
-            <button
-              class="cursor-pointer h-10 flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-slate-700 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors border border-slate-200"
-              title="Abrir vista previa interactiva"
-              (click)="togglePreviewMode()"
-            >
-              <i class="text-slate-500 fa-solid fa-wand-magic-sparkles"></i>
-              <span>Personalizar</span>
-            </button>
-          }
+        <div class="h-4 w-px bg-slate-200"></div>
+        @if (!previewMode()) {
+          <!-- Live Preview -->
+          <button
+            [disabled]="
+              !validPermission(permission.editContentTemplate) &&
+              !validPermission(permission.editDesignTemplate)
+            "
+            class="cursor-pointer h-10 flex items-center gap-2 px-3 py-1.5 text-xs font-medium text-slate-700 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors border border-slate-200 disabled:cursor-not-allowed"
+            title="Abrir vista previa interactiva"
+            (click)="togglePreviewMode()"
+          >
+            <i class="text-slate-500 fa-regular fa-eye"></i>
+            <span>Vista Previa</span>
+          </button>
+        } @else {
+          <!-- edit -->
+          <button
+            class="cursor-pointer h-10 flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-slate-700 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors border border-slate-200"
+            title="Abrir vista previa interactiva"
+            (click)="togglePreviewMode()"
+          >
+            <i class="text-slate-500 fa-solid fa-wand-magic-sparkles"></i>
+            <span>Personalizar</span>
+          </button>
         }
       </div>
 
@@ -84,8 +82,8 @@
         >
           <button
             [disabled]="
-              !validPermission(permission.editContentPage) &&
-              !validPermission(permission.editDesignPage)
+              !validPermission(permission.editContentTemplate) &&
+              !validPermission(permission.editDesignTemplate)
             "
             [ngClass]="{
               'font-semibold! bg-white! text-indigo-600! shadow-sm!': preview === 'mobile',
@@ -102,8 +100,8 @@
           </button>
           <button
             [disabled]="
-              !validPermission(permission.editContentPage) &&
-              !validPermission(permission.editDesignPage)
+              !validPermission(permission.editContentTemplate) &&
+              !validPermission(permission.editDesignTemplate)
             "
             [ngClass]="{
               'font-semibold! bg-white! text-indigo-600! shadow-sm!': preview === 'tablet',
@@ -120,8 +118,8 @@
           </button>
           <button
             [disabled]="
-              !validPermission(permission.editContentPage) &&
-              !validPermission(permission.editDesignPage)
+              !validPermission(permission.editContentTemplate) &&
+              !validPermission(permission.editDesignTemplate)
             "
             [ngClass]="{
               'font-semibold! bg-white! text-indigo-600! shadow-sm!': preview === 'desktop',
@@ -139,10 +137,9 @@
         </div>
       </div>
       @if (
-        (validPermission(permission.editContentPage) ||
-          validPermission(permission.editDesignPage)) &&
-        !autosave() &&
-        !page.review
+        (validPermission(permission.editContentTemplate) ||
+          validPermission(permission.editDesignTemplate)) &&
+        !autosave()
       ) {
         <!-- undo/redo -->
         <div class="flex items-center text-slate-500 gap-1">
@@ -206,15 +203,15 @@
           bindLabel="name"
           bindValue="id"
           [disabled]="
-            !validPermission(permission.editContentPage) &&
-            !validPermission(permission.editDesignPage)
+            !validPermission(permission.editContentTemplate) &&
+            !validPermission(permission.editDesignTemplate)
           "
         >
           <ng-template ng-label-tmp let-item="item">
             <button
               [disabled]="
-                !validPermission(permission.editContentPage) &&
-                !validPermission(permission.editDesignPage)
+                !validPermission(permission.editContentTemplate) &&
+                !validPermission(permission.editDesignTemplate)
               "
               (click)="openLanguageSelect()"
               class="cursor-pointer flex items-center h-10 gap-1.5 px-2.5 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-100 rounded-lg border border-slate-200 transition-colors disabled:cursor-not-allowed"
@@ -238,8 +235,8 @@
 
       <!-- autosave -->
       @if (
-        (validPermission(permission.editContentPage) ||
-          validPermission(permission.editDesignPage)) &&
+        (validPermission(permission.editContentTemplate) ||
+          validPermission(permission.editDesignTemplate)) &&
         !autosave()
       ) {
         <div
@@ -276,11 +273,11 @@
       <div class="h-4 w-px bg-slate-200 mx-1"></div>
       <div class="flex items-center gap-3">
         @if (
-          validPermission(permission.editContentPage) || validPermission(permission.editDesignPage)
+          validPermission(permission.editContentTemplate) ||
+          validPermission(permission.editDesignTemplate)
         ) {
           <!-- Cancel / Discard -->
           <button
-            [disabled]="page.review"
             (click)="cancel()"
             class="cursor-pointer h-10 px-3 py-1.5 text-xs font-medium text-slate-600 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors disabled:cursor-not-allowed"
           >
@@ -289,7 +286,7 @@
           <!-- Publish Group Button -->
           <div class="inline-flex rounded-lg shadow-sm">
             <button
-              [disabled]="page.review || saveAction()"
+              [disabled]="saveAction()"
               (click)="confirmUpdatePage()"
               class="cursor-pointer h-10 inline-flex items-center gap-x-2 gap-y-1 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold px-3.5 py-1.5 rounded-lg transition-colors focus:ring-2 focus:ring-indigo-500/20 disabled:cursor-not-allowed disabled:bg-indigo-300"
               type="button"
@@ -302,7 +299,7 @@
                     class="h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent"
                   ></span>
                 }
-                <span>Enviar a revisión</span>
+                <span>Guardar</span>
               </span>
             </button>
           </div>
@@ -311,7 +308,10 @@
     </div>
   </section>
 
-  @if (validPermission(permission.editContentPage) || validPermission(permission.editDesignPage)) {
+  @if (
+    validPermission(permission.editContentTemplate) ||
+    validPermission(permission.editDesignTemplate)
+  ) {
     <!-- content -->
     <section
       [class.h-100]="height() <= 639"
@@ -323,8 +323,8 @@
         <layer-component
           #layer
           [showComponetsPanel]="openElementPanel()"
-          [gridType]="'body'"
-          (elementSelected)="setElementSelectedInColumn($event)"
+          [gridType]="_selectedItemsInGrid()?.canvas ?? 'header'"
+          (elementSelected)="setElementSelectedInColumn($event, 'header')"
         />
 
         <!-- CENTER PANEL - CANVAS -->
@@ -341,17 +341,10 @@
             }"
             class="shrink-0 rounded-xl overflow-hidden border border-slate-300/80 transition-all duration-300 relative flex flex-col bg-white"
           >
-            <!-- HEADER REPRESENTATION -->
-            <div
-              class="cursor-not-allowed h-40 shrink-0 px-8 border-b border-slate-100 flex items-center justify-between text-xs text-slate-400 bg-white/60"
-            >
-              <span class="-rotate-45 text-xl text-center w-full"> ENCABEZADO </span>
-            </div>
-
-            <!-- MAIN EDITABLE AREA -->
+            <!-- HEADER EDITABLE AREA -->
             <div class="p-6 relative">
               <div
-                [ngStyle]="getStyles()"
+                [ngStyle]="getStyles('header')"
                 [ngClass]="{
                   'border-0! p-0! rounded-none!': previewMode(),
                 }"
@@ -363,7 +356,7 @@
                     class="absolute -top-3 left-4 bg-slate-700 text-white text-[10px] font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wider flex items-center gap-1.5 shadow-sm"
                   >
                     <i class="fa-solid fa-boxes-stacked"></i>
-                    <span> Contenedor: Contenido Principal </span>
+                    <span> Contenedor: Encabezado </span>
                   </div>
 
                   <!-- Body toolbar -->
@@ -382,20 +375,20 @@
                 <div class="relative">
                   <!-- GRID -->
                   <grid
-                    [editContent]="validPermission(permission.editContentPage)"
-                    [editDesign]="validPermission(permission.editDesignPage)"
-                    [gridType]="'body'"
+                    [editContent]="validPermission(permission.editContentTemplate)"
+                    [editDesign]="validPermission(permission.editDesignTemplate)"
+                    [gridType]="'header'"
                     [languageId]="languageId()"
                     [previewType]="preview"
                     [preview]="previewMode()"
-                    (deleteSectionEvent)="setGrid($event)"
+                    (deleteSectionEvent)="setGrid($event, 'header')"
                     (openElementPanel)="toggleElementPanel($event)"
                   />
                 </div>
                 <!-- ADD SECTION -->
                 @if (!previewMode()) {
                   <div
-                    (click)="addSection()"
+                    (click)="addSection('header')"
                     class="mt-4 border-2 border-dashed border-slate-300 hover:border-indigo-500 hover:bg-indigo-50/20 rounded-xl p-6 text-center transition-all cursor-pointer group"
                   >
                     <div class="flex flex-col items-center gap-2">
@@ -407,12 +400,12 @@
 
                       <div>
                         <h4 class="text-xs font-bold text-slate-700 group-hover:text-indigo-700">
-                          Añadir nueva Sección a tu Página
+                          Añadir nueva Sección a tu Encabezado
                         </h4>
 
                         <p class="text-[11px] text-slate-400">
-                          Haz clic aquí para agregar una sección a tu página. Puedes personalizar su
-                          contenido después.
+                          Haz clic aquí para agregar una sección a tu encabezado. Puedes
+                          personalizar su contenido después.
                         </p>
                       </div>
                     </div>
@@ -421,17 +414,93 @@
               </div>
             </div>
 
-            <!-- FOOTER REPRESENTATION -->
+            <!-- CONTENT REPRESENTATION -->
             <div
-              class="cursor-not-allowed h-40 shrink-0 px-8 border-t border-slate-100 flex items-center justify-between text-xs text-slate-400 bg-white/60"
+              class="cursor-not-allowed h-40 shrink-0 px-8 border-b border-slate-100 flex items-center justify-between text-xs text-slate-400 bg-white/60"
             >
-              <span class="-rotate-45 text-xl text-center w-full"> PIE DE PÁGINA </span>
+              <span class="-rotate-45 text-xl text-center w-full"> CONTENT </span>
+            </div>
+
+            <!-- FOOTER EDITABLE AREA -->
+            <div class="p-6 relative">
+              <div
+                [ngStyle]="getStyles('footer')"
+                [ngClass]="{
+                  'border-0! p-0! rounded-none!': previewMode(),
+                }"
+                class="body relative border-2 border-dashed border-slate-300 hover:border-slate-400 rounded-xl p-6 transition-all group/body"
+              >
+                @if (!previewMode()) {
+                  <!-- Body tag -->
+                  <div
+                    class="absolute -top-3 left-4 bg-slate-700 text-white text-[10px] font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wider flex items-center gap-1.5 shadow-sm"
+                  >
+                    <i class="fa-solid fa-boxes-stacked"></i>
+                    <span> Contenedor: Pie de página </span>
+                  </div>
+
+                  <!-- Body toolbar -->
+                  <div
+                    class="absolute -top-3.5 right-4 hidden group-hover/body:flex items-center bg-white border border-slate-200 rounded-md shadow-sm divide-x divide-slate-100 text-slate-600 text-xs"
+                  >
+                    <button
+                      class="cursor-pointer px-2 py-1 hover:text-slate-600 hover:bg-slate-50 flex items-center gap-1"
+                      title="Configurar"
+                    >
+                      <i class="fa-solid fa-sliders text-slate-600"></i>
+                    </button>
+                  </div>
+                }
+
+                <div class="relative">
+                  <!-- GRID -->
+                  <grid
+                    [editContent]="validPermission(permission.editContentTemplate)"
+                    [editDesign]="validPermission(permission.editDesignTemplate)"
+                    [gridType]="'footer'"
+                    [languageId]="languageId()"
+                    [previewType]="preview"
+                    [preview]="previewMode()"
+                    (deleteSectionEvent)="setGrid($event, 'footer')"
+                    (openElementPanel)="toggleElementPanel($event)"
+                  />
+                </div>
+                <!-- ADD SECTION -->
+                @if (!previewMode()) {
+                  <div
+                    (click)="addSection('footer')"
+                    class="mt-4 border-2 border-dashed border-slate-300 hover:border-indigo-500 hover:bg-indigo-50/20 rounded-xl p-6 text-center transition-all cursor-pointer group"
+                  >
+                    <div class="flex flex-col items-center gap-2">
+                      <div
+                        class="w-10 h-10 rounded-full bg-slate-100 group-hover:bg-indigo-100 text-slate-500 group-hover:text-indigo-600 flex items-center justify-center transition-colors shadow-sm"
+                      >
+                        <i class="fa-solid fa-plus"></i>
+                      </div>
+
+                      <div>
+                        <h4 class="text-xs font-bold text-slate-700 group-hover:text-indigo-700">
+                          Añadir nueva Sección a tu Pie de Página
+                        </h4>
+
+                        <p class="text-[11px] text-slate-400">
+                          Haz clic aquí para agregar una sección a tu pie de página. Puedes
+                          personalizar su contenido después.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                }
+              </div>
             </div>
           </div>
         </div>
 
         <!-- RIGHT PANEL - INSPECTOR -->
-        <inspector-component [gridType]="'body'" [class.hidden]="previewMode()" />
+        <inspector-component
+          [class.hidden]="previewMode()"
+          [gridType]="_selectedItemsInGrid()?.canvas ?? 'header'"
+        />
       </div>
     </section>
   } @else {

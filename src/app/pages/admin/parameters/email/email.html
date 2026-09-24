@@ -5,7 +5,7 @@
       <div class="border-b border-slate-100 bg-white px-6 py-5">
         <div class="flex items-center justify-between">
           <div>
-            <h2 class="text-base font-bold text-slate-900">General</h2>
+            <h2 class="text-xl font-bold text-slate-900">General</h2>
             <p class="text-xs text-slate-500 mt-0.5">
               Configura y administra los datos de conexión, credenciales y parámetros de seguridad
               de tu servicio de envío de correos electrónicos.
@@ -14,84 +14,87 @@
         </div>
       </div>
       <div class="p-6 space-y-6">
-        <!-- Host -->
-        <div>
-          <label
-            [class.text-red-500!]="validateFormControl(emailForm, 'host')"
-            class="block text-xs font-semibold uppercase tracking-wider text-slate-700 mb-1.5"
-            for="host"
-          >
-            Host <span class="text-rose-500 font-bold">*</span>
-          </label>
-          <div class="relative rounded-lg shadow-sm">
-            <div
-              class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400"
-            >
-              <i
-                class="fa-solid fa-server"
-                [class.text-red-500!]="validateFormControl(emailForm, 'host')"
-              ></i>
-            </div>
-            <input
-              formControlName="host"
-              class="h-10 block w-full pl-10 pr-3.5 py-2.5 sm:py-3 text-sm text-slate-900 placeholder-slate-400 bg-slate-50/50 border border-slate-300 rounded-lg focus:outline-none focus:ring-0.5 focus:ring-indigo-600 focus:border-indigo-600 focus:bg-white transition-colors"
-              [class.border-red-500!.text-red-500!]="validateFormControl(emailForm, 'host')"
+        <div class="flex md:flex-row flex-col gap-2 items-start justify-between">
+          <!-- Host -->
+          <div class="w-full">
+            <label
               [class.text-red-500!]="validateFormControl(emailForm, 'host')"
-              [class.placeholder:text-red-500!]="validateFormControl(emailForm, 'host')"
-              id="host"
-              name="host"
-              required=""
-              type="text"
-            />
-          </div>
-
-          <!-- Errores -->
-          @if (getErrorMessage(emailForm, 'host') !== '') {
-            <p class="mt-1.5 flex items-center gap-1 text-sm text-red-600">
-              <i class="fa-solid fa-circle-exclamation"></i>
-              <span>{{ getErrorMessage(emailForm, 'host') }}</span>
-            </p>
-          }
-        </div>
-        <!-- Port -->
-        <div>
-          <label
-            [class.text-red-500!]="validateFormControl(emailForm, 'port')"
-            class="block text-xs font-semibold uppercase tracking-wider text-slate-700 mb-1.5"
-            for="port"
-          >
-            Puerto <span class="text-rose-500 font-bold">*</span>
-          </label>
-          <div class="relative rounded-lg shadow-sm">
-            <div
-              class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400"
+              class="block text-xs font-semibold uppercase tracking-wider text-slate-700 mb-1.5"
+              for="host"
             >
-              <i
-                class="fa-solid fa-hashtag"
-                [class.text-red-500!]="validateFormControl(emailForm, 'port')"
-              ></i>
+              Host <span class="text-rose-500 font-bold">*</span>
+            </label>
+            <div class="relative rounded-lg">
+              <div
+                class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400"
+              >
+                <i
+                  class="fa-solid fa-server"
+                  [class.text-red-500!]="validateFormControl(emailForm, 'host')"
+                ></i>
+              </div>
+              <input
+                formControlName="host"
+                class="h-10 block w-full pl-10 pr-3.5 py-2.5 sm:py-3 text-sm text-slate-900 placeholder-slate-400 bg-slate-50/50 border border-slate-300 rounded-lg focus:outline-none focus:ring-0.5 focus:ring-indigo-600 focus:border-indigo-600 focus:bg-white transition-colors"
+                [class.border-red-500!.text-red-500!]="validateFormControl(emailForm, 'host')"
+                [class.text-red-500!]="validateFormControl(emailForm, 'host')"
+                [class.placeholder:text-red-500!]="validateFormControl(emailForm, 'host')"
+                id="host"
+                name="host"
+                required=""
+                type="text"
+              />
             </div>
-            <input
-              formControlName="port"
-              class="h-10 block w-full pl-10 pr-3.5 py-2.5 sm:py-3 text-sm text-slate-900 placeholder-slate-400 bg-slate-50/50 border border-slate-300 rounded-lg focus:outline-none focus:ring-0.5 focus:ring-indigo-600 focus:border-indigo-600 focus:bg-white transition-colors"
-              [class.border-red-500!.text-red-500!]="validateFormControl(emailForm, 'port')"
-              [class.text-red-500!]="validateFormControl(emailForm, 'port')"
-              [class.placeholder:text-red-500!]="validateFormControl(emailForm, 'port')"
-              id="port"
-              name="port"
-              required=""
-              type="text"
-            />
-          </div>
 
-          <!-- Errores -->
-          @if (getErrorMessage(emailForm, 'port') !== '') {
-            <p class="mt-1.5 flex items-center gap-1 text-sm text-red-600">
-              <i class="fa-solid fa-circle-exclamation"></i>
-              <span>{{ getErrorMessage(emailForm, 'port') }}</span>
-            </p>
-          }
+            <!-- Errores -->
+            @if (getErrorMessage(emailForm, 'host') !== '') {
+              <p class="mt-1.5 flex items-center gap-1 text-sm text-red-600">
+                <i class="fa-solid fa-circle-exclamation"></i>
+                <span>{{ getErrorMessage(emailForm, 'host') }}</span>
+              </p>
+            }
+          </div>
+          <!-- Port -->
+          <div class="w-full sm:w-auto">
+            <label
+              [class.text-red-500!]="validateFormControl(emailForm, 'port')"
+              class="block text-xs font-semibold uppercase tracking-wider text-slate-700 mb-1.5"
+              for="port"
+            >
+              Puerto <span class="text-rose-500 font-bold">*</span>
+            </label>
+            <div class="relative rounded-lg">
+              <div
+                class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400"
+              >
+                <i
+                  class="fa-solid fa-hashtag"
+                  [class.text-red-500!]="validateFormControl(emailForm, 'port')"
+                ></i>
+              </div>
+              <input
+                formControlName="port"
+                class="h-10 block w-full pl-10 pr-3.5 py-2.5 sm:py-3 text-sm text-slate-900 placeholder-slate-400 bg-slate-50/50 border border-slate-300 rounded-lg focus:outline-none focus:ring-0.5 focus:ring-indigo-600 focus:border-indigo-600 focus:bg-white transition-colors"
+                [class.border-red-500!.text-red-500!]="validateFormControl(emailForm, 'port')"
+                [class.text-red-500!]="validateFormControl(emailForm, 'port')"
+                [class.placeholder:text-red-500!]="validateFormControl(emailForm, 'port')"
+                id="port"
+                name="port"
+                required=""
+                type="text"
+              />
+            </div>
+
+            <!-- Errores -->
+            @if (getErrorMessage(emailForm, 'port') !== '') {
+              <p class="mt-1.5 flex items-center gap-1 text-sm text-red-600">
+                <i class="fa-solid fa-circle-exclamation"></i>
+                <span>{{ getErrorMessage(emailForm, 'port') }}</span>
+              </p>
+            }
+          </div>
         </div>
+
         <!-- Username -->
         <div>
           <label
@@ -101,7 +104,7 @@
           >
             Usuario <span class="text-rose-500 font-bold">*</span>
           </label>
-          <div class="relative rounded-lg shadow-sm">
+          <div class="relative rounded-lg">
             <div
               class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400"
             >
@@ -142,7 +145,7 @@
               Contraseña <span class="text-rose-500 font-bold">*</span>
             </label>
           </div>
-          <div class="relative rounded-lg shadow-sm">
+          <div class="relative rounded-lg">
             <div
               class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400"
             >
@@ -208,7 +211,7 @@
           >
             Dirección de correo para envios <span class="text-rose-500 font-bold">*</span>
           </label>
-          <div class="relative rounded-lg shadow-sm">
+          <div class="relative rounded-lg">
             <div
               class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400"
             >
@@ -315,7 +318,7 @@
       <div class="border-b border-slate-100 bg-white px-6 py-5">
         <div class="flex items-center justify-between">
           <div>
-            <h2 class="text-base font-bold text-slate-p00">Prueba de envío</h2>
+            <h2 class="text-xl font-bold text-slate-p00">Prueba de envío</h2>
             <p class="text-xs text-slate-500 mt-0.5">
               Envía un correo de prueba para verificar que el servicio de correo electrónico esté
               configurado correctamente.
@@ -324,46 +327,49 @@
         </div>
       </div>
       <div class="p-6 space-y-6">
-        <!-- Test Email -->
-        <div>
-          <label
-            [class.text-red-500!]="validateOnlyFormControl(emailTestControl)"
-            class="block text-xs font-semibold uppercase tracking-wider text-slate-700 mb-1.5"
-            for="testemail"
-          >
-            Dirección de correo electrónico para prueba
-            <span class="text-rose-500 font-bold">*</span>
-          </label>
-          <div class="relative rounded-lg shadow-sm">
-            <div
-              class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400"
-            >
-              <i
-                class="fa-solid fa-envelope"
-                [class.text-red-500!]="validateOnlyFormControl(emailTestControl)"
-              ></i>
-            </div>
-            <input
-              [formControl]="emailTestControl"
-              class="h-10 block w-full pl-10 pr-3.5 py-2.5 sm:py-3 text-sm text-slate-900 placeholder-slate-400 bg-slate-50/50 border border-slate-300 rounded-lg focus:outline-none focus:ring-0.5 focus:ring-indigo-600 focus:border-indigo-600 focus:bg-white transition-colors"
-              [class.border-red-500!.text-red-500!]="validateOnlyFormControl(emailTestControl)"
+        <div class="flex lg:flex-row flex-col gap-2 items-start justify-between">
+          <!-- Test Email -->
+          <div class="w-full">
+            <label
               [class.text-red-500!]="validateOnlyFormControl(emailTestControl)"
-              [class.placeholder:text-red-500!]="validateOnlyFormControl(emailTestControl)"
-              id="testemail"
-              placeholder="example@email"
-              name="testemail"
-              type="email"
-            />
-          </div>
+              class="block text-xs font-semibold uppercase tracking-wider text-slate-700 mb-1.5"
+              for="testemail"
+            >
+              Dirección de correo electrónico para prueba
+              <span class="text-rose-500 font-bold">*</span>
+            </label>
+            <div class="relative rounded-lg">
+              <div
+                class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400"
+              >
+                <i
+                  class="fa-solid fa-envelope"
+                  [class.text-red-500!]="validateOnlyFormControl(emailTestControl)"
+                ></i>
+              </div>
+              <input
+                [formControl]="emailTestControl"
+                class="h-10 block w-full pl-10 pr-3.5 py-2.5 sm:py-3 text-sm text-slate-900 placeholder-slate-400 bg-slate-50/50 border border-slate-300 rounded-lg focus:outline-none focus:ring-0.5 focus:ring-indigo-600 focus:border-indigo-600 focus:bg-white transition-colors"
+                [class.border-red-500!.text-red-500!]="validateOnlyFormControl(emailTestControl)"
+                [class.text-red-500!]="validateOnlyFormControl(emailTestControl)"
+                [class.placeholder:text-red-500!]="validateOnlyFormControl(emailTestControl)"
+                id="testemail"
+                placeholder="example@email"
+                name="testemail"
+                type="email"
+              />
+            </div>
 
-          <!-- Errores -->
-          @if (getErrorMessageFormControl(emailTestControl) !== '') {
-            <p class="mt-1.5 flex items-center gap-1 text-sm text-red-600">
-              <i class="fa-solid fa-circle-exclamation"></i>
-              <span>{{ getErrorMessageFormControl(emailTestControl) }}</span>
-            </p>
-          }
-          <div class="mt-4 flex items-center justify-end">
+            <!-- Errores -->
+            @if (getErrorMessageFormControl(emailTestControl) !== '') {
+              <p class="mt-1.5 flex items-center gap-1 text-sm text-red-600">
+                <i class="fa-solid fa-circle-exclamation"></i>
+                <span>{{ getErrorMessageFormControl(emailTestControl) }}</span>
+              </p>
+            }
+          </div>
+          <!-- send button -->
+          <div class="lg:mt-5.5 mt-0 flex items-center justify-end w-full lg:w-auto min-w-38">
             <button
               (click)="testEmail()"
               [disabled]="emailTestControl.invalid"

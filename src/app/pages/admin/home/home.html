@@ -1,7 +1,7 @@
 <div
-  class="w-full h-full min-h-0 flex flex-col overflow-hidden overflow-y-auto bg-slate-50 px-6 pb-6 py-2 mx-auto max-w-full"
+  class="w-full h-full min-h-0 flex flex-col overflow-hidden overflow-y-auto bg-slate-50 px-0 lg:px-6 pb-6 py-2 mx-auto max-w-full"
 >
-  <div class="flex flex-col w-full space-y-8">
+  <div class="flex flex-col w-full space-y-6 lg:space-y-8">
     <!-- 1. Encabezado de perfil y métricas ejecutivas en vivo -->
     <section
       data-aos="fade-up"
@@ -27,8 +27,8 @@
           </div>
 
           <div class="flex flex-col min-w-0">
-            <div class="flex items-center gap-2 flex-wrap">
-              <h2 class="text-3xl leading-9 text-slate-900 font-bold">
+            <div class="flex items-center gap-2 flex-row">
+              <h2 class="lg:text-3xl text-2xl leading-9 text-slate-900 font-bold">
                 Hola, {{ user()?.firstname }}
               </h2>
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="size-5">
@@ -59,7 +59,7 @@
         </div>
 
         <!-- Botonera Ejecutiva -->
-        <div class="flex items-center flex-row gap-2">
+        <div class="flex items-center flex-row gap-2 xl:justify-between justify-end">
           <div class="flex items-center gap-2">
             <!-- Recargar -->
             <button
@@ -89,7 +89,7 @@
 
     @if (validPermission(permission.homePanel)) {
       <!-- 2. Fila Modular de Cards Informativos (KPIs Principales) -->
-      <section class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+      <section class="grid grid-cols-1 gap-2 lg:gap-6 sm:grid-cols-2 lg:grid-cols-4">
         <!-- Card 1: Páginas del CMS -->
         <div
           data-aos="fade-left"
@@ -192,6 +192,7 @@
             </button>
           </div>
         </div>
+
         <!-- Card 4: Gestión de Archivos -->
         <div
           data-aos="fade-right"
@@ -475,8 +476,10 @@
     <!-- 4. Páginas más visitadas: Tarjetas de Podio / Top 3 -->
     @if (validPermission(permission.visitPanel)) {
       <section class="space-y-4">
-        <div class="flex items-center justify-between">
-          <div>
+        <div
+          class="flex items-center flex-col justify-center lg:flex-row lg:justify-between gap-2 lg:gap-0"
+        >
+          <div class="text-center lg:text-justify">
             <h3 class="text-2xl leading-9 font-bold text-slate-900">Páginas más visitadas</h3>
             <p class="text-xs leading-4 text-slate-500">Top de páginas con más visitas</p>
           </div>

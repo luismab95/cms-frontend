@@ -130,4 +130,13 @@ export class VerticalNavigation implements OnInit, OnDestroy {
   closePanel() {
     this._navigationService._isOpenNavigation.next(false);
   }
+
+  /**
+   *
+   */
+  toggleNavigation() {
+    if (this.previewType() !== 'desktop') {
+      this.closePanel();
+    }
+  }
 }

@@ -1,4 +1,13 @@
-import { Component, OnInit, signal, inject, OnDestroy, effect, computed } from '@angular/core';
+import {
+  Component,
+  OnInit,
+  signal,
+  inject,
+  OnDestroy,
+  effect,
+  computed,
+  input,
+} from '@angular/core';
 import { NgClass } from '@angular/common';
 import { ElementI, SectionI, SelectedItemsInGridI } from 'app/shared/interfaces/grid.interface';
 import { ElementService } from 'app/core/services/element.service';
@@ -7,6 +16,7 @@ import { PageService } from 'app/core/services/pages.service';
 import { TooltipDirective } from 'app/shared/directives/tooltip.directive';
 import { LanguageService } from 'app/shared/services/language.service';
 import { TabI } from 'app/shared/interfaces/drawer.interface';
+import { CanvasT } from 'app/core/interfaces/page.interface';
 import { ParameterService } from 'app/core/services/parameter.service';
 import { PermissionCode, validAction } from 'app/shared/utils/permission.utils';
 import { findParameter } from 'app/shared/utils/parameter.utils';
@@ -29,6 +39,8 @@ import { distinctUntilChanged, Subject, takeUntil } from 'rxjs';
   ],
 })
 export class InspectorComponent implements OnInit, OnDestroy {
+  gridType = input.required<CanvasT>();
+
   selectedItemsInGrid = signal<SelectedItemsInGridI | null>(null);
   tabsLanguages = signal<TabI[]>([]);
   tabs = signal<TabI[]>([
@@ -54,6 +66,7 @@ export class InspectorComponent implements OnInit, OnDestroy {
       type: 'icon',
     },
   ]);
+  sectionsInCanvas = signal<SectionI[]>([]);
   selectedTab = signal<number>(0);
   selectedLanguage = signal<number>(0);
   urlStatics = signal<string>('');
@@ -76,7 +89,7 @@ export class InspectorComponent implements OnInit, OnDestroy {
       totalPage: 0,
     },
   });
-  readonly sectionsInCanvas = this._pageService.sections;
+
   readonly elements = toSignal(this._elementService.elements$, {
     initialValue: {
       records: [],
@@ -190,6 +203,17 @@ export class InspectorComponent implements OnInit, OnDestroy {
       .subscribe({
         next: (selectedItemsInGrid) => {
           this.selectedItemsInGrid.set(selectedItemsInGrid);
+          switch (selectedItemsInGrid?.canvas) {
+            case 'header':
+              this.sectionsInCanvas.set(this._pageService.sectionsHeader());
+              break;
+            case 'body':
+              this.sectionsInCanvas.set(this._pageService.sections());
+              break;
+            case 'footer':
+              this.sectionsInCanvas.set(this._pageService.sectionsFooter());
+              break;
+          }
         },
       });
   }
@@ -277,6 +301,7 @@ export class InspectorComponent implements OnInit, OnDestroy {
       row: null,
       column: null,
       element: null,
+      canvas: this.gridType(),
     };
   }
 
@@ -286,9 +311,18 @@ export class InspectorComponent implements OnInit, OnDestroy {
    * @param next
    */
   updateSectionsInGrid(previous: SectionI[], next: SectionI[]) {
-    this._pageService.sections = next;
-    this._historyService.commit(previous, next);
-    // this._pageService._currentInspectorTab.set(0);
+    if (this.gridType() === 'header') {
+      this._pageService.sectionsHeader = next;
+      // this._historyService.commit(previous, next);
+    }
+    if (this.gridType() === 'footer') {
+      this._pageService.sectionsFooter = next;
+      // this._historyService.commit(previous, next);
+    }
+    if (this.gridType() === 'body') {
+      this._pageService.sections = next;
+      this._historyService.commit(previous, next);
+    }
   }
 
   /**

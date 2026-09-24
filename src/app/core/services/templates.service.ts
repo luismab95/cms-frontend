@@ -7,7 +7,7 @@ import {
 } from 'app/shared/interfaces/response.interface';
 import { environment } from 'environments/environment';
 import { TemplateI } from '../interfaces/template.interface';
-import { Observable, ReplaySubject, tap, EMPTY } from 'rxjs';
+import { Observable, ReplaySubject, tap, EMPTY, of } from 'rxjs';
 
 @Injectable({ providedIn: 'root' })
 export class TemplateService {
@@ -46,7 +46,7 @@ export class TemplateService {
    *
    * @param value
    */
-  set template(value: TemplateI) {
+  set template(value: TemplateI | null) {
     // Store the value
     this._template.next(value);
   }
@@ -86,8 +86,11 @@ export class TemplateService {
    * @param templateId
    * @returns
    */
-  find(templateId: number): Observable<ResponseI<TemplateI>> {
-    if (!templateId) return EMPTY;
+  find(templateId: number): Observable<ResponseI<TemplateI> | null> {
+    if (templateId === 0) {
+      this._template.next(null!);
+      return of(null);
+    }
     return this._httpClient
       .get<ResponseI<TemplateI>>(`${this.url}/${this.prefix}/templates/${templateId}`)
       .pipe(

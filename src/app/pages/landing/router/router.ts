@@ -11,31 +11,6 @@ import { SectionI } from 'app/shared/interfaces/grid.interface';
 @Component({
   selector: 'landing-router',
   templateUrl: './router.html',
-  styles: `
-    ::-webkit-scrollbar {
-      width: 8px;
-      height: 8px;
-      background-color: rgba(0, 0, 0, 0);
-    }
-
-    ::-webkit-scrollbar:hover {
-      width: 8px;
-      height: 8px;
-      background-color: rgba(0, 0, 0, 0.06);
-    }
-
-    ::-webkit-scrollbar-thumb {
-      border: 2px solid transparent;
-      border-radius: 20px;
-      box-shadow: inset 0 0 0 20px rgba(0, 0, 0, 0.24);
-      cursor: pointer;
-    }
-
-    ::-webkit-scrollbar-thumb:active {
-      border-radius: 20px;
-      box-shadow: inset 0 0 0 20px rgba(0, 0, 0, 0.37);
-    }
-  `,
   imports: [GridComponent],
 })
 export class LandingRouterComponent implements OnInit, OnDestroy {

@@ -15,6 +15,7 @@ import { TooltipDirective } from 'app/shared/directives/tooltip.directive';
 import { ElementsManagerComponent } from '../elements-manager/elements-manager';
 import { ElementCMSI } from 'app/shared/interfaces/element.interface';
 import { HistoryService } from 'app/core/services/history-canvas.service';
+import { CanvasT } from 'app/core/interfaces/page.interface';
 import { distinctUntilChanged, Subject, takeUntil } from 'rxjs';
 
 @Component({
@@ -24,6 +25,7 @@ import { distinctUntilChanged, Subject, takeUntil } from 'rxjs';
 })
 export class LayerComponent implements OnInit, OnDestroy {
   showComponetsPanel = input<boolean>(true);
+  gridType = input.required<CanvasT>();
   elementSelected = output<ElementCMSI | null>();
 
   layersCollapsed = signal<boolean>(false);
@@ -34,6 +36,7 @@ export class LayerComponent implements OnInit, OnDestroy {
   selectedElement = signal<string | null>(null);
   expandedSections = signal<Set<string>>(new Set());
   expandedRows = signal<Set<string>>(new Set());
+  currentGridType = signal<CanvasT>('body');
 
   private _unsubscribeAll: Subject<any> = new Subject<any>();
 
@@ -42,6 +45,8 @@ export class LayerComponent implements OnInit, OnDestroy {
   private readonly _historyService = inject(HistoryService);
 
   readonly sectionsInCanvas = this._pageService.sections;
+  readonly sectionsHeaderInCanvas = this._pageService.sectionsHeader;
+  readonly sectionsFooterInCanvas = this._pageService.sectionsFooter;
 
   readonly elements = toSignal(this._elementService.elements$, {
     initialValue: {
@@ -62,11 +67,19 @@ export class LayerComponent implements OnInit, OnDestroy {
       this.layersCollapsed.set(false);
     });
 
+    effect(() => {
+      const gridType = this.gridType();
+      this.currentGridType.set(gridType);
+    });
+
     this._pageService.selectedItemsInGrid$
       .pipe(distinctUntilChanged(), takeUntil(this._unsubscribeAll))
       .subscribe({
         next: (selectedItemsInGrid) => {
           if (selectedItemsInGrid == null) return;
+
+          this.currentGridType.set(selectedItemsInGrid.canvas);
+
           if (selectedItemsInGrid?.section !== null)
             this.selectSection(selectedItemsInGrid?.section!, false);
           if (selectedItemsInGrid?.row !== null) this.selectRow(selectedItemsInGrid?.row!, false);
@@ -129,6 +142,7 @@ export class LayerComponent implements OnInit, OnDestroy {
         row: null,
         column: null,
         element: null,
+        canvas: this.currentGridType(),
       });
     }
     this.toggleSection(section.uuid);
@@ -149,6 +163,7 @@ export class LayerComponent implements OnInit, OnDestroy {
         row,
         column: null,
         element: null,
+        canvas: this.gridType(),
       });
 
       this.toggleRow(row.uuid);
@@ -183,6 +198,7 @@ export class LayerComponent implements OnInit, OnDestroy {
         row: null,
         column,
         element: null,
+        canvas: this.currentGridType(),
       });
   }
 
@@ -211,6 +227,7 @@ export class LayerComponent implements OnInit, OnDestroy {
         row: null,
         column: null,
         element,
+        canvas: this.currentGridType(),
       });
   }
 
@@ -310,12 +327,28 @@ export class LayerComponent implements OnInit, OnDestroy {
    * @param event
    * @param item
    */
-  drop<T>(event: CdkDragDrop<string[]>, items: T[]) {
-    const previous = structuredClone(this.sectionsInCanvas());
-    moveItemInArray(items, event.previousIndex, event.currentIndex);
-    const next = structuredClone(this.sectionsInCanvas());
-    this._pageService.sections = next;
-    this._historyService.commit(previous, next);
+  drop<T>(event: CdkDragDrop<string[]>, items: T[], gridType: CanvasT) {
+    if (gridType === 'header') {
+      const previous = structuredClone(this.sectionsHeaderInCanvas());
+      moveItemInArray(items, event.previousIndex, event.currentIndex);
+      const next = structuredClone(this.sectionsHeaderInCanvas());
+      this._pageService.sectionsHeader = next;
+      // this._historyService.commit(previous, next);
+    }
+    if (gridType === 'body') {
+      const previous = structuredClone(this.sectionsInCanvas());
+      moveItemInArray(items, event.previousIndex, event.currentIndex);
+      const next = structuredClone(this.sectionsInCanvas());
+      this._pageService.sections = next;
+      this._historyService.commit(previous, next);
+    }
+    if (gridType === 'footer') {
+      const previous = structuredClone(this.sectionsFooterInCanvas());
+      moveItemInArray(items, event.previousIndex, event.currentIndex);
+      const next = structuredClone(this.sectionsFooterInCanvas());
+      this._pageService.sectionsFooter = next;
+      // this._historyService.commit(previous, next);
+    }
   }
 
   /**
@@ -377,9 +410,21 @@ export class LayerComponent implements OnInit, OnDestroy {
    * @returns
    */
   private findSectionByRow(rowUuid: string): SectionI | undefined {
-    const section = this.sectionsInCanvas().find((section) =>
-      section.rows?.some((row) => row.uuid === rowUuid),
-    );
+    let sections = [] as SectionI[];
+
+    if (this.currentGridType() === 'header') {
+      sections = this.sectionsHeaderInCanvas();
+    }
+
+    if (this.currentGridType() === 'body') {
+      sections = this.sectionsInCanvas();
+    }
+
+    if (this.currentGridType() === 'footer') {
+      sections = this.sectionsFooterInCanvas();
+    }
+
+    const section = sections.find((section) => section.rows?.some((row) => row.uuid === rowUuid));
 
     if (section) {
       this.selectedSection.set(section.uuid);
@@ -395,7 +440,21 @@ export class LayerComponent implements OnInit, OnDestroy {
    * @returns
    */
   private findRowByColumn(columnUuid: string): RowI | undefined {
-    for (const section of this.sectionsInCanvas()) {
+    let sections = [] as SectionI[];
+
+    if (this.currentGridType() === 'header') {
+      sections = this.sectionsHeaderInCanvas();
+    }
+
+    if (this.currentGridType() === 'body') {
+      sections = this.sectionsInCanvas();
+    }
+
+    if (this.currentGridType() === 'footer') {
+      sections = this.sectionsFooterInCanvas();
+    }
+
+    for (const section of sections) {
       const row = section.rows?.find((row) =>
         row.columns?.some((column) => column.uuid === columnUuid),
       );
@@ -413,7 +472,20 @@ export class LayerComponent implements OnInit, OnDestroy {
    * @returns
    */
   private findColumnByElement(columnElementUuid: string): ColumnI | undefined {
-    for (const section of this.sectionsInCanvas()) {
+    let sections = [] as SectionI[];
+    if (this.currentGridType() === 'header') {
+      sections = this.sectionsHeaderInCanvas();
+    }
+
+    if (this.currentGridType() === 'body') {
+      sections = this.sectionsInCanvas();
+    }
+
+    if (this.currentGridType() === 'footer') {
+      sections = this.sectionsFooterInCanvas();
+    }
+
+    for (const section of sections) {
       for (const row of section.rows ?? []) {
         const column = row.columns?.find((column) => column.element?.uuid === columnElementUuid);
         if (column) {

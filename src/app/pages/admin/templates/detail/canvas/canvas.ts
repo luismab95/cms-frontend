@@ -5,9 +5,8 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { Router } from '@angular/router';
 import { ToastrService } from '@iqx-limited/ngx-toastr';
 import { NgLabelTemplateDirective, NgSelectComponent } from '@ng-select/ng-select';
-import { PageI, PreviewModeT } from 'app/core/interfaces/page.interface';
+import { PreviewModeT } from 'app/core/interfaces/page.interface';
 import { DialogService } from 'app/core/services/dialog.service';
-import { MicrosityService } from 'app/core/services/micrositie.service';
 import { PageService } from 'app/core/services/pages.service';
 import { ParameterService } from 'app/core/services/parameter.service';
 import { ColumnI, SectionI, SelectedItemsInGridI } from 'app/shared/interfaces/grid.interface';
@@ -24,7 +23,6 @@ import { findParameter } from 'app/shared/utils/parameter.utils';
 import { PermissionCode, validAction } from 'app/shared/utils/permission.utils';
 import { generateRandomString } from 'app/shared/utils/random.utils';
 import { PermissionComponent } from 'app/shared/components/permission/permission';
-import { ReviewModeComponent } from 'app/shared/components/review-mode/review-mode';
 import { GridComponent } from 'app/shared/components/grid/grid';
 import { LayerComponent } from 'app/shared/components/layer/layer';
 import { InspectorComponent } from 'app/shared/components/inspector/inspector';
@@ -32,8 +30,10 @@ import { LanguageI } from 'app/shared/interfaces/language.interfaces';
 import { ElementCMSI } from 'app/shared/interfaces/element.interface';
 import { HistoryService } from 'app/core/services/history-canvas.service';
 import { TooltipDirective } from 'app/shared/directives/tooltip.directive';
-import { Subject, takeUntil } from 'rxjs';
 import { DeviceDetectorService, DeviceType } from 'ngx-device-detector';
+import { TemplateService } from 'app/core/services/templates.service';
+import { TemplateI } from 'app/core/interfaces/template.interface';
+import { Subject, takeUntil } from 'rxjs';
 
 @Component({
   selector: 'pages-canvas',
@@ -61,14 +61,13 @@ import { DeviceDetectorService, DeviceType } from 'ngx-device-detector';
     UpperCasePipe,
     NgSelectComponent,
     NgLabelTemplateDirective,
-    ReviewModeComponent,
     GridComponent,
     LayerComponent,
     InspectorComponent,
     TooltipDirective,
   ],
 })
-export class PagesCanvas implements OnInit {
+export class TemplatesCanvas implements OnInit {
   @ViewChild('languageSelect')
   private readonly _languageSelect!: NgSelectComponent;
 
@@ -83,8 +82,8 @@ export class PagesCanvas implements OnInit {
   saveAction = signal<boolean>(false);
   urlStatics = signal<string>('');
   languageId = signal<number>(0);
-  page = signal<PageI | null>(null);
-  originPage = signal<PageI | null>(null);
+  template = signal<TemplateI | null>(null);
+  originTemplate = signal<TemplateI | null>(null);
   height = signal<number>(window.innerHeight);
   activeLanguages = signal<LanguageI[]>([]);
   currentColumn = signal<ColumnI | null>(null);
@@ -96,28 +95,29 @@ export class PagesCanvas implements OnInit {
   private readonly _router = inject(Router);
   private _parameterService = inject(ParameterService);
   private _dialogService = inject(DialogService);
-  private readonly _microsityService = inject(MicrosityService);
   private readonly _pageService = inject(PageService);
+  private readonly _templateService = inject(TemplateService);
   private readonly _toastrService = inject(ToastrService);
   private readonly _languageService = inject(LanguageService);
   private readonly _historyService = inject(HistoryService);
   private readonly _deviceDetectorService = inject(DeviceDetectorService);
 
-  readonly bodySections = this._pageService.sections;
+  readonly headerSections = this._pageService.sectionsHeader;
+  readonly footerSections = this._pageService.sectionsFooter;
 
-  readonly _page = toSignal(this._pageService.page$, { initialValue: null });
+  readonly _template = toSignal(this._templateService.template$, { initialValue: null });
   readonly _selectedItemsInGrid = toSignal(this._pageService.selectedItemsInGrid$, {
     initialValue: null,
   });
   readonly parameters = toSignal(this._parameterService.parameter$, { initialValue: [] });
-  readonly micrositie = toSignal(this._microsityService.micrositie$, { initialValue: null });
   readonly languages = toSignal(this._languageService.languages$, {
     initialValue: { records: [], total: 0, page: 0, totalPage: 0 },
   });
 
   readonly canRedo = computed(() => this._historyService.canRedo());
   readonly canUndo = computed(() => this._historyService.canUndo());
-  readonly body = computed(() => this.bodySections());
+  readonly header = computed(() => this.headerSections());
+  readonly footer = computed(() => this.footerSections());
   readonly previewType = computed(() => {
     const { deviceType } = this._deviceDetectorService.deviceInfo();
     switch (deviceType) {
@@ -136,6 +136,7 @@ export class PagesCanvas implements OnInit {
    * Constructor
    */
   constructor() {
+    this._pageService.sections = [];
     // autosave logic
     this.autosaveTimer = setInterval(() => {
       this.updateDraft();
@@ -160,24 +161,16 @@ export class PagesCanvas implements OnInit {
     });
 
     effect(() => {
-      const page = this._page();
-      if (page === null) return;
+      const template = this._template();
+      if (template === null) return;
 
-      this.page.set(page);
-      this.originPage.set(page);
+      this.template.set(template);
+      this.originTemplate.set(template);
 
-      if (page.lastChangeReject) {
-        this.reviewChanges.set(true);
-      } else {
-        this.reviewChanges.set(false);
-      }
-
-      if (page.review) this.previewMode.set(true);
-
-      if (page.draft !== null) {
+      if (template.draft !== null) {
         this.confirmDraft();
       } else {
-        this.loadPageData();
+        this.loadTemplateData();
       }
     });
   }
@@ -219,13 +212,13 @@ export class PagesCanvas implements OnInit {
    */
   setReviewData() {
     this.reviewChanges.set(false);
-    this.loadPageData();
+    this.loadTemplateData();
   }
 
   /**
    * Load template data from the server and update the component properties accordingly.
    */
-  loadPageData() {
+  loadTemplateData() {
     this.loadGridData();
     this.loadStyles();
   }
@@ -242,24 +235,22 @@ export class PagesCanvas implements OnInit {
     )
       return;
 
-    if (this.page()!.review) {
-      return;
-    }
-
     // Disable the save action
     this.saveAction.set(true);
     this.autosave.set(true);
 
-    const page = this.page();
-    if (page == null) return;
+    const template = this.template();
+    if (template === null) return;
 
-    //Set data page elements
-    page.data!.body.data = this.body();
+    //Set data template elements
+    template.data!.header!.data = this.header();
+    template.data!.footer!.data = this.footer();
 
-    this._pageService
-      .saveDraft(page.id!, {
-        name: page.name,
-        data: page.data,
+    this._templateService
+      .saveDraft(template.id!, {
+        name: template.name,
+        description: template.description,
+        data: template.data,
       })
       .pipe(takeUntil(this._unsubscribeAll))
       .subscribe({
@@ -275,7 +266,7 @@ export class PagesCanvas implements OnInit {
           this.saveAction.set(false);
           this.autosave.set(false);
           this._toastrService.error(
-            response.error?.message || 'No fue posible guardar cambios borrador de la página.',
+            response.error?.message || 'No fue posible guardar cambios borrador de la plantilla.',
             'Error al guardar',
           );
         },
@@ -289,9 +280,9 @@ export class PagesCanvas implements OnInit {
     // Open the confirmation dialog
     this._dialogService.setDialogData({
       type: 'warning',
-      title: `Editar página`,
-      message: `¿Estas seguro/a que deseas editar la página? No podras volver a editar la página hasta que los cambios sean aprobados por un revisor.`,
-      confirmButton: 'Si, Enviar',
+      title: `Editar plantilla`,
+      message: `¿Estas seguro/a que deseas editar la plantilla? esta acción no se puede deshacer.`,
+      confirmButton: 'Si, Editar',
       cancelButton: 'Cancelar',
     });
 
@@ -300,7 +291,7 @@ export class PagesCanvas implements OnInit {
     // Subscribe to the confirmation dialog closed action
     this._dialogService.actionClick$.pipe(takeUntil(this._unsubscribeAll)).subscribe((result) => {
       if (result) {
-        this.updatePage();
+        this.updateTemplate();
       }
     });
   }
@@ -308,38 +299,42 @@ export class PagesCanvas implements OnInit {
   /**
    * Update page
    */
-  updatePage() {
+  updateTemplate() {
     // Return if the grid is invalid
-    if (!validGrid(this.body())) {
-      this._toastrService.warning('Termina de configurar el contenido de la página.', 'Aviso');
+    if (!validGrid(this.header())) {
+      this._toastrService.warning('Termina de configurar el contenido de tu encabezado.', 'Aviso');
+      return;
+    }
+
+    if (!validGrid(this.footer())) {
+      this._toastrService.warning(
+        'Termina de configurar el contenido de tu pie de página.',
+        'Aviso',
+      );
       return;
     }
 
     // Disable the save action
     this.saveAction.set(true);
 
-    const page = this.page();
-    if (page == null) return;
+    const template = this.template();
+    if (template == null) return;
 
-    const pageData = this.reviewChanges() ? page.dataReview : page.data;
+    template.data!.header.data = this.header();
+    template.data!.footer.data = this.footer();
 
-    this._pageService
-      .update(page.id!, {
-        name: page.name,
-        data: {
-          body: {
-            data: this.body(),
-            css: pageData!.body.css,
-            config: pageData!.body.config,
-          },
-        },
+    this._templateService
+      .update(template.id!, {
+        name: template.name,
+        description: template.description,
+        data: template.data,
       })
       .pipe(takeUntil(this._unsubscribeAll))
       .subscribe({
         next: () => {
           this.saveAction.set(false);
           this._toastrService.success(
-            'El diseño de la página se actualizó correctamente.',
+            'El diseño de la plantilla se actualizó correctamente.',
             'Cambios guardados',
           );
         },
@@ -347,7 +342,8 @@ export class PagesCanvas implements OnInit {
           this.saveAction.set(false);
           this._toastrService.error(response.error.message, 'Aviso');
           this._toastrService.error(
-            response.error?.message || 'No fue posible guardar los cambios de diseño de la página.',
+            response.error?.message ||
+              'No fue posible guardar los cambios de diseño de la plantilla.',
             'Error al guardar',
           );
         },
@@ -359,8 +355,9 @@ export class PagesCanvas implements OnInit {
    */
   loadGridData() {
     // Set body
-    const pageData = this.reviewChanges() ? this.page()!.dataReview : this.page()!.data;
-    this.setGrid(pageData!.body.data);
+    const templateData = this.template()!.data;
+    this.setGrid(templateData!.header.data, 'header');
+    this.setGrid(templateData!.footer.data, 'footer');
   }
 
   /**
@@ -368,15 +365,15 @@ export class PagesCanvas implements OnInit {
    */
   loadStyles() {
     // Load CSS
-    const pageData = this.reviewChanges() ? this.page()!.dataReview : this.page()!.data;
+    const templateData = this.template()!.data;
 
-    const styleElementToRemove = document.getElementById('body-dynamicStyles');
+    const styleElementToRemove = document.getElementById('template-dynamicStyles');
     if (styleElementToRemove) {
       styleElementToRemove.remove();
     }
     const styleElement = document.createElement('style');
-    styleElement.id = 'body-dynamicStyles';
-    styleElement.textContent = `${pageData!.body.css}`;
+    styleElement.id = 'template-dynamicStyles';
+    styleElement.textContent = `${templateData!.header.css} ${templateData!.footer.css}`;
     document.head.appendChild(styleElement);
   }
 
@@ -414,10 +411,9 @@ export class PagesCanvas implements OnInit {
    *
    */
   goToBack() {
-    this._router.navigateByUrl('/admin/content/pages/detail', {
+    this._router.navigateByUrl('/admin/content/templates/detail', {
       state: {
-        id: this.page() === null ? 0 : this.page()!.id,
-        micrositieId: this.micrositie() !== null ? this.micrositie()!.id : 0,
+        id: this.template() === null ? 0 : this.template()!.id,
       },
     });
   }
@@ -430,9 +426,10 @@ export class PagesCanvas implements OnInit {
   }
 
   /**
-   * Add section to grid
+   *  Add section to grid
+   *  @param item
    */
-  addSection() {
+  addSection(item: 'header' | 'footer') {
     const sectionUuid = generateRandomString(8);
     const rowUuid = generateRandomString(8);
     const columnUuid = generateRandomString(8);
@@ -457,30 +454,50 @@ export class PagesCanvas implements OnInit {
       ],
     } as unknown as SectionI;
 
-    const previous = structuredClone(this.body());
-    const next = structuredClone([...this.body(), newSection]);
-    this._pageService.sections = next;
-    this._historyService.commit(previous, next);
+    if (item === 'header') {
+      const previous = structuredClone(this.header());
+      const next = structuredClone([...this.header(), newSection]);
+      this._pageService.sectionsHeader = next;
+      // this._historyService.commit(previous, next);
+    }
+    if (item === 'footer') {
+      const previous = structuredClone(this.footer());
+      const next = structuredClone([...this.footer(), newSection]);
+      this._pageService.sectionsFooter = next;
+      // this._historyService.commit(previous, next);
+    }
+
+    this.updateSelectionItem({
+      section: newSection,
+      row: null,
+      column: null,
+      element: null,
+      canvas: item,
+    });
   }
 
   /**
    * Set data to grid
-   * @param grid
+   * @param grid Set data to grid
+   * @param item
    */
-  setGrid(grid: SectionI[]) {
-    this._pageService.sections = grid;
+  setGrid(grid: SectionI[], item: 'header' | 'footer') {
+    if (item === 'header') this._pageService.sectionsHeader = grid;
+    if (item === 'footer') this._pageService.sectionsFooter = grid;
   }
 
   /**
    * Get config styles
+   * @param code
    * @returns
    */
-  getStyles() {
-    const pageData = this.reviewChanges() ? this.page()!.dataReview : this.page()!.data;
+  getStyles(code: string) {
+    const templateData = this.template()!.data!;
     let styles = {};
-    if (pageData!.body.config['backgroundImage'] !== '') {
+    const template = templateData[code as keyof typeof templateData];
+    if (template?.config['backgroundImage'] !== '') {
       styles = {
-        'background-image': `url('${this.urlStatics}/${pageData!.body.config['backgroundImage']}')`,
+        'background-image': `url('${this.urlStatics}/${template!.config['backgroundImage']}')`,
       };
     }
     return styles;
@@ -504,13 +521,13 @@ export class PagesCanvas implements OnInit {
     // Subscribe to the confirmation dialog closed action
     this._dialogService.actionClick$.pipe(takeUntil(this._unsubscribeAll)).subscribe((result) => {
       if (result) {
-        const page = this.page();
-        page!.data = page!.draft;
-        this.page.set(page);
+        const template = this.template()!;
+        template.data = template!.draft!;
+        this.template.set(template);
       } else {
         this.deleteDraft();
       }
-      this.loadPageData();
+      this.loadTemplateData();
     });
   }
 
@@ -521,11 +538,11 @@ export class PagesCanvas implements OnInit {
     // Disable the save action
     this.saveAction.set(true);
 
-    const page = this.page();
-    if (page == null) return;
+    const template = this.template();
+    if (template == null) return;
 
-    this._pageService
-      .deleteDraft(page.id!)
+    this._templateService
+      .deleteDraft(template.id!)
       .pipe(takeUntil(this._unsubscribeAll))
       .subscribe({
         next: () => {
@@ -535,7 +552,7 @@ export class PagesCanvas implements OnInit {
           this.saveAction.set(false);
           this._toastrService.error(
             response.error?.message ||
-              'No fue posible descartar los cambios de diseño de la página.',
+              'No fue posible descartar los cambios de diseño de la plantilla.',
             'Error al descartar',
           );
         },
@@ -575,18 +592,18 @@ export class PagesCanvas implements OnInit {
     // Subscribe to the confirmation dialog closed action
     this._dialogService.actionClick$.pipe(takeUntil(this._unsubscribeAll)).subscribe((result) => {
       if (result) {
-        const page = this.originPage();
-        this.page.set(page);
+        const template = this.originTemplate();
+        this.template.set(template);
         this.deleteDraft();
-        this.loadPageData();
+        this.loadTemplateData();
         this.updateSelectionItem({
           section: null,
           row: null,
           column: null,
           element: null,
-          canvas: 'body',
+          canvas: 'header',
         });
-        this._historyService.clear();
+        // this._historyService.clear();
       }
     });
   }
@@ -609,8 +626,10 @@ export class PagesCanvas implements OnInit {
 
   /**
    * set element
+   * @param element
+   * @param item
    */
-  setElementSelectedInColumn(element: ElementCMSI | null) {
+  setElementSelectedInColumn(element: ElementCMSI | null, item: 'header' | 'footer') {
     this.openElementPanel.set(false);
     const column = this.currentColumn();
     if (element === null) {
@@ -620,28 +639,45 @@ export class PagesCanvas implements OnInit {
 
     if (column === null) return;
 
-    const previous = structuredClone(this.body());
-    const elementUuid = generateRandomString(8);
-    column.element = {
-      uuid: elementUuid,
-      name: element.name,
-      css: `.${element.css}-${elementUuid}{}`,
-      config: element.config,
-      text: element.text,
-      dataText: [],
-    };
+    if (item === 'header') {
+      const previous = structuredClone(this.header());
+      const elementUuid = generateRandomString(8);
+      column.element = {
+        uuid: elementUuid,
+        name: element.name,
+        css: `.${element.css}-${elementUuid}{}`,
+        config: element.config,
+        text: element.text,
+        dataText: [],
+      };
+      const sectionsUpdate = updateColumn(this.header(), column.uuid, column);
+      const next = structuredClone(sectionsUpdate);
+      this._pageService.sectionsHeader = next;
+    }
 
-    const sectionsUpdate = updateColumn(this.body(), column.uuid, column);
+    if (item === 'footer') {
+      const previous = structuredClone(this.footer());
+      const elementUuid = generateRandomString(8);
+      column.element = {
+        uuid: elementUuid,
+        name: element.name,
+        css: `.${element.css}-${elementUuid}{}`,
+        config: element.config,
+        text: element.text,
+        dataText: [],
+      };
+      const sectionsUpdate = updateColumn(this.footer(), column.uuid, column);
+      const next = structuredClone(sectionsUpdate);
+      this._pageService.sectionsFooter = next;
+    }
 
-    const next = structuredClone(sectionsUpdate);
-    this._pageService.sections = next;
-    this._historyService.commit(previous, next);
+    // this._historyService.commit(previous, next);
     this._pageService.selectedItemsInGrid = {
       section: null,
       column: null,
       row: null,
       element: column.element,
-      canvas: 'body',
+      canvas: item,
     };
   }
 
@@ -679,7 +715,7 @@ export class PagesCanvas implements OnInit {
       row: findRowByUuid(state, selectedItemsInGrid?.row?.uuid ?? ''),
       column: findColumnByUuid(state, selectedItemsInGrid?.column?.uuid ?? ''),
       element: findElementByUuid(state, selectedItemsInGrid?.element?.uuid ?? ''),
-      canvas: 'body',
+      canvas: selectedItemsInGrid.canvas,
     };
   }
 }

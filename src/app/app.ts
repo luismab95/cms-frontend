@@ -4,7 +4,9 @@ import { InactivityTimerService } from './shared/services/inactivity.service';
 import { LoadingBarComponent } from './shared/components/loading-bar/loading-bar';
 import AOS from 'aos';
 
-AOS.init();
+AOS.init({
+  disable: 'mobile',
+});
 
 @Component({
   imports: [RouterOutlet, LoadingBarComponent],

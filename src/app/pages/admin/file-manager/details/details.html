@@ -100,7 +100,7 @@
                     <div class="flex items-center justify-between">
                       <p
                         [class.text-red-500!]="validateFormControl(fileForm, 'path')"
-                        class="text-sm font-semibold text-slate-800"
+                        class="text-sm font-semibold text-slate-800 truncate"
                       >
                         {{ file()?.filename }}
                       </p>
@@ -215,7 +215,7 @@
             >
               Nombre <span class="text-red-500 font-bold">*</span>
             </label>
-            <div class="relative rounded-lg shadow-sm">
+            <div class="relative rounded-lg">
               <div
                 class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400"
               >
@@ -255,7 +255,7 @@
             >
               Descripción <span class="text-red-500 font-bold">*</span>
             </label>
-            <div class="relative rounded-lg shadow-sm">
+            <div class="relative rounded-lg">
               <div
                 class="absolute left-0 top-4 pl-3.5 flex items-center pointer-events-none text-slate-400"
               >

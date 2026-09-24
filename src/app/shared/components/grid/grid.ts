@@ -7,7 +7,6 @@ import {
 } from '@angular/cdk/drag-drop';
 import { NgClass } from '@angular/common';
 import { Component, effect, inject, input, OnInit, output, signal } from '@angular/core';
-import { ElementCMSI } from 'app/shared/interfaces/element.interface';
 import {
   ColumnI,
   ElementI,
@@ -21,6 +20,7 @@ import { TooltipDirective } from 'app/shared/directives/tooltip.directive';
 import { PageService } from 'app/core/services/pages.service';
 import { Subject, takeUntil } from 'rxjs';
 import { HistoryService } from 'app/core/services/history-canvas.service';
+import { CanvasT } from 'app/core/interfaces/page.interface';
 
 @Component({
   selector: 'grid',
@@ -31,7 +31,7 @@ export class GridComponent implements OnInit {
   preview = input<boolean>(false);
   editContent = input<boolean>(false);
   editDesign = input<boolean>(false);
-  gridType = input.required<string>();
+  gridType = input.required<CanvasT>();
   languageId = input<number>();
   previewType = input<string>('none');
   deleteSectionEvent = output<SectionI[]>();
@@ -42,6 +42,7 @@ export class GridComponent implements OnInit {
     row: null,
     column: null,
     element: null,
+    canvas: 'body',
   });
   refreshGrid = signal<boolean>(false);
   selectedSection = signal<string | null>(null);
@@ -158,11 +159,21 @@ export class GridComponent implements OnInit {
   addRow(section: SectionI) {
     const previous = structuredClone(this.sectionsInCanvas());
     const rowUuid = generateRandomString(8);
-    section.rows.push({
+    const row = {
       uuid: rowUuid,
       css: `.grid-row-${rowUuid}{}`,
       config: { backgroundImage: '' },
       columns: [],
+    } as RowI;
+
+    section.rows.push(row);
+
+    this.updateSelectionItem({
+      section: null,
+      row,
+      column: null,
+      element: null,
+      canvas: this.gridType(),
     });
 
     this.updateSectionsInGrid(previous);
@@ -175,12 +186,23 @@ export class GridComponent implements OnInit {
   addColumn(row: RowI) {
     const previous = structuredClone(this.sectionsInCanvas());
     const columnUuid = generateRandomString(8);
-    row.columns.push({
+    const column = {
       uuid: columnUuid,
       css: `.grid-column-${columnUuid}{}`,
       config: { backgroundImage: '' },
       element: null!,
+    } as ColumnI;
+
+    row.columns.push(column);
+
+    this.updateSelectionItem({
+      section: null,
+      row: null,
+      column,
+      element: null,
+      canvas: this.gridType(),
     });
+
     this.updateSectionsInGrid(previous);
   }
 
@@ -190,6 +212,10 @@ export class GridComponent implements OnInit {
    */
   openElementsMangerModal(column: ColumnI): void {
     this.openElementPanel.emit(column);
+    this.updateSelectionItem({
+      ...this.selectedItemsInGrid(),
+      canvas: this.gridType(),
+    });
   }
 
   /**
@@ -197,8 +223,18 @@ export class GridComponent implements OnInit {
    */
   updateSectionsInGrid(previous: SectionI[]) {
     const next = structuredClone(this.sectionsInCanvas());
-    this._pageService.sections = next;
-    this._historyService.commit(previous, next);
+    if (this.gridType() === 'header') {
+      this._pageService.sectionsHeader = next;
+      // this._historyService.commit(previous, next);
+    }
+    if (this.gridType() === 'footer') {
+      this._pageService.sectionsFooter = next;
+      // this._historyService.commit(previous, next);
+    }
+    if (this.gridType() === 'body') {
+      this._pageService.sections = next;
+      this._historyService.commit(previous, next);
+    }
   }
 
   /**
@@ -216,6 +252,7 @@ export class GridComponent implements OnInit {
       row: null,
       column: null,
       element: null,
+      canvas: this.gridType(),
     });
   }
 
@@ -233,6 +270,7 @@ export class GridComponent implements OnInit {
       row,
       column: null,
       element: null,
+      canvas: this.gridType(),
     });
   }
 
@@ -249,6 +287,7 @@ export class GridComponent implements OnInit {
       row: null,
       column,
       element: null,
+      canvas: this.gridType(),
     });
   }
 
@@ -264,6 +303,7 @@ export class GridComponent implements OnInit {
       row: null,
       column: null,
       element,
+      canvas: this.gridType(),
     });
   }
 

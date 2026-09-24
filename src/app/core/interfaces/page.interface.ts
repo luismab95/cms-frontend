@@ -80,3 +80,4 @@ export interface GetPageI {
 }
 
 export type PreviewModeT = 'none' | 'mobile' | 'tablet' | 'desktop';
+export type CanvasT = 'header' | 'footer' | 'body';

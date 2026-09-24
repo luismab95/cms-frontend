@@ -4,5 +4,6 @@ export interface MicrositieI {
   description: string;
   path: string;
   sitieId: number;
+  templateId: number;
   status?: boolean;
 }

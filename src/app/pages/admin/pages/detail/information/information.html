@@ -11,7 +11,7 @@
       <div class="border-b border-slate-100 bg-white px-6 py-5">
         <div class="flex items-center justify-between">
           <div>
-            <h2 class="text-base font-bold text-slate-900">Información General</h2>
+            <h2 class="text-xl font-bold text-slate-900">Información General</h2>
             <p class="text-xs text-slate-500 mt-0.5">
               Información básica y general de tu página. Comprende datos como el nombre y ruta.
             </p>
@@ -28,7 +28,7 @@
           >
             Nombre <span class="text-rose-500 font-bold">*</span>
           </label>
-          <div class="relative rounded-lg shadow-sm">
+          <div class="relative rounded-lg">
             <div
               class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400"
             >
@@ -68,17 +68,18 @@
             Ruta <span class="text-rose-500 font-bold">*</span>
           </label>
 
-          <div class="relative rounded-lg shadow-sm">
+          <div class="relative rounded-lg">
             <div
-              class="bg-slate-300/20 absolute text-sm inset-y-0 left-0 pl-3.5 w-48 border-e border-slate-200 flex items-center pointer-events-none text-slate-600"
+              class="bg-slate-300/20 absolute text-sm inset-y-0 left-0 pl-3.5 w-12 lg:w-48 border-e border-slate-200 flex items-center pointer-events-none text-slate-600"
             >
-              <span class="block min-w-0 w-full truncate">
+              <span class="hidden lg:block min-w-0 w-full truncate">
                 {{ removePreviewPath() }}
               </span>
+              <span class="block lg:hidden"> <i class="fa-solid fa-tag"></i></span>
             </div>
             <input
               formControlName="path"
-              class="h-10 block w-full pl-50 pr-3.5 py-2.5 sm:py-3 text-sm text-slate-900 placeholder-slate-400 bg-slate-50/50 border border-slate-300 rounded-lg focus:outline-none focus:ring-0.5 focus:ring-indigo-600 focus:border-indigo-600 focus:bg-white transition-colors"
+              class="h-10 block w-full pl-14 lg:pl-50 pr-3.5 py-2.5 sm:py-3 text-sm text-slate-900 placeholder-slate-400 bg-slate-50/50 border border-slate-300 rounded-lg focus:outline-none focus:ring-0.5 focus:ring-indigo-600 focus:border-indigo-600 focus:bg-white transition-colors"
               [class.border-red-500!.text-red-500!]="validateFormControl(pageForm, 'path')"
               [class.text-red-500!]="validateFormControl(pageForm, 'path')"
               [class.placeholder:text-red-500!]="validateFormControl(pageForm, 'path')"
@@ -132,7 +133,7 @@
               </div>
               <!-- Canvas Preview Inner Content (Matches image elements: Flag, CMS logo, Personalizar button, Bienvenido headline) -->
               <div
-                class="relative bg-slate-300 min-h-125 h-125 flex flex-col items-center justify-center text-center overflow-hidden group backdrop-blur-2xl"
+                class="relative bg-slate-300 min-h-60 h-60 lg:min-h-125 lg:h-125 flex flex-col items-center justify-center text-center overflow-hidden group backdrop-blur-2xl"
               >
                 <!-- Quick Edit Overlay Helper -->
                 <div
@@ -192,7 +193,7 @@
         <div class="border-b border-slate-100 bg-white px-6 py-5">
           <div class="flex items-center justify-between">
             <div>
-              <h2 class="text-base font-bold text-slate-p00">Zona de peligro</h2>
+              <h2 class="text-xl font-bold text-slate-p00">Zona de peligro</h2>
               <p class="text-xs text-slate-500 mt-0.5">
                 Las opciones disponibles en esta sección corresponden a funciones de administración
                 y configuración general de la página. Estos ajustes pueden afectar el
@@ -205,7 +206,7 @@
         </div>
         <div class="p-6 space-y-6">
           <!--Desactivar -->
-          <div class="px-6 transition hover:bg-slate-50/60">
+          <div class="px-2 lg:px-6 transition hover:bg-slate-50/60">
             @let status = pageForm.get('status')?.value;
             <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div class="space-y-1.5 max-w-xl">
@@ -337,6 +338,7 @@
           }
         </div>
       </div>
+      <div class="h-1 block lg:hidden"></div>
     } @else {
       <permission-component [show]="true" />
     }

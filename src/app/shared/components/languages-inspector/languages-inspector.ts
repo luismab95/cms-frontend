@@ -62,6 +62,7 @@ export class LangugesInspectorComponent implements OnInit, AfterViewInit, OnDest
       row: null,
       column: null,
       element: null,
+      canvas: 'body',
     },
   });
 
@@ -184,7 +185,7 @@ export class LangugesInspectorComponent implements OnInit, AfterViewInit, OnDest
    * Update item
    * @param value
    */
-  updateItem(value: { languages: ElementDataI[] }): void {     
+  updateItem(value: { languages: ElementDataI[] }): void {
     const selectedElement = this.selectedItemsInGrid()?.element;
 
     if (!selectedElement) {

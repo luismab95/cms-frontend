@@ -413,7 +413,7 @@ ngx-otp-input {
   --ng-select-border-radius: 0.5rem;
   --ng-select-placeholder: var(--color-slate-500);
   --ng-select-selected: var(--color-indigo-50);
-  --ng-select-box-shadow: none;
+  --ng-select-box-shadow: transparent;
   --ng-select-highlight: var(--color-indigo-600);
   --ng-select-selected-border: var(--color-indigo-600);
   --ng-select-container-hover-shadow: var(--color-indigo-600);
