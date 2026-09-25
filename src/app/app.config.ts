@@ -7,6 +7,7 @@ import { routes } from './app.routes';
 import { provideAuth } from './core/interceptors/auth.provider';
 import { loaderInterceptor } from './core/interceptors/loader.interceptor';
 import { withTailwindFields } from './shared/components/dynamic-form/fields';
+import { provideMonacoEditor } from 'ngx-monaco-editor-v2';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -26,5 +27,6 @@ export const appConfig: ApplicationConfig = {
     provideHttpClient(withInterceptors([loaderInterceptor])),
     provideAuth(),
     provideDynamicForm(...withTailwindFields()),
+    provideMonacoEditor(),
   ],
 };

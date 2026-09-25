@@ -17,6 +17,7 @@ import { deleteColumn, deleteElement, deleteRow } from 'app/shared/utils/grid.ut
 import { PermissionComponent } from '../permission/permission';
 import { LangugesInspectorComponent } from './languages-inspector/languages-inspector';
 import { PropertiesInspectorComponent } from './properties-inspector/properties-inspector';
+import { DesignInspectorComponent } from './design-inspector/design-inspector';
 import { distinctUntilChanged } from 'rxjs';
 
 @Component({
@@ -28,6 +29,7 @@ import { distinctUntilChanged } from 'rxjs';
     LangugesInspectorComponent,
     PermissionComponent,
     PropertiesInspectorComponent,
+    DesignInspectorComponent,
   ],
 })
 export class InspectorComponent {
@@ -124,6 +126,7 @@ export class InspectorComponent {
   readonly selectedElement = computed(() => this.selectedItemsInGrid()?.element);
   readonly dataTextLanguages = computed(() => this.selectedElement()?.dataText ?? null);
   readonly textLanguages = computed(() => this.selectedElement()?.text ?? null);
+  readonly css = computed(() => this.selectedItemsInGrid()?.[this.typeItem()]?.css ?? '');
   readonly tabsComputed = computed(() => {
     const selectedItem = this.selectedItemsInGrid();
     const tabs = this.tabs().filter((tab) => tab.id !== 2);
