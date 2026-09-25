@@ -4,18 +4,19 @@ import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { ElementService } from 'app/core/services/element.service';
 import { PageService } from 'app/core/services/pages.service';
 import { LanguageService } from 'app/shared/services/language.service';
+import { CanvasService } from 'app/core/services/canvas.service';
 import { ParameterService } from 'app/core/services/parameter.service';
-import { TooltipDirective } from 'app/shared/directives/tooltip.directive';
+import { TemplateService } from 'app/core/services/templates.service';
 import { ElementI, SectionI, SelectedItemsInGridI } from 'app/shared/interfaces/grid.interface';
 import { TabI } from 'app/shared/interfaces/drawer.interface';
 import { CanvasT } from 'app/core/interfaces/page.interface';
+import { TooltipDirective } from 'app/shared/directives/tooltip.directive';
 import { PermissionCode, validAction } from 'app/shared/utils/permission.utils';
 import { findParameter } from 'app/shared/utils/parameter.utils';
+import { deleteColumn, deleteElement, deleteRow } from 'app/shared/utils/grid.utils';
 import { PermissionComponent } from '../permission/permission';
 import { LangugesInspectorComponent } from './languages-inspector/languages-inspector';
-import { deleteColumn, deleteElement, deleteRow } from 'app/shared/utils/grid.utils';
 import { PropertiesInspectorComponent } from './properties-inspector/properties-inspector';
-import { HistoryService } from 'app/core/services/history-canvas.service';
 import { distinctUntilChanged } from 'rxjs';
 
 @Component({
@@ -30,7 +31,7 @@ import { distinctUntilChanged } from 'rxjs';
   ],
 })
 export class InspectorComponent {
-  gridType = input.required<CanvasT>();
+  gridType = input<CanvasT>('page');
 
   selectedItemsInGrid = signal<SelectedItemsInGridI | null>(null);
   tabsLanguages = signal<TabI[]>([]);
@@ -69,12 +70,11 @@ export class InspectorComponent {
   private readonly _pageService = inject(PageService);
   private readonly _languageService = inject(LanguageService);
   private readonly _parameterService = inject(ParameterService);
-  private readonly _historyService = inject(HistoryService);
+  private readonly _canvasService = inject(CanvasService);
+  private readonly _templateService = inject(TemplateService);
 
-  readonly sectionsPageInCanvas = this._pageService.sections;
-  readonly sectionsHeaderInCanvas = this._pageService.sectionsHeader;
-  readonly sectionsFooterInCanvas = this._pageService.sectionsFooter;
-
+  readonly page = toSignal(this._pageService.page$, { initialValue: null });
+  readonly template = toSignal(this._templateService.template$, { initialValue: null });
   readonly languages = toSignal(this._languageService.languages$, {
     initialValue: {
       records: [],
@@ -136,36 +136,8 @@ export class InspectorComponent {
         type: 'icon',
       });
     }
-
     return tabs;
   });
-
-  readonly sectionsByType = {
-    header: {
-      get: () => this.sectionsHeaderInCanvas(),
-      set: (sections: SectionI[]) => {
-        this._pageService.sectionsHeader = sections;
-      },
-    },
-    body: {
-      get: () => this.sectionsPageInCanvas(),
-      set: (sections: SectionI[]) => {
-        this._pageService.sections = sections;
-      },
-    },
-    footer: {
-      get: () => this.sectionsFooterInCanvas(),
-      set: (sections: SectionI[]) => {
-        this._pageService.sectionsFooter = sections;
-      },
-    },
-  } satisfies Record<
-    CanvasT,
-    {
-      get: () => SectionI[];
-      set: (sections: SectionI[]) => void;
-    }
-  >;
 
   /**
    * Constructor
@@ -351,20 +323,20 @@ export class InspectorComponent {
     const previous = structuredClone(this.sectionsInCanvas());
     this.currentSections = newSections;
     const next = structuredClone(this.currentSections);
-    this._historyService.commit(this.gridType(), previous, next);
+    this._canvasService.updateChangesInCanvas(this.gridType(), previous, next);
   }
 
   /**
    * currentSections
    */
   private get currentSections(): SectionI[] {
-    return this.sectionsByType[this.gridType()].get();
+    return this._canvasService.sectionsByType[this.gridType()].get();
   }
 
   /**
    * currentSections
    */
   private set currentSections(sections: SectionI[]) {
-    this.sectionsByType[this.gridType()].set(sections);
+    this._canvasService.sectionsByType[this.gridType()].set(sections);
   }
 }

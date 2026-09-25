@@ -50,7 +50,13 @@ export interface SectionI {
   rows: RowI[];
 }
 
+export interface HistoryCMSI {
+  header: PageElementsI | null;
+  body: PageElementsI | null;
+  footer: PageElementsI | null;
+}
+
 export interface HistoryChangeI {
-  previous: SectionI[];
-  next: SectionI[];
+  previous: HistoryCMSI;
+  next: HistoryCMSI;
 }

@@ -1,5 +1,5 @@
 import { HttpClient } from '@angular/common/http';
-import { inject, Injectable, Signal, signal } from '@angular/core';
+import { inject, Injectable } from '@angular/core';
 import { PaginationResponseI, ResponseI } from 'app/shared/interfaces/response.interface';
 import { environment } from 'environments/environment';
 import {
@@ -8,8 +8,8 @@ import {
   GetPageI,
   PageRenderI,
 } from '../interfaces/page.interface';
+import { SelectedItemsInGridI } from 'app/shared/interfaces/grid.interface';
 import { Observable, of, ReplaySubject, tap } from 'rxjs';
-import { SectionI, SelectedItemsInGridI } from 'app/shared/interfaces/grid.interface';
 
 @Injectable({ providedIn: 'root' })
 export class PageService {
@@ -22,10 +22,6 @@ export class PageService {
   private _page: ReplaySubject<PageI | null> = new ReplaySubject<PageI | null>(1);
   private _selectedItemsInGrid: ReplaySubject<SelectedItemsInGridI | null> =
     new ReplaySubject<SelectedItemsInGridI | null>(1);
-
-  private _sections = signal<SectionI[]>([]);
-  private _sectionsHeader = signal<SectionI[]>([]);
-  private _sectionsFooter = signal<SectionI[]>([]);
 
   private _httpClient = inject(HttpClient);
 
@@ -50,35 +46,6 @@ export class PageService {
 
   get selectedItemsInGrid$(): Observable<SelectedItemsInGridI | null> {
     return this._selectedItemsInGrid.asObservable();
-  }
-
-  /**
-   * Setter & getter for sections
-   *
-   * @param value
-   */
-  set sections(value: SectionI[]) {
-    this._sections.set(value);
-  }
-
-  get sections(): Signal<SectionI[]> {
-    return this._sections.asReadonly();
-  }
-
-  set sectionsHeader(value: SectionI[]) {
-    this._sectionsHeader.set(value);
-  }
-
-  get sectionsHeader(): Signal<SectionI[]> {
-    return this._sectionsHeader.asReadonly();
-  }
-
-  set sectionsFooter(value: SectionI[]) {
-    this._sectionsFooter.set(value);
-  }
-
-  get sectionsFooter(): Signal<SectionI[]> {
-    return this._sectionsFooter.asReadonly();
   }
 
   /**

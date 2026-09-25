@@ -195,7 +195,9 @@
     </div>
   } @else {
     @let total =
-      sectionsInCanvas().length + sectionsHeaderInCanvas().length + sectionsFooterInCanvas().length;
+      sectionsByType()['page'].get().length +
+      sectionsByType()['header'].get().length +
+      sectionsByType()['footer'].get().length;
 
     <!-- HEADER -->
     <div class="flex h-12 shrink-0 items-center justify-between border-b border-slate-200 px-3">
@@ -231,11 +233,12 @@
         </div>
 
         <!-- sectionsInCanvas -->
-        @if (currentGridType() === 'body') {
+        @if (currentGridType() === 'page') {
+          @let sectionsInCanvas = sectionsByType()[gridType()].get();
           <div
             cdkDropList
             cdkDropListOrientation="vertical"
-            (cdkDropListDropped)="drop($event, sectionsInCanvas(), 'body')"
+            (cdkDropListDropped)="drop($event, sectionsInCanvas)"
             class="mt-1 space-y-1 sectionsInCanvas-layer"
           >
             <ng-container
@@ -247,7 +250,7 @@
                 }
               "
             />
-            @for (section of sectionsInCanvas(); track section.uuid; let sectionIndex = $index) {
+            @for (section of sectionsInCanvas; track section.uuid; let sectionIndex = $index) {
               <!-- SECTION -->
               <div cdkDragBoundary="sectionsInCanvas-layer" cdkDrag class="space-y-1">
                 <ng-container
@@ -266,7 +269,7 @@
                   <div
                     cdkDropList
                     cdkDropListOrientation="vertical"
-                    (cdkDropListDropped)="drop($event, section.rows, 'body')"
+                    (cdkDropListDropped)="drop($event, section.rows)"
                     class="ml-4 space-y-1 border-l border-indigo-200 pl-2 rows-layer"
                   >
                     @for (row of section.rows; track row.uuid; let rowIndex = $index) {
@@ -287,7 +290,7 @@
                           <div
                             cdkDropList
                             cdkDropListOrientation="vertical"
-                            (cdkDropListDropped)="drop($event, row.columns, 'body')"
+                            (cdkDropListDropped)="drop($event, row.columns)"
                             class="columns-layer ml-3 space-y-0.5 border-l border-slate-200 pl-2 text-slate-600"
                           >
                             @for (
@@ -343,11 +346,14 @@
             />
           </div>
         } @else {
+          @let sectionsHeaderInCanvas = sectionsByType()['header'].get();
+          @let sectionsFooterInCanvas = sectionsByType()['footer'].get();
+
           <div
             cdkDropList
             cdkDropListOrientation="vertical"
-            (cdkDropListDropped)="drop($event, sectionsHeaderInCanvas(), 'header')"
-            class="mt-1 space-y-1 sectionsHeaderInCanvas-layer"
+            (cdkDropListDropped)="drop($event, sectionsHeaderInCanvas)"
+            class="mt-1 space-y-1 sectionsInCanvas-layer"
           >
             <ng-container
               *ngTemplateOutlet="
@@ -359,12 +365,12 @@
               "
             />
             @for (
-              section of sectionsHeaderInCanvas();
+              section of sectionsHeaderInCanvas;
               track section.uuid;
               let sectionIndex = $index
             ) {
               <!-- SECTION -->
-              <div class="space-y-1 pl-3">
+              <div cdkDragBoundary="sectionsInCanvas-layer" cdkDrag class="space-y-1 pl-3">
                 <ng-container
                   *ngTemplateOutlet="
                     sectionCard;
@@ -375,14 +381,14 @@
                     }
                   "
                 />
+
                 <!-- ROWS -->
                 @if (isSectionExpanded(section.uuid)) {
                   <div
-                    class="rows-layer"
                     cdkDropList
                     cdkDropListOrientation="vertical"
-                    (cdkDropListDropped)="drop($event, section.rows, 'header')"
-                    class="ml-4 space-y-1 border-l border-indigo-200 pl-2"
+                    (cdkDropListDropped)="drop($event, section.rows)"
+                    class="ml-4 space-y-1 border-l border-indigo-200 pl-2 rows-layer"
                   >
                     @for (row of section.rows; track row.uuid; let rowIndex = $index) {
                       <!-- ROW -->
@@ -402,7 +408,7 @@
                           <div
                             cdkDropList
                             cdkDropListOrientation="vertical"
-                            (cdkDropListDropped)="drop($event, row.columns, 'header')"
+                            (cdkDropListDropped)="drop($event, row.columns)"
                             class="columns-layer ml-3 space-y-0.5 border-l border-slate-200 pl-2 text-slate-600"
                           >
                             @for (
@@ -448,12 +454,11 @@
               </div>
             }
           </div>
-
           <div
             cdkDropList
             cdkDropListOrientation="vertical"
-            (cdkDropListDropped)="drop($event, sectionsFooterInCanvas(), 'footer')"
-            class="mt-1 space-y-1 sectionsFooterInCanvas-layer"
+            (cdkDropListDropped)="drop($event, sectionsFooterInCanvas)"
+            class="mt-1 space-y-1 sectionsInCanvas-layer"
           >
             <ng-container
               *ngTemplateOutlet="
@@ -465,12 +470,12 @@
               "
             />
             @for (
-              section of sectionsFooterInCanvas();
+              section of sectionsFooterInCanvas;
               track section.uuid;
               let sectionIndex = $index
             ) {
               <!-- SECTION -->
-              <div class="space-y-1 pl-3">
+              <div cdkDragBoundary="sectionsInCanvas-layer" cdkDrag class="space-y-1 pl-3">
                 <ng-container
                   *ngTemplateOutlet="
                     sectionCard;
@@ -485,11 +490,10 @@
                 <!-- ROWS -->
                 @if (isSectionExpanded(section.uuid)) {
                   <div
-                    class="rows-layer"
                     cdkDropList
                     cdkDropListOrientation="vertical"
-                    (cdkDropListDropped)="drop($event, section.rows, 'footer')"
-                    class="ml-4 space-y-1 border-l border-indigo-200 pl-2"
+                    (cdkDropListDropped)="drop($event, section.rows)"
+                    class="ml-4 space-y-1 border-l border-indigo-200 pl-2 rows-layer"
                   >
                     @for (row of section.rows; track row.uuid; let rowIndex = $index) {
                       <!-- ROW -->
@@ -509,7 +513,7 @@
                           <div
                             cdkDropList
                             cdkDropListOrientation="vertical"
-                            (cdkDropListDropped)="drop($event, row.columns, 'footer')"
+                            (cdkDropListDropped)="drop($event, row.columns)"
                             class="columns-layer ml-3 space-y-0.5 border-l border-slate-200 pl-2 text-slate-600"
                           >
                             @for (
@@ -568,11 +572,13 @@
 
         <!-- sectionsInCanvas -->
         <div (click)="toggleLayers()" class="flex items-center justify-center flex-col gap-2 mt-2">
-          @if (currentGridType() === 'body') {
+          @if (currentGridType() === 'page') {
+            @let sectionsInCanvas = sectionsByType()[gridType()].get();
+
             <div class="flex items-center gap-2 p-2">
               <ng-container *ngTemplateOutlet="headerIcon" />
             </div>
-            @for (section of sectionsInCanvas(); track section.uuid; let sectionIndex = $index) {
+            @for (section of sectionsInCanvas; track section.uuid; let sectionIndex = $index) {
               <!-- SECTION -->
               <ng-container
                 *ngTemplateOutlet="
@@ -589,11 +595,14 @@
               <ng-container *ngTemplateOutlet="footerIcon" />
             </div>
           } @else {
+            @let sectionsHeaderInCanvas = sectionsByType()['header'].get();
+            @let sectionsFooterInCanvas = sectionsByType()['footer'].get();
+
             <div class="flex items-center gap-2 p-2">
               <ng-container *ngTemplateOutlet="headerIcon" />
             </div>
             @for (
-              section of sectionsHeaderInCanvas();
+              section of sectionsHeaderInCanvas;
               track section.uuid;
               let sectionIndex = $index
             ) {
@@ -609,13 +618,11 @@
                 "
               />
             }
-
             <div class="flex items-center p-2">
               <ng-container *ngTemplateOutlet="footerIcon" />
             </div>
-
             @for (
-              section of sectionsFooterInCanvas();
+              section of sectionsFooterInCanvas;
               track section.uuid;
               let sectionIndex = $index
             ) {

@@ -4,9 +4,11 @@ import { Meta, Title } from '@angular/platform-browser';
 import { PageService } from 'app/core/services/pages.service';
 import { DeviceDetectorService, DeviceType } from 'ngx-device-detector';
 import { distinctUntilChanged, filter, Subject, takeUntil } from 'rxjs';
-import { PageDetailReferenceI } from 'app/core/interfaces/page.interface';
+import { PageDetailReferenceI, PageI } from 'app/core/interfaces/page.interface';
 import { GridComponent } from 'app/shared/components/grid/grid';
 import { SectionI } from 'app/shared/interfaces/grid.interface';
+import { TemplateI } from 'app/core/interfaces/template.interface';
+import { TemplateService } from 'app/core/services/templates.service';
 
 @Component({
   selector: 'landing-router',
@@ -26,6 +28,7 @@ export class LandingRouterComponent implements OnInit, OnDestroy {
 
   private _deviceDetectorService = inject(DeviceDetectorService);
   private readonly _pageService = inject(PageService);
+  private readonly _templateService = inject(TemplateService);
   private readonly _router = inject(Router);
   private _metaService = inject(Meta);
   private _titleService = inject(Title);
@@ -128,9 +131,8 @@ export class LandingRouterComponent implements OnInit, OnDestroy {
 
           this.updateMetaTags(this.languageId()!, res.message.details!);
 
-          this.setGrid(res.message.template.data?.header.data!, 'header');
-          this.setGrid(res.message.data?.body.data!, 'body');
-          this.setGrid(res.message.template.data?.footer.data!, 'footer');
+          this.loadData(res.message.template, 'template');
+          this.loadData(res.message, 'page');
 
           // Load CSS
           const styleElement = document.createElement('style');
@@ -153,10 +155,9 @@ export class LandingRouterComponent implements OnInit, OnDestroy {
    * @param grid
    * @param item
    */
-  setGrid(grid: SectionI[], item: 'header' | 'footer' | 'body') {
-    if (item === 'header') this._pageService.sectionsHeader = grid;
-    if (item === 'body') this._pageService.sections = grid;
-    if (item === 'footer') this._pageService.sectionsFooter = grid;
+  loadData(data: TemplateI | PageI, item: 'template' | 'page') {
+    if (item === 'page') this._pageService.page = data as PageI;
+    if (item === 'template') this._templateService.template = data as TemplateI;
   }
 
   /**

@@ -55,7 +55,7 @@
               @switch (typeItem()) {
                 @case ('page') {
                   {{
-                    gridType() === 'body'
+                    gridType() === 'page'
                       ? 'Contenido Principal'
                       : gridType() === 'header'
                         ? 'Encabezado'
@@ -681,6 +681,9 @@
           <i class="fa-solid fa-sliders text-[11px] text-indigo-600 fa-lg"></i>
         } @else {
           @switch (typeItem()) {
+            @case ('page') {
+              <i class="fa-solid fa-boxes-stacked text-[11px] text-gray-600 fa-lg"></i>
+            }
             @case ('section') {
               <i class="fa-solid fa-table text-[11px] text-indigo-600 fa-lg"></i>
             }

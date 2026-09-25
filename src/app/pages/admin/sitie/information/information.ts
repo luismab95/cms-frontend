@@ -170,7 +170,9 @@ export class SitieInformationComponent implements OnInit {
    * next carousel
    */
   next(): void {
-    this.selectedTemplate.update((index) => (index === this.templates().records.length - 1 ? 0 : index + 1));
+    this.selectedTemplate.update((index) =>
+      index === this.templates().records.length - 1 ? 0 : index + 1,
+    );
     const template = this.currentTemplate;
     if (template === null) return;
     this.loadTemplate(template);
@@ -180,7 +182,9 @@ export class SitieInformationComponent implements OnInit {
    * previous carousel
    */
   previous(): void {
-    this.selectedTemplate.update((index) => (index === 0 ? this.templates().records.length - 1 : index - 1));
+    this.selectedTemplate.update((index) =>
+      index === 0 ? this.templates().records.length - 1 : index - 1,
+    );
     const template = this.currentTemplate;
     if (template === null) return;
     this.loadTemplate(template);
@@ -225,9 +229,7 @@ export class SitieInformationComponent implements OnInit {
    * @param template
    */
   loadTemplate(template: TemplateI) {
-    this._pageService.sectionsHeader = template.data?.header.data ?? [];
-    this._pageService.sectionsFooter = template.data?.footer.data ?? [];
-
+    this._templateService.template = template;
     // Eliminar CSS anterior
     this.styleElement?.remove();
 

@@ -1,207 +1,202 @@
-import { Component, OnInit, ViewChild, computed, effect, inject, signal } from '@angular/core';
-import { FormsModule } from '@angular/forms';
-import { NgClass, NgStyle, UpperCasePipe } from '@angular/common';
-import { toSignal } from '@angular/core/rxjs-interop';
+import {
+  AfterViewInit,
+  Component,
+  DestroyRef,
+  ElementRef,
+  OnDestroy,
+  computed,
+  effect,
+  inject,
+  signal,
+  viewChild,
+} from '@angular/core';
 import { Router } from '@angular/router';
+import { FormsModule } from '@angular/forms';
+import { NgClass, UpperCasePipe } from '@angular/common';
+import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { ToastrService } from '@iqx-limited/ngx-toastr';
 import { NgLabelTemplateDirective, NgSelectComponent } from '@ng-select/ng-select';
-import { CanvasT, PreviewModeT } from 'app/core/interfaces/page.interface';
+import { PreviewModeT } from 'app/core/interfaces/page.interface';
+import { ElementCMSI } from 'app/shared/interfaces/element.interface';
+import { SelectedItemsInGridI } from 'app/shared/interfaces/grid.interface';
 import { DialogService } from 'app/core/services/dialog.service';
+import { MicrosityService } from 'app/core/services/micrositie.service';
+import { LanguageService } from 'app/shared/services/language.service';
+import { CanvasService } from 'app/core/services/canvas.service';
 import { PageService } from 'app/core/services/pages.service';
 import { ParameterService } from 'app/core/services/parameter.service';
-import { ColumnI, SectionI, SelectedItemsInGridI } from 'app/shared/interfaces/grid.interface';
-import { LanguageService } from 'app/shared/services/language.service';
-import {
-  findColumnByUuid,
-  findElementByUuid,
-  findRowByUuid,
-  findSectionByUuid,
-  updateColumn,
-  validGrid,
-} from 'app/shared/utils/grid.utils';
+import { DynamicStyleService } from 'app/core/services/dynamic-style.service';
+import { filterPath, validGrid } from 'app/shared/utils/grid.utils';
 import { findParameter } from 'app/shared/utils/parameter.utils';
 import { PermissionCode, validAction } from 'app/shared/utils/permission.utils';
-import { generateRandomString } from 'app/shared/utils/random.utils';
+import { TooltipDirective } from 'app/shared/directives/tooltip.directive';
 import { PermissionComponent } from 'app/shared/components/permission/permission';
 import { GridComponent } from 'app/shared/components/grid/grid';
 import { LayerComponent } from 'app/shared/components/layer/layer';
 import { InspectorComponent } from 'app/shared/components/inspector/inspector';
-import { LanguageI } from 'app/shared/interfaces/language.interfaces';
-import { ElementCMSI } from 'app/shared/interfaces/element.interface';
-import { HistoryService } from 'app/core/services/history-canvas.service';
-import { TooltipDirective } from 'app/shared/directives/tooltip.directive';
-import { DeviceDetectorService, DeviceType } from 'ngx-device-detector';
+import { filter, interval, take } from 'rxjs';
 import { TemplateService } from 'app/core/services/templates.service';
 import { TemplateI } from 'app/core/interfaces/template.interface';
-import { EMPTY, interval, startWith, Subject, switchMap, takeUntil } from 'rxjs';
 
 @Component({
-  selector: 'pages-canvas',
+  selector: 'templates-canvas',
   templateUrl: './canvas.html',
-  styles: [
-    `
-      ::ng-deep .ng-select-container {
-        border: unset !important;
-      }
-
-      ::ng-deep .ng-arrow-wrapper {
-        display: none !important;
-      }
-      .bg-dot-grid {
-        background-size: 24px 24px;
-        background-image: radial-gradient(circle, #cbd5e1 1.2px, transparent 1.2px);
-      }
-    `,
-  ],
   imports: [
     FormsModule,
     PermissionComponent,
-    NgStyle,
     NgClass,
     UpperCasePipe,
     NgSelectComponent,
     NgLabelTemplateDirective,
     GridComponent,
+    TooltipDirective,
     LayerComponent,
     InspectorComponent,
-    TooltipDirective,
   ],
 })
-export class TemplatesCanvas implements OnInit {
-  @ViewChild('languageSelect')
-  private readonly _languageSelect!: NgSelectComponent;
-
-  @ViewChild('layer')
-  private readonly _layer!: LayerComponent;
+export class TemplatesCanvas implements AfterViewInit, OnDestroy {
+  private readonly languageSelect = viewChild.required<NgSelectComponent>('languageSelect');
+  private readonly gridHeader = viewChild.required<GridComponent>('gridHeader');
+  private readonly gridFooter = viewChild.required<GridComponent>('gridFooter');
+  private readonly container = viewChild<ElementRef<HTMLElement>>('canvas');
+  private readonly layer = viewChild.required<LayerComponent>('layer');
 
   preview = signal<PreviewModeT>('desktop');
   previewMode = signal<boolean>(false);
-  openElementPanel = signal<boolean>(false);
-  reviewChanges = signal<boolean>(false);
   autosave = signal<boolean>(false);
   saveAction = signal<boolean>(false);
-  urlStatics = signal<string>('');
+  enabledCanvas = signal<boolean>(true);
   languageId = signal<number>(0);
-  template = signal<TemplateI | null>(null);
   originTemplate = signal<TemplateI | null>(null);
-  height = signal<number>(window.innerHeight);
-  activeLanguages = signal<LanguageI[]>([]);
-  currentColumn = signal<ColumnI | null>(null);
-  permission = PermissionCode;
 
-  private destroy$ = new Subject<void>();
-  private autosaveToggle$ = new Subject<void>();
+  initialized = false;
+  readonly permission = PermissionCode;
 
+  private readonly _destroyRef = inject(DestroyRef);
   private readonly _router = inject(Router);
-  private _parameterService = inject(ParameterService);
-  private _dialogService = inject(DialogService);
-  private readonly _pageService = inject(PageService);
+  private readonly _parameterService = inject(ParameterService);
+  private readonly _dialogService = inject(DialogService);
+  private readonly _microsityService = inject(MicrosityService);
   private readonly _templateService = inject(TemplateService);
+  private readonly _pageService = inject(PageService);
   private readonly _toastrService = inject(ToastrService);
   private readonly _languageService = inject(LanguageService);
-  private readonly _historyService = inject(HistoryService);
-  private readonly _deviceDetectorService = inject(DeviceDetectorService);
+  private readonly _canvasService = inject(CanvasService);
+  private readonly _dynamicStyleService = inject(DynamicStyleService);
 
-  readonly headerSections = this._pageService.sectionsHeader;
-  readonly footerSections = this._pageService.sectionsFooter;
-
-  readonly _template = toSignal(this._templateService.template$, { initialValue: null });
-  readonly _selectedItemsInGrid = toSignal(this._pageService.selectedItemsInGrid$, {
+  readonly template = toSignal(this._templateService.template$, { initialValue: null });
+  readonly selectedItemsInGrid = toSignal(this._pageService.selectedItemsInGrid$, {
     initialValue: null,
   });
   readonly parameters = toSignal(this._parameterService.parameter$, { initialValue: [] });
+  readonly micrositie = toSignal(this._microsityService.micrositie$, { initialValue: null });
   readonly languages = toSignal(this._languageService.languages$, {
     initialValue: { records: [], total: 0, page: 0, totalPage: 0 },
   });
 
-  readonly canRedo = computed(() =>
-    this._historyService.canRedo![this._selectedItemsInGrid()?.canvas ?? 'header'](),
+  readonly canRedo = computed(() => this._canvasService.canRedo());
+  readonly canUndo = computed(() => this._canvasService.canUndo());
+  readonly activeLanguages = computed(() => this.languages().records.filter((lang) => lang.status));
+  readonly urlStatics = computed(
+    () => findParameter('APP_STATICS_URL', this.parameters())?.value ?? '',
   );
-  readonly canUndo = computed(() =>
-    this._historyService.canUndo![this._selectedItemsInGrid()?.canvas ?? 'header'](),
-  );
-  readonly header = computed(() => this.headerSections());
-  readonly footer = computed(() => this.footerSections());
-
-  readonly previewType = computed(() => {
-    const { deviceType } = this._deviceDetectorService.deviceInfo();
-    switch (deviceType) {
-      case DeviceType.Mobile:
-        return 'mobile';
-      case DeviceType.Tablet:
-        return 'tablet';
-      case DeviceType.Desktop:
-        return 'desktop';
-      default:
-        return 'desktop';
+  readonly headerStyles = computed(() => {
+    const template = this.template();
+    if (!template) {
+      return {};
     }
+    const pageData = template.data;
+    const backgroundImage = pageData?.header.config?.['backgroundImage'];
+    if (!backgroundImage && backgroundImage !== '' && backgroundImage !== 'null') {
+      return {};
+    }
+    return {
+      'background-image': `url('${this.urlStatics()}/${filterPath(backgroundImage)}')`,
+    };
+  });
+  readonly footerStyles = computed(() => {
+    const template = this.template();
+    if (!template) {
+      return {};
+    }
+    const pageData = template.data;
+    const backgroundImage = pageData?.footer.config?.['backgroundImage'];
+    if (!backgroundImage && backgroundImage !== '' && backgroundImage !== 'null') {
+      return {};
+    }
+    return {
+      'background-image': `url('${this.urlStatics()}/${filterPath(backgroundImage)}')`,
+    };
   });
 
-  sectionsByType = {
-    header: {
-      get: () => this.headerSections(),
-      set: (sections: SectionI[]) => {
-        this._pageService.sectionsHeader = sections;
-      },
-    },
-    footer: {
-      get: () => this.footerSections(),
-      set: (sections: SectionI[]) => {
-        this._pageService.sectionsFooter = sections;
-      },
-    },
-  } satisfies Record<
-    Exclude<CanvasT, 'body'>,
-    {
-      get: () => SectionI[];
-      set: (sections: SectionI[]) => void;
+  readonly headerElementsConfig = computed(() => {
+    const template = this.template();
+    if (!template) {
+      return { css: '', config: {} };
     }
-  >;
+    return { css: template.data!.header.css, config: template.data!.header.config };
+  });
+  readonly footerElementsConfig = computed(() => {
+    const template = this.template();
+    if (!template) {
+      return { css: '', config: {} };
+    }
+    return { css: template.data!.footer.css, config: template.data!.footer.config };
+  });
 
   /**
    * Constructor
    */
   constructor() {
-    this._pageService.sections = [];
-    // autosave logic
-    this.autosaveToggle$
+    this._pageService.page = {
+      name: 'preview',
+      data: {
+        body: {
+          data: [],
+          css: '',
+          config: {},
+        },
+      },
+    };
+    interval(300_000)
       .pipe(
-        startWith(null),
-        switchMap(() => (this.previewMode() ? EMPTY : interval(300_000))),
-        takeUntil(this.destroy$),
+        filter(() => !this.previewMode()),
+        takeUntilDestroyed(this._destroyRef),
       )
-      .subscribe(() => this.updateDraft());
+      .subscribe(() => {
+        this.updateDraft();
+      });
 
     effect(() => {
-      const languages = this.languages().records.filter((lang) => lang.status);
-      if (languages.length > 0) this.languageId.set(languages[0].id!);
-      this.activeLanguages.set(languages);
-    });
-
-    effect(() => {
-      const languages = this.languages().records.filter((lang) => lang.status);
-      if (languages.length > 0) this.languageId.set(languages[0].id!);
-      this.activeLanguages.set(languages);
-    });
-
-    effect(() => {
-      const parameters = this.parameters();
-      if (parameters.length > 0)
-        this.urlStatics.set(findParameter('APP_STATICS_URL', parameters)!.value);
-    });
-
-    effect(() => {
-      const template = this._template();
-      if (template === null) return;
-
-      this.template.set(template);
-      this.originTemplate.set(template);
-
-      if (template.draft !== null) {
-        this.confirmDraft();
-      } else {
-        this.loadTemplateData();
+      const languages = this.activeLanguages();
+      if (this.languageId() === 0 && languages.length > 0) {
+        this.languageId.set(languages[0].id!);
       }
+    });
+
+    effect(() => {
+      const template = this.template();
+
+      if (!template || this.initialized) {
+        return;
+      }
+
+      this.updateSelectionItem({
+        page: null,
+        section: null,
+        row: null,
+        column: null,
+        element: null,
+        canvas: 'header',
+      });
+
+      this.initialized = true;
+
+      if (this.originTemplate() === null) {
+        this.originTemplate.set(structuredClone(template));
+      }
+
+      this.loadTemplateData();
     });
   }
 
@@ -210,26 +205,42 @@ export class TemplatesCanvas implements OnInit {
   // -----------------------------------------------------------------------------------------------------
 
   /**
-   * On init
+   * AfterViewInit
+   * @returns
    */
-  ngOnInit(): void {}
+  ngAfterViewInit() {
+    const element = this.container()?.nativeElement;
+    if (!element) {
+      return;
+    }
+    const observer = new ResizeObserver((entries) => {
+      const width = entries[0].contentRect.width;
+      if (width < 1024) {
+        this.enabledCanvas.set(false);
+      } else {
+        this.enabledCanvas.set(true);
+      }
+    });
+
+    observer.observe(element);
+    this._destroyRef.onDestroy(() => {
+      observer.disconnect();
+    });
+  }
 
   /**
    * On destroy
    */
   ngOnDestroy(): void {
-    // Unsubscribe from all subscriptions
-    this.destroy$.next();
-    this.destroy$.complete();
-    this.autosaveToggle$.complete();
-    this._pageService.selectedItemsInGrid = {
+    this._dynamicStyleService.remove('template-dynamicStyles');
+    this.updateSelectionItem({
       page: null,
       section: null,
       column: null,
       row: null,
       element: null,
-      canvas: 'body',
-    };
+      canvas: 'header',
+    });
   }
 
   // -----------------------------------------------------------------------------------------------------
@@ -237,18 +248,9 @@ export class TemplatesCanvas implements OnInit {
   // -----------------------------------------------------------------------------------------------------
 
   /**
-   * Set review data
-   */
-  setReviewData() {
-    this.reviewChanges.set(false);
-    this.loadTemplateData();
-  }
-
-  /**
    * Load template data from the server and update the component properties accordingly.
    */
   loadTemplateData() {
-    this.loadGridData();
     this.loadStyles();
   }
 
@@ -256,7 +258,7 @@ export class TemplatesCanvas implements OnInit {
    * Update draft page
    */
   updateDraft() {
-    if (this.previewType() !== 'desktop') return;
+    if (this.previewMode()) return;
 
     if (
       !this.validPermission(this.permission.editContentPage) &&
@@ -264,24 +266,34 @@ export class TemplatesCanvas implements OnInit {
     )
       return;
 
+    const template = this.template();
+    if (!template) {
+      return;
+    }
+
     // Disable the save action
     this.saveAction.set(true);
     this.autosave.set(true);
 
-    const template = this.template();
-    if (template === null) return;
-
-    //Set data template elements
-    template.data!.header!.data = this.header();
-    template.data!.footer!.data = this.footer();
+    const data = {
+      ...template.data!,
+      header: {
+        ...template.data!.header,
+        data: template.data?.header.data!,
+      },
+      footer: {
+        ...template.data!.footer,
+        data: template.data?.footer.data!,
+      },
+    };
 
     this._templateService
       .saveDraft(template.id!, {
         name: template.name,
         description: template.description,
-        data: template.data,
+        data,
       })
-      .pipe(takeUntil(this.destroy$))
+      .pipe(takeUntilDestroyed(this._destroyRef))
       .subscribe({
         next: () => {
           this.saveAction.set(false);
@@ -318,11 +330,13 @@ export class TemplatesCanvas implements OnInit {
     this._dialogService.toggleDialog();
 
     // Subscribe to the confirmation dialog closed action
-    this._dialogService.actionClick$.pipe(takeUntil(this.destroy$)).subscribe((result) => {
-      if (result) {
-        this.updateTemplate();
-      }
-    });
+    this._dialogService.actionClick$
+      .pipe(take(1), takeUntilDestroyed(this._destroyRef))
+      .subscribe((result) => {
+        if (result) {
+          this.updateTemplate();
+        }
+      });
   }
 
   /**
@@ -330,15 +344,18 @@ export class TemplatesCanvas implements OnInit {
    */
   updateTemplate() {
     // Return if the grid is invalid
-    if (!validGrid(this.header())) {
-      this._toastrService.warning('Termina de configurar el contenido de tu encabezado.', 'Aviso');
+    if (!validGrid(this.template()?.data?.header.data!)) {
+      this._toastrService.warning(
+        'Hay elementos en el encabezado que aún no están configurados. Completa su configuración antes de continuar.',
+        'Configuración pendiente',
+      );
       return;
     }
 
-    if (!validGrid(this.footer())) {
+    if (!validGrid(this.template()?.data?.footer.data!)) {
       this._toastrService.warning(
-        'Termina de configurar el contenido de tu pie de página.',
-        'Aviso',
+        'Hay elementos en el pie de página que aún no están configurados. Completa su configuración antes de continuar.',
+        'Configuración pendiente',
       );
       return;
     }
@@ -349,16 +366,25 @@ export class TemplatesCanvas implements OnInit {
     const template = this.template();
     if (template == null) return;
 
-    template.data!.header.data = this.header();
-    template.data!.footer.data = this.footer();
+    const data = {
+      ...template.data!,
+      header: {
+        ...template.data!.header,
+        data: template.data?.header.data!,
+      },
+      footer: {
+        ...template.data!.footer,
+        data: template.data?.footer.data!,
+      },
+    };
 
     this._templateService
       .update(template.id!, {
         name: template.name,
         description: template.description,
-        data: template.data,
+        data,
       })
-      .pipe(takeUntil(this.destroy$))
+      .pipe(takeUntilDestroyed(this._destroyRef))
       .subscribe({
         next: () => {
           this.saveAction.set(false);
@@ -369,7 +395,6 @@ export class TemplatesCanvas implements OnInit {
         },
         error: (response) => {
           this.saveAction.set(false);
-          this._toastrService.error(response.error.message, 'Aviso');
           this._toastrService.error(
             response.error?.message ||
               'No fue posible guardar los cambios de diseño de la plantilla.',
@@ -380,30 +405,15 @@ export class TemplatesCanvas implements OnInit {
   }
 
   /**
-   * Load data
-   */
-  loadGridData() {
-    // Set body
-    const templateData = this.template()!.data;
-    this.setGrid(templateData!.header.data, 'header');
-    this.setGrid(templateData!.footer.data, 'footer');
-  }
-
-  /**
    * Load styles
    */
   loadStyles() {
-    // Load CSS
-    const templateData = this.template()!.data;
-
-    const styleElementToRemove = document.getElementById('template-dynamicStyles');
-    if (styleElementToRemove) {
-      styleElementToRemove.remove();
-    }
-    const styleElement = document.createElement('style');
-    styleElement.id = 'template-dynamicStyles';
-    styleElement.textContent = `${templateData!.header.css} ${templateData!.footer.css}`;
-    document.head.appendChild(styleElement);
+    const template = this.template();
+    if (!template) return;
+    const templateData = template.data;
+    const css = `${templateData!.header.css} ${templateData!.footer.css}`;
+    this._dynamicStyleService.remove('template-dynamicStyles');
+    this._dynamicStyleService.set('template-dynamicStyles', css ?? '');
   }
 
   /**
@@ -419,14 +429,6 @@ export class TemplatesCanvas implements OnInit {
    */
   togglePreviewMode() {
     this.previewMode.update((preview) => !preview);
-    const isPreview = this.previewMode();
-    if (isPreview) {
-      this.updateDraft(); // opcional: guarda antes de entrar a preview
-      this._layer.openLayers();
-    } else {
-      this._layer.closeLayers();
-    }
-    this.autosaveToggle$.next();
   }
 
   /**
@@ -449,77 +451,6 @@ export class TemplatesCanvas implements OnInit {
   }
 
   /**
-   *  Add section to grid
-   *  @param item
-   */
-  addSection(item: 'header' | 'footer') {
-    const sectionUuid = generateRandomString(8);
-    const rowUuid = generateRandomString(8);
-    const columnUuid = generateRandomString(8);
-    const newSection = {
-      uuid: sectionUuid,
-      css: `.grid-section-${sectionUuid}{}`,
-      config: { backgroundImage: '' },
-      rows: [
-        {
-          uuid: rowUuid,
-          css: `.grid-row-${rowUuid}{}`,
-          config: { backgroundImage: '' },
-          columns: [
-            {
-              uuid: columnUuid,
-              css: `.grid-column-${columnUuid}{}`,
-              config: { backgroundImage: '' },
-              element: null,
-            },
-          ],
-        },
-      ],
-    } as unknown as SectionI;
-
-    const sections = this.sectionsByType[item].get();
-    const previous = structuredClone(sections);
-    const next = structuredClone([...sections, newSection]);
-    this.sectionsByType[item].set(next);
-    this._historyService.commit(item, previous, next);
-
-    this.updateSelectionItem({
-      page: null,
-      section: newSection,
-      row: null,
-      column: null,
-      element: null,
-      canvas: item,
-    });
-  }
-
-  /**
-   * Set data to grid
-   * @param grid Set data to grid
-   * @param item
-   */
-  setGrid(grid: SectionI[], item: Exclude<CanvasT, 'body'>) {
-    this.sectionsByType[item].set(grid);
-  }
-
-  /**
-   * Get config styles
-   * @param code
-   * @returns
-   */
-  getStyles(code: string) {
-    const templateData = this.template()!.data!;
-    let styles = {};
-    const template = templateData[code as keyof typeof templateData];
-    if (template?.config['backgroundImage'] !== '') {
-      styles = {
-        'background-image': `url('${this.urlStatics}/${template!.config['backgroundImage']}')`,
-      };
-    }
-    return styles;
-  }
-
-  /**
    *  Choose load data draft
    */
   confirmDraft() {
@@ -534,17 +465,25 @@ export class TemplatesCanvas implements OnInit {
 
     this._dialogService.toggleDialog();
 
-    // Subscribe to the confirmation dialog closed action
-    this._dialogService.actionClick$.pipe(takeUntil(this.destroy$)).subscribe((result) => {
-      if (result) {
-        const template = this.template()!;
-        template.data = template!.draft!;
-        this.template.set(template);
-      } else {
-        this.deleteDraft();
-      }
-      this.loadTemplateData();
-    });
+    this._dialogService.actionClick$
+      .pipe(takeUntilDestroyed(this._destroyRef))
+      .subscribe((result) => {
+        const template = this.template();
+        if (!template) {
+          return;
+        }
+        if (result) {
+          const draftTemplate: TemplateI = {
+            ...template,
+            data: structuredClone(template.draft!),
+            draft: null!,
+          };
+          this._templateService.template = structuredClone(draftTemplate);
+        } else {
+          this.deleteDraft();
+        }
+        this.loadTemplateData();
+      });
   }
 
   /**
@@ -559,7 +498,7 @@ export class TemplatesCanvas implements OnInit {
 
     this._templateService
       .deleteDraft(template.id!)
-      .pipe(takeUntil(this.destroy$))
+      .pipe(takeUntilDestroyed(this._destroyRef))
       .subscribe({
         next: () => {
           this.saveAction.set(false);
@@ -584,10 +523,10 @@ export class TemplatesCanvas implements OnInit {
   }
 
   /**
-   * OPen language select
+   * Open language select
    */
   openLanguageSelect() {
-    this._languageSelect.open();
+    this.languageSelect().open();
   }
 
   /**
@@ -598,7 +537,7 @@ export class TemplatesCanvas implements OnInit {
     this._dialogService.setDialogData({
       type: 'warning',
       title: `Descartar cambios`,
-      message: `¿Estas seguro/a que deseas descartar estos cambos?. Esta acción no se puede deshacer.`,
+      message: `¿Estas seguro/a que deseas descartar estos cambios?. Esta acción no se puede deshacer.`,
       confirmButton: 'Si, Descartar',
       cancelButton: 'Cancelar',
     });
@@ -606,23 +545,28 @@ export class TemplatesCanvas implements OnInit {
     this._dialogService.toggleDialog();
 
     // Subscribe to the confirmation dialog closed action
-    this._dialogService.actionClick$.pipe(takeUntil(this.destroy$)).subscribe((result) => {
-      if (result) {
-        const template = this.originTemplate();
-        this.template.set(template);
-        this.deleteDraft();
-        this.loadTemplateData();
-        this.updateSelectionItem({
-          page: null,
-          section: null,
-          row: null,
-          column: null,
-          element: null,
-          canvas: 'header',
-        });
-        this._historyService.clearAll();
-      }
-    });
+    this._dialogService.actionClick$
+      .pipe(take(1), takeUntilDestroyed(this._destroyRef))
+      .subscribe((result) => {
+        if (result) {
+          const template = this.originTemplate();
+          if (!template) {
+            return;
+          }
+          this.deleteDraft();
+          this._templateService.template = structuredClone({ ...template, draft: null! });
+          this.loadTemplateData();
+          this.updateSelectionItem({
+            page: null,
+            section: null,
+            row: null,
+            column: null,
+            element: null,
+            canvas: 'header',
+          });
+          this._canvasService.clear();
+        }
+      });
   }
 
   /**
@@ -634,94 +578,36 @@ export class TemplatesCanvas implements OnInit {
   }
 
   /**
-   * toggle element panel
-   */
-  toggleElementPanel(column: ColumnI) {
-    this.currentColumn.set(column);
-    this.openElementPanel.set(true);
-  }
-
-  /**
-   * set element
-   * @param element
-   * @param item
-   */
-  setElementSelectedInColumn(element: ElementCMSI | null) {
-    this.openElementPanel.set(false);
-    const column = this.currentColumn();
-    if (element === null) {
-      this.currentColumn.set(null);
-      return;
-    }
-
-    if (column === null) return;
-
-    const item = this._selectedItemsInGrid()!.canvas! as Exclude<CanvasT, 'body'>;
-    const sections = this.sectionsByType[item].get();
-    const previous = structuredClone(sections);
-
-    const elementUuid = generateRandomString(8);
-    column.element = {
-      uuid: elementUuid,
-      name: element.name,
-      css: `.${element.css}-${elementUuid}{}`,
-      config: element.config,
-      text: element.text,
-      dataText: [],
-    };
-    const sectionsUpdate = updateColumn(sections, column.uuid, column);
-    const next = structuredClone(sectionsUpdate);
-    this.sectionsByType[item].set(next);
-    this._historyService.commit(item, previous, next);
-
-    this._pageService.selectedItemsInGrid = {
-      page: null,
-      section: null,
-      column: null,
-      row: null,
-      element: column.element,
-      canvas: item,
-    };
-  }
-
-  /**
    * Undo Changes
    */
   undo() {
-    const selectedItemsInGrid = this._selectedItemsInGrid();
-    const state = this._historyService.undo(selectedItemsInGrid?.canvas!);
-    if (state) {
-      this.sectionsByType[selectedItemsInGrid?.canvas! as Exclude<CanvasT, 'body'>].set(state);
-      this.refreshSelectedItemsInGrid(state);
-    }
+    this.gridHeader().undo();
   }
 
   /**
    * Redo changes
    */
   redo() {
-    const selectedItemsInGrid = this._selectedItemsInGrid();
-    const state = this._historyService.redo(selectedItemsInGrid?.canvas!);
-    if (state) {
-      this.sectionsByType[selectedItemsInGrid?.canvas! as Exclude<CanvasT, 'body'>].set(state);
-      this.refreshSelectedItemsInGrid(state);
-    }
+    this.gridHeader().redo();
   }
 
   /**
-   * Refresh selections
+   * Open elements manager panel
    */
-  refreshSelectedItemsInGrid(state: SectionI[]) {
-    const selectedItemsInGrid = this._selectedItemsInGrid();
+  openElementsPanel() {
+    this.layer().isElementPanelOpen.set(true);
+  }
 
-    if (selectedItemsInGrid === null) return;
-    this._pageService.selectedItemsInGrid = {
-      page: null,
-      section: findSectionByUuid(state, selectedItemsInGrid?.section?.uuid ?? ''),
-      row: findRowByUuid(state, selectedItemsInGrid?.row?.uuid ?? ''),
-      column: findColumnByUuid(state, selectedItemsInGrid?.column?.uuid ?? ''),
-      element: findElementByUuid(state, selectedItemsInGrid?.element?.uuid ?? ''),
-      canvas: selectedItemsInGrid.canvas,
-    };
+  /**
+   * Add element
+   * @param element
+   * @returns
+   */
+  addElement(element: ElementCMSI | null) {
+    if (!element) return;
+    const gridType = this.selectedItemsInGrid()?.canvas;
+    if (!gridType) return;
+    if (gridType === 'header') this.gridHeader().addElement(element);
+    if (gridType === 'footer') this.gridFooter().addElement(element);
   }
 }

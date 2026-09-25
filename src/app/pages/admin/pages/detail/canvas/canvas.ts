@@ -22,7 +22,7 @@ import { SelectedItemsInGridI } from 'app/shared/interfaces/grid.interface';
 import { DialogService } from 'app/core/services/dialog.service';
 import { MicrosityService } from 'app/core/services/micrositie.service';
 import { LanguageService } from 'app/shared/services/language.service';
-import { HistoryService } from 'app/core/services/history-canvas.service';
+import { CanvasService } from 'app/core/services/canvas.service';
 import { PageService } from 'app/core/services/pages.service';
 import { ParameterService } from 'app/core/services/parameter.service';
 import { DynamicStyleService } from 'app/core/services/dynamic-style.service';
@@ -35,6 +35,7 @@ import { GridComponent } from 'app/shared/components/grid/grid';
 import { LayerComponent } from 'app/shared/components/layer/layer';
 import { InspectorComponent } from 'app/shared/components/inspector/inspector';
 import { filter, interval, take } from 'rxjs';
+import { TemplateService } from 'app/core/services/templates.service';
 
 @Component({
   selector: 'pages-canvas',
@@ -75,10 +76,11 @@ export class PagesCanvas implements AfterViewInit, OnDestroy {
   private readonly _parameterService = inject(ParameterService);
   private readonly _dialogService = inject(DialogService);
   private readonly _microsityService = inject(MicrosityService);
+  private readonly _templateService = inject(TemplateService);
   private readonly _pageService = inject(PageService);
   private readonly _toastrService = inject(ToastrService);
   private readonly _languageService = inject(LanguageService);
-  private readonly _historyService = inject(HistoryService);
+  private readonly _canvasService = inject(CanvasService);
   private readonly _dynamicStyleService = inject(DynamicStyleService);
 
   readonly page = toSignal(this._pageService.page$, { initialValue: null });
@@ -90,10 +92,9 @@ export class PagesCanvas implements AfterViewInit, OnDestroy {
   readonly languages = toSignal(this._languageService.languages$, {
     initialValue: { records: [], total: 0, page: 0, totalPage: 0 },
   });
-  readonly body = this._pageService.sections;
 
-  readonly canRedo = computed(() => this._historyService.canRedo.body());
-  readonly canUndo = computed(() => this._historyService.canUndo.body());
+  readonly canRedo = computed(() => this._canvasService.canRedo());
+  readonly canUndo = computed(() => this._canvasService.canUndo());
   readonly activeLanguages = computed(() => this.languages().records.filter((lang) => lang.status));
   readonly urlStatics = computed(
     () => findParameter('APP_STATICS_URL', this.parameters())?.value ?? '',
@@ -124,10 +125,22 @@ export class PagesCanvas implements AfterViewInit, OnDestroy {
    * Constructor
    */
   constructor() {
-    this._pageService.sections = [];
-    this._pageService.sectionsHeader = [];
-    this._pageService.sectionsFooter = [];
-
+    this._templateService.template = {
+      name: 'preview',
+      description :'preview',
+      data: {
+        header: {
+          data: [],
+          css: '',
+          config: {},
+        },
+        footer: {
+          data: [],
+          css: '',
+          config: {},
+        },
+      },
+    };
     interval(300_000)
       .pipe(
         filter(() => !this.previewMode()),
@@ -210,7 +223,7 @@ export class PagesCanvas implements AfterViewInit, OnDestroy {
       column: null,
       row: null,
       element: null,
-      canvas: 'body',
+      canvas: 'page',
     });
   }
 
@@ -251,7 +264,7 @@ export class PagesCanvas implements AfterViewInit, OnDestroy {
       ...page.data!,
       body: {
         ...page.data!.body,
-        data: this.body(),
+        data: page.data?.body.data!,
       },
     };
 
@@ -311,7 +324,7 @@ export class PagesCanvas implements AfterViewInit, OnDestroy {
    */
   updatePage() {
     // Return if the grid is invalid
-    if (!validGrid(this.body())) {
+    if (!validGrid(this.page()?.data?.body.data!)) {
       this._toastrService.warning(
         'Hay elementos del contenido que aún no están configurados. Completa su configuración antes de continuar.',
         'Configuración pendiente',
@@ -332,7 +345,7 @@ export class PagesCanvas implements AfterViewInit, OnDestroy {
         name: page.name,
         data: {
           body: {
-            data: this.body(),
+            data: page.data?.body.data!,
             css: pageData!.body.css,
             config: pageData!.body.config,
           },
@@ -361,9 +374,9 @@ export class PagesCanvas implements AfterViewInit, OnDestroy {
    * Load data
    */
   loadGridData() {
-    const pageData = this.reviewChanges() ? this.page()!.dataReview : this.page()!.data;
-    if (!pageData) return;
-    this._pageService.sections = structuredClone(pageData.body.data);
+    // const pageData = this.reviewChanges() ? this.page()!.dataReview : this.page()!.data;
+    // if (!pageData) return;
+    // this._pageService.sections = structuredClone(pageData.body.data);
   }
 
   /**
@@ -373,6 +386,7 @@ export class PagesCanvas implements AfterViewInit, OnDestroy {
     const page = this.page();
     if (!page) return;
     const pageData = this.reviewChanges() ? page.dataReview : page.data;
+    this._dynamicStyleService.remove('body-dynamicStyles');
     this._dynamicStyleService.set('body-dynamicStyles', pageData?.body.css ?? '');
   }
 
@@ -526,9 +540,9 @@ export class PagesCanvas implements AfterViewInit, OnDestroy {
             row: null,
             column: null,
             element: null,
-            canvas: 'body',
+            canvas: 'page',
           });
-          this._historyService.clearAll();
+          this._canvasService.clear();
         }
       });
   }

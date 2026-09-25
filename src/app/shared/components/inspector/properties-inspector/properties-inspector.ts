@@ -17,7 +17,8 @@ import {
 } from 'app/shared/utils/grid.utils';
 import { ElementService } from 'app/core/services/element.service';
 import { PageService } from 'app/core/services/pages.service';
-import { HistoryService } from 'app/core/services/history-canvas.service';
+import { CanvasService } from 'app/core/services/canvas.service';
+import { TemplateService } from 'app/core/services/templates.service';
 import { debounceTime, pairwise, skip } from 'rxjs';
 
 @Component({
@@ -36,16 +37,14 @@ export class PropertiesInspectorComponent {
   private readonly _destroyRef = inject(DestroyRef);
   private readonly _elementService = inject(ElementService);
   private readonly _pageService = inject(PageService);
-  private readonly _historyService = inject(HistoryService);
+  private readonly _canvasService = inject(CanvasService);
+  private readonly _templateService = inject(TemplateService);
 
-  readonly pageSections = this._pageService.sections;
-  readonly headerSections = this._pageService.sectionsHeader;
-  readonly footerSections = this._pageService.sectionsFooter;
-
+  readonly page = toSignal(this._pageService.page$, { initialValue: null });
+  readonly template = toSignal(this._templateService.template$, { initialValue: null });
   readonly elements = toSignal(this._elementService.elements$, {
     initialValue: { records: [], total: 0, page: 0, totalPage: 0 },
   });
-  readonly page = toSignal(this._pageService.page$, { initialValue: null });
 
   readonly config = computed(() => ({
     fields: this.fields(),
@@ -67,32 +66,6 @@ export class PropertiesInspectorComponent {
     () => new Map(this.elements().records.map((e) => [e.name, e.type])),
   );
 
-  readonly sectionsByType = {
-    header: {
-      get: () => this.headerSections(),
-      set: (sections: SectionI[]) => {
-        this._pageService.sectionsHeader = sections;
-      },
-    },
-    body: {
-      get: () => this.pageSections(),
-      set: (sections: SectionI[]) => {
-        this._pageService.sections = sections;
-      },
-    },
-    footer: {
-      get: () => this.footerSections(),
-      set: (sections: SectionI[]) => {
-        this._pageService.sectionsFooter = sections;
-      },
-    },
-  } satisfies Record<
-    CanvasT,
-    {
-      get: () => SectionI[];
-      set: (sections: SectionI[]) => void;
-    }
-  >;
   readonly inspectors = {
     section: {
       fields: SECTIONFORMTYPESCONFIG,
@@ -171,16 +144,6 @@ export class PropertiesInspectorComponent {
     return this.elementTypes().get(name) ?? [];
   }
 
-  /**
-   * Update secctions in canvas grid
-   * @param next
-   */
-  updateSectionsInGrid(previous: SectionI[], current: SectionI[]) {
-    const next = structuredClone(current);
-    this.currentSections = next;
-    this._historyService.commit(this.gridType(), previous, structuredClone(this.currentSections));
-  }
-
   updateItem(value: Record<string, unknown>) {
     const selected = this.itemSelectedInGrid();
     if (!selected) {
@@ -194,24 +157,9 @@ export class PropertiesInspectorComponent {
       if (!page) {
         return;
       }
-
-      page.config = value;
       const newConfig = updateConfigPageElement(page, value);
-
-      const curretPage = this.page();
-      if (!curretPage) return;
-      const newPage = structuredClone({
-        ...curretPage,
-        data: {
-          ...curretPage.data,
-          body: {
-            ...curretPage.data?.body!,
-            config: newConfig.config,
-          },
-        },
-      });
-      this._pageService.page = newPage;
-
+      this._canvasService.configByType[selected.canvas].set(newConfig);
+      this._canvasService.updateChangesPageConfigInCanvas(selected.canvas, newConfig.config);
       return;
     }
 
@@ -225,20 +173,22 @@ export class PropertiesInspectorComponent {
     const previous = structuredClone(sectionsInCanvas);
     const newItem = { ...item, config: value } as any;
     const next = strategy.update(sectionsInCanvas, item.uuid, newItem);
-    this.updateSectionsInGrid(previous, next);
+    const current = structuredClone(next);
+    this.currentSections = current;
+    this._canvasService.updateChangesInCanvas(this.gridType(), previous, next);
   }
 
   /**
    * currentSections
    */
   private get currentSections(): SectionI[] {
-    return this.sectionsByType[this.gridType()].get();
+    return this._canvasService.sectionsByType[this.gridType()].get();
   }
 
   /**
    * currentSections
    */
   private set currentSections(sections: SectionI[]) {
-    this.sectionsByType[this.gridType()].set(sections);
+    this._canvasService.sectionsByType[this.gridType()].set(sections);
   }
 }

@@ -329,7 +329,7 @@
           <layer-component
             #layer
             [class.hidden]="previewMode()"
-            [gridType]="'body'"
+            [gridType]="'page'"
             (elementSelected)="addElement($event)"
           />
           <!--  PANEL - CANVAS -->
@@ -360,7 +360,7 @@
                   [editContent]="validPermission(permission.editContentPage)"
                   [editDesign]="validPermission(permission.editDesignPage)"
                   [pageElementsConfig]="pageElementsConfig()"
-                  [gridType]="'body'"
+                  [gridType]="'page'"
                   [gridStyles]="bodyStyles()"
                   [languageId]="languageId()"
                   [previewType]="preview"
@@ -378,7 +378,7 @@
             </div>
           </div>
 
-          <inspector-component [class.hidden]="previewMode()" [gridType]="'body'" />
+          <inspector-component [class.hidden]="previewMode()" [gridType]="'page'" />
         </div>
       </section>
     } @else {

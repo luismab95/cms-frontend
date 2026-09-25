@@ -209,9 +209,6 @@ export class TemplatesInformationComponent implements OnInit, OnDestroy {
    * @param template
    */
   loadTemplate(template: TemplateI) {
-    this._pageService.sectionsHeader = template.data?.header.data ?? [];
-    this._pageService.sectionsFooter = template.data?.footer.data ?? [];
-
     // Eliminar CSS anterior
     this.styleElement?.remove();
 

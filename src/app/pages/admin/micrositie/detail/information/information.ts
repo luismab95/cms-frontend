@@ -82,13 +82,12 @@ export class MicrositieInformationComponent implements OnInit {
     const micrositie = this.micrositie();
 
     if (micrositie) {
-      this.micrositieForm.patchValue({ ...micrositie});
+      this.micrositieForm.patchValue({ ...micrositie });
       const index = this.templates().records.findIndex((template) => template.id === 1);
       this.selectedTemplate.set(index);
     } else {
       this.selectedTemplate.set(0);
     }
-
     const findTemplate = this.currentTemplate;
     if (findTemplate === null) return;
     this.loadTemplate(findTemplate);
@@ -278,8 +277,7 @@ export class MicrositieInformationComponent implements OnInit {
    * @param template
    */
   loadTemplate(template: TemplateI) {
-    this._pageService.sectionsHeader = template.data?.header.data ?? [];
-    this._pageService.sectionsFooter = template.data?.footer.data ?? [];
+    this._templateService.template = template;
 
     // Eliminar CSS anterior
     this.styleElement?.remove();

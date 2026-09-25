@@ -76,8 +76,8 @@ export interface GetPageI {
   lang?: string;
   page: string;
   micrositie?: string;
-  preview:boolean
+  preview: boolean;
 }
 
 export type PreviewModeT = 'none' | 'mobile' | 'tablet' | 'desktop';
-export type CanvasT = 'header' | 'footer' | 'body';
+export type CanvasT = 'page' | 'header' | 'footer';

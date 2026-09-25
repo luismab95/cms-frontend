@@ -15,11 +15,12 @@ import { CanvasT } from 'app/core/interfaces/page.interface';
 import { ElementDataI } from 'app/shared/interfaces/element.interface';
 import { LanguageI } from 'app/shared/interfaces/language.interfaces';
 import { TabI } from 'app/shared/interfaces/drawer.interface';
+import { ElementI, SectionI } from 'app/shared/interfaces/grid.interface';
 import { updateElement } from 'app/shared/utils/grid.utils';
 import { CmsValidators } from 'app/shared/utils/validators.util';
-import { HistoryService } from 'app/core/services/history-canvas.service';
+import { CanvasService } from 'app/core/services/canvas.service';
+import { TemplateService } from 'app/core/services/templates.service';
 import { PageService } from 'app/core/services/pages.service';
-import { ElementI, SectionI } from 'app/shared/interfaces/grid.interface';
 import { TabsComponent } from '../../tabs/tabs';
 import { debounceTime, distinctUntilChanged } from 'rxjs';
 
@@ -43,43 +44,15 @@ export class LangugesInspectorComponent implements OnInit {
 
   private readonly _destroyRef = inject(DestroyRef);
   private readonly _pageService = inject(PageService);
-  private readonly _historyService = inject(HistoryService);
+  private readonly _templateService = inject(TemplateService);
+  private readonly _canvasService = inject(CanvasService);
   private readonly _formBuilder = inject(UntypedFormBuilder);
 
-  readonly pageSections = this._pageService.sections;
-  readonly headerSections = this._pageService.sectionsHeader;
-  readonly footerSections = this._pageService.sectionsFooter;
-
+  readonly page = toSignal(this._pageService.page$, { initialValue: null });
+  readonly template = toSignal(this._templateService.template$, { initialValue: null });
   readonly selectedItemsInGrid = toSignal(this._pageService.selectedItemsInGrid$, {
     initialValue: null,
   });
-
-  readonly sectionsByType = {
-    header: {
-      get: () => this.headerSections(),
-      set: (sections: SectionI[]) => {
-        this._pageService.sectionsHeader = sections;
-      },
-    },
-    body: {
-      get: () => this.pageSections(),
-      set: (sections: SectionI[]) => {
-        this._pageService.sections = sections;
-      },
-    },
-    footer: {
-      get: () => this.footerSections(),
-      set: (sections: SectionI[]) => {
-        this._pageService.sectionsFooter = sections;
-      },
-    },
-  } satisfies Record<
-    CanvasT,
-    {
-      get: () => SectionI[];
-      set: (sections: SectionI[]) => void;
-    }
-  >;
 
   /**
    * Constructor
@@ -221,20 +194,20 @@ export class LangugesInspectorComponent implements OnInit {
     const updatedSections = updateElement(sections, updatedElement.uuid, updatedElement);
     const next = structuredClone(updatedSections);
     this.currentSections = next;
-    this._historyService.commit(this.gridType(), previous, structuredClone(this.currentSections));
+    this._canvasService.updateChangesInCanvas(this.gridType(), previous, next);
   }
 
   /**
    * currentSections
    */
   private get currentSections(): SectionI[] {
-    return this.sectionsByType[this.gridType()].get();
+    return this._canvasService.sectionsByType[this.gridType()].get();
   }
 
   /**
    * currentSections
    */
   private set currentSections(sections: SectionI[]) {
-    this.sectionsByType[this.gridType()].set(sections);
+    this._canvasService.sectionsByType[this.gridType()].set(sections);
   }
 }

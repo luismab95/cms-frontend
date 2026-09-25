@@ -21,6 +21,7 @@ import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import {
   ColumnI,
   ElementI,
+  HistoryCMSI,
   PageElementsConfigI,
   RowI,
   SectionI,
@@ -32,20 +33,17 @@ import {
   createRow,
   createSection,
   createColumn,
-  findSectionByUuid,
-  findRowByUuid,
-  findColumnByUuid,
-  findElementByUuid,
   updateColumn,
   createElement,
   filterPath,
 } from 'app/shared/utils/grid.utils';
 import { findParameter } from 'app/shared/utils/parameter.utils';
 import { TooltipDirective } from 'app/shared/directives/tooltip.directive';
-import { HistoryService } from 'app/core/services/history-canvas.service';
+import { CanvasService } from 'app/core/services/canvas.service';
 import { DynamicStyleService } from 'app/core/services/dynamic-style.service';
 import { PageService } from 'app/core/services/pages.service';
 import { ParameterService } from 'app/core/services/parameter.service';
+import { TemplateService } from 'app/core/services/templates.service';
 import { ElementsComponent } from '../element/elements';
 
 @Component({
@@ -78,55 +76,27 @@ export class GridComponent implements OnDestroy {
     row: null,
     column: null,
     element: null,
-    canvas: 'body',
+    canvas: 'page',
   });
 
   private readonly _pageService = inject(PageService);
-  private readonly _historyService = inject(HistoryService);
+  private readonly _canvasService = inject(CanvasService);
   private readonly _destroyRef = inject(DestroyRef);
   private readonly _dynamicStyleService = inject(DynamicStyleService);
   private readonly _parameterService = inject(ParameterService);
+  private readonly _templateService = inject(TemplateService);
 
+  readonly page = toSignal(this._pageService.page$, { initialValue: null });
+  readonly template = toSignal(this._templateService.template$, { initialValue: null });
   readonly parameters = toSignal(this._parameterService.parameter$, { initialValue: [] });
-  readonly sectionsHeader = this._pageService.sectionsHeader;
-  readonly sections = this._pageService.sections;
-  readonly sectionsFooter = this._pageService.sectionsFooter;
 
   readonly urlStatics = computed(
     () => findParameter('APP_STATICS_URL', this.parameters())?.value ?? '',
   );
   readonly sectionsInCanvas = computed(() => {
-    return this.sectionsByType[this.gridType()].get();
+    return this._canvasService.sectionsByType[this.gridType()].get();
   });
 
-  readonly sectionsByType = {
-    header: {
-      get: () => this.sectionsHeader(),
-      set: (sections: SectionI[]) => {
-        this._pageService.sectionsHeader = sections;
-      },
-    },
-
-    body: {
-      get: () => this.sections(),
-      set: (sections: SectionI[]) => {
-        this._pageService.sections = sections;
-      },
-    },
-
-    footer: {
-      get: () => this.sectionsFooter(),
-      set: (sections: SectionI[]) => {
-        this._pageService.sectionsFooter = sections;
-      },
-    },
-  } satisfies Record<
-    CanvasT,
-    {
-      get: () => SectionI[];
-      set: (sections: SectionI[]) => void;
-    }
-  >;
   readonly gridConfigStyles = (config: { [key: string]: any }) => {
     const backgroundImage = config['backgroundImage'];
     if (!backgroundImage && backgroundImage !== '' && backgroundImage !== 'null') {
@@ -203,7 +173,9 @@ export class GridComponent implements OnDestroy {
   drop<T>(event: CdkDragDrop<string[]>, items: T[]): void {
     const previous = structuredClone(this.sectionsInCanvas());
     moveItemInArray(items, event.previousIndex, event.currentIndex);
-    this.updateSectionsInGrid(previous);
+    this._canvasService.sectionsByType[this.gridType()].set(this.sectionsInCanvas());
+    const next = structuredClone(this._canvasService.sectionsByType[this.gridType()].get());
+    this._canvasService.updateChangesInCanvas(this.gridType(), previous, next);
   }
 
   /**
@@ -221,8 +193,8 @@ export class GridComponent implements OnDestroy {
       element: null,
       canvas: this.gridType(),
     });
-
-    this.updateSectionsInGrid(previous);
+    const next = structuredClone(this._canvasService.sectionsByType[this.gridType()].get());
+    this._canvasService.updateChangesInCanvas(this.gridType(), previous, next);
   }
 
   /**
@@ -242,7 +214,8 @@ export class GridComponent implements OnDestroy {
       canvas: this.gridType(),
     });
 
-    this.updateSectionsInGrid(previous);
+    const next = structuredClone(this._canvasService.sectionsByType[this.gridType()].get());
+    this._canvasService.updateChangesInCanvas(this.gridType(), previous, next);
   }
 
   /**
@@ -262,7 +235,8 @@ export class GridComponent implements OnDestroy {
       canvas: this.gridType(),
     });
 
-    this.updateSectionsInGrid(previous);
+    const next = structuredClone(this._canvasService.sectionsByType[this.gridType()].get());
+    this._canvasService.updateChangesInCanvas(this.gridType(), previous, next);
   }
 
   /**
@@ -271,6 +245,7 @@ export class GridComponent implements OnDestroy {
    * @returns
    */
   addElement(element: ElementCMSI) {
+    const gridType = this.selectedItemsInGrid().canvas;
     const previous = structuredClone(this.sectionsInCanvas());
     const column = this.selectedItemsInGrid().column;
     if (!column) return;
@@ -278,9 +253,10 @@ export class GridComponent implements OnDestroy {
     const newElement = createElement(element);
     const newColumn: ColumnI = { ...column, element: newElement };
 
-    const next = updateColumn(previous, column.uuid, newColumn);
-    this.currentSections = structuredClone(next);
-    this.updateSectionsInGrid(previous);
+    const newSections = updateColumn(previous, column.uuid, newColumn);
+    this.currentSections = structuredClone(newSections);
+    const next = structuredClone(this._canvasService.sectionsByType[gridType].get());
+    this._canvasService.updateChangesInCanvas(gridType, previous, next);
 
     this.updateSelectionItem({
       page: null,
@@ -288,7 +264,7 @@ export class GridComponent implements OnDestroy {
       row: null,
       column: null,
       element: newElement,
-      canvas: this.gridType(),
+      canvas: gridType,
     });
   }
 
@@ -301,16 +277,8 @@ export class GridComponent implements OnDestroy {
     this.updateSelectionItem({
       ...this.selectedItemsInGrid(),
       column: column,
-      canvas: this.gridType(),
+      canvas: this.selectedItemsInGrid().canvas,
     });
-  }
-
-  /**
-   * Update secctions in canvas grid
-   */
-  updateSectionsInGrid(previous: SectionI[]) {
-    const next = structuredClone(this.sectionsInCanvas());
-    this._historyService.commit(this.gridType(), previous, next);
   }
 
   /**
@@ -323,7 +291,7 @@ export class GridComponent implements OnDestroy {
       row: null,
       column: null,
       element: null,
-      canvas: this.gridType(),
+      canvas: this.gridType()
     });
   }
 
@@ -399,10 +367,9 @@ export class GridComponent implements OnDestroy {
    * Undo Changes
    */
   undo() {
-    const state = this._historyService.undo(this.gridType());
+    const state = this._canvasService.undo();
     if (state) {
-      this.currentSections = structuredClone(state);
-      this.refreshSelectedItemsInGrid(state);
+      this.restoreState(state);
     }
   }
 
@@ -410,35 +377,61 @@ export class GridComponent implements OnDestroy {
    * Redo changes
    */
   redo() {
-    const state = this._historyService.redo(this.gridType());
+    const state = this._canvasService.redo();
     if (state) {
-      this.currentSections = structuredClone(state);
-      this.refreshSelectedItemsInGrid(state);
+      this.restoreState(state);
     }
   }
 
   /**
-   * Refresh selections
+   * Restore state
+   * @param state
+   * @returns
    */
-  refreshSelectedItemsInGrid(state: SectionI[]) {
-    const selectedItemsInGrid = this.selectedItemsInGrid();
-
-    if (selectedItemsInGrid === null) return;
+  restoreState(state: HistoryCMSI) {
+    if (this.gridType() === 'page') {
+      const page = this.page();
+      if (!page) return;
+      this._pageService.page = {
+        ...page,
+        data: {
+          ...page.data,
+          body: {
+            ...state.body!,
+          },
+        },
+      };
+    } else {
+      const template = this.template();
+      if (!template) return;
+      this._templateService.template = {
+        ...template,
+        data: {
+          ...template.data,
+          header: {
+            ...state.header!,
+          },
+          footer: {
+            ...state.footer!,
+          },
+        },
+      };
+    }
     this.updateSelectionItem({
       page: null,
-      section: findSectionByUuid(state, selectedItemsInGrid?.section?.uuid ?? ''),
-      row: findRowByUuid(state, selectedItemsInGrid?.row?.uuid ?? ''),
-      column: findColumnByUuid(state, selectedItemsInGrid?.column?.uuid ?? ''),
-      element: findElementByUuid(state, selectedItemsInGrid?.element?.uuid ?? ''),
+      section: null,
+      row: null,
+      column: null,
+      element: null,
       canvas: this.gridType(),
     });
   }
 
   private get currentSections(): SectionI[] {
-    return this.sectionsByType[this.gridType()].get();
+    return this._canvasService.sectionsByType[this.gridType()].get();
   }
 
   private set currentSections(value: SectionI[]) {
-    this.sectionsByType[this.gridType()].set(value);
+    this._canvasService.sectionsByType[this.gridType()].set(value);
   }
 }

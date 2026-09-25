@@ -1,15 +1,7 @@
-import {
-  Component,
-  signal,
-  inject,
-  effect,
-  input,
-  output,
-  DestroyRef,
-  computed,
-} from '@angular/core';
+import { Component, signal, inject, input, output, DestroyRef, computed } from '@angular/core';
 import { NgClass, NgTemplateOutlet } from '@angular/common';
 import { CdkDrag, CdkDragDrop, CdkDropList, moveItemInArray } from '@angular/cdk/drag-drop';
+import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import {
   ColumnI,
   ElementI,
@@ -18,13 +10,13 @@ import {
   SelectedItemsInGridI,
 } from 'app/shared/interfaces/grid.interface';
 import { ElementService } from 'app/core/services/element.service';
-import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
+import { CanvasService } from 'app/core/services/canvas.service';
 import { PageService } from 'app/core/services/pages.service';
+import { TemplateService } from 'app/core/services/templates.service';
+import { ElementCMSI } from 'app/shared/interfaces/element.interface';
+import { CanvasT } from 'app/core/interfaces/page.interface';
 import { TooltipDirective } from 'app/shared/directives/tooltip.directive';
 import { ElementsManagerComponent } from '../elements-manager/elements-manager';
-import { ElementCMSI } from 'app/shared/interfaces/element.interface';
-import { HistoryService } from 'app/core/services/history-canvas.service';
-import { CanvasT } from 'app/core/interfaces/page.interface';
 import { distinctUntilChanged } from 'rxjs';
 
 @Component({
@@ -54,13 +46,12 @@ export class LayerComponent {
 
   private readonly _elementService = inject(ElementService);
   private readonly _pageService = inject(PageService);
-  private readonly _historyService = inject(HistoryService);
+  private readonly _templateService = inject(TemplateService);
+  private readonly _canvasService = inject(CanvasService);
   private readonly _destroyRef = inject(DestroyRef);
 
-  readonly sectionsInCanvas = this._pageService.sections;
-  readonly sectionsHeaderInCanvas = this._pageService.sectionsHeader;
-  readonly sectionsFooterInCanvas = this._pageService.sectionsFooter;
-
+  readonly page = toSignal(this._pageService.page$, { initialValue: null });
+  readonly template = toSignal(this._templateService.template$, { initialValue: null });
   readonly elements = toSignal(this._elementService.elements$, {
     initialValue: {
       records: [],
@@ -71,34 +62,8 @@ export class LayerComponent {
   });
 
   readonly currentGridType = computed(() => this.gridType());
-
-  readonly sectionsByType = {
-    header: {
-      get: () => this.sectionsHeaderInCanvas(),
-      set: (sections: SectionI[]) => {
-        this._pageService.sectionsHeader = sections;
-      },
-    },
-    body: {
-      get: () => this.sectionsInCanvas(),
-      set: (sections: SectionI[]) => {
-        this._pageService.sections = sections;
-      },
-    },
-    footer: {
-      get: () => this.sectionsFooterInCanvas(),
-      set: (sections: SectionI[]) => {
-        this._pageService.sectionsFooter = sections;
-      },
-    },
-  } satisfies Record<
-    CanvasT,
-    {
-      get: () => SectionI[];
-      set: (sections: SectionI[]) => void;
-    }
-  >;
-
+  readonly sectionsByType = computed(() => this._canvasService.sectionsByType);
+  
   /**
    * Constructor
    */
@@ -327,12 +292,12 @@ export class LayerComponent {
    * @param event
    * @param item
    */
-  drop<T>(event: CdkDragDrop<string[]>, items: T[], gridType: CanvasT): void {
+  drop<T>(event: CdkDragDrop<string[]>, items: T[]): void {
     const previous = structuredClone(this.currentSections);
     moveItemInArray(items, event.previousIndex, event.currentIndex);
     const next = structuredClone(this.currentSections);
     this.currentSections = next;
-    this._historyService.commit(gridType, previous, next);
+    this._canvasService.updateChangesInCanvas(this.gridType(), previous, next);
   }
 
   /**
@@ -438,14 +403,14 @@ export class LayerComponent {
    * currentSections
    */
   private get currentSections(): SectionI[] {
-    return this.sectionsByType[this.currentGridType()].get();
+    return this._canvasService.sectionsByType[this.currentGridType()].get();
   }
 
   /**
    * currentSections
    */
   private set currentSections(sections: SectionI[]) {
-    this.sectionsByType[this.currentGridType()].set(sections);
+    this._canvasService.sectionsByType[this.currentGridType()].set(sections);
   }
 
   /**
