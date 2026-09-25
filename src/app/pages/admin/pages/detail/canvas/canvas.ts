@@ -1,112 +1,91 @@
-import { Component, OnInit, ViewChild, computed, effect, inject, signal } from '@angular/core';
-import { FormsModule } from '@angular/forms';
-import { NgClass, NgStyle, UpperCasePipe } from '@angular/common';
-import { toSignal } from '@angular/core/rxjs-interop';
+import {
+  AfterViewInit,
+  Component,
+  DestroyRef,
+  ElementRef,
+  OnDestroy,
+  computed,
+  effect,
+  inject,
+  signal,
+  viewChild,
+} from '@angular/core';
 import { Router } from '@angular/router';
+import { FormsModule } from '@angular/forms';
+import { NgClass, UpperCasePipe } from '@angular/common';
+import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { ToastrService } from '@iqx-limited/ngx-toastr';
 import { NgLabelTemplateDirective, NgSelectComponent } from '@ng-select/ng-select';
 import { PageI, PreviewModeT } from 'app/core/interfaces/page.interface';
 import { DialogService } from 'app/core/services/dialog.service';
 import { MicrosityService } from 'app/core/services/micrositie.service';
+import { LanguageService } from 'app/shared/services/language.service';
+import { HistoryService } from 'app/core/services/history-canvas.service';
 import { PageService } from 'app/core/services/pages.service';
 import { ParameterService } from 'app/core/services/parameter.service';
-import { ColumnI, SectionI, SelectedItemsInGridI } from 'app/shared/interfaces/grid.interface';
-import { LanguageService } from 'app/shared/services/language.service';
+import { DynamicStyleService } from 'app/core/services/dynamic-style.service';
+import { SectionI, SelectedItemsInGridI } from 'app/shared/interfaces/grid.interface';
 import {
   findColumnByUuid,
   findElementByUuid,
   findRowByUuid,
   findSectionByUuid,
-  updateColumn,
   validGrid,
 } from 'app/shared/utils/grid.utils';
 import { findParameter } from 'app/shared/utils/parameter.utils';
 import { PermissionCode, validAction } from 'app/shared/utils/permission.utils';
-import { generateRandomString } from 'app/shared/utils/random.utils';
+import { TooltipDirective } from 'app/shared/directives/tooltip.directive';
 import { PermissionComponent } from 'app/shared/components/permission/permission';
-import { ReviewModeComponent } from 'app/shared/components/review-mode/review-mode';
 import { GridComponent } from 'app/shared/components/grid/grid';
 import { LayerComponent } from 'app/shared/components/layer/layer';
 import { InspectorComponent } from 'app/shared/components/inspector/inspector';
-import { LanguageI } from 'app/shared/interfaces/language.interfaces';
-import { ElementCMSI } from 'app/shared/interfaces/element.interface';
-import { HistoryService } from 'app/core/services/history-canvas.service';
-import { TooltipDirective } from 'app/shared/directives/tooltip.directive';
-import { Subject, takeUntil } from 'rxjs';
-import { DeviceDetectorService, DeviceType } from 'ngx-device-detector';
+import { filter, interval, take } from 'rxjs';
 
 @Component({
   selector: 'pages-canvas',
   templateUrl: './canvas.html',
-  styles: [
-    `
-      ::ng-deep .ng-select-container {
-        border: unset !important;
-      }
-
-      ::ng-deep .ng-arrow-wrapper {
-        display: none !important;
-      }
-      .bg-dot-grid {
-        background-size: 24px 24px;
-        background-image: radial-gradient(circle, #cbd5e1 1.2px, transparent 1.2px);
-      }
-    `,
-  ],
   imports: [
     FormsModule,
     PermissionComponent,
-    NgStyle,
     NgClass,
     UpperCasePipe,
     NgSelectComponent,
     NgLabelTemplateDirective,
-    ReviewModeComponent,
     GridComponent,
+    TooltipDirective,
     LayerComponent,
     InspectorComponent,
-    TooltipDirective,
   ],
 })
-export class PagesCanvas implements OnInit {
-  @ViewChild('languageSelect')
-  private readonly _languageSelect!: NgSelectComponent;
-
-  @ViewChild('layer')
-  private readonly _layer!: LayerComponent;
+export class PagesCanvas implements AfterViewInit, OnDestroy {
+  private readonly languageSelect = viewChild.required<NgSelectComponent>('languageSelect');
+  private readonly container = viewChild<ElementRef<HTMLElement>>('canvas');
 
   preview = signal<PreviewModeT>('desktop');
   previewMode = signal<boolean>(false);
-  openElementPanel = signal<boolean>(false);
   reviewChanges = signal<boolean>(false);
   autosave = signal<boolean>(false);
   saveAction = signal<boolean>(false);
-  urlStatics = signal<string>('');
+  enabledCanvas = signal<boolean>(true);
   languageId = signal<number>(0);
-  page = signal<PageI | null>(null);
   originPage = signal<PageI | null>(null);
-  height = signal<number>(window.innerHeight);
-  activeLanguages = signal<LanguageI[]>([]);
-  currentColumn = signal<ColumnI | null>(null);
-  autosaveTimer: number | undefined;
-  permission = PermissionCode;
 
-  private _unsubscribeAll: Subject<any> = new Subject<any>();
+  readonly permission = PermissionCode;
+  private initialized = false;
 
+  private readonly _destroyRef = inject(DestroyRef);
   private readonly _router = inject(Router);
-  private _parameterService = inject(ParameterService);
-  private _dialogService = inject(DialogService);
+  private readonly _parameterService = inject(ParameterService);
+  private readonly _dialogService = inject(DialogService);
   private readonly _microsityService = inject(MicrosityService);
   private readonly _pageService = inject(PageService);
   private readonly _toastrService = inject(ToastrService);
   private readonly _languageService = inject(LanguageService);
   private readonly _historyService = inject(HistoryService);
-  private readonly _deviceDetectorService = inject(DeviceDetectorService);
+  private readonly _dynamicStyleService = inject(DynamicStyleService);
 
-  readonly bodySections = this._pageService.sections;
-
-  readonly _page = toSignal(this._pageService.page$, { initialValue: null });
-  readonly _selectedItemsInGrid = toSignal(this._pageService.selectedItemsInGrid$, {
+  readonly page = toSignal(this._pageService.page$, { initialValue: null });
+  readonly selectedItemsInGrid = toSignal(this._pageService.selectedItemsInGrid$, {
     initialValue: null,
   });
   readonly parameters = toSignal(this._parameterService.parameter$, { initialValue: [] });
@@ -114,71 +93,77 @@ export class PagesCanvas implements OnInit {
   readonly languages = toSignal(this._languageService.languages$, {
     initialValue: { records: [], total: 0, page: 0, totalPage: 0 },
   });
+  readonly body = this._pageService.sections;
 
-  readonly canRedo = computed(() => this._historyService.canRedo());
-  readonly canUndo = computed(() => this._historyService.canUndo());
-  readonly body = computed(() => this.bodySections());
-  readonly previewType = computed(() => {
-    const { deviceType } = this._deviceDetectorService.deviceInfo();
-    switch (deviceType) {
-      case DeviceType.Mobile:
-        return 'mobile';
-      case DeviceType.Tablet:
-        return 'tablet';
-      case DeviceType.Desktop:
-        return 'desktop';
-      default:
-        return 'desktop';
+  readonly canRedo = computed(() => this._historyService.canRedo.body());
+  readonly canUndo = computed(() => this._historyService.canUndo.body());
+  readonly activeLanguages = computed(() => this.languages().records.filter((lang) => lang.status));
+  readonly urlStatics = computed(
+    () => findParameter('APP_STATICS_URL', this.parameters())?.value ?? '',
+  );
+  readonly bodyStyles = computed(() => {
+    const page = this.page();
+    if (!page) {
+      return {};
     }
+    const pageData = this.reviewChanges() ? page.dataReview : page.data;
+    const backgroundImage = pageData?.body.config?.['backgroundImage'];
+    if (!backgroundImage) {
+      return {};
+    }
+    return {
+      'background-image': `url('${this.urlStatics()}/${backgroundImage}')`,
+    };
   });
 
   /**
    * Constructor
    */
   constructor() {
-    // autosave logic
-    this.autosaveTimer = setInterval(() => {
-      this.updateDraft();
-    }, 300_000);
+    this._pageService.sections = [];
+    this._pageService.sectionsHeader = [];
+    this._pageService.sectionsFooter = [];
+
+    interval(300_000)
+      .pipe(
+        filter(() => !this.previewMode()),
+        takeUntilDestroyed(this._destroyRef),
+      )
+      .subscribe(() => {
+        this.updateDraft();
+      });
 
     effect(() => {
-      const languages = this.languages().records.filter((lang) => lang.status);
-      if (languages.length > 0) this.languageId.set(languages[0].id!);
-      this.activeLanguages.set(languages);
+      const languages = this.activeLanguages();
+      if (this.languageId() === 0 && languages.length > 0) {
+        this.languageId.set(languages[0].id!);
+      }
     });
 
     effect(() => {
-      const languages = this.languages().records.filter((lang) => lang.status);
-      if (languages.length > 0) this.languageId.set(languages[0].id!);
-      this.activeLanguages.set(languages);
-    });
+      const page = this.page();
 
-    effect(() => {
-      const parameters = this.parameters();
-      if (parameters.length > 0)
-        this.urlStatics.set(findParameter('APP_STATICS_URL', parameters)!.value);
-    });
-
-    effect(() => {
-      const page = this._page();
-      if (page === null) return;
-
-      this.page.set(page);
-      this.originPage.set(page);
-
-      if (page.lastChangeReject) {
-        this.reviewChanges.set(true);
-      } else {
-        this.reviewChanges.set(false);
+      if (!page || this.initialized) {
+        return;
       }
 
-      if (page.review) this.previewMode.set(true);
+      this.initialized = true;
+
+      if (this.originPage() === null) {
+        this.originPage.set(structuredClone(page));
+      }
+
+      this.reviewChanges.set(!!page.lastChangeReject);
+
+      if (page.review) {
+        this.previewMode.set(true);
+      }
 
       if (page.draft !== null) {
         this.confirmDraft();
-      } else {
-        this.loadPageData();
+        return;
       }
+      this.loadPageData();
     });
   }
 
@@ -187,40 +172,46 @@ export class PagesCanvas implements OnInit {
   // -----------------------------------------------------------------------------------------------------
 
   /**
-   * On init
+   * AfterViewInit
+   * @returns
    */
-  ngOnInit(): void {}
+  ngAfterViewInit() {
+    const element = this.container()?.nativeElement;
+    if (!element) {
+      return;
+    }
+    const observer = new ResizeObserver((entries) => {
+      const width = entries[0].contentRect.width;
+      if (width < 1024) {
+        this.enabledCanvas.set(false);
+      } else {
+        this.enabledCanvas.set(true);
+      }
+    });
+
+    observer.observe(element);
+    this._destroyRef.onDestroy(() => {
+      observer.disconnect();
+    });
+  }
 
   /**
    * On destroy
    */
   ngOnDestroy(): void {
-    // Unsubscribe from all subscriptions
-    this._unsubscribeAll.next(null);
-    this._unsubscribeAll.complete();
-    if (this.autosaveTimer) {
-      clearInterval(this.autosaveTimer);
-    }
-    this._pageService.selectedItemsInGrid = {
+    this._dynamicStyleService.remove('body-dynamicStyles');
+    this.updateSelectionItem({
       section: null,
       column: null,
       row: null,
       element: null,
       canvas: 'body',
-    };
+    });
   }
 
   // -----------------------------------------------------------------------------------------------------
   // @ Public methods
   // -----------------------------------------------------------------------------------------------------
-
-  /**
-   * Set review data
-   */
-  setReviewData() {
-    this.reviewChanges.set(false);
-    this.loadPageData();
-  }
 
   /**
    * Load template data from the server and update the component properties accordingly.
@@ -234,7 +225,7 @@ export class PagesCanvas implements OnInit {
    * Update draft page
    */
   updateDraft() {
-    if (this.previewType() !== 'desktop') return;
+    if (this.previewMode()) return;
 
     if (
       !this.validPermission(this.permission.editContentPage) &&
@@ -242,7 +233,8 @@ export class PagesCanvas implements OnInit {
     )
       return;
 
-    if (this.page()!.review) {
+    const page = this.page();
+    if (!page || page.review) {
       return;
     }
 
@@ -250,18 +242,20 @@ export class PagesCanvas implements OnInit {
     this.saveAction.set(true);
     this.autosave.set(true);
 
-    const page = this.page();
-    if (page == null) return;
-
-    //Set data page elements
-    page.data!.body.data = this.body();
+    const data = {
+      ...page.data!,
+      body: {
+        ...page.data!.body,
+        data: this.body(),
+      },
+    };
 
     this._pageService
       .saveDraft(page.id!, {
         name: page.name,
-        data: page.data,
+        data,
       })
-      .pipe(takeUntil(this._unsubscribeAll))
+      .pipe(takeUntilDestroyed(this._destroyRef))
       .subscribe({
         next: () => {
           this.saveAction.set(false);
@@ -298,11 +292,13 @@ export class PagesCanvas implements OnInit {
     this._dialogService.toggleDialog();
 
     // Subscribe to the confirmation dialog closed action
-    this._dialogService.actionClick$.pipe(takeUntil(this._unsubscribeAll)).subscribe((result) => {
-      if (result) {
-        this.updatePage();
-      }
-    });
+    this._dialogService.actionClick$
+      .pipe(take(1), takeUntilDestroyed(this._destroyRef))
+      .subscribe((result) => {
+        if (result) {
+          this.updatePage();
+        }
+      });
   }
 
   /**
@@ -334,7 +330,7 @@ export class PagesCanvas implements OnInit {
           },
         },
       })
-      .pipe(takeUntil(this._unsubscribeAll))
+      .pipe(takeUntilDestroyed(this._destroyRef))
       .subscribe({
         next: () => {
           this.saveAction.set(false);
@@ -345,7 +341,6 @@ export class PagesCanvas implements OnInit {
         },
         error: (response) => {
           this.saveAction.set(false);
-          this._toastrService.error(response.error.message, 'Aviso');
           this._toastrService.error(
             response.error?.message || 'No fue posible guardar los cambios de diseño de la página.',
             'Error al guardar',
@@ -358,26 +353,19 @@ export class PagesCanvas implements OnInit {
    * Load data
    */
   loadGridData() {
-    // Set body
     const pageData = this.reviewChanges() ? this.page()!.dataReview : this.page()!.data;
-    this.setGrid(pageData!.body.data);
+    if (!pageData) return;
+    this._pageService.sections = structuredClone(pageData.body.data);
   }
 
   /**
    * Load styles
    */
   loadStyles() {
-    // Load CSS
-    const pageData = this.reviewChanges() ? this.page()!.dataReview : this.page()!.data;
-
-    const styleElementToRemove = document.getElementById('body-dynamicStyles');
-    if (styleElementToRemove) {
-      styleElementToRemove.remove();
-    }
-    const styleElement = document.createElement('style');
-    styleElement.id = 'body-dynamicStyles';
-    styleElement.textContent = `${pageData!.body.css}`;
-    document.head.appendChild(styleElement);
+    const page = this.page();
+    if (!page) return;
+    const pageData = this.reviewChanges() ? page.dataReview : page.data;
+    this._dynamicStyleService.set('body-dynamicStyles', pageData?.body.css ?? '');
   }
 
   /**
@@ -393,20 +381,6 @@ export class PagesCanvas implements OnInit {
    */
   togglePreviewMode() {
     this.previewMode.update((preview) => !preview);
-
-    if (!this.previewMode()) {
-      this._layer.closeLayers();
-    } else {
-      this._layer.openLayers();
-    }
-
-    clearInterval(this.autosaveTimer);
-
-    if (!this.previewMode()) {
-      this.autosaveTimer = setInterval(() => {
-        this.updateDraft();
-      }, 300_000);
-    }
   }
 
   /**
@@ -414,9 +388,11 @@ export class PagesCanvas implements OnInit {
    *
    */
   goToBack() {
+    const page = this.page();
+    this._pageService.page = null;
     this._router.navigateByUrl('/admin/content/pages/detail', {
       state: {
-        id: this.page() === null ? 0 : this.page()!.id,
+        id: page === null ? 0 : page!.id,
         micrositieId: this.micrositie() !== null ? this.micrositie()!.id : 0,
       },
     });
@@ -427,63 +403,6 @@ export class PagesCanvas implements OnInit {
    */
   validPermission(code: string) {
     return validAction(code);
-  }
-
-  /**
-   * Add section to grid
-   */
-  addSection() {
-    const sectionUuid = generateRandomString(8);
-    const rowUuid = generateRandomString(8);
-    const columnUuid = generateRandomString(8);
-    const newSection = {
-      uuid: sectionUuid,
-      css: `.grid-section-${sectionUuid}{}`,
-      config: { backgroundImage: '' },
-      rows: [
-        {
-          uuid: rowUuid,
-          css: `.grid-row-${rowUuid}{}`,
-          config: { backgroundImage: '' },
-          columns: [
-            {
-              uuid: columnUuid,
-              css: `.grid-column-${columnUuid}{}`,
-              config: { backgroundImage: '' },
-              element: null,
-            },
-          ],
-        },
-      ],
-    } as unknown as SectionI;
-
-    const previous = structuredClone(this.body());
-    const next = structuredClone([...this.body(), newSection]);
-    this._pageService.sections = next;
-    this._historyService.commit(previous, next);
-  }
-
-  /**
-   * Set data to grid
-   * @param grid
-   */
-  setGrid(grid: SectionI[]) {
-    this._pageService.sections = grid;
-  }
-
-  /**
-   * Get config styles
-   * @returns
-   */
-  getStyles() {
-    const pageData = this.reviewChanges() ? this.page()!.dataReview : this.page()!.data;
-    let styles = {};
-    if (pageData!.body.config['backgroundImage'] !== '') {
-      styles = {
-        'background-image': `url('${this.urlStatics}/${pageData!.body.config['backgroundImage']}')`,
-      };
-    }
-    return styles;
   }
 
   /**
@@ -502,16 +421,25 @@ export class PagesCanvas implements OnInit {
     this._dialogService.toggleDialog();
 
     // Subscribe to the confirmation dialog closed action
-    this._dialogService.actionClick$.pipe(takeUntil(this._unsubscribeAll)).subscribe((result) => {
-      if (result) {
+    this._dialogService.actionClick$
+      .pipe(take(1), takeUntilDestroyed(this._destroyRef))
+      .subscribe((result) => {
         const page = this.page();
-        page!.data = page!.draft;
-        this.page.set(page);
-      } else {
-        this.deleteDraft();
-      }
-      this.loadPageData();
-    });
+        if (!page) {
+          return;
+        }
+        if (result) {
+          const draftPage: PageI = {
+            ...page,
+            data: structuredClone(page.draft!),
+            draft: null!,
+          };
+          this._pageService.page = structuredClone(draftPage);
+        } else {
+          this.deleteDraft();
+        }
+        this.loadPageData();
+      });
   }
 
   /**
@@ -526,7 +454,7 @@ export class PagesCanvas implements OnInit {
 
     this._pageService
       .deleteDraft(page.id!)
-      .pipe(takeUntil(this._unsubscribeAll))
+      .pipe(takeUntilDestroyed(this._destroyRef))
       .subscribe({
         next: () => {
           this.saveAction.set(false);
@@ -551,10 +479,10 @@ export class PagesCanvas implements OnInit {
   }
 
   /**
-   * OPen language select
+   * Open language select
    */
   openLanguageSelect() {
-    this._languageSelect.open();
+    this.languageSelect().open();
   }
 
   /**
@@ -565,7 +493,7 @@ export class PagesCanvas implements OnInit {
     this._dialogService.setDialogData({
       type: 'warning',
       title: `Descartar cambios`,
-      message: `¿Estas seguro/a que deseas descartar estos cambos?. Esta acción no se puede deshacer.`,
+      message: `¿Estas seguro/a que deseas descartar estos cambios?. Esta acción no se puede deshacer.`,
       confirmButton: 'Si, Descartar',
       cancelButton: 'Cancelar',
     });
@@ -573,22 +501,27 @@ export class PagesCanvas implements OnInit {
     this._dialogService.toggleDialog();
 
     // Subscribe to the confirmation dialog closed action
-    this._dialogService.actionClick$.pipe(takeUntil(this._unsubscribeAll)).subscribe((result) => {
-      if (result) {
-        const page = this.originPage();
-        this.page.set(page);
-        this.deleteDraft();
-        this.loadPageData();
-        this.updateSelectionItem({
-          section: null,
-          row: null,
-          column: null,
-          element: null,
-          canvas: 'body',
-        });
-        this._historyService.clear();
-      }
-    });
+    this._dialogService.actionClick$
+      .pipe(take(1), takeUntilDestroyed(this._destroyRef))
+      .subscribe((result) => {
+        if (result) {
+          const page = this.originPage();
+          if (!page) {
+            return;
+          }
+          this.deleteDraft();
+          this._pageService.page = structuredClone({ ...page, draft: null! });
+          this.loadPageData();
+          this.updateSelectionItem({
+            section: null,
+            row: null,
+            column: null,
+            element: null,
+            canvas: 'body',
+          });
+          this._historyService.clearAll();
+        }
+      });
   }
 
   /**
@@ -600,56 +533,10 @@ export class PagesCanvas implements OnInit {
   }
 
   /**
-   * toggle element panel
-   */
-  toggleElementPanel(column: ColumnI) {
-    this.currentColumn.set(column);
-    this.openElementPanel.set(true);
-  }
-
-  /**
-   * set element
-   */
-  setElementSelectedInColumn(element: ElementCMSI | null) {
-    this.openElementPanel.set(false);
-    const column = this.currentColumn();
-    if (element === null) {
-      this.currentColumn.set(null);
-      return;
-    }
-
-    if (column === null) return;
-
-    const previous = structuredClone(this.body());
-    const elementUuid = generateRandomString(8);
-    column.element = {
-      uuid: elementUuid,
-      name: element.name,
-      css: `.${element.css}-${elementUuid}{}`,
-      config: element.config,
-      text: element.text,
-      dataText: [],
-    };
-
-    const sectionsUpdate = updateColumn(this.body(), column.uuid, column);
-
-    const next = structuredClone(sectionsUpdate);
-    this._pageService.sections = next;
-    this._historyService.commit(previous, next);
-    this._pageService.selectedItemsInGrid = {
-      section: null,
-      column: null,
-      row: null,
-      element: column.element,
-      canvas: 'body',
-    };
-  }
-
-  /**
    * Undo Changes
    */
   undo() {
-    const state = this._historyService.undo();
+    const state = this._historyService.undo('body');
     if (state) {
       this._pageService.sections = state;
       this.refreshSelectedItemsInGrid(state);
@@ -660,7 +547,7 @@ export class PagesCanvas implements OnInit {
    * Redo changes
    */
   redo() {
-    const state = this._historyService.redo();
+    const state = this._historyService.redo('body');
     if (state) {
       this._pageService.sections = state;
       this.refreshSelectedItemsInGrid(state);
@@ -671,15 +558,15 @@ export class PagesCanvas implements OnInit {
    * Refresh selections
    */
   refreshSelectedItemsInGrid(state: SectionI[]) {
-    const selectedItemsInGrid = this._selectedItemsInGrid();
+    const selectedItemsInGrid = this.selectedItemsInGrid();
 
     if (selectedItemsInGrid === null) return;
-    this._pageService.selectedItemsInGrid = {
+    this.updateSelectionItem({
       section: findSectionByUuid(state, selectedItemsInGrid?.section?.uuid ?? ''),
       row: findRowByUuid(state, selectedItemsInGrid?.row?.uuid ?? ''),
       column: findColumnByUuid(state, selectedItemsInGrid?.column?.uuid ?? ''),
       element: findElementByUuid(state, selectedItemsInGrid?.element?.uuid ?? ''),
       canvas: 'body',
-    };
+    });
   }
 }

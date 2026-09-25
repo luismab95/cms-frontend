@@ -1,238 +1,299 @@
 <div
-  class="sections"
-  cdkDropList
-  cdkDropListOrientation="vertical"
-  (cdkDropListDropped)="drop($event, sectionsInCanvas())"
+  [ngStyle]="gridStyles()"
+  [ngClass]="{
+    'border-0! p-0! rounded-none!': preview(),
+  }"
+  class="body relative border-2 border-dashed border-slate-300 hover:border-slate-400 rounded-xl p-6 transition-all group/body"
 >
-  <!-- Sections -->
-  @if (!refreshGrid()) {
-    @for (section of sectionsInCanvas(); track section.uuid; let i = $index) {
-      <section
-        cdkDragBoundary=".sections"
-        cdkDrag
-        class="{{ 'grid-section-' + section.uuid }}"
-        [cdkDragDisabled]="preview()"
-        [ngClass]="{
-          'group/sec border border-dashed border-indigo-500 rounded-xl p-5 pt-7 ring-1 ring-indigo-600/10 relative my-2':
-            !preview(),
-          'border-2 border-solid!':
-            selectedItemsInGrid()?.section?.uuid === section.uuid && !preview(),
-        }"
+  @if (!preview()) {
+    <!-- Body tag -->
+    <div
+      class="absolute -top-3 left-4 bg-slate-700 text-white text-[10px] font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wider flex items-center gap-1.5 shadow-sm"
+    >
+      <i class="fa-solid fa-boxes-stacked"></i>
+      <span> Contenedor: Contenido Principal </span>
+    </div>
+
+    <!-- Body toolbar -->
+    <div
+      class="absolute -top-3.5 right-4 hidden group-hover/body:flex items-center bg-white border border-slate-200 rounded-md shadow-sm divide-x divide-slate-100 text-slate-600 text-xs"
+    >
+      <button
+        class="cursor-pointer px-2 py-1 hover:text-slate-600 hover:bg-slate-50 flex items-center gap-1"
+        title="Configurar"
       >
-        <!-- Section Floating Controls Header -->
-        @if (!preview()) {
-          <div
-            class="absolute -top-3.5 left-4 flex items-center gap-1.5 bg-indigo-600 text-white text-xs font-semibold px-2.5 py-0.5 rounded shadow-sm"
-          >
-            <i cdkDragHandle class="fa-solid fa-grip-vertical text-indigo-200 cursor-grab"></i>
-            <span>Sección {{ i + 1 }}</span>
-            <span class="text-[10px] font-normal opacity-80 pl-1"> ({{ section.uuid }}) </span>
-          </div>
+        <i class="fa-solid fa-sliders text-slate-600"></i>
+      </button>
+    </div>
+  }
 
-          <!-- Quick action toolbar for Section -->
-          <div
-            class="absolute -top-3.5 right-4 items-center hidden group-hover/sec:flex bg-white border border-slate-200 rounded-md shadow-sm divide-x divide-slate-100 text-slate-600 text-xs"
-          >
-            <button
-              (click)="selectSection(section)"
-              class="cursor-pointer px-2 py-1 hover:text-slate-600 hover:bg-slate-50 flex items-center gap-1"
-              appTooltip="Configurar Sección"
-            >
-              <i class="fa-solid fa-sliders text-slate-600"></i>
-            </button>
-          </div>
-        }
+  <div class="relative">
+    <!-- GRID -->
 
-        <div
-          class="rows"
-          cdkDropList
-          cdkDropListOrientation="vertical"
-          (cdkDropListDropped)="drop($event, section.rows)"
+    <div
+      class="sections"
+      cdkDropList
+      cdkDropListOrientation="vertical"
+      (cdkDropListDropped)="drop($event, sectionsInCanvas())"
+    >
+      <!-- Sections -->
+      @for (section of sectionsInCanvas(); track section.uuid; let i = $index) {
+        <section
+          cdkDragBoundary=".sections"
+          cdkDrag
+          class="{{ 'grid-section-' + section.uuid }}"
+          [cdkDragDisabled]="preview()"
+          [ngClass]="{
+            'group/sec border border-dashed border-indigo-500 rounded-xl p-5 pt-7 ring-1 ring-indigo-600/10 relative my-2':
+              !preview(),
+            'border-2 border-solid!':
+              selectedItemsInGrid()?.section?.uuid === section.uuid && !preview(),
+          }"
         >
-          <!-- Rows -->
-          @for (row of section.rows; track row.uuid; let rowIndex = $index) {
-            <!-- Row -->
+          <!-- Section Floating Controls Header -->
+          @if (!preview()) {
             <div
-              cdkDragBoundary=".rows"
-              cdkDrag
-              class="{{ 'grid-row-' + row.uuid }} "
-              [cdkDragDisabled]="preview()"
-              [ngClass]="{
-                'group/row border border-dashed border-amber-300 hover:border-amber-400 rounded-lg p-4 pt-6 relative my-2':
-                  !preview(),
-                'border-2 border-solid!':
-                  selectedItemsInGrid()?.row?.uuid === row.uuid && !preview(),
-              }"
+              class="absolute -top-3.5 left-4 flex items-center gap-1.5 bg-indigo-600 text-white text-xs font-semibold px-2.5 py-0.5 rounded shadow-sm"
             >
-              <!-- Row Badge -->
-              @if (!preview()) {
-                <div
-                  class="absolute -top-2.5 left-3 bg-amber-500 text-white text-[10px] font-semibold px-2 py-0.5 rounded-full flex items-center gap-1 shadow-sm"
-                >
-                  <i cdkDragHandle class="fa-solid fa-grip-vertical cursor-grab"></i>
-                  <span> Fila {{ rowIndex + 1 }} ({{ row.uuid }}) </span>
-                  <span class="text-[9px] opacity-75"> columnas: {{ row.columns.length }} </span>
-                </div>
-
-                <!-- Quick action toolbar for Row -->
-                <div
-                  class="absolute -top-3.5 right-4 items-center hidden group-hover/row:flex bg-white border border-slate-200 rounded-md shadow-sm divide-x divide-slate-100 text-slate-600 text-xs"
-                >
-                  <button
-                    (click)="selectRow(row)"
-                    class="cursor-pointer px-2 py-1 hover:text-slate-600 hover:bg-slate-50 flex items-center gap-1"
-                    appTooltip="Configurar Fila"
-                  >
-                    <i class="fa-solid fa-sliders text-slate-600"></i>
-                  </button>
-                </div>
-              }
-
-              <!-- Columns Container -->
-              <div
-                cdkDropList
-                cdkDropListOrientation="horizontal"
-                (cdkDropListDropped)="drop($event, row.columns)"
-                [ngClass]="{
-                  'flex-row': previewType() === 'desktop' || previewType() === 'none',
-                  'flex-col': previewType() !== 'desktop' && previewType() !== 'none',
-                }"
-                class="flex columns"
-              >
-                <!-- Columns -->
-                @for (column of row.columns; track column.uuid; let columnIndex = $index) {
-                  <div
-                    cdkDragBoundary=".columns"
-                    cdkDrag
-                    [cdkDragDisabled]="preview()"
-                    class="{{ 'grid-column-' + column.uuid }} flex flex-col!"
-                    [ngClass]="{
-                      'flex-row w-full!': previewType() !== 'desktop' && previewType() !== 'none',
-                      'group/column border m-0.5 border-dashed border-slate-300 rounded-lg p-4 min-h-40 bg-white-500/40 hover:bg-white hover:border-slate-400 flex flex-col justify-between relative':
-                        !preview(),
-                      'border-2 border-solid!':
-                        selectedItemsInGrid()?.column?.uuid === column.uuid && !preview(),
-                    }"
-                  >
-                    <!-- Column Top Controls -->
-                    @if (!preview()) {
-                      <div
-                        class="flex flex-col items-center justify-between text-[11px] text-slate-400 pb-2 border-b border-slate-100 mb-2 w-full"
-                      >
-                        <div>
-                          <i cdkDragHandle class="fa-solid fa-grip-vertical cursor-grab"></i>
-                          <span class="font-medium text-slate-500">
-                            Columna {{ column.uuid }}
-                          </span>
-                        </div>
-                        @if (column.element !== null) {
-                          <div class="flex items-center gap-1">
-                            <span
-                              class="text-[9px] bg-indigo-100 text-indigo-700 px-1.5 py-0.5 rounded font-bold"
-                            >
-                              Elemento {{ column.element.name }}
-                            </span>
-                          </div>
-                        }
-                      </div>
-
-                      <!-- Quick action toolbar for Row -->
-                      <div
-                        class="absolute -top-3.5 right-4 items-center hidden group-hover/column:flex bg-white border border-slate-200 rounded-md shadow-sm divide-x divide-slate-100 text-slate-600 text-xs"
-                      >
-                        <button
-                          (click)="selectColumn(column)"
-                          class="cursor-pointer px-2 py-1 hover:text-slate-600 hover:bg-slate-50 flex items-center gap-1"
-                          appTooltip="Configurar Columna"
-                        >
-                          <i class="fa-solid fa-sliders text-slate-600"></i>
-                        </button>
-                      </div>
-                    }
-
-                    <!-- Empty Column -->
-                    @if (column.element == null) {
-                      @if (!preview()) {
-                        <div
-                          (click)="openElementsMangerModal(column)"
-                          class="text-center py-6 text-slate-400 hover:text-indigo-600 cursor-pointer flex flex-col items-center gap-1 w-full m-auto"
-                        >
-                          <div
-                            class="w-7 h-7 rounded-full border border-dashed border-slate-300 flex items-center justify-center"
-                          >
-                            <i class="fa-solid fa-plus"></i>
-                          </div>
-                          <span class="text-[10px]"> Espacio vacío para contenido </span>
-                        </div>
-                      }
-                    } @else {
-                      <!-- Element -->
-                      <div
-                        [ngClass]="{
-                          'group/element  py-2 border border-dashed border-emerald-200 rounded-lg p-3 relative flex flex-col items-center justify-center group/element':
-                            !preview(),
-                          'border-2 border-solid!':
-                            selectedItemsInGrid()?.element?.uuid === column.element.uuid &&
-                            !preview(),
-                        }"
-                      >
-                        <elements
-                          class="w-full h-auto"
-                          [languageId]="languageId()!"
-                          [element]="column.element"
-                        />
-
-                        <!-- Element  Controls -->
-                        @if (!preview()) {
-                          <div
-                            class="absolute -top-3.5 right-4 items-center hidden group-hover/element:flex bg-white border border-slate-200 rounded-md shadow-sm divide-x divide-slate-100 text-slate-600 text-xs"
-                          >
-                            <button
-                              (click)="selectElement(column.element)"
-                              class="cursor-pointer bg-white text-slate-800 text-[11px] font-semibold px-2.5 py-1 rounded shadow-md hover:bg-slate-50 flex items-center gap-1"
-                              appTooltip="Configurar Elemento"
-                            >
-                              <i class="fa-solid fa-sliders text-slate-600"></i>
-                            </button>
-                          </div>
-                        }
-                      </div>
-                    }
-                  </div>
-                }
-              </div>
-              @if (editDesign() && !preview()) {
-                <div class="mt-4 pt-3 border-t border-dashed border-slate-200 flex justify-center">
-                  <button
-                    (click)="addColumn(row)"
-                    class="cursor-pointer inline-flex items-center gap-1.5 px-3 py-1 bg-white hover:bg-slate-50 border border-dashed border-slate-300 hover:border-slate-300 text-slate-600 hover:text-slate-700 rounded-full text-xs font-semibold shadow-sm transition-all"
-                    type="button"
-                  >
-                    <i class="fa-solid fa-table-columns"></i>
-                    <span
-                      >Añadir Columna dentro de Fila <b>{{ row.uuid }}</b></span
-                    >
-                  </button>
-                </div>
-              }
+              <i cdkDragHandle class="fa-solid fa-grip-vertical text-indigo-200 cursor-grab"></i>
+              <span>Sección {{ i + 1 }}</span>
+              <span class="text-[10px] font-normal opacity-80 pl-1"> ({{ section.uuid }}) </span>
             </div>
-          }
-          @if (editDesign() && !preview()) {
-            <div class="mt-4 pt-3 border-t border-dashed border-slate-200 flex justify-center">
+
+            <!-- Quick action toolbar for Section -->
+            <div
+              class="absolute -top-3.5 right-4 items-center hidden group-hover/sec:flex bg-white border border-slate-200 rounded-md shadow-sm divide-x divide-slate-100 text-slate-600 text-xs"
+            >
               <button
-                (click)="addRow(section)"
-                class="cursor-pointer inline-flex items-center gap-1.5 px-3 py-1 bg-white hover:bg-amber-50 border border-dashed border-slate-300 hover:border-amber-300 text-slate-600 hover:text-amber-700 rounded-full text-xs font-semibold shadow-sm transition-all"
-                type="button"
+                (click)="selectSection(section)"
+                class="cursor-pointer px-2 py-1 hover:text-slate-600 hover:bg-slate-50 flex items-center gap-1"
+                appTooltip="Configurar Sección"
               >
-                <i class="fa-solid fa-table-list"></i>
-                <span
-                  >Añadir Fila dentro de Sección <b>{{ section.uuid }}</b></span
-                >
+                <i class="fa-solid fa-sliders text-slate-600"></i>
               </button>
             </div>
           }
+
+          <div
+            class="rows"
+            cdkDropList
+            cdkDropListOrientation="vertical"
+            (cdkDropListDropped)="drop($event, section.rows)"
+          >
+            <!-- Rows -->
+            @for (row of section.rows; track row.uuid; let rowIndex = $index) {
+              <!-- Row -->
+              <div
+                cdkDragBoundary=".rows"
+                cdkDrag
+                class="{{ 'grid-row-' + row.uuid }} "
+                [cdkDragDisabled]="preview()"
+                [ngClass]="{
+                  'group/row border border-dashed border-amber-300 hover:border-amber-400 rounded-lg p-4 pt-6 relative my-2':
+                    !preview(),
+                  'border-2 border-solid!':
+                    selectedItemsInGrid()?.row?.uuid === row.uuid && !preview(),
+                }"
+              >
+                <!-- Row Badge -->
+                @if (!preview()) {
+                  <div
+                    class="absolute -top-2.5 left-3 bg-amber-500 text-white text-[10px] font-semibold px-2 py-0.5 rounded-full flex items-center gap-1 shadow-sm"
+                  >
+                    <i cdkDragHandle class="fa-solid fa-grip-vertical cursor-grab"></i>
+                    <span> Fila {{ rowIndex + 1 }} ({{ row.uuid }}) </span>
+                    <span class="text-[9px] opacity-75"> columnas: {{ row.columns.length }} </span>
+                  </div>
+
+                  <!-- Quick action toolbar for Row -->
+                  <div
+                    class="absolute -top-3.5 right-4 items-center hidden group-hover/row:flex bg-white border border-slate-200 rounded-md shadow-sm divide-x divide-slate-100 text-slate-600 text-xs"
+                  >
+                    <button
+                      (click)="selectRow(row)"
+                      class="cursor-pointer px-2 py-1 hover:text-slate-600 hover:bg-slate-50 flex items-center gap-1"
+                      appTooltip="Configurar Fila"
+                    >
+                      <i class="fa-solid fa-sliders text-slate-600"></i>
+                    </button>
+                  </div>
+                }
+
+                <!-- Columns Container -->
+                <div
+                  cdkDropList
+                  cdkDropListOrientation="horizontal"
+                  (cdkDropListDropped)="drop($event, row.columns)"
+                  [ngClass]="{
+                    'flex-row': previewType() === 'desktop' || previewType() === 'none',
+                    'flex-col': previewType() !== 'desktop' && previewType() !== 'none',
+                  }"
+                  class="flex columns"
+                >
+                  <!-- Columns -->
+                  @for (column of row.columns; track column.uuid; let columnIndex = $index) {
+                    <div
+                      cdkDragBoundary=".columns"
+                      cdkDrag
+                      [cdkDragDisabled]="preview()"
+                      class="{{ 'grid-column-' + column.uuid }} flex flex-col!"
+                      [ngClass]="{
+                        'flex-row w-full!': previewType() !== 'desktop' && previewType() !== 'none',
+                        'group/column border m-0.5 border-dashed border-slate-300 rounded-lg p-4 min-h-40 bg-white-500/40 hover:bg-white hover:border-slate-400 flex flex-col justify-between relative':
+                          !preview(),
+                        'border-2 border-solid!':
+                          selectedItemsInGrid()?.column?.uuid === column.uuid && !preview(),
+                      }"
+                    >
+                      <!-- Column Top Controls -->
+                      @if (!preview()) {
+                        <div
+                          class="flex flex-col items-center justify-between text-[11px] text-slate-400 pb-2 border-b border-slate-100 mb-2 w-full"
+                        >
+                          <div>
+                            <i cdkDragHandle class="fa-solid fa-grip-vertical cursor-grab"></i>
+                            <span class="font-medium text-slate-500">
+                              Columna {{ column.uuid }}
+                            </span>
+                          </div>
+                          @if (column.element !== null) {
+                            <div class="flex items-center gap-1">
+                              <span
+                                class="text-[9px] bg-indigo-100 text-indigo-700 px-1.5 py-0.5 rounded font-bold"
+                              >
+                                Elemento {{ column.element.name }}
+                              </span>
+                            </div>
+                          }
+                        </div>
+
+                        <!-- Quick action toolbar for Row -->
+                        <div
+                          class="absolute -top-3.5 right-4 items-center hidden group-hover/column:flex bg-white border border-slate-200 rounded-md shadow-sm divide-x divide-slate-100 text-slate-600 text-xs"
+                        >
+                          <button
+                            (click)="selectColumn(column)"
+                            class="cursor-pointer px-2 py-1 hover:text-slate-600 hover:bg-slate-50 flex items-center gap-1"
+                            appTooltip="Configurar Columna"
+                          >
+                            <i class="fa-solid fa-sliders text-slate-600"></i>
+                          </button>
+                        </div>
+                      }
+
+                      <!-- Empty Column -->
+                      @if (column.element == null) {
+                        @if (!preview()) {
+                          <div
+                            (click)="openElementsManagerModal(column)"
+                            class="text-center py-6 text-slate-400 hover:text-indigo-600 cursor-pointer flex flex-col items-center gap-1 w-full m-auto"
+                          >
+                            <div
+                              class="w-7 h-7 rounded-full border border-dashed border-slate-300 flex items-center justify-center"
+                            >
+                              <i class="fa-solid fa-plus"></i>
+                            </div>
+                            <span class="text-[10px]"> Espacio vacío para contenido </span>
+                          </div>
+                        }
+                      } @else {
+                        <!-- Element -->
+                        <div
+                          [ngClass]="{
+                            'group/element  py-2 border border-dashed border-emerald-200 rounded-lg p-3 relative flex flex-col items-center justify-center group/element':
+                              !preview(),
+                            'border-2 border-solid!':
+                              selectedItemsInGrid()?.element?.uuid === column.element.uuid &&
+                              !preview(),
+                          }"
+                        >
+                          <elements
+                            class="w-full h-auto"
+                            [languageId]="languageId()!"
+                            [element]="column.element"
+                          />
+
+                          <!-- Element  Controls -->
+                          @if (!preview()) {
+                            <div
+                              class="absolute -top-3.5 right-4 items-center hidden group-hover/element:flex bg-white border border-slate-200 rounded-md shadow-sm divide-x divide-slate-100 text-slate-600 text-xs"
+                            >
+                              <button
+                                (click)="selectElement(column.element)"
+                                class="cursor-pointer bg-white text-slate-800 text-[11px] font-semibold px-2.5 py-1 rounded shadow-md hover:bg-slate-50 flex items-center gap-1"
+                                appTooltip="Configurar Elemento"
+                              >
+                                <i class="fa-solid fa-sliders text-slate-600"></i>
+                              </button>
+                            </div>
+                          }
+                        </div>
+                      }
+                    </div>
+                  }
+                </div>
+                @if (editDesign() && !preview()) {
+                  <div
+                    class="mt-4 pt-3 border-t border-dashed border-slate-200 flex justify-center"
+                  >
+                    <button
+                      (click)="addColumn(row)"
+                      class="cursor-pointer inline-flex items-center gap-1.5 px-3 py-1 bg-white hover:bg-slate-50 border border-dashed border-slate-300 hover:border-slate-300 text-slate-600 hover:text-slate-700 rounded-full text-xs font-semibold shadow-sm transition-all"
+                      type="button"
+                    >
+                      <i class="fa-solid fa-table-columns"></i>
+                      <span
+                        >Añadir Columna dentro de Fila <b>{{ row.uuid }}</b></span
+                      >
+                    </button>
+                  </div>
+                }
+              </div>
+            }
+            @if (editDesign() && !preview()) {
+              <div class="mt-4 pt-3 border-t border-dashed border-slate-200 flex justify-center">
+                <button
+                  (click)="addRow(section)"
+                  class="cursor-pointer inline-flex items-center gap-1.5 px-3 py-1 bg-white hover:bg-amber-50 border border-dashed border-slate-300 hover:border-amber-300 text-slate-600 hover:text-amber-700 rounded-full text-xs font-semibold shadow-sm transition-all"
+                  type="button"
+                >
+                  <i class="fa-solid fa-table-list"></i>
+                  <span
+                    >Añadir Fila dentro de Sección <b>{{ section.uuid }}</b></span
+                  >
+                </button>
+              </div>
+            }
+          </div>
+        </section>
+      }
+
+      <!-- ADD SECTION -->
+      @if (!preview()) {
+        <div
+          (click)="addSection()"
+          class="mt-4 border-2 border-dashed border-slate-300 hover:border-indigo-500 hover:bg-indigo-50/20 rounded-xl p-6 text-center transition-all cursor-pointer group"
+        >
+          <div class="flex flex-col items-center gap-2">
+            <div
+              class="w-10 h-10 rounded-full bg-slate-100 group-hover:bg-indigo-100 text-slate-500 group-hover:text-indigo-600 flex items-center justify-center transition-colors shadow-sm"
+            >
+              <i class="fa-solid fa-plus"></i>
+            </div>
+
+            <div>
+              <h4 class="text-xs font-bold text-slate-700 group-hover:text-indigo-700">
+                Añadir nueva Sección a tu Página
+              </h4>
+
+              <p class="text-[11px] text-slate-400">
+                Haz clic aquí para agregar una sección a tu página. Puedes personalizar su contenido
+                después.
+              </p>
+            </div>
+          </div>
         </div>
-      </section>
-    }
-  }
+      }
+    </div>
+  </div>
 </div>

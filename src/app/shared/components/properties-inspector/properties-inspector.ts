@@ -24,7 +24,8 @@ import {
 import { DynamicForm, EventDispatcher, RegisteredFieldTypes } from '@ng-forge/dynamic-forms';
 import { PageService } from 'app/core/services/pages.service';
 import { HistoryService } from 'app/core/services/history-canvas.service';
-import { pairwise, skip, Subject, takeUntil } from 'rxjs';
+import { debounceTime, pairwise, skip, Subject, takeUntil } from 'rxjs';
+import { CanvasT } from 'app/core/interfaces/page.interface';
 
 @Component({
   providers: [EventDispatcher],
@@ -44,7 +45,9 @@ export class PropertiesInspectorComponent implements OnInit, OnDestroy {
   private readonly _pageService = inject(PageService);
   private readonly _historyService = inject(HistoryService);
 
-  readonly sectionsInCanvas = this._pageService.sections;
+  readonly pageSections = this._pageService.sections;
+  readonly headerSections = this._pageService.sectionsHeader;
+  readonly footerSections = this._pageService.sectionsFooter;
 
   readonly elements = toSignal(this._elementService.elements$, {
     initialValue: { records: [], total: 0, page: 0, totalPage: 0 },
@@ -71,12 +74,39 @@ export class PropertiesInspectorComponent implements OnInit, OnDestroy {
     return 'page';
   });
 
+  sectionsByType = {
+    header: {
+      get: () => this.headerSections(),
+      set: (sections: SectionI[]) => {
+        this._pageService.sectionsHeader = sections;
+      },
+    },
+    body: {
+      get: () => this.pageSections(),
+      set: (sections: SectionI[]) => {
+        this._pageService.sections = sections;
+      },
+    },
+    footer: {
+      get: () => this.footerSections(),
+      set: (sections: SectionI[]) => {
+        this._pageService.sectionsFooter = sections;
+      },
+    },
+  } satisfies Record<
+    CanvasT,
+    {
+      get: () => SectionI[];
+      set: (sections: SectionI[]) => void;
+    }
+  >;
+
   /**
    * Constructort
    */
   constructor() {
     toObservable(this.formValue)
-      .pipe(skip(1), pairwise(), takeUntil(this._unsubscribeAll))
+      .pipe(skip(1), debounceTime(600), pairwise(), takeUntil(this._unsubscribeAll))
       .subscribe(([previous, current]) => {
         const changed = Object.keys(current).some((key) => previous[key] !== current[key]);
         if (changed) {
@@ -132,23 +162,26 @@ export class PropertiesInspectorComponent implements OnInit, OnDestroy {
    * @param next
    */
   updateSectionsInGrid(previous: SectionI[], next: SectionI[]) {
-    this._pageService.sections = next;
-    this._historyService.commit(previous, next);
+    const gridType = this.itemSelectedInGrid()!.canvas!;
+    this.sectionsByType[gridType].set(next);
+    this._historyService.commit(gridType, previous, next);
   }
 
   /**
    * Update item
-   * @param value
-   */
+=   */
   updateItem(value: Record<string, unknown>) {
-    const previous = structuredClone(this.sectionsInCanvas());
-    let next = structuredClone(this.sectionsInCanvas());
+    const gridType = this.itemSelectedInGrid()!.canvas!;
+    const sectionsInCanvas = this.sectionsByType[gridType].get();
+    const previous = structuredClone(sectionsInCanvas);
+    let next = structuredClone(sectionsInCanvas);
+
     switch (this.typeItem()) {
       case 'section':
         const section = this.itemSelectedInGrid()?.section;
         if (section) {
           section.config = value;
-          const sections = updateSection(this.sectionsInCanvas(), section.uuid, section);
+          const sections = updateSection(sectionsInCanvas, section.uuid, section);
           next = structuredClone(sections);
         }
         break;
@@ -156,7 +189,7 @@ export class PropertiesInspectorComponent implements OnInit, OnDestroy {
         const row = this.itemSelectedInGrid()?.row;
         if (row) {
           row.config = value;
-          const sections = updateRow(this.sectionsInCanvas(), row.uuid, row);
+          const sections = updateRow(sectionsInCanvas, row.uuid, row);
           next = structuredClone(sections);
         }
         break;
@@ -164,7 +197,7 @@ export class PropertiesInspectorComponent implements OnInit, OnDestroy {
         const column = this.itemSelectedInGrid()?.column;
         if (column) {
           column.config = value;
-          const sections = updateColumn(this.sectionsInCanvas(), column.uuid, column);
+          const sections = updateColumn(sectionsInCanvas, column.uuid, column);
           next = structuredClone(sections);
         }
         break;
@@ -172,7 +205,7 @@ export class PropertiesInspectorComponent implements OnInit, OnDestroy {
         const element = this.itemSelectedInGrid()?.element;
         if (element) {
           element.config = value;
-          const sections = updateElement(this.sectionsInCanvas(), element.uuid, element);
+          const sections = updateElement(sectionsInCanvas, element.uuid, element);
           next = structuredClone(sections);
         }
         break;

@@ -70,6 +70,7 @@ export class InspectorComponent implements OnInit, OnDestroy {
   selectedTab = signal<number>(0);
   selectedLanguage = signal<number>(0);
   urlStatics = signal<string>('');
+  inspectorCollapsed = signal<boolean>(false);
 
   permission = PermissionCode;
 
@@ -89,7 +90,6 @@ export class InspectorComponent implements OnInit, OnDestroy {
       totalPage: 0,
     },
   });
-
   readonly elements = toSignal(this._elementService.elements$, {
     initialValue: {
       records: [],
@@ -166,6 +166,11 @@ export class InspectorComponent implements OnInit, OnDestroy {
    * Constructor
    */
   constructor() {
+    effect(() => {
+      const selectedItem = this.selectedItemsInGrid();
+      this.selectTab(0);
+    });
+
     effect(() => {
       const languages = this.languages().records;
       if (!languages.length) {
@@ -313,15 +318,15 @@ export class InspectorComponent implements OnInit, OnDestroy {
   updateSectionsInGrid(previous: SectionI[], next: SectionI[]) {
     if (this.gridType() === 'header') {
       this._pageService.sectionsHeader = next;
-      // this._historyService.commit(previous, next);
+      this._historyService.commit(this.gridType(), previous, next);
     }
     if (this.gridType() === 'footer') {
       this._pageService.sectionsFooter = next;
-      // this._historyService.commit(previous, next);
+      this._historyService.commit(this.gridType(), previous, next);
     }
     if (this.gridType() === 'body') {
       this._pageService.sections = next;
-      this._historyService.commit(previous, next);
+      this._historyService.commit(this.gridType(), previous, next);
     }
   }
 
@@ -367,5 +372,23 @@ export class InspectorComponent implements OnInit, OnDestroy {
     const grid = deleteElement(this.sectionsInCanvas(), uuid);
     const next = structuredClone(grid);
     this.updateSectionsInGrid(previous, next);
+  }
+
+  toggleInspector(): void {
+    this.inspectorCollapsed.update((collapsed) => !collapsed);
+  }
+
+  /**
+   * open panel
+   */
+  openInspector(): void {
+    this.inspectorCollapsed.set(true);
+  }
+
+  /**
+   * close panel
+   */
+  closeInspector(): void {
+    this.inspectorCollapsed.set(false);
   }
 }

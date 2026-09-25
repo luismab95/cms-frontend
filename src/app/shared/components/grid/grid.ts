@@ -5,8 +5,19 @@ import {
   CdkDropList,
   moveItemInArray,
 } from '@angular/cdk/drag-drop';
-import { NgClass } from '@angular/common';
-import { Component, effect, inject, input, OnInit, output, signal } from '@angular/core';
+import { NgClass, NgStyle } from '@angular/common';
+import {
+  Component,
+  computed,
+  DestroyRef,
+  effect,
+  inject,
+  input,
+  OnDestroy,
+  output,
+  signal,
+} from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import {
   ColumnI,
   ElementI,
@@ -14,28 +25,35 @@ import {
   SectionI,
   SelectedItemsInGridI,
 } from 'app/shared/interfaces/grid.interface';
-import { ElementsComponent } from '../element/elements';
-import { generateRandomString } from 'app/shared/utils/random.utils';
-import { TooltipDirective } from 'app/shared/directives/tooltip.directive';
-import { PageService } from 'app/core/services/pages.service';
-import { Subject, takeUntil } from 'rxjs';
-import { HistoryService } from 'app/core/services/history-canvas.service';
 import { CanvasT } from 'app/core/interfaces/page.interface';
+import { createRow, createSection, createColumn } from 'app/shared/utils/grid.utils';
+import { TooltipDirective } from 'app/shared/directives/tooltip.directive';
+import { HistoryService } from 'app/core/services/history-canvas.service';
+import { DynamicStyleService } from 'app/core/services/dynamic-style.service';
+import { PageService } from 'app/core/services/pages.service';
+import { ElementsComponent } from '../element/elements';
 
 @Component({
   selector: 'grid',
   templateUrl: './grid.html',
-  imports: [NgClass, CdkDropList, CdkDrag, CdkDragHandle, ElementsComponent, TooltipDirective],
+  imports: [
+    NgClass,
+    NgStyle,
+    CdkDropList,
+    CdkDrag,
+    CdkDragHandle,
+    ElementsComponent,
+    TooltipDirective,
+  ],
 })
-export class GridComponent implements OnInit {
+export class GridComponent implements OnDestroy {
+  gridType = input.required<CanvasT>();
+  gridStyles = input<any>({});
   preview = input<boolean>(false);
   editContent = input<boolean>(false);
   editDesign = input<boolean>(false);
-  gridType = input.required<CanvasT>();
   languageId = input<number>();
   previewType = input<string>('none');
-  deleteSectionEvent = output<SectionI[]>();
-  openElementPanel = output<ColumnI>();
 
   selectedItemsInGrid = signal<SelectedItemsInGridI>({
     section: null,
@@ -44,69 +62,75 @@ export class GridComponent implements OnInit {
     element: null,
     canvas: 'body',
   });
-  refreshGrid = signal<boolean>(false);
-  selectedSection = signal<string | null>(null);
-  selectedRow = signal<string | null>(null);
-  selectedColumn = signal<string | null>(null);
-  selectedElement = signal<string | null>(null);
-  sectionsInCanvas = signal<SectionI[]>([]);
 
   private readonly _pageService = inject(PageService);
   private readonly _historyService = inject(HistoryService);
+  private readonly _destroyRef = inject(DestroyRef);
+  private readonly _dynamicStyleService = inject(DynamicStyleService);
 
   readonly sectionsHeader = this._pageService.sectionsHeader;
   readonly sections = this._pageService.sections;
   readonly sectionsFooter = this._pageService.sectionsFooter;
 
-  private _unsubscribeAll: Subject<any> = new Subject<any>();
+  readonly sectionsInCanvas = computed(() => {
+    return this.sectionsByType[this.gridType()].get();
+  });
+
+  readonly sectionsByType = {
+    header: {
+      get: () => this.sectionsHeader(),
+      set: (sections: SectionI[]) => {
+        this._pageService.sectionsHeader = sections;
+      },
+    },
+
+    body: {
+      get: () => this.sections(),
+      set: (sections: SectionI[]) => {
+        this._pageService.sections = sections;
+      },
+    },
+
+    footer: {
+      get: () => this.sectionsFooter(),
+      set: (sections: SectionI[]) => {
+        this._pageService.sectionsFooter = sections;
+      },
+    },
+  } satisfies Record<
+    CanvasT,
+    {
+      get: () => SectionI[];
+      set: (sections: SectionI[]) => void;
+    }
+  >;
 
   /**
    * Constructor
    */
   constructor() {
     effect(() => {
-      const gridType = this.gridType();
-      switch (gridType) {
-        case 'header':
-          this.sectionsInCanvas.set(this.sectionsHeader());
-          break;
-        case 'body':
-          this.sectionsInCanvas.set(this.sections());
-          break;
-        case 'footer':
-          this.sectionsInCanvas.set(this.sectionsFooter());
-          break;
-      }
+      this.sectionsInCanvas();
       this.loadStyles();
     });
 
-    this._pageService.selectedItemsInGrid$.pipe(takeUntil(this._unsubscribeAll)).subscribe({
+    effect(() => {
+      this.sectionsInCanvas();
+      this.loadStyles();
+    });
+
+    this._pageService.selectedItemsInGrid$.pipe(takeUntilDestroyed(this._destroyRef)).subscribe({
       next: (selectedItemsInGrid) => {
-        this.refreshGrid.set(true);
         this.selectedItemsInGrid.set(selectedItemsInGrid!);
-        this.refreshGrid.set(false);
       },
     });
   }
 
-  // -----------------------------------------------------------------------------------------------------
-  // @ Lifecycle hooks
-  // -----------------------------------------------------------------------------------------------------
-
   /**
-   * On init
-   */
-  ngOnInit(): void {
-    // Load CSS
-  }
-
-  /**
-   * On destroy
+   * OnDestroy
    */
   ngOnDestroy(): void {
-    // Unsubscribe from all subscriptions
-    this._unsubscribeAll.next(null);
-    this._unsubscribeAll.complete();
+    this._dynamicStyleService.remove(`${this.gridType()}-dynamicSectionStyles`);
   }
 
   // -----------------------------------------------------------------------------------------------------
@@ -116,29 +140,27 @@ export class GridComponent implements OnInit {
   /**
    * Load styles
    */
-  loadStyles() {
-    const styleElementToRemove = document.getElementById(`${this.gridType}-dynamicSectionStyles`);
-    if (styleElementToRemove) {
-      styleElementToRemove.remove();
-    }
-    const styleElement = document.createElement('style');
-    styleElement.id = `${this.gridType}-dynamicSectionStyles`;
+  loadStyles(): void {
+    this._dynamicStyleService.remove(`${this.gridType()}-dynamicSectionStyles`);
 
-    const grid = this.sectionsInCanvas();
+    const styleId = `${this.gridType()}-dynamicSectionStyles`;
+    document.getElementById(styleId)?.remove();
 
-    grid.forEach((section) => {
-      styleElement.textContent += `${section.css}`;
-      section.rows.forEach((row) => {
-        styleElement.textContent += `${row.css}`;
-        row.columns.forEach((column) => {
-          styleElement.textContent += `${column.css}`;
+    const css: string[] = [];
+    for (const section of this.sectionsInCanvas()) {
+      css.push(section.css);
+      for (const row of section.rows) {
+        css.push(row.css);
+        for (const column of row.columns) {
+          css.push(column.css);
           if (column.element) {
-            styleElement.textContent += `${column.element.css}`;
+            css.push(column.element.css);
           }
-        });
-      });
-    });
-    document.head.appendChild(styleElement);
+        }
+      }
+    }
+
+    this._dynamicStyleService.set(styleId, css.join('\n'));
   }
 
   /**
@@ -146,9 +168,27 @@ export class GridComponent implements OnInit {
    * @param event
    * @param item
    */
-  drop<T>(event: CdkDragDrop<string[]>, items: T[]) {
+  drop<T>(event: CdkDragDrop<string[]>, items: T[]): void {
     const previous = structuredClone(this.sectionsInCanvas());
     moveItemInArray(items, event.previousIndex, event.currentIndex);
+    this.updateSectionsInGrid(previous);
+  }
+
+  /**
+   * Add section to grid
+   */
+  addSection() {
+    const newSection = createSection();
+    const previous = structuredClone(this.sectionsInCanvas());
+    this.currentSections = [...this.sectionsInCanvas(), newSection];
+    this.updateSelectionItem({
+      section: newSection,
+      row: null,
+      column: null,
+      element: null,
+      canvas: this.gridType(),
+    });
+
     this.updateSectionsInGrid(previous);
   }
 
@@ -158,16 +198,8 @@ export class GridComponent implements OnInit {
    */
   addRow(section: SectionI) {
     const previous = structuredClone(this.sectionsInCanvas());
-    const rowUuid = generateRandomString(8);
-    const row = {
-      uuid: rowUuid,
-      css: `.grid-row-${rowUuid}{}`,
-      config: { backgroundImage: '' },
-      columns: [],
-    } as RowI;
-
+    const row = createRow();
     section.rows.push(row);
-
     this.updateSelectionItem({
       section: null,
       row,
@@ -185,16 +217,8 @@ export class GridComponent implements OnInit {
    */
   addColumn(row: RowI) {
     const previous = structuredClone(this.sectionsInCanvas());
-    const columnUuid = generateRandomString(8);
-    const column = {
-      uuid: columnUuid,
-      css: `.grid-column-${columnUuid}{}`,
-      config: { backgroundImage: '' },
-      element: null!,
-    } as ColumnI;
-
+    const column = createColumn();
     row.columns.push(column);
-
     this.updateSelectionItem({
       section: null,
       row: null,
@@ -210,8 +234,7 @@ export class GridComponent implements OnInit {
    * Open element panel
    * @param data
    */
-  openElementsMangerModal(column: ColumnI): void {
-    this.openElementPanel.emit(column);
+  openElementsManagerModal(column: ColumnI): void {
     this.updateSelectionItem({
       ...this.selectedItemsInGrid(),
       canvas: this.gridType(),
@@ -223,18 +246,8 @@ export class GridComponent implements OnInit {
    */
   updateSectionsInGrid(previous: SectionI[]) {
     const next = structuredClone(this.sectionsInCanvas());
-    if (this.gridType() === 'header') {
-      this._pageService.sectionsHeader = next;
-      // this._historyService.commit(previous, next);
-    }
-    if (this.gridType() === 'footer') {
-      this._pageService.sectionsFooter = next;
-      // this._historyService.commit(previous, next);
-    }
-    if (this.gridType() === 'body') {
-      this._pageService.sections = next;
-      this._historyService.commit(previous, next);
-    }
+    this.currentSections = next;
+    this._historyService.commit(this.gridType(), previous, next);
   }
 
   /**
@@ -242,11 +255,6 @@ export class GridComponent implements OnInit {
    * @param section
    */
   selectSection(section: SectionI): void {
-    this.selectedSection.set(section.uuid);
-    this.selectedRow.set(null);
-    this.selectedColumn.set(null);
-    this.selectedElement.set(null);
-
     this.updateSelectionItem({
       section,
       row: null,
@@ -261,10 +269,6 @@ export class GridComponent implements OnInit {
    * @param row
    */
   selectRow(row: RowI): void {
-    this.selectedRow.set(row.uuid);
-    this.selectedColumn.set(null);
-    this.selectedElement.set(null);
-
     this.updateSelectionItem({
       section: null,
       row,
@@ -279,9 +283,6 @@ export class GridComponent implements OnInit {
    * @param column
    */
   selectColumn(column: ColumnI): void {
-    this.selectedColumn.set(column.uuid);
-    this.selectedElement.set(null);
-
     this.updateSelectionItem({
       section: null,
       row: null,
@@ -296,8 +297,6 @@ export class GridComponent implements OnInit {
    * @param element
    */
   selectElement(element: ElementI): void {
-    this.selectedElement.set(element.uuid);
-
     this.updateSelectionItem({
       section: null,
       row: null,
@@ -313,5 +312,13 @@ export class GridComponent implements OnInit {
    */
   updateSelectionItem(selectedItemsInGrid: SelectedItemsInGridI) {
     this._pageService.selectedItemsInGrid = selectedItemsInGrid;
+  }
+
+  private get currentSections(): SectionI[] {
+    return this.sectionsByType[this.gridType()].get();
+  }
+
+  private set currentSections(value: SectionI[]) {
+    this.sectionsByType[this.gridType()].set(value);
   }
 }

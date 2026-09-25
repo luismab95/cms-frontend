@@ -5,7 +5,7 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { Router } from '@angular/router';
 import { ToastrService } from '@iqx-limited/ngx-toastr';
 import { NgLabelTemplateDirective, NgSelectComponent } from '@ng-select/ng-select';
-import { PreviewModeT } from 'app/core/interfaces/page.interface';
+import { CanvasT, PreviewModeT } from 'app/core/interfaces/page.interface';
 import { DialogService } from 'app/core/services/dialog.service';
 import { PageService } from 'app/core/services/pages.service';
 import { ParameterService } from 'app/core/services/parameter.service';
@@ -33,7 +33,7 @@ import { TooltipDirective } from 'app/shared/directives/tooltip.directive';
 import { DeviceDetectorService, DeviceType } from 'ngx-device-detector';
 import { TemplateService } from 'app/core/services/templates.service';
 import { TemplateI } from 'app/core/interfaces/template.interface';
-import { Subject, takeUntil } from 'rxjs';
+import { EMPTY, interval, startWith, Subject, switchMap, takeUntil } from 'rxjs';
 
 @Component({
   selector: 'pages-canvas',
@@ -87,10 +87,10 @@ export class TemplatesCanvas implements OnInit {
   height = signal<number>(window.innerHeight);
   activeLanguages = signal<LanguageI[]>([]);
   currentColumn = signal<ColumnI | null>(null);
-  autosaveTimer: number | undefined;
   permission = PermissionCode;
 
-  private _unsubscribeAll: Subject<any> = new Subject<any>();
+  private destroy$ = new Subject<void>();
+  private autosaveToggle$ = new Subject<void>();
 
   private readonly _router = inject(Router);
   private _parameterService = inject(ParameterService);
@@ -114,10 +114,15 @@ export class TemplatesCanvas implements OnInit {
     initialValue: { records: [], total: 0, page: 0, totalPage: 0 },
   });
 
-  readonly canRedo = computed(() => this._historyService.canRedo());
-  readonly canUndo = computed(() => this._historyService.canUndo());
+  readonly canRedo = computed(() =>
+    this._historyService.canRedo![this._selectedItemsInGrid()?.canvas ?? 'header'](),
+  );
+  readonly canUndo = computed(() =>
+    this._historyService.canUndo![this._selectedItemsInGrid()?.canvas ?? 'header'](),
+  );
   readonly header = computed(() => this.headerSections());
   readonly footer = computed(() => this.footerSections());
+
   readonly previewType = computed(() => {
     const { deviceType } = this._deviceDetectorService.deviceInfo();
     switch (deviceType) {
@@ -132,15 +137,40 @@ export class TemplatesCanvas implements OnInit {
     }
   });
 
+  sectionsByType = {
+    header: {
+      get: () => this.headerSections(),
+      set: (sections: SectionI[]) => {
+        this._pageService.sectionsHeader = sections;
+      },
+    },
+    footer: {
+      get: () => this.footerSections(),
+      set: (sections: SectionI[]) => {
+        this._pageService.sectionsFooter = sections;
+      },
+    },
+  } satisfies Record<
+    Exclude<CanvasT, 'body'>,
+    {
+      get: () => SectionI[];
+      set: (sections: SectionI[]) => void;
+    }
+  >;
+
   /**
    * Constructor
    */
   constructor() {
     this._pageService.sections = [];
     // autosave logic
-    this.autosaveTimer = setInterval(() => {
-      this.updateDraft();
-    }, 300_000);
+    this.autosaveToggle$
+      .pipe(
+        startWith(null),
+        switchMap(() => (this.previewMode() ? EMPTY : interval(300_000))),
+        takeUntil(this.destroy$),
+      )
+      .subscribe(() => this.updateDraft());
 
     effect(() => {
       const languages = this.languages().records.filter((lang) => lang.status);
@@ -189,11 +219,9 @@ export class TemplatesCanvas implements OnInit {
    */
   ngOnDestroy(): void {
     // Unsubscribe from all subscriptions
-    this._unsubscribeAll.next(null);
-    this._unsubscribeAll.complete();
-    if (this.autosaveTimer) {
-      clearInterval(this.autosaveTimer);
-    }
+    this.destroy$.next();
+    this.destroy$.complete();
+    this.autosaveToggle$.complete();
     this._pageService.selectedItemsInGrid = {
       section: null,
       column: null,
@@ -252,7 +280,7 @@ export class TemplatesCanvas implements OnInit {
         description: template.description,
         data: template.data,
       })
-      .pipe(takeUntil(this._unsubscribeAll))
+      .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: () => {
           this.saveAction.set(false);
@@ -289,7 +317,7 @@ export class TemplatesCanvas implements OnInit {
     this._dialogService.toggleDialog();
 
     // Subscribe to the confirmation dialog closed action
-    this._dialogService.actionClick$.pipe(takeUntil(this._unsubscribeAll)).subscribe((result) => {
+    this._dialogService.actionClick$.pipe(takeUntil(this.destroy$)).subscribe((result) => {
       if (result) {
         this.updateTemplate();
       }
@@ -329,7 +357,7 @@ export class TemplatesCanvas implements OnInit {
         description: template.description,
         data: template.data,
       })
-      .pipe(takeUntil(this._unsubscribeAll))
+      .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: () => {
           this.saveAction.set(false);
@@ -390,20 +418,14 @@ export class TemplatesCanvas implements OnInit {
    */
   togglePreviewMode() {
     this.previewMode.update((preview) => !preview);
-
-    if (!this.previewMode()) {
-      this._layer.closeLayers();
-    } else {
+    const isPreview = this.previewMode();
+    if (isPreview) {
+      this.updateDraft(); // opcional: guarda antes de entrar a preview
       this._layer.openLayers();
+    } else {
+      this._layer.closeLayers();
     }
-
-    clearInterval(this.autosaveTimer);
-
-    if (!this.previewMode()) {
-      this.autosaveTimer = setInterval(() => {
-        this.updateDraft();
-      }, 300_000);
-    }
+    this.autosaveToggle$.next();
   }
 
   /**
@@ -454,18 +476,11 @@ export class TemplatesCanvas implements OnInit {
       ],
     } as unknown as SectionI;
 
-    if (item === 'header') {
-      const previous = structuredClone(this.header());
-      const next = structuredClone([...this.header(), newSection]);
-      this._pageService.sectionsHeader = next;
-      // this._historyService.commit(previous, next);
-    }
-    if (item === 'footer') {
-      const previous = structuredClone(this.footer());
-      const next = structuredClone([...this.footer(), newSection]);
-      this._pageService.sectionsFooter = next;
-      // this._historyService.commit(previous, next);
-    }
+    const sections = this.sectionsByType[item].get();
+    const previous = structuredClone(sections);
+    const next = structuredClone([...sections, newSection]);
+    this.sectionsByType[item].set(next);
+    this._historyService.commit(item, previous, next);
 
     this.updateSelectionItem({
       section: newSection,
@@ -481,9 +496,8 @@ export class TemplatesCanvas implements OnInit {
    * @param grid Set data to grid
    * @param item
    */
-  setGrid(grid: SectionI[], item: 'header' | 'footer') {
-    if (item === 'header') this._pageService.sectionsHeader = grid;
-    if (item === 'footer') this._pageService.sectionsFooter = grid;
+  setGrid(grid: SectionI[], item: Exclude<CanvasT, 'body'>) {
+    this.sectionsByType[item].set(grid);
   }
 
   /**
@@ -519,7 +533,7 @@ export class TemplatesCanvas implements OnInit {
     this._dialogService.toggleDialog();
 
     // Subscribe to the confirmation dialog closed action
-    this._dialogService.actionClick$.pipe(takeUntil(this._unsubscribeAll)).subscribe((result) => {
+    this._dialogService.actionClick$.pipe(takeUntil(this.destroy$)).subscribe((result) => {
       if (result) {
         const template = this.template()!;
         template.data = template!.draft!;
@@ -543,7 +557,7 @@ export class TemplatesCanvas implements OnInit {
 
     this._templateService
       .deleteDraft(template.id!)
-      .pipe(takeUntil(this._unsubscribeAll))
+      .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: () => {
           this.saveAction.set(false);
@@ -590,7 +604,7 @@ export class TemplatesCanvas implements OnInit {
     this._dialogService.toggleDialog();
 
     // Subscribe to the confirmation dialog closed action
-    this._dialogService.actionClick$.pipe(takeUntil(this._unsubscribeAll)).subscribe((result) => {
+    this._dialogService.actionClick$.pipe(takeUntil(this.destroy$)).subscribe((result) => {
       if (result) {
         const template = this.originTemplate();
         this.template.set(template);
@@ -603,7 +617,7 @@ export class TemplatesCanvas implements OnInit {
           element: null,
           canvas: 'header',
         });
-        // this._historyService.clear();
+        this._historyService.clearAll();
       }
     });
   }
@@ -629,7 +643,7 @@ export class TemplatesCanvas implements OnInit {
    * @param element
    * @param item
    */
-  setElementSelectedInColumn(element: ElementCMSI | null, item: 'header' | 'footer') {
+  setElementSelectedInColumn(element: ElementCMSI | null) {
     this.openElementPanel.set(false);
     const column = this.currentColumn();
     if (element === null) {
@@ -639,39 +653,24 @@ export class TemplatesCanvas implements OnInit {
 
     if (column === null) return;
 
-    if (item === 'header') {
-      const previous = structuredClone(this.header());
-      const elementUuid = generateRandomString(8);
-      column.element = {
-        uuid: elementUuid,
-        name: element.name,
-        css: `.${element.css}-${elementUuid}{}`,
-        config: element.config,
-        text: element.text,
-        dataText: [],
-      };
-      const sectionsUpdate = updateColumn(this.header(), column.uuid, column);
-      const next = structuredClone(sectionsUpdate);
-      this._pageService.sectionsHeader = next;
-    }
+    const item = this._selectedItemsInGrid()!.canvas! as Exclude<CanvasT, 'body'>;
+    const sections = this.sectionsByType[item].get();
+    const previous = structuredClone(sections);
 
-    if (item === 'footer') {
-      const previous = structuredClone(this.footer());
-      const elementUuid = generateRandomString(8);
-      column.element = {
-        uuid: elementUuid,
-        name: element.name,
-        css: `.${element.css}-${elementUuid}{}`,
-        config: element.config,
-        text: element.text,
-        dataText: [],
-      };
-      const sectionsUpdate = updateColumn(this.footer(), column.uuid, column);
-      const next = structuredClone(sectionsUpdate);
-      this._pageService.sectionsFooter = next;
-    }
+    const elementUuid = generateRandomString(8);
+    column.element = {
+      uuid: elementUuid,
+      name: element.name,
+      css: `.${element.css}-${elementUuid}{}`,
+      config: element.config,
+      text: element.text,
+      dataText: [],
+    };
+    const sectionsUpdate = updateColumn(sections, column.uuid, column);
+    const next = structuredClone(sectionsUpdate);
+    this.sectionsByType[item].set(next);
+    this._historyService.commit(item, previous, next);
 
-    // this._historyService.commit(previous, next);
     this._pageService.selectedItemsInGrid = {
       section: null,
       column: null,
@@ -685,9 +684,10 @@ export class TemplatesCanvas implements OnInit {
    * Undo Changes
    */
   undo() {
-    const state = this._historyService.undo();
+    const selectedItemsInGrid = this._selectedItemsInGrid();
+    const state = this._historyService.undo(selectedItemsInGrid?.canvas!);
     if (state) {
-      this._pageService.sections = state;
+      this.sectionsByType[selectedItemsInGrid?.canvas! as Exclude<CanvasT, 'body'>].set(state);
       this.refreshSelectedItemsInGrid(state);
     }
   }
@@ -696,9 +696,10 @@ export class TemplatesCanvas implements OnInit {
    * Redo changes
    */
   redo() {
-    const state = this._historyService.redo();
+    const selectedItemsInGrid = this._selectedItemsInGrid();
+    const state = this._historyService.redo(selectedItemsInGrid?.canvas!);
     if (state) {
-      this._pageService.sections = state;
+      this.sectionsByType[selectedItemsInGrid?.canvas! as Exclude<CanvasT, 'body'>].set(state);
       this.refreshSelectedItemsInGrid(state);
     }
   }

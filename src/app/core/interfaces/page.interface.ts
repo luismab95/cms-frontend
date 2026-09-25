@@ -46,7 +46,7 @@ export interface PageI {
   status?: boolean;
   dataReview?: PageDataMongoI;
   data?: PageDataMongoI;
-  draft?: PageDataMongoI;
+  draft?: PageDataMongoI | null;
   details?: PageDetailReferenceI[];
   detail?: UpdateDetailPageI[];
   aliasRef?: string;

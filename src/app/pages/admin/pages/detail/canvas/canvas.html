@@ -1,512 +1,453 @@
 @let page = this.page()!;
 @let preview = this.preview();
-<div
-  data-aos="fade-left"
-  data-aos-duration="1000"
-  class="w-full h-full min-h-0 flex-col overflow-hidden gap-4 lg:px-2 p-0 hidden lg:flex"
->
-  <!-- toolbar -->
-  <section class="rounded-2xl bg-white shadow-sm overflow-hidden">
-    <div
-      class="h-16 bg-white border-b border-slate-200 shrink-0 px-3 flex items-center justify-between select-none"
+
+@if (page !== null) {
+  <div
+    #canvas
+    id="canvas"
+    data-aos="fade-left"
+    data-aos-duration="1000"
+    class="w-full h-full min-h-0 flex-col overflow-hidden gap-4 lg:px-2 p-0 flex"
+  >
+    <!-- toolbar -->
+    <section
+      [class.hidden!]="!enabledCanvas()"
+      class="shrink-0 rounded-2xl border border-slate-200/80 bg-white shadow-sm overflow-hidden"
     >
-      <!-- Left: Navigation & Breadcrumbs -->
-      <div class="flex items-center gap-3">
-        <!-- go back -->
-        <button
-          (click)="goToBack()"
-          class="cursor-pointer flex items-center justify-center h-9 w-9 rounded-lg hover:bg-slate-100 text-slate-600 transition-colors"
-          [title]="'Regresar'"
-          type="button"
-        >
-          <i class="fa-solid fa-arrow-left"></i>
-        </button>
-        <div class="h-4 w-px bg-slate-200 mx-1"></div>
-
-        <!-- info page -->
-        <div class="flex flex-col">
-          <span
-            class="font-semibold text-slate-800 text-[11px] leading-tight text-ellipsis line-clamp-1 max-w-40"
-            >{{ page.name }}
-          </span>
-          <span
-            [class.text-emerald-600]="!previewMode()"
-            [class.text-amber-600]="previewMode()"
-            class="text-[10px] flex items-center gap-1"
+      <div class="flex flex-row items-center justify-between h-16 overflow-hidden p-4">
+        <!-- Left: Navigation & Breadcrumbs -->
+        <div class="flex items-center gap-3">
+          <!-- go back -->
+          <button
+            (click)="goToBack()"
+            class="cursor-pointer flex items-center justify-center h-9 w-9 rounded-lg hover:bg-slate-100 text-slate-600 transition-colors"
+            [title]="'Regresar'"
+            type="button"
           >
+            <i class="fa-solid fa-arrow-left"></i>
+          </button>
+          <div class="h-4 w-px bg-slate-200 mx-1"></div>
+
+          <!-- info page -->
+          <div class="flex flex-col">
             <span
-              [class.bg-emerald-500]="!previewMode()"
-              [class.bg-amber-500]="previewMode()"
-              class="w-1.5 h-1.5 rounded-full"
-            ></span>
-            @if (!previewMode()) {
-              Editando ({{ preview }})
-            } @else {
-              Previsualizando ({{ preview }})
-            }
-          </span>
-        </div>
-
-        @if (!page.review) {
-          <div class="h-4 w-px bg-slate-200"></div>
-          @if (!previewMode()) {
-            <!-- Live Preview -->
-            <button
-              [disabled]="
-                !validPermission(permission.editContentPage) &&
-                !validPermission(permission.editDesignPage)
-              "
-              class="cursor-pointer h-10 flex items-center gap-2 px-3 py-1.5 text-xs font-medium text-slate-700 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors border border-slate-200 disabled:cursor-not-allowed"
-              title="Abrir vista previa interactiva"
-              (click)="togglePreviewMode()"
-            >
-              <i class="text-slate-500 fa-regular fa-eye"></i>
-              <span>Vista Previa</span>
-            </button>
-          } @else {
-            <!-- edit -->
-            <button
-              class="cursor-pointer h-10 flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-slate-700 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors border border-slate-200"
-              title="Abrir vista previa interactiva"
-              (click)="togglePreviewMode()"
-            >
-              <i class="text-slate-500 fa-solid fa-wand-magic-sparkles"></i>
-              <span>Personalizar</span>
-            </button>
-          }
-        }
-      </div>
-
-      <!-- Center: Viewport & Canvas Controls -->
-      <div class="flex items-center gap-2">
-        <div
-          class="flex items-center bg-slate-100 p-0.5 rounded-lg border border-slate-200 shadow-inner"
-        >
-          <button
-            [disabled]="
-              !validPermission(permission.editContentPage) &&
-              !validPermission(permission.editDesignPage)
-            "
-            [ngClass]="{
-              'font-semibold! bg-white! text-indigo-600! shadow-sm!': preview === 'mobile',
-            }"
-            class="cursor-pointer flex h-10 items-center gap-1.5 px-2.5 py-1.5 rounded-md text-xs font-medium text-slate-600 hover:text-slate-900 hover:bg-white/60 transition-all disabled:cursor-not-allowed"
-            (click)="setPreviewMode('mobile')"
-            title="Móvil (390px)"
-            type="button"
-          >
-            <i class="fa-solid fa-mobile-screen-button"></i>
-            <span [class.font-semibold]="preview === 'mobile'" class="text-[11px] font-normal"
-              >390px</span
-            >
-          </button>
-          <button
-            [disabled]="
-              !validPermission(permission.editContentPage) &&
-              !validPermission(permission.editDesignPage)
-            "
-            [ngClass]="{
-              'font-semibold! bg-white! text-indigo-600! shadow-sm!': preview === 'tablet',
-            }"
-            class="cursor-pointer h-10 flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-xs font-medium text-slate-600 hover:text-slate-900 hover:bg-white/60 transition-all disabled:cursor-not-allowed"
-            (click)="setPreviewMode('tablet')"
-            title="Tablet (834px)"
-            type="button"
-          >
-            <i class="fa-solid fa-tablet-screen-button"></i>
-            <span [class.font-semibold]="preview === 'tablet'" class="text-[11px] font-normal"
-              >834px</span
-            >
-          </button>
-          <button
-            [disabled]="
-              !validPermission(permission.editContentPage) &&
-              !validPermission(permission.editDesignPage)
-            "
-            [ngClass]="{
-              'font-semibold! bg-white! text-indigo-600! shadow-sm!': preview === 'desktop',
-            }"
-            class="cursor-pointer h-10 flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-xs font-medium text-slate-600 hover:text-slate-900 hover:bg-white/60 transition-all disabled:cursor-not-allowed"
-            (click)="setPreviewMode('desktop')"
-            title="Desktop (1440px)"
-            type="button"
-          >
-            <i class="fa-solid fa-desktop"></i>
-            <span [class.font-semibold]="preview === 'desktop'" class="text-[11px] font-normal"
-              >1440px</span
-            >
-          </button>
-        </div>
-      </div>
-      @if (
-        (validPermission(permission.editContentPage) ||
-          validPermission(permission.editDesignPage)) &&
-        !autosave() &&
-        !page.review
-      ) {
-        <!-- undo/redo -->
-        <div class="flex items-center text-slate-500 gap-1">
-          <button
-            (click)="undo()"
-            [disabled]="!canUndo()"
-            class="cursor-pointer p-1.5 hover:bg-slate-100 rounded hover:text-slate-800 disabled:opacity-40 disabled:cursor-not-allowed"
-            appTooltip="Deshacer"
-          >
-            <svg
-              class="w-6 h-6"
-              xmlns="http://www.w3.org/2000/svg"
-              width="24"
-              height="24"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            >
-              <path d="M9 14 4 9l5-5" />
-              <path d="M4 9h10.5a5.5 5.5 0 0 1 5.5 5.5a5.5 5.5 0 0 1-5.5 5.5H11" />
-            </svg>
-          </button>
-          <button
-            (click)="redo()"
-            [disabled]="!canRedo()"
-            class="cursor-pointer p-1.5 hover:bg-slate-100 rounded hover:text-slate-800 disabled:opacity-40 disabled:cursor-not-allowed"
-            appTooltip="Rehacer"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              class="w-6 h-6"
-              width="24"
-              height="24"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            >
-              <path d="m15 14 5-5-5-5" />
-              <path d="M20 9H9.5A5.5 5.5 0 0 0 4 14.5A5.5 5.5 0 0 0 9.5 20H13" />
-            </svg>
-          </button>
-        </div>
-      }
-
-      <div class="h-4 w-px bg-slate-200 mx-1"></div>
-      <!-- Language Switcher -->
-      <div class="flex items-center gap-3">
-        <ng-select
-          #languageSelect
-          [clearable]="false"
-          [searchable]="false"
-          [items]="activeLanguages()"
-          [ngModel]="languageId()"
-          (ngModelChange)="setLanguageId($event)"
-          bindLabel="name"
-          bindValue="id"
-          [disabled]="
-            !validPermission(permission.editContentPage) &&
-            !validPermission(permission.editDesignPage)
-          "
-        >
-          <ng-template ng-label-tmp let-item="item">
-            <button
-              [disabled]="
-                !validPermission(permission.editContentPage) &&
-                !validPermission(permission.editDesignPage)
-              "
-              (click)="openLanguageSelect()"
-              class="cursor-pointer flex items-center h-10 gap-1.5 px-2.5 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-100 rounded-lg border border-slate-200 transition-colors disabled:cursor-not-allowed"
-              title="Cambiar idioma de edición"
-            >
-              <span
-                class="w-4 h-3 flex items-center justify-center overflow-hidden rounded-xs shadow-sm"
-              >
-                <img class="object-cover" [alt]="'CMS'" [src]="urlStatics() + item.icon" />
-              </span>
-              <span>{{ item.lang | uppercase }}</span>
-              <span
-                class="w-1.5 h-1.5 rounded-full bg-emerald-500"
-                title="Traducción 100% sincronizada"
-              ></span>
-              <i class="fa-solid fa-chevron-down text-slate-400"></i>
-            </button>
-          </ng-template>
-        </ng-select>
-      </div>
-
-      <!-- autosave -->
-      @if (
-        (validPermission(permission.editContentPage) ||
-          validPermission(permission.editDesignPage)) &&
-        !autosave()
-      ) {
-        <div
-          [class.border-emerald-200]="!previewMode()"
-          [class.border-rose-200]="previewMode()"
-          [class.bg-emerald-50/70]="!previewMode()"
-          [class.bg-rose-50/70]="previewMode()"
-          class="hidden lg:flex items-center space-x-2 px-3 py-1 bg-emerald-50/70 border border-emerald-200 text-xs rounded-full shadow-xs"
-          title="Todos los cambios locales están replicados en tiempo real"
-        >
-          <span
-            [class.text-emerald-700]="!previewMode()"
-            [class.text-rose-700]="previewMode()"
-            class="flex items-center text-emerald-700 text-[11px] gap-x-2 gap-y-1"
-          >
-            <span class="relative flex h-2 w-2">
-              <span
-                [class.animate-ping]="!previewMode()"
-                [class.bg-emerald-500]="!previewMode()"
-                [class.bg-rose-500]="previewMode()"
-                class="absolute inline-flex h-full w-full rounded-full opacity-75"
-              ></span>
-              <span
-                [class.bg-emerald-500]="!previewMode()"
-                [class.bg-rose-500]="previewMode()"
-                class="relative inline-flex rounded-full h-2 w-2"
-              ></span>
+              class="font-semibold text-slate-800 text-[11px] leading-tight text-ellipsis line-clamp-1 max-w-40"
+              >{{ page.name }}
             </span>
-            Auto-guardado {{ previewMode() ? 'inactivo' : 'activo' }}
-          </span>
+            <span
+              [class.text-emerald-600]="!previewMode()"
+              [class.text-amber-600]="previewMode()"
+              class="text-[10px] flex items-center gap-1"
+            >
+              <span
+                [class.bg-emerald-500]="!previewMode()"
+                [class.bg-amber-500]="previewMode()"
+                class="w-1.5 h-1.5 rounded-full"
+              ></span>
+              @if (!previewMode()) {
+                Editando ({{ preview }})
+              } @else {
+                Previsualizando ({{ preview }})
+              }
+            </span>
+          </div>
+
+          @if (!page.review) {
+            <div class="h-4 w-px bg-slate-200"></div>
+            @if (!previewMode()) {
+              <!-- Live Preview -->
+              <button
+                [disabled]="
+                  !validPermission(permission.editContentPage) &&
+                  !validPermission(permission.editDesignPage)
+                "
+                class="cursor-pointer h-10 flex items-center gap-2 px-3 py-1.5 text-xs font-medium text-slate-700 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors border border-slate-200 disabled:cursor-not-allowed"
+                title="Abrir vista previa interactiva"
+                (click)="togglePreviewMode()"
+              >
+                <i class="text-slate-500 fa-regular fa-eye"></i>
+                <span>Vista Previa</span>
+              </button>
+            } @else {
+              <!-- edit -->
+              <button
+                class="cursor-pointer h-10 flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-slate-700 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors border border-slate-200"
+                title="Abrir vista previa interactiva"
+                (click)="togglePreviewMode()"
+              >
+                <i class="text-slate-500 fa-solid fa-wand-magic-sparkles"></i>
+                <span>Personalizar</span>
+              </button>
+            }
+          }
         </div>
-      }
-      <!-- Preview & Publishing Actions -->
-      <div class="h-4 w-px bg-slate-200 mx-1"></div>
-      <div class="flex items-center gap-3">
-        @if (
-          validPermission(permission.editContentPage) || validPermission(permission.editDesignPage)
-        ) {
-          <!-- Cancel / Discard -->
-          <button
-            [disabled]="page.review"
-            (click)="cancel()"
-            class="cursor-pointer h-10 px-3 py-1.5 text-xs font-medium text-slate-600 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors disabled:cursor-not-allowed"
+
+        <!-- Center: Viewport & Canvas Controls -->
+        <div class="flex items-center gap-2">
+          <div
+            class="flex items-center bg-slate-100 p-0.5 rounded-lg border border-slate-200 shadow-inner"
           >
-            Descartar
-          </button>
-          <!-- Publish Group Button -->
-          <div class="inline-flex rounded-lg shadow-sm">
             <button
-              [disabled]="page.review || saveAction()"
-              (click)="confirmUpdatePage()"
-              class="cursor-pointer h-10 inline-flex items-center gap-x-2 gap-y-1 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold px-3.5 py-1.5 rounded-lg transition-colors focus:ring-2 focus:ring-indigo-500/20 disabled:cursor-not-allowed disabled:bg-indigo-300"
+              [disabled]="
+                !validPermission(permission.editContentPage) &&
+                !validPermission(permission.editDesignPage)
+              "
+              [ngClass]="{
+                'font-semibold! bg-white! text-indigo-600! shadow-sm!': preview === 'mobile',
+              }"
+              class="cursor-pointer flex h-10 items-center gap-1.5 px-2.5 py-1.5 rounded-md text-xs font-medium text-slate-600 hover:text-slate-900 hover:bg-white/60 transition-all disabled:cursor-not-allowed"
+              (click)="setPreviewMode('mobile')"
+              title="Móvil (390px)"
               type="button"
             >
-              <span class="flex items-center justify-center gap-2">
-                @if (!saveAction()) {
-                  <i class="fa-regular fa-paper-plane fa-xs"></i>
-                } @else {
-                  <span
-                    class="h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent"
-                  ></span>
-                }
-                <span>Enviar a revisión</span>
-              </span>
+              <i class="fa-solid fa-mobile-screen-button"></i>
+              <span [class.font-semibold]="preview === 'mobile'" class="text-[11px] font-normal"
+                >390px</span
+              >
+            </button>
+            <button
+              [disabled]="
+                !validPermission(permission.editContentPage) &&
+                !validPermission(permission.editDesignPage)
+              "
+              [ngClass]="{
+                'font-semibold! bg-white! text-indigo-600! shadow-sm!': preview === 'tablet',
+              }"
+              class="cursor-pointer h-10 flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-xs font-medium text-slate-600 hover:text-slate-900 hover:bg-white/60 transition-all disabled:cursor-not-allowed"
+              (click)="setPreviewMode('tablet')"
+              title="Tablet (834px)"
+              type="button"
+            >
+              <i class="fa-solid fa-tablet-screen-button"></i>
+              <span [class.font-semibold]="preview === 'tablet'" class="text-[11px] font-normal"
+                >834px</span
+              >
+            </button>
+            <button
+              [disabled]="
+                !validPermission(permission.editContentPage) &&
+                !validPermission(permission.editDesignPage)
+              "
+              [ngClass]="{
+                'font-semibold! bg-white! text-indigo-600! shadow-sm!': preview === 'desktop',
+              }"
+              class="cursor-pointer h-10 flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-xs font-medium text-slate-600 hover:text-slate-900 hover:bg-white/60 transition-all disabled:cursor-not-allowed"
+              (click)="setPreviewMode('desktop')"
+              title="Desktop (1440px)"
+              type="button"
+            >
+              <i class="fa-solid fa-desktop"></i>
+              <span [class.font-semibold]="preview === 'desktop'" class="text-[11px] font-normal"
+                >1440px</span
+              >
+            </button>
+          </div>
+        </div>
+        @if (
+          (validPermission(permission.editContentPage) ||
+            validPermission(permission.editDesignPage)) &&
+          !autosave() &&
+          !page.review
+        ) {
+          <!-- undo/redo -->
+          <div class="flex items-center text-slate-500 gap-1">
+            <button
+              (click)="undo()"
+              [disabled]="!canUndo()"
+              class="cursor-pointer p-1.5 hover:bg-slate-100 rounded hover:text-slate-800 disabled:opacity-40 disabled:cursor-not-allowed"
+              appTooltip="Deshacer"
+            >
+              <svg
+                class="w-6 h-6"
+                xmlns="http://www.w3.org/2000/svg"
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M9 14 4 9l5-5" />
+                <path d="M4 9h10.5a5.5 5.5 0 0 1 5.5 5.5a5.5 5.5 0 0 1-5.5 5.5H11" />
+              </svg>
+            </button>
+            <button
+              (click)="redo()"
+              [disabled]="!canRedo()"
+              class="cursor-pointer p-1.5 hover:bg-slate-100 rounded hover:text-slate-800 disabled:opacity-40 disabled:cursor-not-allowed"
+              appTooltip="Rehacer"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                class="w-6 h-6"
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="m15 14 5-5-5-5" />
+                <path d="M20 9H9.5A5.5 5.5 0 0 0 4 14.5A5.5 5.5 0 0 0 9.5 20H13" />
+              </svg>
             </button>
           </div>
         }
-      </div>
-    </div>
-  </section>
 
-  @if (validPermission(permission.editContentPage) || validPermission(permission.editDesignPage)) {
-    <!-- content -->
-    <section
-      [class.h-100]="height() <= 639"
-      [class.h-190]="height() > 639"
-      class="rounded-2xl border border-slate-200/80 bg-white shadow-sm overflow-hidden"
-    >
-      <div class="flex flex-row h-full min-h-0 overflow-hidden">
-        <!-- LEFT PANEL - ÁRBOL -->
-        <layer-component
-          #layer
-          [showComponetsPanel]="openElementPanel()"
-          [gridType]="'body'"
-          (elementSelected)="setElementSelectedInColumn($event)"
-        />
-
-        <!-- CENTER PANEL - CANVAS -->
-        <div
-          class="flex-1 min-w-0 min-h-0 h-full overflow-y-auto overflow-x-auto bg-slate-200/75 relative p-2 lg:p-6 flex flex-col items-center justify-start bg-dot-grid"
-        >
-          <!-- CANVAS -->
-          <div
-            [ngClass]="{
-              'w-full': preview === 'none' || preview === 'desktop',
-              'w-208.5': preview === 'tablet',
-              'w-97.5': preview === 'mobile',
-              'px-1': !previewMode(),
-            }"
-            class="shrink-0 rounded-xl overflow-hidden border border-slate-300/80 transition-all duration-300 relative flex flex-col bg-white"
+        <div class="h-4 w-px bg-slate-200 mx-1"></div>
+        <!-- Language Switcher -->
+        <div class="flex items-center gap-3">
+          <ng-select
+            #languageSelect
+            [clearable]="false"
+            [searchable]="false"
+            [items]="activeLanguages()"
+            [ngModel]="languageId()"
+            (ngModelChange)="setLanguageId($event)"
+            bindLabel="name"
+            bindValue="id"
+            [disabled]="
+              !validPermission(permission.editContentPage) &&
+              !validPermission(permission.editDesignPage)
+            "
           >
-            <!-- HEADER REPRESENTATION -->
-            <div
-              class="cursor-not-allowed h-40 shrink-0 px-8 border-b border-slate-100 flex items-center justify-between text-xs text-slate-400 bg-white/60"
-            >
-              <span class="-rotate-45 text-xl text-center w-full"> ENCABEZADO </span>
-            </div>
-
-            <!-- MAIN EDITABLE AREA -->
-            <div class="p-6 relative">
-              <div
-                [ngStyle]="getStyles()"
-                [ngClass]="{
-                  'border-0! p-0! rounded-none!': previewMode(),
-                }"
-                class="body relative border-2 border-dashed border-slate-300 hover:border-slate-400 rounded-xl p-6 transition-all group/body"
+            <ng-template ng-label-tmp let-item="item">
+              <button
+                [disabled]="
+                  !validPermission(permission.editContentPage) &&
+                  !validPermission(permission.editDesignPage)
+                "
+                (click)="openLanguageSelect()"
+                class="cursor-pointer flex items-center h-10 gap-1.5 px-2.5 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-100 rounded-lg border border-slate-200 transition-colors disabled:cursor-not-allowed"
+                title="Cambiar idioma de edición"
               >
-                @if (!previewMode()) {
-                  <!-- Body tag -->
-                  <div
-                    class="absolute -top-3 left-4 bg-slate-700 text-white text-[10px] font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wider flex items-center gap-1.5 shadow-sm"
-                  >
-                    <i class="fa-solid fa-boxes-stacked"></i>
-                    <span> Contenedor: Contenido Principal </span>
-                  </div>
-
-                  <!-- Body toolbar -->
-                  <div
-                    class="absolute -top-3.5 right-4 hidden group-hover/body:flex items-center bg-white border border-slate-200 rounded-md shadow-sm divide-x divide-slate-100 text-slate-600 text-xs"
-                  >
-                    <button
-                      class="cursor-pointer px-2 py-1 hover:text-slate-600 hover:bg-slate-50 flex items-center gap-1"
-                      title="Configurar"
-                    >
-                      <i class="fa-solid fa-sliders text-slate-600"></i>
-                    </button>
-                  </div>
-                }
-
-                <div class="relative">
-                  <!-- GRID -->
-                  <grid
-                    [editContent]="validPermission(permission.editContentPage)"
-                    [editDesign]="validPermission(permission.editDesignPage)"
-                    [gridType]="'body'"
-                    [languageId]="languageId()"
-                    [previewType]="preview"
-                    [preview]="previewMode()"
-                    (deleteSectionEvent)="setGrid($event)"
-                    (openElementPanel)="toggleElementPanel($event)"
-                  />
-                </div>
-                <!-- ADD SECTION -->
-                @if (!previewMode()) {
-                  <div
-                    (click)="addSection()"
-                    class="mt-4 border-2 border-dashed border-slate-300 hover:border-indigo-500 hover:bg-indigo-50/20 rounded-xl p-6 text-center transition-all cursor-pointer group"
-                  >
-                    <div class="flex flex-col items-center gap-2">
-                      <div
-                        class="w-10 h-10 rounded-full bg-slate-100 group-hover:bg-indigo-100 text-slate-500 group-hover:text-indigo-600 flex items-center justify-center transition-colors shadow-sm"
-                      >
-                        <i class="fa-solid fa-plus"></i>
-                      </div>
-
-                      <div>
-                        <h4 class="text-xs font-bold text-slate-700 group-hover:text-indigo-700">
-                          Añadir nueva Sección a tu Página
-                        </h4>
-
-                        <p class="text-[11px] text-slate-400">
-                          Haz clic aquí para agregar una sección a tu página. Puedes personalizar su
-                          contenido después.
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                }
-              </div>
-            </div>
-
-            <!-- FOOTER REPRESENTATION -->
-            <div
-              class="cursor-not-allowed h-40 shrink-0 px-8 border-t border-slate-100 flex items-center justify-between text-xs text-slate-400 bg-white/60"
-            >
-              <span class="-rotate-45 text-xl text-center w-full"> PIE DE PÁGINA </span>
-            </div>
-          </div>
+                <span
+                  class="w-4 h-3 flex items-center justify-center overflow-hidden rounded-xs shadow-sm"
+                >
+                  <img class="object-cover" [alt]="'CMS'" [src]="urlStatics() + item.icon" />
+                </span>
+                <span>{{ item.lang | uppercase }}</span>
+                <span
+                  class="w-1.5 h-1.5 rounded-full bg-emerald-500"
+                  title="Traducción 100% sincronizada"
+                ></span>
+                <i class="fa-solid fa-chevron-down text-slate-400"></i>
+              </button>
+            </ng-template>
+          </ng-select>
         </div>
 
-        <!-- RIGHT PANEL - INSPECTOR -->
-        <inspector-component [gridType]="'body'" [class.hidden]="previewMode()" />
+        <!-- autosave -->
+        @if (
+          (validPermission(permission.editContentPage) ||
+            validPermission(permission.editDesignPage)) &&
+          !autosave()
+        ) {
+          <div
+            [class.border-emerald-200]="!previewMode()"
+            [class.border-rose-200]="previewMode()"
+            [class.bg-emerald-50/70]="!previewMode()"
+            [class.bg-rose-50/70]="previewMode()"
+            class="hidden lg:flex items-center space-x-2 px-3 py-1 bg-emerald-50/70 border border-emerald-200 text-xs rounded-full shadow-xs"
+            title="Todos los cambios locales están replicados en tiempo real"
+          >
+            <span
+              [class.text-emerald-700]="!previewMode()"
+              [class.text-rose-700]="previewMode()"
+              class="flex items-center text-emerald-700 text-[11px] gap-x-2 gap-y-1"
+            >
+              <span class="relative flex h-2 w-2">
+                <span
+                  [class.animate-ping]="!previewMode()"
+                  [class.bg-emerald-500]="!previewMode()"
+                  [class.bg-rose-500]="previewMode()"
+                  class="absolute inline-flex h-full w-full rounded-full opacity-75"
+                ></span>
+                <span
+                  [class.bg-emerald-500]="!previewMode()"
+                  [class.bg-rose-500]="previewMode()"
+                  class="relative inline-flex rounded-full h-2 w-2"
+                ></span>
+              </span>
+              Auto-guardado {{ previewMode() ? 'inactivo' : 'activo' }}
+            </span>
+          </div>
+        }
+        <!-- Preview & Publishing Actions -->
+        <div class="h-4 w-px bg-slate-200 mx-1"></div>
+        <div class="flex items-center gap-3">
+          @if (
+            validPermission(permission.editContentPage) ||
+            validPermission(permission.editDesignPage)
+          ) {
+            <!-- Cancel / Discard -->
+            <button
+              [disabled]="page.review"
+              (click)="cancel()"
+              class="cursor-pointer h-10 px-3 py-1.5 text-xs font-medium text-slate-600 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors disabled:cursor-not-allowed"
+            >
+              Descartar
+            </button>
+            <!-- Publish Group Button -->
+            <div class="inline-flex rounded-lg shadow-sm">
+              <button
+                [disabled]="page.review || saveAction()"
+                (click)="confirmUpdatePage()"
+                class="cursor-pointer h-10 inline-flex items-center gap-x-2 gap-y-1 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold px-3.5 py-1.5 rounded-lg transition-colors focus:ring-2 focus:ring-indigo-500/20 disabled:cursor-not-allowed disabled:bg-indigo-300"
+                type="button"
+              >
+                <span class="flex items-center justify-center gap-2">
+                  @if (!saveAction()) {
+                    <i class="fa-regular fa-paper-plane fa-xs"></i>
+                  } @else {
+                    <span
+                      class="h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent"
+                    ></span>
+                  }
+                  <span>Enviar a revisión</span>
+                </span>
+              </button>
+            </div>
+          }
+        </div>
       </div>
     </section>
-  } @else {
-    <permission-component />
-  }
-</div>
 
-<!-- for mobile -->
-<div class="w-full h-full min-h-0 flex lg:hidden flex-col overflow-hidden">
-  <section
-    class="w-full h-full min-h-0 flex flex-col overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-sm"
-  >
-    <div class="flex-1 min-h-0 flex flex-col overflow-y-auto p-5 gap-3">
-      <!-- Header -->
-      <div class="flex flex-col gap-3">
-        <div class="flex items-center gap-2 py-3">
-          <a
-            (click)="goToBack()"
-            class="inline-flex items-center gap-2 text-sm font-semibold text-indigo-600 transition-colors hover:text-indigo-700"
+    @if (
+      validPermission(permission.editContentPage) || validPermission(permission.editDesignPage)
+    ) {
+      <!-- content -->
+      <section
+        [class.hidden!]="!enabledCanvas()"
+        class="flex-1 min-h-0 rounded-2xl border border-slate-200/80 bg-white shadow-sm overflow-hidden"
+      >
+        <div class="flex flex-row h-full min-h-0 overflow-hidden transition-all">
+          <layer-component [class.hidden]="previewMode()" [gridType]="'body'" />
+          <!--  PANEL - CANVAS -->
+          <div
+            class="flex-1 min-w-0 min-h-0 h-full overflow-y-auto overflow-x-auto bg-slate-200/75 relative p-2 lg:p-6 flex flex-col items-center justify-start bg-dot-grid"
           >
-            <i class="fa-solid fa-arrow-left text-[13px]"></i>
-            <span> Regresar al catálogo de páginas </span>
-          </a>
-        </div>
-        <div
-          class="inline-flex w-fit items-center gap-2 rounded-full bg-red-50 px-3 py-1.5 text-xs font-semibold uppercase tracking-wider text-red-700 shadow-sm"
-        >
-          <i class="fa-solid fa-desktop text-[14px]"></i>
-          <span>Entorno de Edición Desktop Requerido</span>
-        </div>
-        <h1 class="mt-1 text-3xl font-bold leading-tight tracking-tight text-slate-900 md:text-4xl">
-          El editor visual no está optimizado para dispositivos móviles o tablets
-        </h1>
-        <p class="text-base leading-relaxed text-slate-600 md:text-lg">
-          El motor de maquetación está calibrado exclusivamente para resoluciones de monitor
-          amplias. Para evitar roturas en la estructura de bloques o desajustes tipográficos
-          involuntarios, la edición requiere precisión milimétrica con puntero de escritorio.
-        </p>
-      </div>
-      <!-- TELEMETRY -->
-      <div class="flex flex-col gap-4 rounded-xl bg-slate-50 p-4">
-        <div class="flex items-center justify-between gap-4">
-          <span
-            class="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-slate-600"
-          >
-            <i class="fa-solid fa-sliders text-[14px]"></i>
-            Telemetría de Pantalla del Cliente
-          </span>
+            <!-- CANVAS -->
+            <div
+              [ngClass]="{
+                'w-full': preview === 'none' || preview === 'desktop',
+                'w-208.5': preview === 'tablet',
+                'w-97.5': preview === 'mobile',
+                'px-1': !previewMode(),
+              }"
+              class="shrink-0 rounded-xl overflow-hidden border border-slate-300/80 transition-all duration-300 relative flex flex-col bg-white"
+            >
+              <!-- HEADER REPRESENTATION -->
+              <div
+                class="cursor-not-allowed h-40 shrink-0 px-8 border-b border-slate-100 flex items-center justify-between text-xs text-slate-400 bg-white/60"
+              >
+                <span class="-rotate-45 text-xl text-center w-full"> ENCABEZADO </span>
+              </div>
 
-          <span class="flex items-center gap-2 text-xs font-semibold text-red-600">
-            <span class="relative flex h-2 w-2">
-              <span
-                class="absolute inline-flex h-full w-full animate-ping rounded-full bg-red-400 opacity-75"
-              ></span>
-              <span class="relative inline-flex h-2 w-2 rounded-full bg-red-500"></span>
+              <!-- MAIN EDITABLE AREA -->
+              <div class="p-6 relative">
+                <grid
+                  [editContent]="validPermission(permission.editContentPage)"
+                  [editDesign]="validPermission(permission.editDesignPage)"
+                  [gridType]="'body'"
+                  [gridStyles]="bodyStyles()"
+                  [languageId]="languageId()"
+                  [previewType]="preview"
+                  [preview]="previewMode()"
+                />
+              </div>
+
+              <!-- FOOTER REPRESENTATION -->
+              <div
+                class="cursor-not-allowed h-40 shrink-0 px-8 border-t border-slate-100 flex items-center justify-between text-xs text-slate-400 bg-white/60"
+              >
+                <span class="-rotate-45 text-xl text-center w-full"> PIE DE PÁGINA </span>
+              </div>
+            </div>
+          </div>
+
+          <inspector-component [class.hidden]="previewMode()" [gridType]="'body'" />
+        </div>
+      </section>
+    } @else {
+      <permission-component />
+    }
+
+    <!-- for not enabled canvas -->
+    <section
+      [class.flex!]="!enabledCanvas()"
+      class="w-full h-full min-h-0 hidden flex-col overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-sm"
+    >
+      <div class="flex-1 min-h-0 flex flex-col overflow-y-auto p-5 gap-3">
+        <!-- Header -->
+        <div class="flex flex-col gap-3">
+          <div class="flex items-center gap-2 py-3">
+            <a
+              (click)="goToBack()"
+              class="inline-flex items-center gap-2 text-sm font-semibold text-indigo-600 transition-colors hover:text-indigo-700"
+            >
+              <i class="fa-solid fa-arrow-left text-[13px]"></i>
+              <span> Regresar al catálogo de páginas </span>
+            </a>
+          </div>
+          <div
+            class="inline-flex w-fit items-center gap-2 rounded-full bg-red-50 px-3 py-1.5 text-xs font-semibold uppercase tracking-wider text-red-700 shadow-sm"
+          >
+            <i class="fa-solid fa-desktop text-[14px]"></i>
+            <span>Entorno de Edición Desktop Requerido</span>
+          </div>
+          <h1
+            class="mt-1 text-3xl font-bold leading-tight tracking-tight text-slate-900 md:text-4xl"
+          >
+            El editor visual no está optimizado para dispositivos móviles o tablets
+          </h1>
+          <p class="text-base leading-relaxed text-slate-600 md:text-lg">
+            El motor de maquetación está calibrado exclusivamente para resoluciones de monitor
+            amplias. Para evitar roturas en la estructura de bloques o desajustes tipográficos
+            involuntarios, la edición requiere precisión milimétrica con puntero de escritorio.
+          </p>
+        </div>
+        <!-- TELEMETRY -->
+        <div class="flex flex-col gap-4 rounded-xl bg-slate-50 p-4">
+          <div class="flex items-center justify-between gap-4">
+            <span
+              class="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-slate-600"
+            >
+              <i class="fa-solid fa-sliders text-[14px]"></i>
+              Telemetría de Pantalla del Cliente
             </span>
-            Incompatible
-          </span>
-        </div>
-        <div class="grid grid-cols-1 gap-3 pt-1 sm:grid-cols-3">
-          <!-- Minimum -->
-          <div class="flex flex-col rounded-lg bg-white p-4 shadow-sm">
-            <span class="text-xs font-medium text-slate-500"> Requisito Mínimo </span>
-            <span class="mt-1 text-lg font-bold text-slate-900"> 1024 × 768 px </span>
-            <span class="mt-0.5 text-sm text-indigo-600"> Desktop Compacto </span>
-          </div>
 
-          <!-- Recommended -->
-          <div class="flex flex-col rounded-lg bg-white p-4 shadow-sm">
-            <span class="text-xs font-medium text-slate-500"> Recomendado </span>
-            <span class="mt-1 text-lg font-bold text-indigo-600"> 1440 × 900+ px </span>
-            <span class="mt-0.5 text-sm text-indigo-500"> Fidelidad 100% Canvas </span>
+            <span class="flex items-center gap-2 text-xs font-semibold text-red-600">
+              <span class="relative flex h-2 w-2">
+                <span
+                  class="absolute inline-flex h-full w-full animate-ping rounded-full bg-red-400 opacity-75"
+                ></span>
+                <span class="relative inline-flex h-2 w-2 rounded-full bg-red-500"></span>
+              </span>
+              Incompatible
+            </span>
+          </div>
+          <div class="grid grid-cols-1 gap-3 pt-1 sm:grid-cols-3">
+            <!-- Minimum -->
+            <div class="flex flex-col rounded-lg bg-white p-4 shadow-sm">
+              <span class="text-xs font-medium text-slate-500"> Requisito Mínimo </span>
+              <span class="mt-1 text-lg font-bold text-slate-900"> 1024 × 768 px </span>
+              <span class="mt-0.5 text-sm text-indigo-600"> Desktop Compacto </span>
+            </div>
+
+            <!-- Recommended -->
+            <div class="flex flex-col rounded-lg bg-white p-4 shadow-sm">
+              <span class="text-xs font-medium text-slate-500"> Recomendado </span>
+              <span class="mt-1 text-lg font-bold text-indigo-600"> 1440 × 900+ px </span>
+              <span class="mt-0.5 text-sm text-indigo-500"> Fidelidad 100% Canvas </span>
+            </div>
           </div>
         </div>
       </div>
-    </div>
-  </section>
-</div>
+    </section>
+  </div>
+}

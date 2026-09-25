@@ -57,7 +57,7 @@ export class PageService {
    *
    * @param value
    */
-  set sections(value: SectionI[]) {
+  set sections(value: SectionI[]) {    
     this._sections.set(value);
   }
 
@@ -141,7 +141,10 @@ export class PageService {
    * @returns
    */
   find(pageId: number): Observable<ResponseI<PageI> | null> {
-    if (pageId === 0) return of(null);
+    if (pageId === 0) {
+      this._page.next(null!);
+      return of(null);
+    }
     return this._httpClient
       .get<ResponseI<PageI>>(`${this.url}/${this.prefix}/pages/${pageId}`)
       .pipe(

@@ -312,6 +312,7 @@
     validPermission(permission.editContentTemplate) ||
     validPermission(permission.editDesignTemplate)
   ) {
+    {{_selectedItemsInGrid()?.canvas}}
     <!-- content -->
     <section
       [class.h-100]="height() <= 639"
@@ -322,9 +323,9 @@
         <!-- LEFT PANEL - ÁRBOL -->
         <layer-component
           #layer
-          [showComponetsPanel]="openElementPanel()"
+          [showComponentsPanel]="openElementPanel()"
           [gridType]="_selectedItemsInGrid()?.canvas ?? 'header'"
-          (elementSelected)="setElementSelectedInColumn($event, 'header')"
+          (elementSelected)="setElementSelectedInColumn($event)"
         />
 
         <!-- CENTER PANEL - CANVAS -->
@@ -381,8 +382,6 @@
                     [languageId]="languageId()"
                     [previewType]="preview"
                     [preview]="previewMode()"
-                    (deleteSectionEvent)="setGrid($event, 'header')"
-                    (openElementPanel)="toggleElementPanel($event)"
                   />
                 </div>
                 <!-- ADD SECTION -->
@@ -461,8 +460,7 @@
                     [languageId]="languageId()"
                     [previewType]="preview"
                     [preview]="previewMode()"
-                    (deleteSectionEvent)="setGrid($event, 'footer')"
-                    (openElementPanel)="toggleElementPanel($event)"
+                   
                   />
                 </div>
                 <!-- ADD SECTION -->

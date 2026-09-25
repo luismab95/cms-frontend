@@ -1,14 +1,4 @@
-import {
-  AfterViewInit,
-  Component,
-  effect,
-  inject,
-  input,
-  OnDestroy,
-  OnInit,
-  output,
-  signal,
-} from '@angular/core';
+import { Component, effect, inject, input, OnDestroy, OnInit, signal } from '@angular/core';
 import { TitleCasePipe } from '@angular/common';
 import {
   AbstractControl,
@@ -29,15 +19,16 @@ import { CmsValidators } from 'app/shared/utils/validators.util';
 import { HistoryService } from 'app/core/services/history-canvas.service';
 import { PageService } from 'app/core/services/pages.service';
 import { updateElement } from 'app/shared/utils/grid.utils';
-import { ElementI } from 'app/shared/interfaces/grid.interface';
-import { pairwise, Subject, takeUntil } from 'rxjs';
+import { ElementI, SectionI } from 'app/shared/interfaces/grid.interface';
+import { CanvasT } from 'app/core/interfaces/page.interface';
+import { debounceTime, distinctUntilChanged, Subject, takeUntil } from 'rxjs';
 
 @Component({
   selector: 'languages-inspector-component',
   templateUrl: './languages-inspector.html',
   imports: [FormsModule, ReactiveFormsModule, TabsComponent, TitleCasePipe],
 })
-export class LangugesInspectorComponent implements OnInit, AfterViewInit, OnDestroy {
+export class LangugesInspectorComponent implements OnInit, OnDestroy {
   data = input.required<ElementDataI[]>();
   text = input.required<{ [key: string]: string }>();
   tabs = input.required<TabI[]>();
@@ -49,12 +40,18 @@ export class LangugesInspectorComponent implements OnInit, AfterViewInit, OnDest
   languageForm!: UntypedFormGroup;
   getErrorMessage = CmsValidators.getErrorMessageFormControl;
 
-  private _unsubscribeAll = new Subject<void>();
+  private formInitialized = false;
+  private lastFormData = '';
+
+  private readonly _unsubscribeAll = new Subject<void>();
 
   private readonly _pageService = inject(PageService);
   private readonly _historyService = inject(HistoryService);
+  private readonly _formBuilder = inject(UntypedFormBuilder);
 
-  readonly sectionsInCanvas = this._pageService.sections;
+  readonly pageSections = this._pageService.sections;
+  readonly headerSections = this._pageService.sectionsHeader;
+  readonly footerSections = this._pageService.sectionsFooter;
 
   readonly selectedItemsInGrid = toSignal(this._pageService.selectedItemsInGrid$, {
     initialValue: {
@@ -62,15 +59,40 @@ export class LangugesInspectorComponent implements OnInit, AfterViewInit, OnDest
       row: null,
       column: null,
       element: null,
-      canvas: 'body',
+      canvas: 'body' as CanvasT,
     },
   });
 
-  private _formBuilder = inject(UntypedFormBuilder);
+  sectionsByType = {
+    header: {
+      get: () => this.headerSections(),
+      set: (sections: SectionI[]) => {
+        this._pageService.sectionsHeader = sections;
+      },
+    },
+    body: {
+      get: () => this.pageSections(),
+      set: (sections: SectionI[]) => {
+        this._pageService.sections = sections;
+      },
+    },
+    footer: {
+      get: () => this.footerSections(),
+      set: (sections: SectionI[]) => {
+        this._pageService.sectionsFooter = sections;
+      },
+    },
+  } satisfies Record<
+    CanvasT,
+    {
+      get: () => SectionI[];
+      set: (sections: SectionI[]) => void;
+    }
+  >;
 
-  /**
-   * Constructor
-   */
+  // --------------------------------------------------------------------------
+  // Constructor
+  // --------------------------------------------------------------------------
   constructor() {
     this.languageForm = this._formBuilder.group({
       languages: this._formBuilder.array([]),
@@ -93,48 +115,65 @@ export class LangugesInspectorComponent implements OnInit, AfterViewInit, OnDest
       }
 
       this.hasTextToEdit.set(Object.keys(text).length);
-
       this.loadLanguageForm(languages, text, data);
     });
   }
 
-  /**
-   * OnInit
-   * @returns
-   */
-  ngOnInit(): void {}
-
-  /**
-   * AfterViewInit
-   */
-  ngAfterViewInit(): void {
+  // --------------------------------------------------------------------------
+  // OnInit
+  // --------------------------------------------------------------------------
+  ngOnInit(): void {
     this.languageForm.valueChanges
-      .pipe(pairwise(), takeUntil(this._unsubscribeAll))
-      .subscribe(([previous, current]) => {
-        const changed = JSON.stringify(previous) !== JSON.stringify(current);
-        if (changed) {
-          this.updateItem(current);
+      .pipe(
+        debounceTime(600),
+        distinctUntilChanged(
+          (previous, current) => JSON.stringify(previous) === JSON.stringify(current),
+        ),
+        takeUntil(this._unsubscribeAll),
+      )
+      .subscribe((current) => {
+        if (!this.formInitialized) {
+          return;
         }
+        this.updateItem(current);
       });
   }
 
-  /**
-   * OnDestroy
-   */
+  // --------------------------------------------------------------------------
+  // OnDestroy
+  // --------------------------------------------------------------------------
   ngOnDestroy(): void {
     this._unsubscribeAll.next();
     this._unsubscribeAll.complete();
   }
 
-  /**
-   * Load form
-   * @param languages
-   */
-  loadLanguageForm(languages: LanguageI[], text: { [key: string]: string }, data: ElementDataI[]) {
+  // --------------------------------------------------------------------------
+  // Load language form
+  // --------------------------------------------------------------------------
+  loadLanguageForm(
+    languages: LanguageI[],
+    text: { [key: string]: string },
+    data: ElementDataI[],
+  ): void {
+    const formData = JSON.stringify({
+      languages,
+      text,
+      data,
+    });
+
+    if (this.lastFormData === formData) {
+      return;
+    }
+
+    this.lastFormData = formData;
+
+    this.formInitialized = false;
+
     const formArray = this.languagesFormArray;
 
-    // Evitar duplicar idiomas
-    formArray.clear();
+    formArray.clear({
+      emitEvent: false,
+    });
 
     languages.forEach((language) => {
       const group = this._formBuilder.group({
@@ -145,27 +184,30 @@ export class LangugesInspectorComponent implements OnInit, AfterViewInit, OnDest
         group.addControl(key, this._formBuilder.control(text[key], Validators.required));
       });
 
-      formArray.push(group);
+      formArray.push(group, {
+        emitEvent: false,
+      });
     });
 
-    // data puede venir vacío
-    if (data.length > 0) {
-      formArray.patchValue(data);
+    if (data?.length > 0) {
+      formArray.patchValue(data, {
+        emitEvent: false,
+      });
     }
+
+    this.formInitialized = true;
   }
 
-  /**
-   * get controls
-   */
+  // --------------------------------------------------------------------------
+  // FormArray
+  // --------------------------------------------------------------------------
   get languagesFormArray(): FormArray {
     return this.languageForm.get('languages') as FormArray;
   }
 
-  /**
-   * Get controls
-   * @param form
-   * @returns
-   */
+  // --------------------------------------------------------------------------
+  // Get controls
+  // --------------------------------------------------------------------------
   getControls(form: AbstractControl): string[] {
     if (!(form instanceof FormGroup)) {
       return [];
@@ -174,19 +216,19 @@ export class LangugesInspectorComponent implements OnInit, AfterViewInit, OnDest
     return Object.keys(form.controls);
   }
 
-  /**
-   * Selecciona un idioma por su INDEX.
-   */
+  // --------------------------------------------------------------------------
+  // Select language
+  // --------------------------------------------------------------------------
   selectLanguage(index: number): void {
     this.selectedLanguage.set(index);
   }
 
-  /**
-   * Update item
-   * @param value
-   */
+  // --------------------------------------------------------------------------
+  // Update item
+  // --------------------------------------------------------------------------
   updateItem(value: { languages: ElementDataI[] }): void {
-    const selectedElement = this.selectedItemsInGrid()?.element;
+    const selectedItem = this.selectedItemsInGrid();
+    const selectedElement = selectedItem?.element;
 
     if (!selectedElement) {
       return;
@@ -194,19 +236,17 @@ export class LangugesInspectorComponent implements OnInit, AfterViewInit, OnDest
 
     const updatedElement: ElementI = {
       ...selectedElement,
+
       dataText: [...value.languages],
     };
 
-    const updatedSections = updateElement(
-      this.sectionsInCanvas(),
-      updatedElement.uuid,
-      updatedElement,
-    );
-
-    const previous = structuredClone(this.sectionsInCanvas());
+    const canvas = selectedItem.canvas;
+    const config = this.sectionsByType[canvas];
+    const sections = config.get();
+    const previous = structuredClone(sections);
+    const updatedSections = updateElement(sections, updatedElement.uuid, updatedElement);
     const next = structuredClone(updatedSections);
-    this._pageService.sections = next;
-    //todo ver cambios de textos en historial
-    // this._historyService.commit(previous, next);
+    config.set(next);
+    this._historyService.commit(canvas, previous, next);
   }
 }

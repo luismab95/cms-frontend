@@ -422,6 +422,19 @@ ngx-otp-input {
   --ng-select-disabled-bg: var(--color-white);
 }
 
+#canvas .ng-select-container {
+  border: unset !important;
+}
+
+#canvas .ng-arrow-wrapper {
+  display: none !important;
+}
+
+#canvas .bg-dot-grid {
+  background-size: 24px 24px;
+  background-image: radial-gradient(circle, #cbd5e1 1.2px, transparent 1.2px);
+}
+
 .ng-select-container {
   background-color: transparent !important;
   padding: unset;

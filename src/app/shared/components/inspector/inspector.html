@@ -1,11 +1,14 @@
 <div
-  class="z-20 flex h-full min-h-0 w-80 shrink-0 select-none flex-col border-l border-slate-200 bg-white"
+  [class.w-76]="!inspectorCollapsed()"
+  [class.w-14]="inspectorCollapsed()"
+  class="z-20 flex h-full min-h-0 shrink-0 select-none flex-col border-l border-slate-200 bg-white"
 >
   <!-- Element Identity Bar -->
   <div
-    class="flex items-center justify-between border-b border-slate-200 bg-slate-50/80 px-4 py-2.5"
+    [class.px-2!]="inspectorCollapsed()"
+    class="flex items-center justify-between border-b border-slate-200 py-2.5 px-4"
   >
-    <div class="flex items-center gap-2">
+    <div [class.hidden]="inspectorCollapsed()" class="flex items-center gap-2">
       <div
         [ngClass]="{
           'bg-indigo-100': isEmpty() || typeItem() === 'section',
@@ -76,556 +79,610 @@
         </div>
       </div>
     </div>
+    <button
+      type="button"
+      (click)="toggleInspector()"
+      class="cursor-pointer relative flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-700"
+      [appTooltip]="inspectorCollapsed() ? 'Expandir Panel' : 'Colapsar Panel'"
+    >
+      <i
+        class="fa-solid text-sm"
+        [ngClass]="!inspectorCollapsed() ? 'fa-angles-right' : 'fa-angles-left text-indigo-500'"
+      ></i>
+    </button>
   </div>
-
-  @if (isEmpty()) {
-    <div class="p-5 text-center flex flex-col items-center justify-center bg-slate-50/50 flex-1">
-      <div
-        class="w-12 h-12 rounded-xl bg-white border border-dashed border-slate-300 flex items-center justify-center text-slate-400 mb-3 shadow-sm"
-      >
-        <i class="fa-solid fa-arrow-pointer text-indigo-500"></i>
+  @if (!inspectorCollapsed()) {
+    @if (isEmpty()) {
+      <div class="p-5 text-center flex flex-col items-center justify-center bg-slate-50/50 flex-1">
+        <div
+          class="w-12 h-12 rounded-xl bg-white border border-dashed border-slate-300 flex items-center justify-center text-slate-400 mb-3 shadow-sm"
+        >
+          <i class="fa-solid fa-arrow-pointer text-indigo-500"></i>
+        </div>
+        <h4 class="text-xs font-bold text-slate-800 mb-1">Ningún elemento seleccionado</h4>
+        <p class="text-[11px] text-slate-500 leading-relaxed max-w-60">
+          Haz clic en cualquier sección, fila, columna, componente de la página para personalizar su
+          diseño, configuración o traducciones.
+        </p>
       </div>
-      <h4 class="text-xs font-bold text-slate-800 mb-1">Ningún elemento seleccionado</h4>
-      <p class="text-[11px] text-slate-500 leading-relaxed max-w-60">
-        Haz clic en cualquier sección, fila, columna, componente de la página para personalizar su
-        diseño, configuración o traducciones.
-      </p>
-    </div>
-  } @else {
-    <!-- Inspector Tabs -->
-    <div class="border-b border-slate-200 bg-white shadow-sm">
-      <nav aria-label="Inspector Tabs" class="grid grid-cols-3 text-center">
-        @for (tab of tabsComputed(); track tab.id) {
-          <button
-            type="button"
-            (click)="selectTab(tab.id)"
-            [appTooltip]="tab.description"
-            [class.border-b-2!]="tab.id === selectedTab()"
-            [class.border-indigo-600!]="tab.id === selectedTab()"
-            [class.font-bold!]="tab.id === selectedTab()"
-            [class.text-indigo-600!]="tab.id === selectedTab()"
-            class="cursor-pointer group flex flex-col items-center justify-center gap-1.5 border-b-2 border-transparent px-2 py-2.5 text-xs font-medium text-slate-500 transition-all hover:bg-slate-50 hover:text-slate-800 sm:flex-row"
-          >
-            <i
+    } @else {
+      <!-- Inspector Tabs -->
+      <div class="border-b border-slate-200 bg-white shadow-sm">
+        <nav aria-label="Inspector Tabs" class="grid grid-cols-3 text-center">
+          @for (tab of tabsComputed(); track tab.id) {
+            <button
+              type="button"
+              (click)="selectTab(tab.id)"
+              [appTooltip]="tab.description"
+              [class.border-b-2!]="tab.id === selectedTab()"
+              [class.border-indigo-600!]="tab.id === selectedTab()"
+              [class.font-bold!]="tab.id === selectedTab()"
               [class.text-indigo-600!]="tab.id === selectedTab()"
-              class="{{
-                tab.icon
-              }} text-xs text-slate-400 transition-colors group-hover:text-slate-600"
-            ></i>
-            <span class="tracking-tight"> {{ tab.title }} </span>
-            @if (tab.id === selectedTab()) {
-              <span class="absolute inset-x-0 bottom-0 h-0.5 bg-indigo-600"></span>
-            }
+              class="cursor-pointer group flex flex-col items-center justify-center gap-1.5 border-b-2 border-transparent px-2 py-2.5 text-xs font-medium text-slate-500 transition-all hover:bg-slate-50 hover:text-slate-800 sm:flex-row"
+            >
+              <i
+                [class.text-indigo-600!]="tab.id === selectedTab()"
+                class="{{
+                  tab.icon
+                }} text-xs text-slate-400 transition-colors group-hover:text-slate-600"
+              ></i>
+              <span class="tracking-tight"> {{ tab.title }} </span>
+              @if (tab.id === selectedTab()) {
+                <span class="absolute inset-x-0 bottom-0 h-0.5 bg-indigo-600"></span>
+              }
 
-            @if (tab.id === 2) {
-              <span
-                class="rounded-full bg-emerald-100 px-1 py-0.5 text-[9px] font-semibold text-emerald-700"
-              >
-                {{ languages().records.length }}
-              </span>
-            }
-          </button>
-        }
-      </nav>
-    </div>
-
-    <!-- content -->
-    <div class="flex-1 divide-y divide-slate-100 overflow-y-auto text-xs">
-      @switch (selectedTab()) {
-        @case (0) {
-          <!-- design -->
-          @if (
-            validPermission(permission.editDesignTemplate) ||
-            validPermission(permission.editDesignPage)
-          ) {
-            <!-- SECTION 1 -->
-            <section class="space-y-3 p-4" data-purpose="section-alignment-flexbox">
-              <div class="flex items-center justify-between">
-                <div class="flex items-center gap-1.5">
-                  <i class="fa-solid fa-table-columns text-xs text-indigo-600"></i>
-
-                  <label class="text-[11px] font-bold uppercase tracking-wide text-slate-800">
-                    Alineación y Flexbox
-                  </label>
-                </div>
-
-                <i
-                  class="fa-solid fa-circle-info cursor-help text-[11px] text-slate-400"
-                  title="Configuración de alineación y dimensiones relativas"
-                ></i>
-              </div>
-
-              <div class="space-y-2">
-                <!-- Horizontal -->
-                <div>
-                  <div class="mb-1 flex items-center justify-between">
-                    <span class="text-[10px] font-medium text-slate-500">
-                      Alineación Horizontal
-                    </span>
-
-                    <span class="text-[10px] font-semibold text-indigo-600"> Centrado </span>
-                  </div>
-
-                  <div class="grid grid-cols-3 gap-1 rounded-lg bg-slate-100 p-1">
-                    <button
-                      type="button"
-                      title="Izquierda"
-                      class="flex justify-center rounded py-1 text-slate-600 transition-colors hover:text-slate-900"
-                    >
-                      <i class="fa-solid fa-align-left text-xs"></i>
-                    </button>
-
-                    <button
-                      type="button"
-                      title="Centro"
-                      class="flex justify-center rounded bg-white py-1 font-bold text-indigo-600 shadow-sm transition-all"
-                    >
-                      <i class="fa-solid fa-align-center text-xs"></i>
-                    </button>
-
-                    <button
-                      type="button"
-                      title="Derecha"
-                      class="flex justify-center rounded py-1 text-slate-600 transition-colors hover:text-slate-900"
-                    >
-                      <i class="fa-solid fa-align-right text-xs"></i>
-                    </button>
-                  </div>
-                </div>
-
-                <!-- Vertical -->
-                <div>
-                  <div class="mb-1 flex items-center justify-between">
-                    <span class="text-[10px] font-medium text-slate-500">
-                      Alineación Vertical
-                    </span>
-
-                    <span class="text-[10px] text-slate-400"> Medio </span>
-                  </div>
-
-                  <div class="grid grid-cols-3 gap-1 rounded-lg bg-slate-100 p-1">
-                    <button
-                      type="button"
-                      title="Arriba"
-                      class="flex justify-center rounded py-1 text-slate-600 transition-colors hover:text-slate-900"
-                    >
-                      <i class="fa-solid fa-arrow-up text-xs"></i>
-                    </button>
-
-                    <button
-                      type="button"
-                      title="Centro vertical"
-                      class="flex justify-center rounded bg-white py-1 font-bold text-indigo-600 shadow-sm"
-                    >
-                      <i class="fa-solid fa-arrows-up-down text-xs"></i>
-                    </button>
-
-                    <button
-                      type="button"
-                      title="Abajo"
-                      class="flex justify-center rounded py-1 text-slate-600 transition-colors hover:text-slate-900"
-                    >
-                      <i class="fa-solid fa-arrow-down text-xs"></i>
-                    </button>
-                  </div>
-                </div>
-              </div>
-
-              <!-- Width / Height -->
-              <div class="grid grid-cols-2 gap-2 pt-1">
-                <div>
-                  <span class="mb-1 block text-[10px] font-medium text-slate-500">
-                    Ancho Columna
-                  </span>
-
-                  <div
-                    class="flex items-center rounded-lg border border-slate-200 bg-white px-2 py-1 focus-within:border-indigo-500 focus-within:ring-1 focus-within:ring-indigo-500"
-                  >
-                    <input
-                      type="text"
-                      value="33.3%"
-                      class="w-full border-0 p-0 text-xs font-medium text-slate-700 outline-none focus:ring-0"
-                    />
-
-                    <span class="text-[10px] text-slate-400"> % </span>
-                  </div>
-                </div>
-
-                <div>
-                  <span class="mb-1 block text-[10px] font-medium text-slate-500">
-                    Altura Mínima
-                  </span>
-
-                  <div
-                    class="flex items-center rounded-lg border border-slate-200 bg-white px-2 py-1 focus-within:border-indigo-500 focus-within:ring-1 focus-within:ring-indigo-500"
-                  >
-                    <input
-                      type="text"
-                      value="160"
-                      class="w-full border-0 p-0 text-xs font-medium text-slate-700 outline-none focus:ring-0"
-                    />
-
-                    <span class="text-[10px] text-slate-400"> px </span>
-                  </div>
-                </div>
-              </div>
-            </section>
-
-            <!-- SECTION 2: BOX MODEL -->
-            <section class="space-y-3 p-4" data-purpose="box-model-widget">
-              <div class="flex items-center justify-between">
-                <div class="flex items-center gap-1.5">
-                  <i class="fa-solid fa-expand text-xs text-indigo-600"></i>
-
-                  <label class="text-[11px] font-bold uppercase tracking-wide text-slate-800">
-                    Espaciado (Modelo de Caja)
-                  </label>
-                </div>
-
-                <span class="rounded bg-slate-100 px-1.5 py-0.5 text-[10px] text-slate-400">
-                  px
+              @if (tab.id === 2) {
+                <span
+                  class="rounded-full bg-emerald-100 px-1 py-0.5 text-[9px] font-semibold text-emerald-700"
+                >
+                  {{ languages().records.length }}
                 </span>
-              </div>
+              }
+            </button>
+          }
+        </nav>
+      </div>
 
-              <!-- Box Model -->
-              <div
-                class="relative flex flex-col items-center justify-center rounded-lg border border-slate-200 bg-slate-50 p-3 text-[10px]"
-              >
-                <span class="absolute left-2 top-1 text-[9px] font-bold uppercase text-amber-600">
-                  Margin
-                </span>
-
-                <input
-                  type="text"
-                  value="0"
-                  class="mb-1 h-5 w-7 rounded border border-slate-200 bg-white p-0 text-center text-[10px] shadow-sm focus:border-indigo-500 focus:ring-0"
-                />
-
-                <div class="flex w-full items-center justify-between px-2">
-                  <input
-                    type="text"
-                    value="auto"
-                    class="h-5 w-8 rounded border border-slate-200 bg-white p-0 text-center text-[10px] shadow-sm focus:border-indigo-500 focus:ring-0"
-                  />
-
-                  <div
-                    class="relative mx-2 flex flex-1 flex-col items-center rounded-md border border-indigo-200 bg-indigo-50/80 p-2"
-                  >
-                    <span
-                      class="absolute left-1 top-0.5 text-[8px] font-bold uppercase text-indigo-600"
-                    >
-                      Padding
-                    </span>
-
-                    <input
-                      type="text"
-                      value="12"
-                      class="mb-1 h-4 w-7 rounded border border-indigo-200 bg-white p-0 text-center text-[9px] focus:border-indigo-500 focus:ring-0"
-                    />
-
-                    <div class="flex w-full items-center justify-between">
-                      <input
-                        type="text"
-                        value="12"
-                        class="h-4 w-6 rounded border border-indigo-200 bg-white p-0 text-center text-[9px] focus:border-indigo-500 focus:ring-0"
-                      />
-
-                      <div
-                        class="flex h-4 w-8 items-center justify-center rounded border border-dashed border-slate-300 bg-white text-[8px] font-bold text-slate-400"
-                      >
-                        OBJ
-                      </div>
-
-                      <input
-                        type="text"
-                        value="12"
-                        class="h-4 w-6 rounded border border-indigo-200 bg-white p-0 text-center text-[9px] focus:border-indigo-500 focus:ring-0"
-                      />
-                    </div>
-
-                    <input
-                      type="text"
-                      value="12"
-                      class="mt-1 h-4 w-7 rounded border border-indigo-200 bg-white p-0 text-center text-[9px] focus:border-indigo-500 focus:ring-0"
-                    />
-                  </div>
-
-                  <input
-                    type="text"
-                    value="auto"
-                    class="h-5 w-8 rounded border border-slate-200 bg-white p-0 text-center text-[10px] shadow-sm focus:border-indigo-500 focus:ring-0"
-                  />
-                </div>
-
-                <input
-                  type="text"
-                  value="0"
-                  class="mt-1 h-5 w-7 rounded border border-slate-200 bg-white p-0 text-center text-[10px] shadow-sm focus:border-indigo-500 focus:ring-0"
-                />
-              </div>
-            </section>
-
-            <!-- SECTION 3: VISUAL -->
-            <section class="space-y-3 p-4" data-purpose="visual-styles-controls">
-              <div class="flex items-center gap-1.5">
-                <i class="fa-solid fa-fill-drip text-xs text-indigo-600"></i>
-
-                <label class="text-[11px] font-bold uppercase tracking-wide text-slate-800">
-                  Estilos Visuales
-                </label>
-              </div>
-
-              <div class="space-y-3">
-                <!-- Radius -->
+      <!-- content -->
+      <div class="flex-1 divide-y divide-slate-100 overflow-y-auto text-xs">
+        @switch (selectedTab()) {
+          @case (0) {
+            <!-- design -->
+            @if (
+              validPermission(permission.editDesignTemplate) ||
+              validPermission(permission.editDesignPage)
+            ) {
+              <!-- SECTION 1 -->
+              <section class="space-y-3 p-4" data-purpose="section-alignment-flexbox">
                 <div class="flex items-center justify-between">
-                  <span class="text-[11px] text-slate-600"> Radio de Borde </span>
+                  <div class="flex items-center gap-1.5">
+                    <i class="fa-solid fa-table-columns text-xs text-indigo-600"></i>
 
-                  <div
-                    class="flex w-28 items-center rounded-md border border-slate-200 bg-white px-2 py-0.5 focus-within:ring-1 focus-within:ring-indigo-500"
-                  >
-                    <i class="fa-regular fa-square mr-1.5 text-[11px] text-slate-400"></i>
-
-                    <input
-                      type="text"
-                      value="8px"
-                      class="w-full border-0 p-0 text-right text-xs text-slate-700 outline-none focus:ring-0"
-                    />
+                    <label class="text-[11px] font-bold uppercase tracking-wide text-slate-800">
+                      Alineación y Flexbox
+                    </label>
                   </div>
+
+                  <i
+                    class="fa-solid fa-circle-info cursor-help text-[11px] text-slate-400"
+                    title="Configuración de alineación y dimensiones relativas"
+                  ></i>
                 </div>
 
-                <!-- Background -->
-                <div>
-                  <div class="mb-1.5 flex items-center justify-between">
-                    <span class="text-[11px] text-slate-600"> Color de Fondo </span>
+                <div class="space-y-2">
+                  <!-- Horizontal -->
+                  <div>
+                    <div class="mb-1 flex items-center justify-between">
+                      <span class="text-[10px] font-medium text-slate-500">
+                        Alineación Horizontal
+                      </span>
 
-                    <div
-                      class="flex w-28 items-center gap-1.5 rounded-md border border-slate-200 bg-white px-1.5 py-0.5"
-                    >
-                      <span
-                        class="size-3.5 rounded-full border border-slate-300 bg-white shadow-sm"
-                      ></span>
+                      <span class="text-[10px] font-semibold text-indigo-600"> Centrado </span>
+                    </div>
 
-                      <input
-                        type="text"
-                        value="#FFFFFF"
-                        class="w-full border-0 p-0 text-[11px] uppercase text-slate-700 outline-none focus:ring-0"
-                      />
+                    <div class="grid grid-cols-3 gap-1 rounded-lg bg-slate-100 p-1">
+                      <button
+                        type="button"
+                        title="Izquierda"
+                        class="flex justify-center rounded py-1 text-slate-600 transition-colors hover:text-slate-900"
+                      >
+                        <i class="fa-solid fa-align-left text-xs"></i>
+                      </button>
+
+                      <button
+                        type="button"
+                        title="Centro"
+                        class="flex justify-center rounded bg-white py-1 font-bold text-indigo-600 shadow-sm transition-all"
+                      >
+                        <i class="fa-solid fa-align-center text-xs"></i>
+                      </button>
+
+                      <button
+                        type="button"
+                        title="Derecha"
+                        class="flex justify-center rounded py-1 text-slate-600 transition-colors hover:text-slate-900"
+                      >
+                        <i class="fa-solid fa-align-right text-xs"></i>
+                      </button>
                     </div>
                   </div>
 
-                  <!-- Presets -->
-                  <div class="flex items-center gap-1.5 pt-0.5">
-                    <span class="text-[9px] text-slate-400"> Presets: </span>
+                  <!-- Vertical -->
+                  <div>
+                    <div class="mb-1 flex items-center justify-between">
+                      <span class="text-[10px] font-medium text-slate-500">
+                        Alineación Vertical
+                      </span>
 
-                    <div class="flex items-center gap-1">
+                      <span class="text-[10px] text-slate-400"> Medio </span>
+                    </div>
+
+                    <div class="grid grid-cols-3 gap-1 rounded-lg bg-slate-100 p-1">
                       <button
                         type="button"
-                        title="Blanco"
-                        class="size-4 rounded-full border-2 border-indigo-500 bg-white ring-1 ring-indigo-200"
-                      ></button>
-
-                      <button
-                        type="button"
-                        title="Gris suave"
-                        class="size-4 rounded-full border border-slate-200 bg-slate-50 transition-transform hover:scale-110"
-                      ></button>
-
-                      <button
-                        type="button"
-                        title="Azul claro"
-                        class="size-4 rounded-full border border-indigo-200 bg-indigo-50 transition-transform hover:scale-110"
-                      ></button>
-
-                      <button
-                        type="button"
-                        title="Oscuro"
-                        class="size-4 rounded-full border border-slate-800 bg-slate-900 transition-transform hover:scale-110"
-                      ></button>
-
-                      <button
-                        type="button"
-                        title="Transparente"
-                        class="flex size-4 items-center justify-center rounded-full border border-dashed border-slate-300"
+                        title="Arriba"
+                        class="flex justify-center rounded py-1 text-slate-600 transition-colors hover:text-slate-900"
                       >
-                        <span class="h-0.5 w-2 rotate-45 bg-rose-400"></span>
+                        <i class="fa-solid fa-arrow-up text-xs"></i>
+                      </button>
+
+                      <button
+                        type="button"
+                        title="Centro vertical"
+                        class="flex justify-center rounded bg-white py-1 font-bold text-indigo-600 shadow-sm"
+                      >
+                        <i class="fa-solid fa-arrows-up-down text-xs"></i>
+                      </button>
+
+                      <button
+                        type="button"
+                        title="Abajo"
+                        class="flex justify-center rounded py-1 text-slate-600 transition-colors hover:text-slate-900"
+                      >
+                        <i class="fa-solid fa-arrow-down text-xs"></i>
                       </button>
                     </div>
                   </div>
                 </div>
 
-                <!-- Shadow -->
-                <div>
-                  <div class="mb-1 flex items-center justify-between">
-                    <span class="text-[11px] text-slate-600"> Sombra (Box Shadow) </span>
+                <!-- Width / Height -->
+                <div class="grid grid-cols-2 gap-2 pt-1">
+                  <div>
+                    <span class="mb-1 block text-[10px] font-medium text-slate-500">
+                      Ancho Columna
+                    </span>
 
-                    <span class="text-[10px] text-slate-400"> sm </span>
+                    <div
+                      class="flex items-center rounded-lg border border-slate-200 bg-white px-2 py-1 focus-within:border-indigo-500 focus-within:ring-1 focus-within:ring-indigo-500"
+                    >
+                      <input
+                        type="text"
+                        value="33.3%"
+                        class="w-full border-0 p-0 text-xs font-medium text-slate-700 outline-none focus:ring-0"
+                      />
+
+                      <span class="text-[10px] text-slate-400"> % </span>
+                    </div>
                   </div>
 
-                  <div
-                    class="grid grid-cols-4 gap-1 rounded-lg bg-slate-100 p-1 text-center text-[10px] font-medium text-slate-600"
-                  >
-                    <button type="button" class="rounded py-1 transition-all hover:bg-white/80">
-                      Ninguna
-                    </button>
+                  <div>
+                    <span class="mb-1 block text-[10px] font-medium text-slate-500">
+                      Altura Mínima
+                    </span>
 
-                    <button
-                      type="button"
-                      class="rounded bg-white py-1 font-bold text-indigo-600 shadow-sm"
+                    <div
+                      class="flex items-center rounded-lg border border-slate-200 bg-white px-2 py-1 focus-within:border-indigo-500 focus-within:ring-1 focus-within:ring-indigo-500"
                     >
-                      Suave
-                    </button>
+                      <input
+                        type="text"
+                        value="160"
+                        class="w-full border-0 p-0 text-xs font-medium text-slate-700 outline-none focus:ring-0"
+                      />
 
-                    <button type="button" class="rounded py-1 transition-all hover:bg-white/80">
-                      Media
-                    </button>
-
-                    <button type="button" class="rounded py-1 transition-all hover:bg-white/80">
-                      Intensa
-                    </button>
+                      <span class="text-[10px] text-slate-400"> px </span>
+                    </div>
                   </div>
                 </div>
+              </section>
 
-                <!-- Opacity -->
-                <div class="flex items-center justify-between pt-1">
-                  <span class="text-[11px] text-slate-600"> Opacidad </span>
+              <!-- SECTION 2: BOX MODEL -->
+              <section class="space-y-3 p-4" data-purpose="box-model-widget">
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center gap-1.5">
+                    <i class="fa-solid fa-expand text-xs text-indigo-600"></i>
 
-                  <div class="flex w-32 items-center gap-2">
+                    <label class="text-[11px] font-bold uppercase tracking-wide text-slate-800">
+                      Espaciado (Modelo de Caja)
+                    </label>
+                  </div>
+
+                  <span class="rounded bg-slate-100 px-1.5 py-0.5 text-[10px] text-slate-400">
+                    px
+                  </span>
+                </div>
+
+                <!-- Box Model -->
+                <div
+                  class="relative flex flex-col items-center justify-center rounded-lg border border-slate-200 bg-slate-50 p-3 text-[10px]"
+                >
+                  <span class="absolute left-2 top-1 text-[9px] font-bold uppercase text-amber-600">
+                    Margin
+                  </span>
+
+                  <input
+                    type="text"
+                    value="0"
+                    class="mb-1 h-5 w-7 rounded border border-slate-200 bg-white p-0 text-center text-[10px] shadow-sm focus:border-indigo-500 focus:ring-0"
+                  />
+
+                  <div class="flex w-full items-center justify-between px-2">
                     <input
-                      type="range"
-                      min="0"
-                      max="100"
-                      value="100"
-                      class="h-1 w-full cursor-pointer accent-indigo-600"
+                      type="text"
+                      value="auto"
+                      class="h-5 w-8 rounded border border-slate-200 bg-white p-0 text-center text-[10px] shadow-sm focus:border-indigo-500 focus:ring-0"
                     />
 
-                    <span class="w-7 text-right text-[10px] font-semibold text-slate-600">
-                      100%
+                    <div
+                      class="relative mx-2 flex flex-1 flex-col items-center rounded-md border border-indigo-200 bg-indigo-50/80 p-2"
+                    >
+                      <span
+                        class="absolute left-1 top-0.5 text-[8px] font-bold uppercase text-indigo-600"
+                      >
+                        Padding
+                      </span>
+
+                      <input
+                        type="text"
+                        value="12"
+                        class="mb-1 h-4 w-7 rounded border border-indigo-200 bg-white p-0 text-center text-[9px] focus:border-indigo-500 focus:ring-0"
+                      />
+
+                      <div class="flex w-full items-center justify-between">
+                        <input
+                          type="text"
+                          value="12"
+                          class="h-4 w-6 rounded border border-indigo-200 bg-white p-0 text-center text-[9px] focus:border-indigo-500 focus:ring-0"
+                        />
+
+                        <div
+                          class="flex h-4 w-8 items-center justify-center rounded border border-dashed border-slate-300 bg-white text-[8px] font-bold text-slate-400"
+                        >
+                          OBJ
+                        </div>
+
+                        <input
+                          type="text"
+                          value="12"
+                          class="h-4 w-6 rounded border border-indigo-200 bg-white p-0 text-center text-[9px] focus:border-indigo-500 focus:ring-0"
+                        />
+                      </div>
+
+                      <input
+                        type="text"
+                        value="12"
+                        class="mt-1 h-4 w-7 rounded border border-indigo-200 bg-white p-0 text-center text-[9px] focus:border-indigo-500 focus:ring-0"
+                      />
+                    </div>
+
+                    <input
+                      type="text"
+                      value="auto"
+                      class="h-5 w-8 rounded border border-slate-200 bg-white p-0 text-center text-[10px] shadow-sm focus:border-indigo-500 focus:ring-0"
+                    />
+                  </div>
+
+                  <input
+                    type="text"
+                    value="0"
+                    class="mt-1 h-5 w-7 rounded border border-slate-200 bg-white p-0 text-center text-[10px] shadow-sm focus:border-indigo-500 focus:ring-0"
+                  />
+                </div>
+              </section>
+
+              <!-- SECTION 3: VISUAL -->
+              <section class="space-y-3 p-4" data-purpose="visual-styles-controls">
+                <div class="flex items-center gap-1.5">
+                  <i class="fa-solid fa-fill-drip text-xs text-indigo-600"></i>
+
+                  <label class="text-[11px] font-bold uppercase tracking-wide text-slate-800">
+                    Estilos Visuales
+                  </label>
+                </div>
+
+                <div class="space-y-3">
+                  <!-- Radius -->
+                  <div class="flex items-center justify-between">
+                    <span class="text-[11px] text-slate-600"> Radio de Borde </span>
+
+                    <div
+                      class="flex w-28 items-center rounded-md border border-slate-200 bg-white px-2 py-0.5 focus-within:ring-1 focus-within:ring-indigo-500"
+                    >
+                      <i class="fa-regular fa-square mr-1.5 text-[11px] text-slate-400"></i>
+
+                      <input
+                        type="text"
+                        value="8px"
+                        class="w-full border-0 p-0 text-right text-xs text-slate-700 outline-none focus:ring-0"
+                      />
+                    </div>
+                  </div>
+
+                  <!-- Background -->
+                  <div>
+                    <div class="mb-1.5 flex items-center justify-between">
+                      <span class="text-[11px] text-slate-600"> Color de Fondo </span>
+
+                      <div
+                        class="flex w-28 items-center gap-1.5 rounded-md border border-slate-200 bg-white px-1.5 py-0.5"
+                      >
+                        <span
+                          class="size-3.5 rounded-full border border-slate-300 bg-white shadow-sm"
+                        ></span>
+
+                        <input
+                          type="text"
+                          value="#FFFFFF"
+                          class="w-full border-0 p-0 text-[11px] uppercase text-slate-700 outline-none focus:ring-0"
+                        />
+                      </div>
+                    </div>
+
+                    <!-- Presets -->
+                    <div class="flex items-center gap-1.5 pt-0.5">
+                      <span class="text-[9px] text-slate-400"> Presets: </span>
+
+                      <div class="flex items-center gap-1">
+                        <button
+                          type="button"
+                          title="Blanco"
+                          class="size-4 rounded-full border-2 border-indigo-500 bg-white ring-1 ring-indigo-200"
+                        ></button>
+
+                        <button
+                          type="button"
+                          title="Gris suave"
+                          class="size-4 rounded-full border border-slate-200 bg-slate-50 transition-transform hover:scale-110"
+                        ></button>
+
+                        <button
+                          type="button"
+                          title="Azul claro"
+                          class="size-4 rounded-full border border-indigo-200 bg-indigo-50 transition-transform hover:scale-110"
+                        ></button>
+
+                        <button
+                          type="button"
+                          title="Oscuro"
+                          class="size-4 rounded-full border border-slate-800 bg-slate-900 transition-transform hover:scale-110"
+                        ></button>
+
+                        <button
+                          type="button"
+                          title="Transparente"
+                          class="flex size-4 items-center justify-center rounded-full border border-dashed border-slate-300"
+                        >
+                          <span class="h-0.5 w-2 rotate-45 bg-rose-400"></span>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Shadow -->
+                  <div>
+                    <div class="mb-1 flex items-center justify-between">
+                      <span class="text-[11px] text-slate-600"> Sombra (Box Shadow) </span>
+
+                      <span class="text-[10px] text-slate-400"> sm </span>
+                    </div>
+
+                    <div
+                      class="grid grid-cols-4 gap-1 rounded-lg bg-slate-100 p-1 text-center text-[10px] font-medium text-slate-600"
+                    >
+                      <button type="button" class="rounded py-1 transition-all hover:bg-white/80">
+                        Ninguna
+                      </button>
+
+                      <button
+                        type="button"
+                        class="rounded bg-white py-1 font-bold text-indigo-600 shadow-sm"
+                      >
+                        Suave
+                      </button>
+
+                      <button type="button" class="rounded py-1 transition-all hover:bg-white/80">
+                        Media
+                      </button>
+
+                      <button type="button" class="rounded py-1 transition-all hover:bg-white/80">
+                        Intensa
+                      </button>
+                    </div>
+                  </div>
+
+                  <!-- Opacity -->
+                  <div class="flex items-center justify-between pt-1">
+                    <span class="text-[11px] text-slate-600"> Opacidad </span>
+
+                    <div class="flex w-32 items-center gap-2">
+                      <input
+                        type="range"
+                        min="0"
+                        max="100"
+                        value="100"
+                        class="h-1 w-full cursor-pointer accent-indigo-600"
+                      />
+
+                      <span class="w-7 text-right text-[10px] font-semibold text-slate-600">
+                        100%
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </section>
+
+              <!-- SECTION 4: MEDIA -->
+              <section class="space-y-3 p-4" data-purpose="media-settings-controls">
+                <div class="flex items-center gap-1.5">
+                  <i class="fa-solid fa-sliders text-xs text-indigo-600"></i>
+
+                  <label class="text-[11px] font-bold uppercase tracking-wide text-slate-800">
+                    Ajustes de Imagen &amp; Media
+                  </label>
+                </div>
+
+                <div class="space-y-2.5">
+                  <!-- Object Fit -->
+                  <div class="flex items-center justify-between">
+                    <span class="text-[11px] text-slate-600"> Ajuste (Object-fit) </span>
+
+                    <select
+                      class="rounded-md border border-slate-200 bg-white px-2 py-1 text-[11px] text-slate-700 outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+                    >
+                      <option selected>Contener (Contain)</option>
+                      <option>Cubrir (Cover)</option>
+                      <option>Escala real (None)</option>
+                      <option>Rellenar (Fill)</option>
+                    </select>
+                  </div>
+
+                  <!-- Border -->
+                  <div class="flex items-center justify-between">
+                    <span class="text-[11px] text-slate-600"> Borde exterior </span>
+
+                    <div class="flex items-center gap-1">
+                      <span class="text-[10px] text-slate-400"> 1px sólido </span>
+
+                      <span class="size-3 rounded-full border border-slate-300 bg-slate-200"></span>
+                    </div>
+                  </div>
+
+                  <!-- Filter -->
+                  <div class="flex items-center justify-between">
+                    <span class="text-[11px] text-slate-600"> Filtro de Contraste </span>
+
+                    <span class="text-[10px] font-semibold text-emerald-600">
+                      +5% (Optimizado)
                     </span>
                   </div>
                 </div>
-              </div>
-            </section>
-
-            <!-- SECTION 4: MEDIA -->
-            <section class="space-y-3 p-4" data-purpose="media-settings-controls">
-              <div class="flex items-center gap-1.5">
-                <i class="fa-solid fa-sliders text-xs text-indigo-600"></i>
-
-                <label class="text-[11px] font-bold uppercase tracking-wide text-slate-800">
-                  Ajustes de Imagen &amp; Media
-                </label>
-              </div>
-
-              <div class="space-y-2.5">
-                <!-- Object Fit -->
-                <div class="flex items-center justify-between">
-                  <span class="text-[11px] text-slate-600"> Ajuste (Object-fit) </span>
-
-                  <select
-                    class="rounded-md border border-slate-200 bg-white px-2 py-1 text-[11px] text-slate-700 outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
-                  >
-                    <option selected>Contener (Contain)</option>
-                    <option>Cubrir (Cover)</option>
-                    <option>Escala real (None)</option>
-                    <option>Rellenar (Fill)</option>
-                  </select>
-                </div>
-
-                <!-- Border -->
-                <div class="flex items-center justify-between">
-                  <span class="text-[11px] text-slate-600"> Borde exterior </span>
-
-                  <div class="flex items-center gap-1">
-                    <span class="text-[10px] text-slate-400"> 1px sólido </span>
-
-                    <span class="size-3 rounded-full border border-slate-300 bg-slate-200"></span>
-                  </div>
-                </div>
-
-                <!-- Filter -->
-                <div class="flex items-center justify-between">
-                  <span class="text-[11px] text-slate-600"> Filtro de Contraste </span>
-
-                  <span class="text-[10px] font-semibold text-emerald-600"> +5% (Optimizado) </span>
-                </div>
-              </div>
-            </section>
-          } @else {
-            <permission-component [style]="'minimal'" />
+              </section>
+            } @else {
+              <permission-component [style]="'minimal'" />
+            }
+          }
+          @case (1) {
+            @if (
+              validPermission(permission.editContentPage) ||
+              validPermission(permission.editContentTemplate)
+            ) {
+              <!-- Properties -->
+              <properties-inspector-component [itemSelectedInGrid]="selectedItemsInGrid()" />
+            } @else {
+              <permission-component [style]="'minimal'" />
+            }
+          }
+          @case (2) {
+            @if (
+              validPermission(permission.editContentPage) ||
+              validPermission(permission.editContentTemplate)
+            ) {
+              <!-- languages -->
+              <languages-inspector-component
+                [languages]="languages().records"
+                [tabs]="tabsLanguages()"
+                [data]="dataTextLanguages()!"
+                [text]="textLanguages()!"
+              />
+            } @else {
+              <permission-component [style]="'minimal'" />
+            }
           }
         }
-        @case (1) {
-          @if (
-            validPermission(permission.editContentPage) ||
-            validPermission(permission.editContentTemplate)
-          ) {
-            <!-- Properties -->
-            <properties-inspector-component [itemSelectedInGrid]="selectedItemsInGrid()" />
-          } @else {
-            <permission-component [style]="'minimal'" />
-          }
-        }
-        @case (2) {
-          @if (
-            validPermission(permission.editContentPage) ||
-            validPermission(permission.editContentTemplate)
-          ) {
-            <!-- languages -->
-            <languages-inspector-component
-              [languages]="languages().records"
-              [tabs]="tabsLanguages()"
-              [data]="dataTextLanguages()!"
-              [text]="textLanguages()!"
-            />
-          } @else {
-            <permission-component [style]="'minimal'" />
-          }
-        }
-      }
-    </div>
-
-    <!-- Inspector Status -->
-    <div
-      class="flex items-center justify-between border-t border-indigo-100 bg-indigo-50/70 px-3 py-2 text-[10px] text-indigo-950"
-    >
-      <div class="flex min-w-0 items-center gap-1.5">
-        <i class="{{ tabs()[selectedTab()].icon }} shrink-0 text-[10px] text-indigo-600"></i>
-        <span class="truncate">
-          Modo Inspector:
-          <strong>{{ tabs()[selectedTab()].title }}</strong>
-        </span>
       </div>
-      <div class="flex items-center gap-1 text-[9px] text-indigo-600">
-        <span>Pestaña {{ tabsComputed()[selectedTab()].id + 1 }}/{{ tabsComputed().length }}</span>
-      </div>
-    </div>
 
-    <!-- Footer -->
-    <div class="flex items-center justify-end border-t border-slate-200 bg-slate-50 p-3">
-      <button
-        (click)="deleteItem()"
-        type="button"
-        class="cursor-pointer flex items-center gap-1 rounded-lg p-2 text-xs font-semibold text-rose-600 transition-colors hover:bg-rose-50 hover:text-rose-700"
+      <!-- Inspector Status -->
+      <div
+        class="flex items-center justify-between border-t border-indigo-100 bg-indigo-50/70 px-3 py-2 text-[10px] text-indigo-950"
       >
-        <i class="fa-solid fa-trash-can text-xs"></i>
-        <span>
-          Eliminar
+        <div class="flex min-w-0 items-center gap-1.5">
+          <i class="{{ tabs()[selectedTab()].icon }} shrink-0 text-[10px] text-indigo-600"></i>
+          <span class="truncate">
+            Modo Inspector:
+            <strong>{{ tabs()[selectedTab()].title }}</strong>
+          </span>
+        </div>
+        <div class="flex items-center gap-1 text-[9px] text-indigo-600">
+          <span
+            >Pestaña {{ tabsComputed()[selectedTab()].id + 1 }}/{{ tabsComputed().length }}</span
+          >
+        </div>
+      </div>
+
+      <!-- Footer -->
+      <div class="flex items-center justify-end border-t border-slate-200 bg-slate-50 p-3">
+        <button
+          (click)="deleteItem()"
+          type="button"
+          class="cursor-pointer flex items-center gap-1 rounded-lg p-2 text-xs font-semibold text-rose-600 transition-colors hover:bg-rose-50 hover:text-rose-700"
+        >
+          <i class="fa-solid fa-trash-can text-xs"></i>
+          <span>
+            Eliminar
+            @switch (typeItem()) {
+              @case ('section') {
+                Sección
+              }
+              @case ('row') {
+                Fila
+              }
+              @case ('column') {
+                Columna
+              }
+              @case ('element') {
+                Elemento
+              }
+            }
+          </span>
+        </button>
+      </div>
+    }
+  } @else {
+    <div class="flex-1 min-h-0 overflow-y-auto overflow-x-hidden p-1 text-xs">
+      <!-- HEADER -->
+      <div
+        class="flex items-center justify-center p-2 text-[10px] font-bold uppercase tracking-wider text-slate-400"
+      >
+        <span>ITEM</span>
+      </div>
+
+      <!-- sectionsInCanvas -->
+      <div
+        (click)="toggleInspector()"
+        class="cursor-pointer flex items-center justify-center flex-col gap-2 mt-4"
+      >
+        @if (isEmpty()) {
+          <i class="fa-solid fa-sliders text-[11px] text-indigo-600 fa-lg"></i>
+        } @else {
           @switch (typeItem()) {
             @case ('section') {
-              Sección
+              <i class="fa-solid fa-table text-[11px] text-indigo-600 fa-lg"></i>
             }
             @case ('row') {
-              Fila
+              <i class="fa-solid fa-table-list text-[11px] text-amber-600 fa-lg"></i>
             }
             @case ('column') {
-              Columna
+              <i class="fa-solid fa-table-columns text-[11px] text-slate-600 fa-lg"></i>
             }
             @case ('element') {
-              Elemento
+              <i
+                class="fa-lg {{
+                  getElementIcon(selectedItemsInGrid()!.element!)
+                }} text-[11px] text-emerald-600"
+              ></i>
             }
           }
-        </span>
-      </button>
+        }
+      </div>
     </div>
   }
 </div>

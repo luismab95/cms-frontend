@@ -1,5 +1,6 @@
 import { RegisteredFieldTypes } from '@ng-forge/dynamic-forms';
 import { ColumnI, ElementI, RowI, SectionI } from '../interfaces/grid.interface';
+import { generateRandomString } from './random.utils';
 
 export function validGrid(data: any): boolean {
   let result: boolean = true;
@@ -125,6 +126,58 @@ export function findElementByUuid(sections: SectionI[], uuid: string): ElementI 
 
   return null;
 }
+
+export const createColumn = (): ColumnI => {
+  const uuid = generateRandomString(8);
+  return {
+    uuid,
+    css: `.grid-column-${uuid}{}`,
+    config: {
+      backgroundImage: '',
+    },
+    element: null,
+  };
+};
+
+export const createRow = (): RowI => {
+  const uuid = generateRandomString(8);
+  return {
+    uuid,
+    css: `.grid-column-${uuid}{}`,
+    config: {
+      backgroundImage: '',
+    },
+    columns: [],
+  };
+};
+
+export const createSection = (): SectionI => {
+  const sectionUuid = generateRandomString(8);
+  const rowUuid = generateRandomString(8);
+  const columnUuid = generateRandomString(8);
+  return {
+    uuid: sectionUuid,
+    css: `.grid-section-${sectionUuid}{}`,
+    config: {
+      backgroundImage: '',
+    },
+    rows: [
+      {
+        uuid: rowUuid,
+        css: `.grid-row-${rowUuid}{}`,
+        config: { backgroundImage: '' },
+        columns: [
+          {
+            uuid: columnUuid,
+            css: `.grid-column-${columnUuid}{}`,
+            config: { backgroundImage: '' },
+            element: null,
+          },
+        ],
+      },
+    ],
+  };
+};
 
 export const SECTIONFORMTYPESCONFIG = [] as RegisteredFieldTypes[];
 export const COLUMNFORMTYPESCONFIG = [] as RegisteredFieldTypes[];

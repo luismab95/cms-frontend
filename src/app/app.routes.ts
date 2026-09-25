@@ -207,6 +207,7 @@ export const routes: Routes = [
               },
               {
                 path: 'detail',
+                runGuardsAndResolvers: 'always',
                 loadComponent: () =>
                   import('app/pages/admin/pages/detail/detail').then((m) => m.PagesDetail),
                 resolve: {
@@ -292,7 +293,9 @@ export const routes: Routes = [
               {
                 path: 'canvas',
                 loadComponent: () =>
-                  import('app/pages/admin/templates/detail/canvas/canvas').then((m) => m.TemplatesCanvas),
+                  import('app/pages/admin/templates/detail/canvas/canvas').then(
+                    (m) => m.TemplatesCanvas,
+                  ),
                 resolve: {
                   template: () =>
                     inject(TemplateService).find(
