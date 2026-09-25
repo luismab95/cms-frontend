@@ -3,12 +3,12 @@
   [ngClass]="{
     'border-0! p-0! rounded-none!': preview(),
   }"
-  class="body relative border-2 border-dashed border-slate-300 hover:border-slate-400 rounded-xl p-6 transition-all group/body"
+  class="body relative border-2 border-dashed border-gray-300 hover:border-gray-400 rounded-xl p-6 transition-all group/body"
 >
   @if (!preview()) {
     <!-- Body tag -->
     <div
-      class="absolute -top-3 left-4 bg-slate-700 text-white text-[10px] font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wider flex items-center gap-1.5 shadow-sm"
+      class="absolute -top-3 left-4 bg-gray-700 text-white text-[10px] font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wider flex items-center gap-1.5 shadow-sm"
     >
       <i class="fa-solid fa-boxes-stacked"></i>
       <span> Contenedor: Contenido Principal </span>
@@ -19,6 +19,7 @@
       class="absolute -top-3.5 right-4 hidden group-hover/body:flex items-center bg-white border border-slate-200 rounded-md shadow-sm divide-x divide-slate-100 text-slate-600 text-xs"
     >
       <button
+        (click)="selectPageConfig()"
         class="cursor-pointer px-2 py-1 hover:text-slate-600 hover:bg-slate-50 flex items-center gap-1"
         title="Configurar"
       >
@@ -42,6 +43,7 @@
           cdkDragBoundary=".sections"
           cdkDrag
           class="{{ 'grid-section-' + section.uuid }}"
+          [ngStyle]="gridConfigStyles(section.config)"
           [cdkDragDisabled]="preview()"
           [ngClass]="{
             'group/sec border border-dashed border-indigo-500 rounded-xl p-5 pt-7 ring-1 ring-indigo-600/10 relative my-2':
@@ -87,6 +89,7 @@
                 cdkDragBoundary=".rows"
                 cdkDrag
                 class="{{ 'grid-row-' + row.uuid }} "
+                [ngStyle]="gridConfigStyles(row.config)"
                 [cdkDragDisabled]="preview()"
                 [ngClass]="{
                   'group/row border border-dashed border-amber-300 hover:border-amber-400 rounded-lg p-4 pt-6 relative my-2':
@@ -137,6 +140,7 @@
                       cdkDrag
                       [cdkDragDisabled]="preview()"
                       class="{{ 'grid-column-' + column.uuid }} flex flex-col!"
+                      [ngStyle]="gridConfigStyles(column.config)"
                       [ngClass]="{
                         'flex-row w-full!': previewType() !== 'desktop' && previewType() !== 'none',
                         'group/column border m-0.5 border-dashed border-slate-300 rounded-lg p-4 min-h-40 bg-white-500/40 hover:bg-white hover:border-slate-400 flex flex-col justify-between relative':
@@ -185,7 +189,7 @@
                       @if (column.element == null) {
                         @if (!preview()) {
                           <div
-                            (click)="openElementsManagerModal(column)"
+                            (click)="openElementsManagerPanel(column)"
                             class="text-center py-6 text-slate-400 hover:text-indigo-600 cursor-pointer flex flex-col items-center gap-1 w-full m-auto"
                           >
                             <div

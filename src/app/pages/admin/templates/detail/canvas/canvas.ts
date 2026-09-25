@@ -223,6 +223,7 @@ export class TemplatesCanvas implements OnInit {
     this.destroy$.complete();
     this.autosaveToggle$.complete();
     this._pageService.selectedItemsInGrid = {
+      page: null,
       section: null,
       column: null,
       row: null,
@@ -483,6 +484,7 @@ export class TemplatesCanvas implements OnInit {
     this._historyService.commit(item, previous, next);
 
     this.updateSelectionItem({
+      page: null,
       section: newSection,
       row: null,
       column: null,
@@ -611,6 +613,7 @@ export class TemplatesCanvas implements OnInit {
         this.deleteDraft();
         this.loadTemplateData();
         this.updateSelectionItem({
+          page: null,
           section: null,
           row: null,
           column: null,
@@ -672,6 +675,7 @@ export class TemplatesCanvas implements OnInit {
     this._historyService.commit(item, previous, next);
 
     this._pageService.selectedItemsInGrid = {
+      page: null,
       section: null,
       column: null,
       row: null,
@@ -712,6 +716,7 @@ export class TemplatesCanvas implements OnInit {
 
     if (selectedItemsInGrid === null) return;
     this._pageService.selectedItemsInGrid = {
+      page: null,
       section: findSectionByUuid(state, selectedItemsInGrid?.section?.uuid ?? ''),
       row: findRowByUuid(state, selectedItemsInGrid?.row?.uuid ?? ''),
       column: findColumnByUuid(state, selectedItemsInGrid?.column?.uuid ?? ''),

@@ -326,7 +326,12 @@
         class="flex-1 min-h-0 rounded-2xl border border-slate-200/80 bg-white shadow-sm overflow-hidden"
       >
         <div class="flex flex-row h-full min-h-0 overflow-hidden transition-all">
-          <layer-component [class.hidden]="previewMode()" [gridType]="'body'" />
+          <layer-component
+            #layer
+            [class.hidden]="previewMode()"
+            [gridType]="'body'"
+            (elementSelected)="addElement($event)"
+          />
           <!--  PANEL - CANVAS -->
           <div
             class="flex-1 min-w-0 min-h-0 h-full overflow-y-auto overflow-x-auto bg-slate-200/75 relative p-2 lg:p-6 flex flex-col items-center justify-start bg-dot-grid"
@@ -351,13 +356,16 @@
               <!-- MAIN EDITABLE AREA -->
               <div class="p-6 relative">
                 <grid
+                  #grid
                   [editContent]="validPermission(permission.editContentPage)"
                   [editDesign]="validPermission(permission.editDesignPage)"
+                  [pageElementsConfig]="pageElementsConfig()"
                   [gridType]="'body'"
                   [gridStyles]="bodyStyles()"
                   [languageId]="languageId()"
                   [previewType]="preview"
                   [preview]="previewMode()"
+                  (openElementsPanel)="openElementsPanel()"
                 />
               </div>
 

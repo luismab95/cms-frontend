@@ -40,7 +40,6 @@ import { distinctUntilChanged } from 'rxjs';
   ],
 })
 export class LayerComponent {
-  showComponentsPanel = input<boolean>(false);
   gridType = input.required<CanvasT>();
   elementSelected = output<ElementCMSI | null>();
 
@@ -104,12 +103,6 @@ export class LayerComponent {
    * Constructor
    */
   constructor() {
-    effect(() => {
-      const showComponentsPanel = this.showComponentsPanel();
-      this.isElementPanelOpen.set(showComponentsPanel);
-      this.layersCollapsed.set(false);
-    });
-
     this._pageService.selectedItemsInGrid$
       .pipe(distinctUntilChanged(), takeUntilDestroyed(this._destroyRef))
       .subscribe({
@@ -154,6 +147,7 @@ export class LayerComponent {
 
     if (refresh) {
       this.updateSelectionItem({
+        page: null,
         section,
         row: null,
         column: null,
@@ -173,6 +167,7 @@ export class LayerComponent {
 
     if (refresh) {
       this.updateSelectionItem({
+        page: null,
         section: null,
         row,
         column: null,
@@ -200,6 +195,7 @@ export class LayerComponent {
 
     if (refresh)
       this.updateSelectionItem({
+        page: null,
         section: null,
         row: null,
         column,
@@ -228,6 +224,7 @@ export class LayerComponent {
 
     if (refresh)
       this.updateSelectionItem({
+        page: null,
         section: null,
         row: null,
         column: null,
@@ -380,8 +377,9 @@ export class LayerComponent {
   /**
    * Close Element panel
    */
-  closeElementPanelAction = () => this.toggleLayers();
+  closeElementPanelAction = () => this.closeElementPanel();
   closeElementPanel(): void {
+    this.isElementPanelOpen.set(false);
     this.elementSelected.emit(null);
   }
 
@@ -389,6 +387,7 @@ export class LayerComponent {
    * select element
    */
   selectElementPanel(element: ElementCMSI): void {
+    this.isElementPanelOpen.set(false);
     this.elementSelected.emit(element);
   }
 

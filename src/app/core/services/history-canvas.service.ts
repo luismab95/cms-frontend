@@ -31,18 +31,6 @@ export class HistoryService {
   };
 
   /**
-   *
-   * @param type
-   * @param current
-   * @param newState
-   */
-  execute(type: CanvasT, current: SectionI[], newState: SectionI[]): void {
-    const previous = structuredClone(current);
-    const next = structuredClone(newState);
-    this.commit(type, previous, next);
-  }
-
-  /**
    * Guarda un cambio en el historial de una sección.
    */
   commit(type: CanvasT, previous: SectionI[], next: SectionI[]): void {

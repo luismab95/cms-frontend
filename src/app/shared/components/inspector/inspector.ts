@@ -1,31 +1,22 @@
-import {
-  Component,
-  OnInit,
-  signal,
-  inject,
-  OnDestroy,
-  effect,
-  computed,
-  input,
-} from '@angular/core';
+import { Component, signal, inject, effect, computed, input, DestroyRef } from '@angular/core';
 import { NgClass } from '@angular/common';
-import { ElementI, SectionI, SelectedItemsInGridI } from 'app/shared/interfaces/grid.interface';
+import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { ElementService } from 'app/core/services/element.service';
-import { toSignal } from '@angular/core/rxjs-interop';
 import { PageService } from 'app/core/services/pages.service';
-import { TooltipDirective } from 'app/shared/directives/tooltip.directive';
 import { LanguageService } from 'app/shared/services/language.service';
+import { ParameterService } from 'app/core/services/parameter.service';
+import { TooltipDirective } from 'app/shared/directives/tooltip.directive';
+import { ElementI, SectionI, SelectedItemsInGridI } from 'app/shared/interfaces/grid.interface';
 import { TabI } from 'app/shared/interfaces/drawer.interface';
 import { CanvasT } from 'app/core/interfaces/page.interface';
-import { ParameterService } from 'app/core/services/parameter.service';
 import { PermissionCode, validAction } from 'app/shared/utils/permission.utils';
 import { findParameter } from 'app/shared/utils/parameter.utils';
 import { PermissionComponent } from '../permission/permission';
-import { LangugesInspectorComponent } from '../languages-inspector/languages-inspector';
+import { LangugesInspectorComponent } from './languages-inspector/languages-inspector';
 import { deleteColumn, deleteElement, deleteRow } from 'app/shared/utils/grid.utils';
-import { PropertiesInspectorComponent } from '../properties-inspector/properties-inspector';
+import { PropertiesInspectorComponent } from './properties-inspector/properties-inspector';
 import { HistoryService } from 'app/core/services/history-canvas.service';
-import { distinctUntilChanged, Subject, takeUntil } from 'rxjs';
+import { distinctUntilChanged } from 'rxjs';
 
 @Component({
   selector: 'inspector-component',
@@ -38,7 +29,7 @@ import { distinctUntilChanged, Subject, takeUntil } from 'rxjs';
     PropertiesInspectorComponent,
   ],
 })
-export class InspectorComponent implements OnInit, OnDestroy {
+export class InspectorComponent {
   gridType = input.required<CanvasT>();
 
   selectedItemsInGrid = signal<SelectedItemsInGridI | null>(null);
@@ -69,18 +60,20 @@ export class InspectorComponent implements OnInit, OnDestroy {
   sectionsInCanvas = signal<SectionI[]>([]);
   selectedTab = signal<number>(0);
   selectedLanguage = signal<number>(0);
-  urlStatics = signal<string>('');
   inspectorCollapsed = signal<boolean>(false);
 
   permission = PermissionCode;
 
-  private _unsubscribeAll: Subject<any> = new Subject<any>();
-
+  private readonly _destroyRef = inject(DestroyRef);
   private readonly _elementService = inject(ElementService);
   private readonly _pageService = inject(PageService);
   private readonly _languageService = inject(LanguageService);
   private readonly _parameterService = inject(ParameterService);
   private readonly _historyService = inject(HistoryService);
+
+  readonly sectionsPageInCanvas = this._pageService.sections;
+  readonly sectionsHeaderInCanvas = this._pageService.sectionsHeader;
+  readonly sectionsFooterInCanvas = this._pageService.sectionsFooter;
 
   readonly languages = toSignal(this._languageService.languages$, {
     initialValue: {
@@ -102,51 +95,36 @@ export class InspectorComponent implements OnInit, OnDestroy {
     initialValue: [],
   });
 
-  isEmpty = computed(() => {
+  readonly urlStatics = computed(
+    () => findParameter('APP_STATICS_URL', this.parameters())?.value ?? '',
+  );
+  readonly isEmpty = computed(() => {
     const selectedItem = this.selectedItemsInGrid();
     if (selectedItem === null) return true;
     return (
-      selectedItem?.section === null &&
-      selectedItem?.column === null &&
+      selectedItem.page === null &&
+      selectedItem.section === null &&
+      selectedItem.column === null &&
       selectedItem.row === null &&
       selectedItem.element === null
     );
   });
-
-  typeItem = computed(() => {
-    const selectedItem = this.selectedItemsInGrid();
-
-    if (!selectedItem) {
-      return 'page';
-    }
-
-    if (selectedItem.element !== null) return 'element';
-    if (selectedItem.column !== null) return 'column';
-    if (selectedItem.row !== null) return 'row';
-    if (selectedItem.section !== null) return 'section';
-
-    return 'page';
+  readonly typeItem = computed(() => {
+    const item = this.selectedItemsInGrid();
+    return item?.element
+      ? 'element'
+      : item?.column
+        ? 'column'
+        : item?.row
+          ? 'row'
+          : item?.section
+            ? 'section'
+            : 'page';
   });
-
-  dataTextLanguages = computed(() => {
-    const selectedItem = this.selectedItemsInGrid();
-    if (!selectedItem) {
-      return null;
-    }
-    if (selectedItem?.element !== null) return selectedItem.element.dataText;
-    return null;
-  });
-
-  textLanguages = computed(() => {
-    const selectedItem = this.selectedItemsInGrid();
-    if (!selectedItem) {
-      return null;
-    }
-    if (selectedItem?.element !== null) return selectedItem.element.text;
-    return null;
-  });
-
-  tabsComputed = computed(() => {
+  readonly selectedElement = computed(() => this.selectedItemsInGrid()?.element);
+  readonly dataTextLanguages = computed(() => this.selectedElement()?.dataText ?? null);
+  readonly textLanguages = computed(() => this.selectedElement()?.text ?? null);
+  readonly tabsComputed = computed(() => {
     const selectedItem = this.selectedItemsInGrid();
     const tabs = this.tabs().filter((tab) => tab.id !== 2);
     if (selectedItem?.element !== null) {
@@ -162,13 +140,42 @@ export class InspectorComponent implements OnInit, OnDestroy {
     return tabs;
   });
 
+  readonly sectionsByType = {
+    header: {
+      get: () => this.sectionsHeaderInCanvas(),
+      set: (sections: SectionI[]) => {
+        this._pageService.sectionsHeader = sections;
+      },
+    },
+    body: {
+      get: () => this.sectionsPageInCanvas(),
+      set: (sections: SectionI[]) => {
+        this._pageService.sections = sections;
+      },
+    },
+    footer: {
+      get: () => this.sectionsFooterInCanvas(),
+      set: (sections: SectionI[]) => {
+        this._pageService.sectionsFooter = sections;
+      },
+    },
+  } satisfies Record<
+    CanvasT,
+    {
+      get: () => SectionI[];
+      set: (sections: SectionI[]) => void;
+    }
+  >;
+
   /**
    * Constructor
    */
   constructor() {
     effect(() => {
-      const selectedItem = this.selectedItemsInGrid();
-      this.selectTab(0);
+      const selectedItemsInGrid = this.selectedItemsInGrid();
+      if (selectedItemsInGrid) {
+        this.selectedTab.set(0);
+      }
     });
 
     effect(() => {
@@ -195,46 +202,14 @@ export class InspectorComponent implements OnInit, OnDestroy {
       this.tabsLanguages.set(tabs);
     });
 
-    effect(() => {
-      const parameters = this.parameters();
-      const parameter = findParameter('APP_STATICS_URL', parameters);
-      if (parameter) {
-        this.urlStatics.set(parameter.value);
-      }
-    });
-
     this._pageService.selectedItemsInGrid$
-      .pipe(distinctUntilChanged(), takeUntil(this._unsubscribeAll))
+      .pipe(distinctUntilChanged(), takeUntilDestroyed(this._destroyRef))
       .subscribe({
         next: (selectedItemsInGrid) => {
           this.selectedItemsInGrid.set(selectedItemsInGrid);
-          switch (selectedItemsInGrid?.canvas) {
-            case 'header':
-              this.sectionsInCanvas.set(this._pageService.sectionsHeader());
-              break;
-            case 'body':
-              this.sectionsInCanvas.set(this._pageService.sections());
-              break;
-            case 'footer':
-              this.sectionsInCanvas.set(this._pageService.sectionsFooter());
-              break;
-          }
+          this.sectionsInCanvas.set(this.currentSections);
         },
       });
-  }
-
-  /**
-   * On Init
-   */
-  ngOnInit(): void {}
-
-  /**
-   * On destroy
-   */
-  ngOnDestroy(): void {
-    // Unsubscribe from all subscriptions
-    this._unsubscribeAll.next(null);
-    this._unsubscribeAll.complete();
   }
 
   /**
@@ -302,6 +277,7 @@ export class InspectorComponent implements OnInit, OnDestroy {
    */
   resetSelectedItem() {
     this._pageService.selectedItemsInGrid = {
+      page: null,
       section: null,
       row: null,
       column: null,
@@ -311,34 +287,12 @@ export class InspectorComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Update secctions in canvas grid
-   * @param previous
-   * @param next
-   */
-  updateSectionsInGrid(previous: SectionI[], next: SectionI[]) {
-    if (this.gridType() === 'header') {
-      this._pageService.sectionsHeader = next;
-      this._historyService.commit(this.gridType(), previous, next);
-    }
-    if (this.gridType() === 'footer') {
-      this._pageService.sectionsFooter = next;
-      this._historyService.commit(this.gridType(), previous, next);
-    }
-    if (this.gridType() === 'body') {
-      this._pageService.sections = next;
-      this._historyService.commit(this.gridType(), previous, next);
-    }
-  }
-
-  /**
    * Delete section to grid
    * @param uuid
    */
   deleteSection(uuid: string) {
-    const previous = structuredClone(this.sectionsInCanvas());
     const grid = this.sectionsInCanvas().filter((item) => item.uuid !== uuid);
-    const next = structuredClone(grid);
-    this.updateSectionsInGrid(previous, next);
+    this.updateCanvas(grid);
   }
 
   /**
@@ -346,10 +300,8 @@ export class InspectorComponent implements OnInit, OnDestroy {
    * @param uuid
    */
   deleteRow(uuid: string) {
-    const previous = structuredClone(this.sectionsInCanvas());
     const grid = deleteRow(this.sectionsInCanvas(), uuid);
-    const next = structuredClone(grid);
-    this.updateSectionsInGrid(previous, next);
+    this.updateCanvas(grid);
   }
 
   /**
@@ -357,10 +309,8 @@ export class InspectorComponent implements OnInit, OnDestroy {
    * @param uuid
    */
   deleteColumn(uuid: string) {
-    const previous = structuredClone(this.sectionsInCanvas());
     const grid = deleteColumn(this.sectionsInCanvas(), uuid);
-    const next = structuredClone(grid);
-    this.updateSectionsInGrid(previous, next);
+    this.updateCanvas(grid);
   }
 
   /**
@@ -368,12 +318,13 @@ export class InspectorComponent implements OnInit, OnDestroy {
    * @param uuid
    */
   deleteElement(uuid: string) {
-    const previous = structuredClone(this.sectionsInCanvas());
     const grid = deleteElement(this.sectionsInCanvas(), uuid);
-    const next = structuredClone(grid);
-    this.updateSectionsInGrid(previous, next);
+    this.updateCanvas(grid);
   }
 
+  /**
+   * Toggle inspector
+   */
   toggleInspector(): void {
     this.inspectorCollapsed.update((collapsed) => !collapsed);
   }
@@ -390,5 +341,30 @@ export class InspectorComponent implements OnInit, OnDestroy {
    */
   closeInspector(): void {
     this.inspectorCollapsed.set(false);
+  }
+
+  /**
+   * mutate grid
+   * @param next
+   */
+  private updateCanvas(newSections: SectionI[]) {
+    const previous = structuredClone(this.sectionsInCanvas());
+    this.currentSections = newSections;
+    const next = structuredClone(this.currentSections);
+    this._historyService.commit(this.gridType(), previous, next);
+  }
+
+  /**
+   * currentSections
+   */
+  private get currentSections(): SectionI[] {
+    return this.sectionsByType[this.gridType()].get();
+  }
+
+  /**
+   * currentSections
+   */
+  private set currentSections(sections: SectionI[]) {
+    this.sectionsByType[this.gridType()].set(sections);
   }
 }

@@ -1,10 +1,37 @@
 import { RegisteredFieldTypes } from '@ng-forge/dynamic-forms';
-import { ColumnI, ElementI, RowI, SectionI } from '../interfaces/grid.interface';
+import {
+  ColumnI,
+  ElementI,
+  PageElementsConfigI,
+  RowI,
+  SectionI,
+} from '../interfaces/grid.interface';
 import { generateRandomString } from './random.utils';
+import { ElementCMSI } from '../interfaces/element.interface';
 
-export function validGrid(data: any): boolean {
-  let result: boolean = true;
-  return result;
+export function validGrid(data: SectionI[]): boolean {
+  if (!data.length) {
+    return false;
+  }
+
+  let hasElement = false;
+  for (const section of data) {
+    if (!section.rows.length) {
+      return false;
+    }
+    for (const row of section.rows) {
+      if (!row.columns.length) {
+        return false;
+      }
+      for (const column of row.columns) {
+        if (column.element) {
+          hasElement = true;
+        }
+      }
+    }
+  }
+
+  return hasElement;
 }
 
 export function updateSection(
@@ -51,6 +78,16 @@ export function updateElement(
       })),
     })),
   }));
+}
+
+export function updateConfigPageElement(
+  pageElement: PageElementsConfigI,
+  newConfig: { [key: string]: any },
+): PageElementsConfigI {
+  return {
+    ...pageElement,
+    config: newConfig,
+  };
 }
 
 export function deleteRow(sections: SectionI[], rowUuid: string): SectionI[] {
@@ -127,6 +164,18 @@ export function findElementByUuid(sections: SectionI[], uuid: string): ElementI 
   return null;
 }
 
+export const createElement = (elementSelected: ElementCMSI): ElementI => {
+  const elementUuid = generateRandomString(8);
+  return {
+    uuid: elementUuid,
+    css: `.${elementSelected.css}-${elementUuid}{}`,
+    config: elementSelected.config,
+    name: elementSelected.name,
+    text: elementSelected.text,
+    dataText: [],
+  };
+};
+
 export const createColumn = (): ColumnI => {
   const uuid = generateRandomString(8);
   return {
@@ -179,6 +228,40 @@ export const createSection = (): SectionI => {
   };
 };
 
-export const SECTIONFORMTYPESCONFIG = [] as RegisteredFieldTypes[];
-export const COLUMNFORMTYPESCONFIG = [] as RegisteredFieldTypes[];
-export const ROWFORMTYPESCONFIG = [] as RegisteredFieldTypes[];
+const backgroundImageConfig = {
+  key: 'backgroundImage',
+  type: 'file',
+  label: 'Imagen',
+  props: {
+    accept: 'image/png,image/jpeg,image/webp,image/svg+xml',
+    placeholder: 'Seleccionar imagen',
+    remove: 'Remover imagen',
+    hint: 'Formatos permitidos: PNG, JPG, WEBP o SVG',
+    type: 'image',
+  },
+};
+
+export const SECTIONFORMTYPESCONFIG = [
+  {
+    ...backgroundImageConfig,
+  },
+] as unknown as RegisteredFieldTypes[];
+export const COLUMNFORMTYPESCONFIG = [
+  {
+    ...backgroundImageConfig,
+  },
+] as unknown as RegisteredFieldTypes[];
+export const ROWFORMTYPESCONFIG = [
+  {
+    ...backgroundImageConfig,
+  },
+] as unknown as RegisteredFieldTypes[];
+export const PAGEFORMTYPESCONFIG = [
+  {
+    ...backgroundImageConfig,
+  },
+] as unknown as RegisteredFieldTypes[];
+
+export function filterPath(path: string) {
+  return path.replaceAll('\\', '/');
+}

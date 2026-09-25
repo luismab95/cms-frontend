@@ -57,7 +57,7 @@ export class PageService {
    *
    * @param value
    */
-  set sections(value: SectionI[]) {    
+  set sections(value: SectionI[]) {
     this._sections.set(value);
   }
 

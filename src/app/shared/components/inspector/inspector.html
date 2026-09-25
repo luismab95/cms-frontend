@@ -12,6 +12,7 @@
       <div
         [ngClass]="{
           'bg-indigo-100': isEmpty() || typeItem() === 'section',
+          'bg-gray-100': typeItem() === 'page',
           'bg-amber-100': typeItem() === 'row',
           'bg-slate-100': typeItem() === 'column',
           'bg-emerald-100': typeItem() === 'element',
@@ -19,9 +20,12 @@
         class="flex size-10 items-center justify-center rounded-md shadow-sm"
       >
         @if (isEmpty()) {
-          <i class="fa-solid fa-sliders text-[11px] text-indigo-600 fa-lg"></i>
+          <i class="fa-solid fa-sliders text-[11px] text-gray-600 fa-lg"></i>
         } @else {
           @switch (typeItem()) {
+            @case ('page') {
+              <i class="fa-solid fa-boxes-stacked text-[11px] text- fa-lg"></i>
+            }
             @case ('section') {
               <i class="fa-solid fa-table text-[11px] text-indigo-600 fa-lg"></i>
             }
@@ -49,6 +53,15 @@
               <span class="text-[10px] text-slate-400"> Sin selección activa </span>
             } @else {
               @switch (typeItem()) {
+                @case ('page') {
+                  {{
+                    gridType() === 'body'
+                      ? 'Contenido Principal'
+                      : gridType() === 'header'
+                        ? 'Encabezado'
+                        : 'Pie de página'
+                  }}
+                }
                 @case ('section') {
                   Sección
                   <span class="text-[10px] text-slate-400">
@@ -576,7 +589,10 @@
               validPermission(permission.editContentTemplate)
             ) {
               <!-- Properties -->
-              <properties-inspector-component [itemSelectedInGrid]="selectedItemsInGrid()" />
+              <properties-inspector-component
+                [itemSelectedInGrid]="selectedItemsInGrid()"
+                [gridType]="gridType()"
+              />
             } @else {
               <permission-component [style]="'minimal'" />
             }
@@ -588,6 +604,7 @@
             ) {
               <!-- languages -->
               <languages-inspector-component
+                [gridType]="gridType()"
                 [languages]="languages().records"
                 [tabs]="tabsLanguages()"
                 [data]="dataTextLanguages()!"

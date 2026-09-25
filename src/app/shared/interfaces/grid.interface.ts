@@ -2,6 +2,7 @@ import { CanvasT } from 'app/core/interfaces/page.interface';
 import { ElementDataI } from './element.interface';
 
 export interface SelectedItemsInGridI {
+  page: PageElementsConfigI | null;
   section: SectionI | null;
   row: RowI | null;
   column: ColumnI | null;
@@ -9,10 +10,13 @@ export interface SelectedItemsInGridI {
   canvas: CanvasT;
 }
 
-export interface PageElementsI {
+export interface PageElementsConfigI {
   css: string;
-  data: SectionI[];
   config: { [key: string]: any };
+}
+
+export interface PageElementsI extends PageElementsConfigI {
+  data: SectionI[];
   title?: string;
 }
 
