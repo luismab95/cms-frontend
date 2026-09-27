@@ -47,7 +47,7 @@ export class InspectorComponent {
     },
     {
       id: 1,
-      title: 'Configuración',
+      title: 'Propiedades',
       description: 'Configura el comportamiento y las opciones.',
       icon: 'fa-solid fa-sliders',
       type: 'icon',
@@ -316,6 +316,145 @@ export class InspectorComponent {
    */
   closeInspector(): void {
     this.inspectorCollapsed.set(false);
+  }
+
+  /**
+   * Color for icons
+   * @returns
+   */
+  itemIconBackgroundClass(): string {
+    if (this.isEmpty()) {
+      return 'bg-indigo-100';
+    }
+
+    return (
+      {
+        page: 'bg-gray-100',
+        section: 'bg-indigo-100',
+        row: 'bg-amber-100',
+        column: 'bg-slate-100',
+        element: 'bg-emerald-100',
+      }[this.typeItem()] ?? 'bg-slate-100'
+    );
+  }
+
+  /**
+   * Icon for type
+   * @returns
+   */
+  itemIconClass(): string {
+    if (this.isEmpty()) {
+      return 'fa-solid fa-sliders text-gray-600';
+    }
+
+    const icons: Record<string, string> = {
+      page: `fa-solid text-gray-600  ${
+        this.gridType() === 'page'
+          ? 'fa-table-cells'
+          : this.gridType() === 'header'
+            ? 'fa-table'
+            : 'fa-table rotate-180'
+      }`,
+      section: 'fa-solid fa-object-group text-indigo-600',
+      row: 'fa-solid fa-table-list text-amber-600',
+      column: 'fa-solid fa-table-columns text-slate-600',
+    };
+
+    if (this.typeItem() === 'element') {
+      return `${this.getElementIcon(this.selectedItemsInGrid()!.element!)} text-emerald-600`;
+    }
+
+    return icons[this.typeItem()] ?? 'fa-solid fa-cube text-slate-600';
+  }
+
+  /**
+   * Title
+   * @returns
+   */
+  itemTitle(): string {
+    if (this.isEmpty()) {
+      return 'Inspector de Propiedades';
+    }
+
+    switch (this.typeItem()) {
+      case 'page':
+        return this.gridType() === 'page'
+          ? 'Contenido Principal'
+          : this.gridType() === 'header'
+            ? 'Encabezado'
+            : 'Pie de página';
+      case 'section':
+        return 'Sección';
+      case 'row':
+        return 'Fila';
+      case 'column':
+        return 'Columna';
+      case 'element':
+        return `Elemento ${this.selectedItemsInGrid()?.element?.name ?? ''}`;
+      default:
+        return '';
+    }
+  }
+
+  /**
+   * Get uuid
+   * @returns
+   */
+  itemUuid(): string {
+    if (this.isEmpty()) {
+      return '';
+    }
+
+    const selected = this.selectedItemsInGrid();
+    switch (this.typeItem()) {
+      case 'section':
+        return selected?.section?.uuid ?? '';
+      case 'row':
+        return selected?.row?.uuid ?? '';
+      case 'column':
+        return selected?.column?.uuid ?? '';
+      case 'element':
+        return selected?.element?.uuid ?? '';
+      default:
+        return '';
+    }
+  }
+
+  /**
+   * Text for delete
+   * @returns
+   */
+  deleteItemLabel(): string {
+    return (
+      {
+        section: 'Sección',
+        row: 'Fila',
+        column: 'Columna',
+        element: 'Elemento',
+        page: '',
+      }[this.typeItem()] ?? ''
+    );
+  }
+
+  /**
+   * can edit design
+   */
+  canEditDesign(): boolean {
+    return (
+      this.validPermission(this.permission.editDesignTemplate) ||
+      this.validPermission(this.permission.editDesignPage)
+    );
+  }
+
+  /**
+   * can edit content
+   * @returns
+   */
+  canEditContent(): boolean {
+    return (
+      this.validPermission(this.permission.editContentPage) ||
+      this.validPermission(this.permission.editContentTemplate)
+    );
   }
 
   /**

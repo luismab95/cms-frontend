@@ -39,7 +39,7 @@ import { TooltipDirective } from 'app/shared/directives/tooltip.directive';
 
             <span class="text-[10px] text-indigo-600 font-bold"> '{{ layout().display }}' </span>
           </div>
-          <div class="grid grid-cols-4 gap-1 bg-slate-100 p-0.5 rounded-lg text-center text-[10px]">
+          <div class="grid grid-cols-5 gap-1 bg-slate-100 p-0.5 rounded-lg text-center text-[10px]">
             @for (display of displays; track display) {
               <button
                 type="button"
@@ -59,25 +59,19 @@ import { TooltipDirective } from 'app/shared/directives/tooltip.directive';
         <div class="grid grid-cols-2 gap-2">
           <div>
             <label class="text-[10px] text-slate-500 font-medium block mb-0.5"> width </label>
-
-            <div class="flex items-center border border-slate-200 rounded px-2 py-1 bg-white">
-              <input
-                [formField]="layoutForm.width"
-                class="w-full border-0 p-0 text-xs text-slate-700 focus:ring-0 focus:outline-none"
-                type="text"
-              />
-            </div>
+            <input
+              [formField]="layoutForm.width"
+              class="w-full border border-slate-200 rounded px-2 py-1 text-xs text-slate-700 focus:ring-0 focus:outline-none focus:shadow-xs"
+              type="text"
+            />
           </div>
           <div>
             <label class="text-[10px] text-slate-500 font-medium block mb-0.5"> height </label>
-
-            <div class="flex items-center border border-slate-200 rounded px-2 py-1 bg-white">
-              <input
-                [formField]="layoutForm.height"
-                class="w-full border-0 p-0 text-xs text-slate-700 focus:ring-0 focus:outline-none"
-                type="text"
-              />
-            </div>
+            <input
+              [formField]="layoutForm.height"
+              class="w-full border border-slate-200 rounded px-2 py-1 text-xs text-slate-700 focus:ring-0 focus:outline-none focus:shadow-xs"
+              type="text"
+            />
           </div>
         </div>
         <!-- MIN / MAX -->
@@ -89,12 +83,12 @@ import { TooltipDirective } from 'app/shared/directives/tooltip.directive';
             <div class="grid grid-cols-2 gap-1">
               <input
                 [formField]="layoutForm.minWidth"
-                class="border border-slate-200 rounded px-1.5 py-0.5 text-xs text-slate-700 focus:ring-0 focus:outline-none"
+                class="border border-slate-200 rounded px-1.5 py-0.5 text-xs text-slate-700 focus:ring-0 focus:outline-none focus:shadow-xs"
                 type="text"
               />
               <input
                 [formField]="layoutForm.maxWidth"
-                class="border border-slate-200 rounded px-1.5 py-0.5 text-xs text-slate-700 focus:ring-0 focus:outline-none"
+                class="border border-slate-200 rounded px-1.5 py-0.5 text-xs text-slate-700 focus:ring-0 focus:outline-none focus:shadow-xs"
                 type="text"
               />
             </div>
@@ -106,12 +100,12 @@ import { TooltipDirective } from 'app/shared/directives/tooltip.directive';
             <div class="grid grid-cols-2 gap-1">
               <input
                 [formField]="layoutForm.minHeight"
-                class="border border-slate-200 rounded px-1.5 py-0.5 text-xs text-slate-700 focus:ring-0 focus:outline-none"
+                class="border border-slate-200 rounded px-1.5 py-0.5 text-xs text-slate-700 focus:ring-0 focus:outline-none focus:shadow-xs"
                 type="text"
               />
               <input
                 [formField]="layoutForm.maxHeight"
-                class="border border-slate-200 rounded px-1.5 py-0.5 text-xs text-slate-700 focus:ring-0 focus:outline-none"
+                class="border border-slate-200 rounded px-1.5 py-0.5 text-xs text-slate-700 focus:ring-0 focus:outline-none focus:shadow-xs"
                 type="text"
               />
             </div>
@@ -123,7 +117,7 @@ import { TooltipDirective } from 'app/shared/directives/tooltip.directive';
             <label class="text-[10px] text-slate-500 font-medium block mb-0.5"> box-sizing </label>
             <select
               [formField]="layoutForm.boxSizing"
-              class="w-full border border-slate-200 rounded py-1 px-1.5 text-xs text-slate-700 bg-white"
+              class="w-full border border-slate-200 rounded py-1 px-1.5 text-xs text-slate-700 bg-white focus:shadow-xs"
             >
               <option value="border-box">border-box</option>
               <option value="content-box">content-box</option>
@@ -137,7 +131,7 @@ import { TooltipDirective } from 'app/shared/directives/tooltip.directive';
               <label class="text-[10px] text-slate-500 font-medium block mb-0.5"> flex-wrap </label>
               <select
                 [formField]="layoutForm.flexWrap"
-                class="w-full border border-slate-200 rounded py-1 px-1.5 text-xs text-slate-700 bg-white"
+                class="w-full border border-slate-200 rounded py-1 px-1.5 text-xs text-slate-700 bg-white focus:shadow-xs"
               >
                 @for (wrap of flexWraps; track wrap) {
                   <option [value]="wrap">
@@ -288,7 +282,7 @@ import { TooltipDirective } from 'app/shared/directives/tooltip.directive';
             </div>
             <select
               [formField]="layoutForm.alignContent"
-              class="w-full border border-slate-200 rounded py-1 px-1.5 text-xs text-slate-700 bg-white"
+              class="w-full border border-slate-200 rounded py-1 px-1.5 text-xs text-slate-700 bg-white focus:shadow-xs focus:ring-0 focus:outline-none"
             >
               @for (value of alignContents; track value) {
                 <option [value]="value">
@@ -309,7 +303,7 @@ import { TooltipDirective } from 'app/shared/directives/tooltip.directive';
             </div>
             <select
               [formField]="layoutForm.alignSelf"
-              class="w-full border border-slate-200 rounded py-1 px-1.5 text-xs text-slate-700 bg-white"
+              class="w-full border border-slate-200 rounded py-1 px-1.5 text-xs text-slate-700 bg-white focus:shadow-xs focus:ring-0 focus:outline-none"
             >
               @for (value of alignSelfValues; track value) {
                 <option [value]="value">
@@ -337,7 +331,7 @@ import { TooltipDirective } from 'app/shared/directives/tooltip.directive';
                 <span class="text-[9px] text-slate-400 mr-1"> all: </span>
                 <input
                   [formField]="layoutForm.gap"
-                  class="w-full border-0 p-0 text-xs text-slate-700 focus:ring-0 focus:outline-none"
+                  class="w-full border-0 p-0 text-xs text-slate-700 focus:shadow-xs focus:ring-0 focus:outline-none"
                   type="text"
                 />
               </div>
@@ -346,7 +340,7 @@ import { TooltipDirective } from 'app/shared/directives/tooltip.directive';
                 <span class="text-[9px] text-slate-400 mr-1"> row: </span>
                 <input
                   [formField]="layoutForm.rowGap"
-                  class="w-full border-0 p-0 text-xs text-slate-700 focus:ring-0 focus:outline-none"
+                  class="w-full border-0 p-0 text-xs text-slate-700 focus:shadow-xs focus:ring-0 focus:outline-none"
                   type="text"
                 />
               </div>
@@ -355,7 +349,7 @@ import { TooltipDirective } from 'app/shared/directives/tooltip.directive';
                 <span class="text-[9px] text-slate-400 mr-1"> col: </span>
                 <input
                   [formField]="layoutForm.columnGap"
-                  class="w-full border-0 p-0 text-xs text-slate-700 focus:ring-0 focus:outline-none"
+                  class="w-full border-0 p-0 text-xs text-slate-700 focus:shadow-xs focus:ring-0 focus:outline-none"
                   type="text"
                 />
               </div>
@@ -372,7 +366,7 @@ import { TooltipDirective } from 'app/shared/directives/tooltip.directive';
                 [formField]="layoutForm.flexGrow"
                 type="number"
                 step="1"
-                class="w-full border border-slate-200 rounded px-2 py-1 text-xs text-slate-700 focus:ring-0 focus:outline-none"
+                class="w-full border border-slate-200 rounded px-2 py-1 text-xs text-slate-700 focus:shadow-xs focus:ring-0 focus:outline-none"
               />
             </div>
             <div>
@@ -395,7 +389,7 @@ import { TooltipDirective } from 'app/shared/directives/tooltip.directive';
               <input
                 [formField]="layoutForm.flexBasis"
                 type="text"
-                class="w-full border border-slate-200 rounded px-2 py-1 text-xs text-slate-700 focus:ring-0 focus:outline-none"
+                class="w-full border border-slate-200 rounded px-2 py-1 text-xs text-slate-700 focus:shadow-xs focus:ring-0 focus:outline-none"
               />
             </div>
             <div>
@@ -404,7 +398,7 @@ import { TooltipDirective } from 'app/shared/directives/tooltip.directive';
                 [formField]="layoutForm.flex"
                 type="text"
                 placeholder="0 1 auto"
-                class="w-full border border-slate-200 rounded px-2 py-1 text-xs text-slate-700 focus:ring-0 focus:outline-none"
+                class="w-full border border-slate-200 rounded px-2 py-1 text-xs text-slate-700 focus:shadow-xs focus:ring-0 focus:outline-none"
               />
             </div>
           </div>
@@ -419,11 +413,11 @@ export class DesignLayoutComponent {
   readonly displays: DisplayT[] = [
     'block',
     'inline',
-    'inline-block',
+    // 'inline-block',
     'flex',
-    'inline-flex',
+    // 'inline-flex',
     'grid',
-    'inline-grid',
+    // 'inline-grid',
     'none',
   ];
   readonly flexDirections: FlexDirectionT[] = ['row', 'row-reverse', 'column', 'column-reverse'];
@@ -502,6 +496,7 @@ export class DesignLayoutComponent {
   constructor() {
     effect(() => {
       const value = this.value();
+      if (!value) return;
       this.layout.set(value);
     });
   }

@@ -34,9 +34,9 @@ import { PermissionComponent } from 'app/shared/components/permission/permission
 import { GridComponent } from 'app/shared/components/grid/grid';
 import { LayerComponent } from 'app/shared/components/layer/layer';
 import { InspectorComponent } from 'app/shared/components/inspector/inspector';
-import { filter, interval, take } from 'rxjs';
 import { TemplateService } from 'app/core/services/templates.service';
 import { TemplateI } from 'app/core/interfaces/template.interface';
+import { filter, interval, take } from 'rxjs';
 
 @Component({
   selector: 'templates-canvas',
@@ -194,6 +194,11 @@ export class TemplatesCanvas implements AfterViewInit, OnDestroy {
 
       if (this.originTemplate() === null) {
         this.originTemplate.set(structuredClone(template));
+      }
+
+      if (template.draft !== null) {
+        this.confirmDraft();
+        return;
       }
 
       this.loadTemplateData();
@@ -409,7 +414,7 @@ export class TemplatesCanvas implements AfterViewInit, OnDestroy {
    */
   loadStyles() {
     const template = this.template();
-    if (!template) return;
+    if (!template || !template.data) return;
     const templateData = template.data;
     const css = `${templateData!.header.css} ${templateData!.footer.css}`;
     this._dynamicStyleService.remove('template-dynamicStyles');

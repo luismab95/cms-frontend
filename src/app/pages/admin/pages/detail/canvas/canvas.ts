@@ -26,6 +26,7 @@ import { CanvasService } from 'app/core/services/canvas.service';
 import { PageService } from 'app/core/services/pages.service';
 import { ParameterService } from 'app/core/services/parameter.service';
 import { DynamicStyleService } from 'app/core/services/dynamic-style.service';
+import { TemplateService } from 'app/core/services/templates.service';
 import { filterPath, validGrid } from 'app/shared/utils/grid.utils';
 import { findParameter } from 'app/shared/utils/parameter.utils';
 import { PermissionCode, validAction } from 'app/shared/utils/permission.utils';
@@ -35,7 +36,6 @@ import { GridComponent } from 'app/shared/components/grid/grid';
 import { LayerComponent } from 'app/shared/components/layer/layer';
 import { InspectorComponent } from 'app/shared/components/inspector/inspector';
 import { filter, interval, take } from 'rxjs';
-import { TemplateService } from 'app/core/services/templates.service';
 
 @Component({
   selector: 'pages-canvas',
@@ -147,7 +147,7 @@ export class PagesCanvas implements AfterViewInit, OnDestroy {
         takeUntilDestroyed(this._destroyRef),
       )
       .subscribe(() => {
-        this.updateDraft();
+        // this.updateDraft();
       });
 
     effect(() => {

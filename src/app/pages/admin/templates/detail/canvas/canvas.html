@@ -250,12 +250,13 @@
             [class.bg-emerald-50/70]="!previewMode()"
             [class.bg-rose-50/70]="previewMode()"
             class="hidden lg:flex items-center space-x-2 px-3 py-1 bg-emerald-50/70 border border-emerald-200 text-xs rounded-full shadow-xs"
-            title="Todos los cambios locales están replicados en tiempo real"
           >
             <span
+              appTooltip="Clic para guardar cambios como borrador"
+              (click)="updateDraft()"
               [class.text-emerald-700]="!previewMode()"
               [class.text-rose-700]="previewMode()"
-              class="flex items-center text-emerald-700 text-[11px] gap-x-2 gap-y-1"
+              class="flex items-center text-emerald-700 text-[11px] gap-x-2 gap-y-1 cursor-pointer"
             >
               <span class="relative flex h-2 w-2">
                 <span
