@@ -8,6 +8,8 @@ import {
 } from '../interfaces/grid.interface';
 import { generateRandomString } from './random.utils';
 import { ElementCMSI } from '../interfaces/element.interface';
+import * as csstree from 'css-tree';
+import { ResponsiveCssJsonI, DeviceT, StyleConfigI } from '../interfaces/design.interface';
 
 export function validGrid(data: SectionI[]): boolean {
   if (!data.length) {
@@ -264,4 +266,258 @@ export const PAGEFORMTYPESCONFIG = [
 
 export function filterPath(path: string) {
   return path.replaceAll('\\', '/');
+}
+
+const BREAKPOINTSCSS = {
+  mobileMax: 393,
+  tabletMin: 394,
+  tabletMax: 833,
+  desktopMin: 834,
+} as const;
+
+export function cssToJson(css: string): ResponsiveCssJsonI {
+  const ast = csstree.parse(css);
+
+  const result: ResponsiveCssJsonI = {
+    selector: '',
+    mobile: createStyleConfig(),
+    tablet: createStyleConfig(),
+    desktop: createStyleConfig(),
+  };
+
+  // ==========================================
+  // SELECTOR PRINCIPAL
+  // ==========================================
+
+  csstree.walk(ast, {
+    visit: 'Rule',
+
+    enter(node: any) {
+      if (!result.selector) {
+        result.selector = csstree.generate(node.prelude).trim();
+      }
+    },
+  });
+
+  const selector = result.selector;
+
+  if (!selector) {
+    return result;
+  }
+
+  // ==========================================
+  // REGLAS FUERA DE MEDIA
+  // ==========================================
+
+  csstree.walk(ast, {
+    visit: 'Rule',
+
+    enter(node: any) {
+      const ruleSelector = csstree.generate(node.prelude).trim();
+
+      if (ruleSelector === selector) {
+        Object.assign(result.mobile.base, parseDeclarations(node.block));
+      } else {
+        const state = getState(ruleSelector, selector);
+
+        if (state) {
+          result.mobile.states[state] = parseDeclarations(node.block);
+        }
+      }
+    },
+  });
+
+  // ==========================================
+  // MEDIA QUERIES
+  // ==========================================
+
+  csstree.walk(ast, {
+    visit: 'Atrule',
+
+    enter(node: any) {
+      if (node.name !== 'media') {
+        return;
+      }
+
+      if (!node.prelude || !node.block) {
+        return;
+      }
+
+      const media = csstree.generate(node.prelude).trim();
+
+      let device: DeviceT | null = null;
+
+      // MOBILE
+
+      if (media === `(max-width: ${BREAKPOINTSCSS.mobileMax}px)`) {
+        device = 'mobile';
+      }
+
+      // TABLET
+      else if (
+        media ===
+        `(min-width: ${BREAKPOINTSCSS.tabletMin}px) and (max-width: ${BREAKPOINTSCSS.tabletMax}px)`
+      ) {
+        device = 'tablet';
+      }
+
+      // DESKTOP
+      else if (media === `(min-width: ${BREAKPOINTSCSS.desktopMin}px)`) {
+        device = 'desktop';
+      }
+
+      if (!device) {
+        return;
+      }
+
+      // ----------------------------------------
+      // Buscar reglas dentro del @media
+      // ----------------------------------------
+
+      csstree.walk(node.block, {
+        visit: 'Rule',
+
+        enter(rule: any) {
+          const ruleSelector = csstree.generate(rule.prelude).trim();
+
+          // BASE
+
+          if (ruleSelector === selector) {
+            Object.assign(result[device].base, parseDeclarations(rule.block));
+
+            return;
+          }
+
+          // STATE
+
+          const state = getState(ruleSelector, selector);
+
+          if (state) {
+            result[device].states[state] = parseDeclarations(rule.block);
+          }
+        },
+      });
+    },
+  });
+
+  return result;
+}
+
+export function jsonToCss(json: ResponsiveCssJsonI): string {
+  const { selector } = json;
+
+  let css = '';
+
+  // ==========================================
+  // MOBILE
+  // ==========================================
+
+  css += `@media (max-width: ${BREAKPOINTSCSS.mobileMax}px) {\n`;
+
+  css += `  ${selector} {\n`;
+  css += generateDeclarations(json.mobile.base, '    ');
+  css += `\n  }`;
+
+  if (Object.keys(json.mobile.states).length > 0) {
+    css += `\n\n`;
+    css += generateStates(selector, json.mobile.states, '  ');
+  }
+
+  css += `\n}`;
+
+  // ==========================================
+  // TABLET
+  // ==========================================
+
+  css += `\n\n@media (min-width: ${BREAKPOINTSCSS.tabletMin}px) and (max-width: ${BREAKPOINTSCSS.tabletMax}px) {\n`;
+
+  css += `  ${selector} {\n`;
+  css += generateDeclarations(json.tablet.base, '    ');
+  css += `\n  }`;
+
+  if (Object.keys(json.tablet.states).length > 0) {
+    css += `\n\n`;
+    css += generateStates(selector, json.tablet.states, '  ');
+  }
+
+  css += `\n}`;
+
+  // ==========================================
+  // DESKTOP
+  // ==========================================
+
+  css += `\n\n@media (min-width: ${BREAKPOINTSCSS.desktopMin}px) {\n`;
+
+  css += `  ${selector} {\n`;
+  css += generateDeclarations(json.desktop.base, '    ');
+  css += `\n  }`;
+
+  if (Object.keys(json.desktop.states).length > 0) {
+    css += `\n\n`;
+    css += generateStates(selector, json.desktop.states, '  ');
+  }
+
+  css += `\n}`;
+
+  return css;
+}
+
+function getState(selector: string, baseSelector: string): string | null {
+  if (!selector.startsWith(`${baseSelector}:`)) {
+    return null;
+  }
+  return selector.substring(baseSelector.length + 1);
+}
+
+function parseDeclarations(block: csstree.Block): Record<string, string> {
+  const styles: Record<string, string> = {};
+
+  csstree.walk(block, {
+    visit: 'Declaration',
+
+    enter(node: any) {
+      styles[toCamelCaseCssPropertie(node.property)] = csstree.generate(node.value).trim();
+    },
+  });
+
+  return styles;
+}
+
+function createStyleConfig(): StyleConfigI {
+  return {
+    base: {},
+    states: {},
+  };
+}
+
+function toCamelCaseCssPropertie(property: string): string {
+  return property.replace(/-([a-z])/g, (_, char) => char.toUpperCase());
+}
+
+function camelToKebabCssPropertie(property: string): string {
+  return property.replace(/[A-Z]/g, (match) => `-${match.toLowerCase()}`);
+}
+
+function generateDeclarations(styles: Record<string, string>, indent = ''): string {
+  return Object.entries(styles)
+    .map(([property, value]) => `${indent}${camelToKebabCssPropertie(property)}: ${value};`)
+    .join('\n');
+}
+
+function generateStates(
+  selector: string,
+  states: Record<string, Record<string, string>>,
+  indent = '',
+): string {
+  return Object.entries(states)
+    .map(([state, styles]) => {
+      const cssState = state.replace(/[A-Z]/g, (match) => `-${match.toLowerCase()}`);
+
+      return (
+        `${indent}${selector}:${cssState} {\n` +
+        generateDeclarations(styles, indent + '  ') +
+        `\n${indent}}`
+      );
+    })
+    .join('\n\n');
 }
