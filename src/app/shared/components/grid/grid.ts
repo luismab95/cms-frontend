@@ -6,18 +6,8 @@ import {
   moveItemInArray,
 } from '@angular/cdk/drag-drop';
 import { NgClass, NgStyle } from '@angular/common';
-import {
-  Component,
-  computed,
-  DestroyRef,
-  effect,
-  inject,
-  input,
-  OnDestroy,
-  output,
-  signal,
-} from '@angular/core';
-import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
+import { Component, computed, effect, inject, input, OnDestroy, output } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
 import {
   ColumnI,
   ElementI,
@@ -70,18 +60,8 @@ export class GridComponent implements OnDestroy {
   previewType = input<string>('none');
   openElementsPanel = output<void>();
 
-  selectedItemsInGrid = signal<SelectedItemsInGridI>({
-    page: null,
-    section: null,
-    row: null,
-    column: null,
-    element: null,
-    canvas: 'page',
-  });
-
   private readonly _pageService = inject(PageService);
   private readonly _canvasService = inject(CanvasService);
-  private readonly _destroyRef = inject(DestroyRef);
   private readonly _dynamicStyleService = inject(DynamicStyleService);
   private readonly _parameterService = inject(ParameterService);
   private readonly _templateService = inject(TemplateService);
@@ -89,6 +69,8 @@ export class GridComponent implements OnDestroy {
   readonly page = toSignal(this._pageService.page$, { initialValue: null });
   readonly template = toSignal(this._templateService.template$, { initialValue: null });
   readonly parameters = toSignal(this._parameterService.parameter$, { initialValue: [] });
+
+  readonly selectedItemsInGrid = this._canvasService.selectedItemsInGrid;
 
   readonly urlStatics = computed(
     () => findParameter('APP_STATICS_URL', this.parameters())?.value ?? '',
@@ -99,7 +81,7 @@ export class GridComponent implements OnDestroy {
 
   readonly gridConfigStyles = (config: { [key: string]: any }) => {
     const backgroundImage = config['backgroundImage'];
-    if (!backgroundImage && backgroundImage !== '' && backgroundImage !== 'null') {
+    if (!backgroundImage || backgroundImage === '' || backgroundImage === 'null') {
       return {};
     }
 
@@ -115,17 +97,6 @@ export class GridComponent implements OnDestroy {
     effect(() => {
       this.sectionsInCanvas();
       this.loadStyles();
-    });
-
-    effect(() => {
-      this.sectionsInCanvas();
-      this.loadStyles();
-    });
-
-    this._pageService.selectedItemsInGrid$.pipe(takeUntilDestroyed(this._destroyRef)).subscribe({
-      next: (selectedItemsInGrid) => {
-        this.selectedItemsInGrid.set(selectedItemsInGrid!);
-      },
     });
   }
 
@@ -144,6 +115,11 @@ export class GridComponent implements OnDestroy {
    * Load styles
    */
   loadStyles(): void {
+    const page = this.page();
+    if (!page) return;
+    const pageData = page.data;
+
+    this._dynamicStyleService.remove('body-dynamicStyles');
     this._dynamicStyleService.remove(`${this.gridType()}-dynamicSectionStyles`);
 
     const styleId = `${this.gridType()}-dynamicSectionStyles`;
@@ -162,7 +138,9 @@ export class GridComponent implements OnDestroy {
         }
       }
     }
+
     this._dynamicStyleService.set(styleId, css.join('\n'));
+    this._dynamicStyleService.set('body-dynamicStyles', pageData?.body.css ?? '');
   }
 
   /**
@@ -245,9 +223,12 @@ export class GridComponent implements OnDestroy {
    * @returns
    */
   addElement(element: ElementCMSI) {
-    const gridType = this.selectedItemsInGrid().canvas;
+    const selectedItemsInGrid = this.selectedItemsInGrid();
+    if (!selectedItemsInGrid) return;
+
+    const gridType = selectedItemsInGrid.canvas;
     const previous = structuredClone(this.sectionsInCanvas());
-    const column = this.selectedItemsInGrid().column;
+    const column = selectedItemsInGrid.column;
     if (!column) return;
 
     const newElement = createElement(element);
@@ -274,10 +255,12 @@ export class GridComponent implements OnDestroy {
    */
   openElementsManagerPanel(column: ColumnI): void {
     this.openElementsPanel.emit();
+    const selectedItemsInGrid = this.selectedItemsInGrid();
+    if (!selectedItemsInGrid) return;
+
     this.updateSelectionItem({
-      ...this.selectedItemsInGrid(),
+      ...selectedItemsInGrid,
       column: column,
-      canvas: this.selectedItemsInGrid().canvas,
     });
   }
 
@@ -291,7 +274,7 @@ export class GridComponent implements OnDestroy {
       row: null,
       column: null,
       element: null,
-      canvas: this.gridType()
+      canvas: this.gridType(),
     });
   }
 
@@ -360,7 +343,10 @@ export class GridComponent implements OnDestroy {
    * @param selectedItemsInGrid
    */
   updateSelectionItem(selectedItemsInGrid: SelectedItemsInGridI) {
-    this._pageService.selectedItemsInGrid = selectedItemsInGrid;
+    this._canvasService.selectedItemsInGrid.set(null);
+    setTimeout(() => {
+      this._canvasService.selectedItemsInGrid.set(selectedItemsInGrid);
+    });
   }
 
   /**
@@ -372,7 +358,6 @@ export class GridComponent implements OnDestroy {
       this.restoreState(state);
     }
   }
-
   /**
    * Redo changes
    */

@@ -1,4 +1,4 @@
-import { Component, effect, input, signal } from '@angular/core';
+import { Component, effect, input, output, signal } from '@angular/core';
 import { form, FormField } from '@angular/forms/signals';
 import { TooltipDirective } from 'app/shared/directives/tooltip.directive';
 import { SpacingStylesI } from 'app/shared/interfaces/design.interface';
@@ -7,7 +7,7 @@ import { SpacingStylesI } from 'app/shared/interfaces/design.interface';
   selector: 'design-spacing-component',
   imports: [FormField, TooltipDirective],
   template: `
-    <details class="group/sec" open="">
+    <details class="group/sec">
       <summary
         class="px-4 py-2.5 bg-slate-50/50 hover:bg-slate-50 flex items-center justify-between cursor-pointer select-none"
       >
@@ -120,24 +120,27 @@ import { SpacingStylesI } from 'app/shared/interfaces/design.interface';
 })
 export class DesignSpacingComponent {
   value = input.required<SpacingStylesI>();
+  updateValues = output<Record<string, string | number>>();
 
   spacing = signal<SpacingStylesI>({
-    margin: '0',
-    marginTop: '0',
-    marginRight: '0',
-    marginBottom: '0',
-    marginLeft: '0',
-    padding: '12px 24px',
-    paddingTop: '12px',
-    paddingRight: '24px',
-    paddingBottom: '12px',
-    paddingLeft: '24px',
+    margin: '0px',
+    marginTop: '0px',
+    marginRight: '0px',
+    marginBottom: '0px',
+    marginLeft: '0px',
+    padding: '0px',
+    paddingTop: '0px',
+    paddingRight: '0px',
+    paddingBottom: '0px',
+    paddingLeft: '0px',
   });
 
   spacingForm = form(this.spacing);
 
   private syncing = false;
   private previous = this.spacing();
+
+  private isInitializing = true;
 
   /**
    * Constructor
@@ -147,9 +150,22 @@ export class DesignSpacingComponent {
       const value = this.value();
       if (!value) return;
       this.syncing = true;
+      this.isInitializing = true;
       this.spacing.set(value);
+
       this.previous = value;
       this.syncing = false;
+
+      queueMicrotask(() => {
+        this.isInitializing = false;
+      });
+    });
+
+    effect(() => {
+      const value = this.spacing();
+      if (this.isInitializing) return;
+
+      this.updateValues.emit(value as unknown as Record<string, string | number>);
     });
 
     // Sincronización bidireccional

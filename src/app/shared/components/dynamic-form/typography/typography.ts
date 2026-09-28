@@ -1,4 +1,4 @@
-import { Component, effect, input, signal } from '@angular/core';
+import { Component, effect, input, output, signal } from '@angular/core';
 import { form, FormField } from '@angular/forms/signals';
 import { TooltipDirective } from 'app/shared/directives/tooltip.directive';
 import {
@@ -13,7 +13,7 @@ import {
   selector: 'design-typography-component',
   imports: [FormField, TooltipDirective],
   template: `
-    <details class="group/sec" open="">
+    <details class="group/sec">
       <summary
         class="px-4 py-2.5 bg-slate-50/50 hover:bg-slate-50 flex items-center justify-between cursor-pointer select-none"
       >
@@ -124,18 +124,31 @@ import {
         <div class="grid grid-cols-1 gap-2">
           <div>
             <div class="flex justify-between items-center mb-1">
-              <label class="text-[10px] text-slate-500 font-medium block mb-0.5">color</label>
-              <span class="text-[10px] text-indigo-600 font-bold">
+              <label class="text-[10px] text-slate-500 font-medium block mb-0.5"> color </label>
+
+              <span
+                [style.color]="typography().color === '' ? 'transparent' : typography().color"
+                class="text-[10px] font-bold"
+              >
                 '{{ typography().color }}'
               </span>
             </div>
+
             <div
               class="flex items-center gap-1.5 border border-slate-200 rounded px-2 py-0.5 bg-white"
             >
               <input
-                class="cursor-pointer w-full border-0 p-0 text-xs text-slate-700 uppercase focus:ring-0 focus:outline-none focus:shadow-xs"
                 type="color"
+                [value]="typography().color || '#ffffff'"
+                (input)="onBackgroundColorChange($event)"
+                class="w-6 h-6 p-0 border-0 rounded cursor-pointer bg-transparent"
+              />
+
+              <input
+                class="cursor-pointer w-full border-0 p-0 text-xs text-slate-700 uppercase focus:ring-0 focus:outline-none"
+                type="text"
                 [formField]="typographyForm.color"
+                placeholder="#000000"
               />
             </div>
           </div>
@@ -260,21 +273,22 @@ import {
 })
 export class DesignTypographyComponent {
   value = input.required<TypographyStylesI>();
+  updateValues = output<Record<string, string | number>>();
 
   readonly textAligns: TextAlignT[] = ['left', 'center', 'right', 'justify'];
   readonly whiteSpaces: WhiteSpaceT[] = ['normal', 'nowrap', 'pre', 'pre-wrap', 'pre-line'];
   readonly wordBreaks: WordBreakT[] = ['normal', 'break-all', 'break-word'];
   readonly textOverflows: TextOverflowT[] = ['clip', 'ellipsis'];
 
-  typography = signal<TypographyStylesI>({
+  typography = signal<Required<TypographyStylesI>>({
     fontFamily: 'Inter, sans-serif',
     fontSize: '16px',
     fontWeight: '600',
     lineHeight: '1.5',
     letterSpacing: '0',
-    color: '#ffffff',
+    color: '',
     textAlign: 'center',
-    textTransform: 'uppercase',
+    textTransform: 'none',
     textDecoration: 'none',
     fontStyle: 'normal',
     whiteSpace: 'nowrap',
@@ -284,6 +298,8 @@ export class DesignTypographyComponent {
 
   typographyForm = form(this.typography);
 
+  private isInitializing = true;
+
   /**
    * Constructor
    */
@@ -291,7 +307,31 @@ export class DesignTypographyComponent {
     effect(() => {
       const value = this.value();
       if (!value) return;
-      this.typography.set(value);
+
+      this.isInitializing = true;
+      this.typography.update((current) => ({
+        ...current,
+        ...value,
+      }));
+
+      queueMicrotask(() => {
+        this.isInitializing = false;
+      });
     });
+
+    effect(() => {
+      const value = this.typography();
+      if (this.isInitializing) return;
+
+      this.updateValues.emit(value as unknown as Record<string, string | number>);
+    });
+  }
+
+  /**
+   * Updates the background color from the color picker.
+   */
+  onBackgroundColorChange(event: Event): void {
+    const color = (event.target as HTMLInputElement).value;
+    this.typographyForm.color().value.set(color);
   }
 }

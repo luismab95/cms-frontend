@@ -1,7 +1,7 @@
-import { Component, signal, inject, input, output, DestroyRef, computed } from '@angular/core';
+import { Component, signal, inject, input, output, computed, effect } from '@angular/core';
 import { NgClass, NgTemplateOutlet } from '@angular/common';
 import { CdkDrag, CdkDragDrop, CdkDropList, moveItemInArray } from '@angular/cdk/drag-drop';
-import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
+import { toSignal } from '@angular/core/rxjs-interop';
 import {
   ColumnI,
   ElementI,
@@ -17,7 +17,6 @@ import { ElementCMSI } from 'app/shared/interfaces/element.interface';
 import { CanvasT } from 'app/core/interfaces/page.interface';
 import { TooltipDirective } from 'app/shared/directives/tooltip.directive';
 import { ElementsManagerComponent } from '../elements-manager/elements-manager';
-import { distinctUntilChanged } from 'rxjs';
 
 @Component({
   selector: 'layer-component',
@@ -48,7 +47,6 @@ export class LayerComponent {
   private readonly _pageService = inject(PageService);
   private readonly _templateService = inject(TemplateService);
   private readonly _canvasService = inject(CanvasService);
-  private readonly _destroyRef = inject(DestroyRef);
 
   readonly page = toSignal(this._pageService.page$, { initialValue: null });
   readonly template = toSignal(this._templateService.template$, { initialValue: null });
@@ -60,25 +58,23 @@ export class LayerComponent {
       totalPage: 0,
     },
   });
+  readonly selectedItemsInGrid = this._canvasService.selectedItemsInGrid;
 
   readonly currentGridType = computed(() => this.gridType());
   readonly sectionsByType = computed(() => this._canvasService.sectionsByType);
-  
+
   /**
    * Constructor
    */
   constructor() {
-    this._pageService.selectedItemsInGrid$
-      .pipe(distinctUntilChanged(), takeUntilDestroyed(this._destroyRef))
-      .subscribe({
-        next: (selectedItemsInGrid) => {
-          if (!selectedItemsInGrid) return;
-          if (selectedItemsInGrid.section) this.selectSection(selectedItemsInGrid.section, false);
-          if (selectedItemsInGrid.row) this.selectRow(selectedItemsInGrid.row, false);
-          if (selectedItemsInGrid.column) this.selectColumn(selectedItemsInGrid.column, false);
-          if (selectedItemsInGrid.element) this.selectElement(selectedItemsInGrid.element, false);
-        },
-      });
+    effect(() => {
+      const selectedItemsInGrid = this.selectedItemsInGrid();
+      if (!selectedItemsInGrid) return;
+      if (selectedItemsInGrid.section) this.selectSection(selectedItemsInGrid.section, false);
+      if (selectedItemsInGrid.row) this.selectRow(selectedItemsInGrid.row, false);
+      if (selectedItemsInGrid.column) this.selectColumn(selectedItemsInGrid.column, false);
+      if (selectedItemsInGrid.element) this.selectElement(selectedItemsInGrid.element, false);
+    });
   }
 
   /**
@@ -305,7 +301,7 @@ export class LayerComponent {
    * @param selectedItemsInGrid
    */
   updateSelectionItem(selectedItemsInGrid: SelectedItemsInGridI): void {
-    this._pageService.selectedItemsInGrid = selectedItemsInGrid;
+    this._canvasService.selectedItemsInGrid.set(selectedItemsInGrid);
   }
 
   /**

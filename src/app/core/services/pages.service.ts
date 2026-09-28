@@ -20,8 +20,6 @@ export class PageService {
     PaginationResponseI<PageI[]>
   >(1);
   private _page: ReplaySubject<PageI | null> = new ReplaySubject<PageI | null>(1);
-  private _selectedItemsInGrid: ReplaySubject<SelectedItemsInGridI | null> =
-    new ReplaySubject<SelectedItemsInGridI | null>(1);
 
   private _httpClient = inject(HttpClient);
 
@@ -33,20 +31,6 @@ export class PageService {
   // -----------------------------------------------------------------------------------------------------
   // @ Accessors
   // -----------------------------------------------------------------------------------------------------
-
-  /**
-   * Setter & getter for _selectedItemsInGridI
-   *
-   * @param value
-   */
-  set selectedItemsInGrid(value: SelectedItemsInGridI) {
-    // Store the value
-    this._selectedItemsInGrid.next(value);
-  }
-
-  get selectedItemsInGrid$(): Observable<SelectedItemsInGridI | null> {
-    return this._selectedItemsInGrid.asObservable();
-  }
 
   /**
    * Setter & getter for pages

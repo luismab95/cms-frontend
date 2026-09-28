@@ -1,4 +1,4 @@
-import { Component, effect, input, signal } from '@angular/core';
+import { Component, effect, input, output, signal } from '@angular/core';
 import { form, FormField } from '@angular/forms/signals';
 import { OverflowStylesI, OverflowT } from 'app/shared/interfaces/design.interface';
 
@@ -71,16 +71,19 @@ import { OverflowStylesI, OverflowT } from 'app/shared/interfaces/design.interfa
 })
 export class DesignOverflowComponent {
   value = input.required<OverflowStylesI>();
+  updateValues = output<Record<string, string | number>>();
 
   readonly overflows: OverflowT[] = ['visible', 'hidden', 'scroll', 'auto'];
 
-  overflow = signal<OverflowStylesI>({
-    overflow: 'visible',
-    overflowX: 'visible',
-    overflowY: 'visible',
+  overflow = signal<Required<OverflowStylesI>>({
+    overflow: 'auto',
+    overflowX: 'auto',
+    overflowY: 'auto',
   });
 
   overflowForm = form(this.overflow);
+
+  private isInitializing = true;
 
   /**
    * Constructor
@@ -89,7 +92,23 @@ export class DesignOverflowComponent {
     effect(() => {
       const value = this.value();
       if (!value) return;
-      this.overflow.set(value);
+
+      this.isInitializing = true;
+      this.overflow.update((current) => ({
+        ...current,
+        ...value,
+      }));
+
+      queueMicrotask(() => {
+        this.isInitializing = false;
+      });
+    });
+
+    effect(() => {
+      const value = this.overflow();
+      if (this.isInitializing) return;
+
+      this.updateValues.emit(value as unknown as Record<string, string | number>);
     });
   }
 }

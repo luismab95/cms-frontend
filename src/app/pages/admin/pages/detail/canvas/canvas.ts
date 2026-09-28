@@ -84,14 +84,13 @@ export class PagesCanvas implements AfterViewInit, OnDestroy {
   private readonly _dynamicStyleService = inject(DynamicStyleService);
 
   readonly page = toSignal(this._pageService.page$, { initialValue: null });
-  readonly selectedItemsInGrid = toSignal(this._pageService.selectedItemsInGrid$, {
-    initialValue: null,
-  });
   readonly parameters = toSignal(this._parameterService.parameter$, { initialValue: [] });
   readonly micrositie = toSignal(this._microsityService.micrositie$, { initialValue: null });
   readonly languages = toSignal(this._languageService.languages$, {
     initialValue: { records: [], total: 0, page: 0, totalPage: 0 },
   });
+
+  readonly selectedItemsInGrid = this._canvasService.selectedItemsInGrid;
 
   readonly canRedo = computed(() => this._canvasService.canRedo());
   readonly canUndo = computed(() => this._canvasService.canUndo());
@@ -106,7 +105,7 @@ export class PagesCanvas implements AfterViewInit, OnDestroy {
     }
     const pageData = this.reviewChanges() ? page.dataReview : page.data;
     const backgroundImage = pageData?.body.config?.['backgroundImage'];
-    if (!backgroundImage && backgroundImage !== '' && backgroundImage !== 'null') {
+    if (!backgroundImage || backgroundImage === '' || backgroundImage === 'null') {
       return {};
     }
     return {
@@ -127,7 +126,7 @@ export class PagesCanvas implements AfterViewInit, OnDestroy {
   constructor() {
     this._templateService.template = {
       name: 'preview',
-      description :'preview',
+      description: 'preview',
       data: {
         header: {
           data: [],
@@ -180,7 +179,6 @@ export class PagesCanvas implements AfterViewInit, OnDestroy {
         this.confirmDraft();
         return;
       }
-      this.loadPageData();
     });
   }
 
@@ -230,14 +228,6 @@ export class PagesCanvas implements AfterViewInit, OnDestroy {
   // -----------------------------------------------------------------------------------------------------
   // @ Public methods
   // -----------------------------------------------------------------------------------------------------
-
-  /**
-   * Load template data from the server and update the component properties accordingly.
-   */
-  loadPageData() {
-    this.loadGridData();
-    this.loadStyles();
-  }
 
   /**
    * Update draft page
@@ -371,26 +361,6 @@ export class PagesCanvas implements AfterViewInit, OnDestroy {
   }
 
   /**
-   * Load data
-   */
-  loadGridData() {
-    // const pageData = this.reviewChanges() ? this.page()!.dataReview : this.page()!.data;
-    // if (!pageData) return;
-    // this._pageService.sections = structuredClone(pageData.body.data);
-  }
-
-  /**
-   * Load styles
-   */
-  loadStyles() {
-    const page = this.page();
-    if (!page) return;
-    const pageData = this.reviewChanges() ? page.dataReview : page.data;
-    this._dynamicStyleService.remove('body-dynamicStyles');
-    this._dynamicStyleService.set('body-dynamicStyles', pageData?.body.css ?? '');
-  }
-
-  /**
    * Set preview mode
    * @param mode
    */
@@ -460,7 +430,6 @@ export class PagesCanvas implements AfterViewInit, OnDestroy {
         } else {
           this.deleteDraft();
         }
-        this.loadPageData();
       });
   }
 
@@ -533,7 +502,6 @@ export class PagesCanvas implements AfterViewInit, OnDestroy {
           }
           this.deleteDraft();
           this._pageService.page = structuredClone({ ...page, draft: null! });
-          this.loadPageData();
           this.updateSelectionItem({
             page: null,
             section: null,
@@ -552,7 +520,7 @@ export class PagesCanvas implements AfterViewInit, OnDestroy {
    * @param selectedItemsInGrid
    */
   updateSelectionItem(selectedItemsInGrid: SelectedItemsInGridI) {
-    this._pageService.selectedItemsInGrid = selectedItemsInGrid;
+    this._canvasService.selectedItemsInGrid.set(selectedItemsInGrid);
   }
 
   /**

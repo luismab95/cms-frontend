@@ -1,4 +1,4 @@
-import { Component, effect, input, signal } from '@angular/core';
+import { Component, effect, input, output, signal } from '@angular/core';
 import { form, FormField } from '@angular/forms/signals';
 import {
   CursorT,
@@ -53,6 +53,7 @@ import {
 })
 export class DesignInteractionComponent {
   value = input.required<InteractionStylesI>();
+  updateValues = output<Record<string, string | number>>();
 
   readonly cursors: CursorT[] = [
     'auto',
@@ -71,12 +72,14 @@ export class DesignInteractionComponent {
   ];
   readonly pointerEvents: PointerEventsT[] = ['none', 'auto'];
 
-  interaction = signal<InteractionStylesI>({
+  interaction = signal<Required<InteractionStylesI>>({
     cursor: 'pointer',
     pointerEvents: 'auto',
   });
 
   interactionForm = form(this.interaction);
+
+  private isInitializing = true;
 
   /**
    * Constructor
@@ -85,7 +88,24 @@ export class DesignInteractionComponent {
     effect(() => {
       const value = this.value();
       if (!value) return;
-      this.interaction.set(value);
+
+      this.isInitializing = true;
+
+      this.interaction.update((current) => ({
+        ...current,
+        ...value,
+      }));
+
+      queueMicrotask(() => {
+        this.isInitializing = false;
+      });
+    });
+
+    effect(() => {
+      const value = this.interaction();
+      if (this.isInitializing) return;
+
+      this.updateValues.emit(value as unknown as Record<string, string | number>);
     });
   }
 }

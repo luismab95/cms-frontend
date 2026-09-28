@@ -1,4 +1,4 @@
-import { Component, computed, effect, input, signal } from '@angular/core';
+import { Component, computed, effect, input, output, signal } from '@angular/core';
 import { form, FormField } from '@angular/forms/signals';
 import {
   DisplayT,
@@ -409,6 +409,7 @@ import { TooltipDirective } from 'app/shared/directives/tooltip.directive';
 })
 export class DesignLayoutComponent {
   value = input.required<LayoutStylesI>();
+  updateValues = output<Record<string, string | number>>();
 
   readonly displays: DisplayT[] = [
     'block',
@@ -449,28 +450,28 @@ export class DesignLayoutComponent {
     'baseline',
   ];
 
-  layout = signal<LayoutStylesI>({
-    display: 'flex',
-    width: 'auto',
-    height: 'auto',
-    minWidth: '120px',
-    maxWidth: 'none',
-    minHeight: '44px',
-    maxHeight: 'none',
-    boxSizing: 'border-box',
+  layout = signal<Required<LayoutStylesI>>({
+    display: 'block',
+    width: '100%',
+    height: '400px',
+    minWidth: '',
+    maxWidth: '',
+    minHeight: '',
+    maxHeight: '',
+    boxSizing: 'unset',
     flexDirection: 'row',
     flexWrap: 'nowrap',
-    justifyContent: 'center',
-    alignItems: 'center',
-    alignContent: 'stretch',
+    justifyContent: 'space-between',
+    alignItems: 'normal',
+    alignContent: 'normal',
     flexGrow: 0,
     flexShrink: 1,
-    flexBasis: 'auto',
-    flex: '0 1 auto',
-    alignSelf: 'auto',
-    gap: '8px',
-    rowGap: '8px',
-    columnGap: '8px',
+    flexBasis: '',
+    flex: '',
+    alignSelf: 'normal',
+    gap: '',
+    rowGap: '',
+    columnGap: '',
   });
 
   layoutForm = form(this.layout);
@@ -490,6 +491,8 @@ export class DesignLayoutComponent {
     return false;
   });
 
+  private isInitializing = true;
+
   /**
    *
    */
@@ -497,7 +500,23 @@ export class DesignLayoutComponent {
     effect(() => {
       const value = this.value();
       if (!value) return;
-      this.layout.set(value);
+
+      this.isInitializing = true;
+        this.layout.update((current) => ({
+        ...current,
+        ...value,
+      }));
+
+      queueMicrotask(() => {
+        this.isInitializing = false;
+      });
+    });
+
+    effect(() => {
+      const value = this.layout();
+      if (this.isInitializing) return;
+
+      this.updateValues.emit(value as unknown as Record<string, string | number>);
     });
   }
 

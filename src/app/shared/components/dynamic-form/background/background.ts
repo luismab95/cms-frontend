@@ -1,4 +1,4 @@
-import { Component, effect, input, signal } from '@angular/core';
+import { Component, effect, input, output, signal } from '@angular/core';
 import { form, FormField } from '@angular/forms/signals';
 import {
   BackgroundAttachmentT,
@@ -14,7 +14,7 @@ import { TooltipDirective } from 'app/shared/directives/tooltip.directive';
   selector: 'design-background-component',
   imports: [FormField, TooltipDirective],
   template: `
-    <details class="group/sec" open="">
+    <details class="group/sec">
       <summary
         class="px-4 py-2.5 bg-slate-50/50 hover:bg-slate-50 flex items-center justify-between cursor-pointer select-none"
       >
@@ -38,18 +38,33 @@ import { TooltipDirective } from 'app/shared/directives/tooltip.directive';
         <!-- Background Color  -->
         <div>
           <div class="flex justify-between items-center mb-1">
-            <label class="text-[10px] text-slate-500 font-medium block mb-0.5">color</label>
-            <span class="text-[10px] text-indigo-600 font-bold">
+            <label class="text-[10px] text-slate-500 font-medium block mb-0.5"> color </label>
+
+            <span
+              [style.color]="
+                background().backgroundColor === '' ? 'transparent' : background().backgroundColor
+              "
+              class="text-[10px] font-bold"
+            >
               '{{ background().backgroundColor }}'
             </span>
           </div>
+
           <div
             class="flex items-center gap-1.5 border border-slate-200 rounded px-2 py-0.5 bg-white"
           >
             <input
-              class="cursor-pointer w-full border-0 p-0 text-xs text-slate-700 uppercase focus:ring-0 focus:outline-none focus:shadow-xs"
               type="color"
+              [value]="background().backgroundColor || '#ffffff'"
+              (input)="onBackgroundColorChange($event)"
+              class="w-6 h-6 p-0 border-0 rounded cursor-pointer bg-transparent"
+            />
+
+            <input
+              class="cursor-pointer w-full border-0 p-0 text-xs text-slate-700 uppercase focus:ring-0 focus:outline-none"
+              type="text"
               [formField]="backgroundForm.backgroundColor"
+              placeholder="#000000"
             />
           </div>
         </div>
@@ -64,7 +79,7 @@ import { TooltipDirective } from 'app/shared/directives/tooltip.directive';
               class="w-full border border-slate-200 rounded py-0.5 px-1.5 text-xs text-slate-700 bg-white focus:ring-0 focus:outline-none focus:shadow-xs"
             >
               @for (value of backgroundRepeats; track value) {
-                <option [value]="value">{{ value }}</option>
+                <option [value]="value">{{ value === '' ? 'Ninguno' : value }}</option>
               }
             </select>
           </div>
@@ -75,7 +90,7 @@ import { TooltipDirective } from 'app/shared/directives/tooltip.directive';
               class="w-full border border-slate-200 rounded py-0.5 px-1.5 text-xs text-slate-700 bg-white focus:ring-0 focus:outline-none focus:shadow-xs"
             >
               @for (value of backgroundClips; track value) {
-                <option [value]="value">{{ value }}</option>
+                <option [value]="value">{{ value === '' ? 'Ninguno' : value }}</option>
               }
             </select>
           </div>
@@ -89,7 +104,7 @@ import { TooltipDirective } from 'app/shared/directives/tooltip.directive';
               class="w-full border border-slate-200 rounded py-0.5 px-1.5 text-xs text-slate-700 bg-white focus:ring-0 focus:outline-none focus:shadow-xs"
             >
               @for (value of backgroundSizes; track value) {
-                <option [value]="value">{{ value }}</option>
+                <option [value]="value">{{ value === '' ? 'Ninguno' : value }}</option>
               }
             </select>
           </div>
@@ -100,7 +115,7 @@ import { TooltipDirective } from 'app/shared/directives/tooltip.directive';
               class="w-full border border-slate-200 rounded py-0.5 px-1.5 text-xs text-slate-700 bg-white focus:ring-0 focus:outline-none"
             >
               @for (value of backgroundPositions; track value) {
-                <option [value]="value">{{ value }}</option>
+                <option [value]="value">{{ value === '' ? 'Ninguno' : value }}</option>
               }
             </select>
           </div>
@@ -111,7 +126,7 @@ import { TooltipDirective } from 'app/shared/directives/tooltip.directive';
               class="w-full border border-slate-200 rounded py-0.5 px-1.5 text-xs text-slate-700 bg-white focus:ring-0 focus:outline-none focus:shadow-xs"
             >
               @for (value of backgroundAttachments; track value) {
-                <option [value]="value">{{ value }}</option>
+                <option [value]="value">{{ value === '' ? 'Ninguno' : value }}</option>
               }
             </select>
           </div>
@@ -122,29 +137,43 @@ import { TooltipDirective } from 'app/shared/directives/tooltip.directive';
 })
 export class DesignBackgroundComponent {
   value = input.required<BackgroundStylesI>();
+  updateValues = output<Record<string, string | number>>();
 
-  background = signal<BackgroundStylesI>({
-    backgroundColor: '#6200ea',
-    backgroundSize: 'cover',
-    backgroundPosition: 'center',
-    backgroundRepeat: 'no-repeat',
-    backgroundAttachment: 'scroll',
-    backgroundClip: 'border-box',
+  background = signal<Required<BackgroundStylesI>>({
+    backgroundColor: '',
+    backgroundSize: '',
+    backgroundPosition: '',
+    backgroundRepeat: '',
+    backgroundAttachment: '',
+    backgroundClip: '',
   });
 
   backgroundForm = form(this.background);
 
-  readonly backgroundSizes: BackgroundSizeT[] = ['auto', 'cover', 'contain'];
+  applyChanges(): void {
+    this.updateValues.emit({ ...this.background() } as Record<string, string | number>);
+  }
+
+  readonly backgroundSizes: BackgroundSizeT[] = ['auto', 'cover', 'contain', ''];
   readonly backgroundPositions: BackgroundPositionT[] = [
     'left',
     'center',
     'right',
     'top',
     'bottom',
+    '',
   ];
-  readonly backgroundRepeats: BackgroundRepeatT[] = ['repeat', 'repeat-x', 'repeat-y', 'no-repeat'];
-  readonly backgroundAttachments: BackgroundAttachmentT[] = ['scroll', 'fixed', 'local'];
-  readonly backgroundClips: BackgroundClipT[] = ['border-box', 'padding-box', 'content-box'];
+  readonly backgroundRepeats: BackgroundRepeatT[] = [
+    'repeat',
+    'repeat-x',
+    'repeat-y',
+    'no-repeat',
+    '',
+  ];
+  readonly backgroundAttachments: BackgroundAttachmentT[] = ['scroll', 'fixed', 'local', ''];
+  readonly backgroundClips: BackgroundClipT[] = ['border-box', 'padding-box', 'content-box', ''];
+
+  private isInitializing = true;
 
   /**
    * Constructor
@@ -153,7 +182,28 @@ export class DesignBackgroundComponent {
     effect(() => {
       const value = this.value();
       if (!value) return;
-      this.background.set(value);
+
+      this.isInitializing = true;
+      this.background.update((current) => ({ ...current, ...value }));
+
+      queueMicrotask(() => {
+        this.isInitializing = false;
+      });
     });
+
+    effect(() => {
+      const value = this.background();
+      if (this.isInitializing) return;
+
+      this.updateValues.emit(value as unknown as Record<string, string | number>);
+    });
+  }
+
+  /**
+   * Updates the background color from the color picker.
+   */
+  onBackgroundColorChange(event: Event): void {
+    const color = (event.target as HTMLInputElement).value;
+    this.backgroundForm.backgroundColor().value.set(color);
   }
 }

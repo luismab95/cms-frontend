@@ -5,6 +5,7 @@ import {
   HistoryCMSI,
   PageElementsConfigI,
   SectionI,
+  SelectedItemsInGridI,
 } from 'app/shared/interfaces/grid.interface';
 import { TemplateService } from './templates.service';
 import { PageService } from './pages.service';
@@ -14,12 +15,13 @@ import { CanvasT } from '../interfaces/page.interface';
   providedIn: 'root',
 })
 export class CanvasService {
-  private readonly MAX_HISTORY = 10;
+  private readonly MAX_HISTORY = 40;
 
   private readonly history = signal<HistoryChangeI[]>([]);
   private readonly currentIndex = signal(-1);
   readonly canUndo = signal(false);
   readonly canRedo = signal(false);
+  readonly selectedItemsInGrid = signal<SelectedItemsInGridI | null>(null);
 
   private readonly _pageService = inject(PageService);
   private readonly _templateService = inject(TemplateService);
@@ -178,6 +180,36 @@ export class CanvasService {
     });
 
     this.commit(createHistory(currentConfig), createHistory(config));
+  }
+
+  /**
+   * Update changes
+   * @param previous
+   * @param next
+   */
+  updateChangesPageCssInCanvas(gridType: CanvasT, css: string) {
+    const source = (gridType === 'page' ? this.page()?.data : this.template()?.data) as any;
+    const currentCss: string = source[gridType === 'page' ? 'body' : gridType].css;
+
+    if (!source) return;
+
+    const createHistory = (css: string): HistoryCMSI => ({
+      header:
+        gridType === 'header'
+          ? { ...source.header, css }
+          : gridType === 'page'
+            ? null
+            : source.header,
+      body: gridType === 'page' ? { ...source.body, css } : null,
+      footer:
+        gridType === 'footer'
+          ? { ...source.footer, css }
+          : gridType === 'page'
+            ? null
+            : source.footer,
+    });
+
+    this.commit(createHistory(currentCss), createHistory(css));
   }
 
   /**

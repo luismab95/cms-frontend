@@ -128,7 +128,7 @@
           <button
             type="button"
             class="cursor-pointer shrink-0 px-2 py-1 rounded-md text-[11px] font-medium bg-slate-100 text-slate-600 hover:bg-slate-200 hover:text-slate-900 transition-colors flex items-center gap-1"
-            (click)="stateElement.set(state)"
+            (click)="toggleDesignSate(state)"
             [class.font-bold!]="stateElement() === state"
             [class.text-white!]="stateElement() === state"
             [class.bg-indigo-600!]="stateElement() === state"
@@ -146,33 +146,61 @@
 
     <!-- SECCIONES DE CONFIGURACIÓN CSS EXHAUSTIVAS (SCROLLABLE ACCORDION) -->
     <div class="flex-1 overflow-y-auto divide-y divide-slate-100 text-xs">
-      <!-- SECTION 1: LAYOUT (Disposición & Flexbox) -->
-      <design-layout-component [value]="layoutValue()" />
+      @if (initialized()) {
+        <!-- SECTION 1: LAYOUT (Disposición & Flexbox) -->
+        <design-layout-component
+          [value]="layoutValue()"
+          (updateValues)="updateStyleConfig($event, 'layout')"
+        />
 
-      <!-- SECTION 2: SPACING (Espaciado & Box Model) -->
-      <design-spacing-component [value]="designValue()" />
+        <!-- SECTION 2: SPACING (Espaciado & Box Model) -->
+        <design-spacing-component
+          [value]="spacingValue()"
+          (updateValues)="updateStyleConfig($event, 'spacing')"
+        />
 
-      <!-- SECTION 3: TYPOGRAPHY (Tipografía) -->
-      <design-typography-component [value]="typographyValue()" />
+        <!-- SECTION 3: TYPOGRAPHY (Tipografía) -->
+        <design-typography-component
+          [value]="typographyValue()"
+          (updateValues)="updateStyleConfig($event, 'typography')"
+        />
 
-      <!-- SECTION 4: BACKGROUND (Fondo) -->
-      <design-background-component [value]="backgroundValue()" />
+        <!-- SECTION 4: BACKGROUND (Fondo) -->
+        <design-background-component
+          [value]="backgroundValue()"
+          (updateValues)="updateStyleConfig($event, 'background')"
+        />
 
-      <!-- SECTION 5: BORDER (Bordes & Radios) -->
-      <design-border-component [value]="borderValue()" />
+        <!-- SECTION 5: BORDER (Bordes & Radios) -->
+        <design-border-component
+          [value]="borderValue()"
+          (updateValues)="updateStyleConfig($event, 'border')"
+        />
 
-      <!-- SECTION 6: POSITION (Posicionamiento) -->
-      <design-position-component [value]="positionValue()" />
+        <!-- SECTION 6: POSITION (Posicionamiento) -->
+        <design-position-component
+          [value]="positionValue()"
+          (updateValues)="updateStyleConfig($event, 'position')"
+        />
 
-      <!-- SECTION 7: EFFECTS (Efectos & Transiciones) -->
-      <design-effect-component [value]="effectValue()" />
+        <!-- SECTION 7: EFFECTS (Efectos & Transiciones) -->
+        <design-effect-component
+          [value]="effectValue()"
+          (updateValues)="updateStyleConfig($event, 'effect')"
+        />
 
-      <!-- SECTION 8: OVERFLOW (Desbordamiento) -->
-      <design-overflow-component [value]="overflowValue()" />
+        <!-- SECTION 8: OVERFLOW (Desbordamiento) -->
+        <design-overflow-component
+          [value]="overflowValue()"
+          (updateValues)="updateStyleConfig($event, 'overflow')"
+        />
 
-      <!-- SECTION 9: INTERACTION (Interacción) -->
-      <design-interaction-component [value]="interactionValue()" />
-      
+        <!-- SECTION 9: INTERACTION (Interacción) -->
+        <design-interaction-component
+          [value]="interactionValue()"
+          (updateValues)="updateStyleConfig($event, 'interaction')"
+        />
+      }
     </div>
   }
 

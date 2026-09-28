@@ -28,7 +28,6 @@ import { debounceTime, pairwise, skip } from 'rxjs';
   imports: [FormsModule, ReactiveFormsModule, DynamicForm],
 })
 export class PropertiesInspectorComponent {
-  itemSelectedInGrid = input.required<SelectedItemsInGridI | null>();
   gridType = input.required<CanvasT>();
 
   fields = signal<RegisteredFieldTypes[]>([]);
@@ -45,6 +44,8 @@ export class PropertiesInspectorComponent {
   readonly elements = toSignal(this._elementService.elements$, {
     initialValue: { records: [], total: 0, page: 0, totalPage: 0 },
   });
+
+  readonly itemSelectedInGrid = this._canvasService.selectedItemsInGrid;
 
   readonly config = computed(() => ({
     fields: this.fields(),

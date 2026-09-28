@@ -85,14 +85,13 @@ export class TemplatesCanvas implements AfterViewInit, OnDestroy {
   private readonly _dynamicStyleService = inject(DynamicStyleService);
 
   readonly template = toSignal(this._templateService.template$, { initialValue: null });
-  readonly selectedItemsInGrid = toSignal(this._pageService.selectedItemsInGrid$, {
-    initialValue: null,
-  });
   readonly parameters = toSignal(this._parameterService.parameter$, { initialValue: [] });
   readonly micrositie = toSignal(this._microsityService.micrositie$, { initialValue: null });
   readonly languages = toSignal(this._languageService.languages$, {
     initialValue: { records: [], total: 0, page: 0, totalPage: 0 },
   });
+
+  readonly selectedItemsInGrid = this._canvasService.selectedItemsInGrid;
 
   readonly canRedo = computed(() => this._canvasService.canRedo());
   readonly canUndo = computed(() => this._canvasService.canUndo());
@@ -107,7 +106,7 @@ export class TemplatesCanvas implements AfterViewInit, OnDestroy {
     }
     const pageData = template.data;
     const backgroundImage = pageData?.header.config?.['backgroundImage'];
-    if (!backgroundImage && backgroundImage !== '' && backgroundImage !== 'null') {
+    if (!backgroundImage || backgroundImage === '' || backgroundImage === 'null') {
       return {};
     }
     return {
@@ -121,7 +120,7 @@ export class TemplatesCanvas implements AfterViewInit, OnDestroy {
     }
     const pageData = template.data;
     const backgroundImage = pageData?.footer.config?.['backgroundImage'];
-    if (!backgroundImage && backgroundImage !== '' && backgroundImage !== 'null') {
+    if (!backgroundImage || backgroundImage === '' || backgroundImage === 'null') {
       return {};
     }
     return {
@@ -579,7 +578,7 @@ export class TemplatesCanvas implements AfterViewInit, OnDestroy {
    * @param selectedItemsInGrid
    */
   updateSelectionItem(selectedItemsInGrid: SelectedItemsInGridI) {
-    this._pageService.selectedItemsInGrid = selectedItemsInGrid;
+    this._canvasService.selectedItemsInGrid.set(selectedItemsInGrid);
   }
 
   /**

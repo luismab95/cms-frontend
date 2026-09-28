@@ -1,4 +1,4 @@
-import { Component, computed, effect, input, signal } from '@angular/core';
+import { Component, computed, effect, input, output, signal } from '@angular/core';
 import { form, FormField } from '@angular/forms/signals';
 import { PositionStylesI, PositionT } from 'app/shared/interfaces/design.interface';
 
@@ -6,7 +6,7 @@ import { PositionStylesI, PositionT } from 'app/shared/interfaces/design.interfa
   selector: 'design-position-component',
   imports: [FormField],
   template: `
-    <details class="group/sec" open="">
+    <details class="group/sec">
       <summary
         class="px-4 py-2.5 bg-slate-50/50 hover:bg-slate-50 flex items-center justify-between cursor-pointer select-none"
       >
@@ -87,21 +87,24 @@ import { PositionStylesI, PositionT } from 'app/shared/interfaces/design.interfa
 })
 export class DesignPositionComponent {
   value = input.required<PositionStylesI>();
+  updateValues = output<Record<string, string | number>>();
 
   readonly positions: PositionT[] = ['relative', 'absolute', 'static', 'sticky', 'fixed'];
 
   readonly isStatic = computed(() => this.position().position === 'static');
 
-  position = signal<PositionStylesI>({
+  position = signal<Required<PositionStylesI>>({
     position: 'relative',
-    top: 'auto',
-    right: 'auto',
-    bottom: 'auto',
-    left: 'auto',
-    zIndex: '1',
+    top: '',
+    right: '',
+    bottom: '',
+    left: '',
+    zIndex: '',
   });
 
   positionForm = form(this.position);
+
+  private isInitializing = true;
 
   /**
    * Constructor
@@ -110,7 +113,24 @@ export class DesignPositionComponent {
     effect(() => {
       const value = this.value();
       if (!value) return;
-      this.position.set(value);
+
+      this.isInitializing = true;
+
+      this.position.update((current) => ({
+        ...current,
+        ...value,
+      }));
+
+      queueMicrotask(() => {
+        this.isInitializing = false;
+      });
+    });
+
+    effect(() => {
+      const value = this.position();
+      if (this.isInitializing) return;
+
+      this.updateValues.emit(value as unknown as Record<string, string | number>);
     });
   }
 
@@ -123,40 +143,40 @@ export class DesignPositionComponent {
         case 'static':
           return {
             ...prev,
-            top: 'auto',
-            right: 'auto',
-            bottom: 'auto',
-            left: 'auto',
-            zIndex: 'auto',
+            top: '',
+            right: '',
+            bottom: '',
+            left: '',
+            zIndex: '',
           };
         case 'relative':
           return {
             ...prev,
-            zIndex: prev.zIndex || 'auto',
+            zIndex: prev.zIndex || '',
           };
         case 'absolute':
           return {
             ...prev,
-            zIndex: prev.zIndex || 'auto',
+            zIndex: prev.zIndex || '',
           };
         case 'fixed':
           return {
             ...prev,
-            zIndex: prev.zIndex || 'auto',
+            zIndex: prev.zIndex || '',
           };
         case 'sticky':
           return {
             ...prev,
-            zIndex: prev.zIndex || 'auto',
+            zIndex: prev.zIndex || '',
           };
         default:
           return {
             ...prev,
-            top: 'auto',
-            right: 'auto',
-            bottom: 'auto',
-            left: 'auto',
-            zIndex: 'auto',
+            top: '',
+            right: '',
+            bottom: '',
+            left: '',
+            zIndex: '',
           };
       }
     });

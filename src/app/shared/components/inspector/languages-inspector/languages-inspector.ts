@@ -50,9 +50,8 @@ export class LangugesInspectorComponent implements OnInit {
 
   readonly page = toSignal(this._pageService.page$, { initialValue: null });
   readonly template = toSignal(this._templateService.template$, { initialValue: null });
-  readonly selectedItemsInGrid = toSignal(this._pageService.selectedItemsInGrid$, {
-    initialValue: null,
-  });
+
+  readonly selectedItemsInGrid = this._canvasService.selectedItemsInGrid;
 
   /**
    * Constructor

@@ -1,13 +1,13 @@
-import { Component, signal, inject, effect, computed, input, DestroyRef } from '@angular/core';
+import { Component, signal, inject, effect, computed, input } from '@angular/core';
 import { NgClass } from '@angular/common';
-import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
+import { toSignal } from '@angular/core/rxjs-interop';
 import { ElementService } from 'app/core/services/element.service';
 import { PageService } from 'app/core/services/pages.service';
 import { LanguageService } from 'app/shared/services/language.service';
 import { CanvasService } from 'app/core/services/canvas.service';
 import { ParameterService } from 'app/core/services/parameter.service';
 import { TemplateService } from 'app/core/services/templates.service';
-import { ElementI, SectionI, SelectedItemsInGridI } from 'app/shared/interfaces/grid.interface';
+import { ElementI, SectionI } from 'app/shared/interfaces/grid.interface';
 import { TabI } from 'app/shared/interfaces/drawer.interface';
 import { CanvasT } from 'app/core/interfaces/page.interface';
 import { TooltipDirective } from 'app/shared/directives/tooltip.directive';
@@ -18,7 +18,6 @@ import { PermissionComponent } from '../permission/permission';
 import { LangugesInspectorComponent } from './languages-inspector/languages-inspector';
 import { PropertiesInspectorComponent } from './properties-inspector/properties-inspector';
 import { DesignInspectorComponent } from './design-inspector/design-inspector';
-import { distinctUntilChanged } from 'rxjs';
 
 @Component({
   selector: 'inspector-component',
@@ -35,7 +34,6 @@ import { distinctUntilChanged } from 'rxjs';
 export class InspectorComponent {
   gridType = input<CanvasT>('page');
 
-  selectedItemsInGrid = signal<SelectedItemsInGridI | null>(null);
   tabsLanguages = signal<TabI[]>([]);
   tabs = signal<TabI[]>([
     {
@@ -67,7 +65,6 @@ export class InspectorComponent {
 
   permission = PermissionCode;
 
-  private readonly _destroyRef = inject(DestroyRef);
   private readonly _elementService = inject(ElementService);
   private readonly _pageService = inject(PageService);
   private readonly _languageService = inject(LanguageService);
@@ -96,6 +93,8 @@ export class InspectorComponent {
   readonly parameters = toSignal(this._parameterService.parameter$, {
     initialValue: [],
   });
+
+  readonly selectedItemsInGrid = this._canvasService.selectedItemsInGrid;
 
   readonly urlStatics = computed(
     () => findParameter('APP_STATICS_URL', this.parameters())?.value ?? '',
@@ -126,7 +125,6 @@ export class InspectorComponent {
   readonly selectedElement = computed(() => this.selectedItemsInGrid()?.element);
   readonly dataTextLanguages = computed(() => this.selectedElement()?.dataText ?? null);
   readonly textLanguages = computed(() => this.selectedElement()?.text ?? null);
-  readonly css = computed(() => this.selectedItemsInGrid()?.[this.typeItem()]?.css ?? '');
   readonly tabsComputed = computed(() => {
     const selectedItem = this.selectedItemsInGrid();
     const tabs = this.tabs().filter((tab) => tab.id !== 2);
@@ -177,14 +175,10 @@ export class InspectorComponent {
       this.tabsLanguages.set(tabs);
     });
 
-    this._pageService.selectedItemsInGrid$
-      .pipe(distinctUntilChanged(), takeUntilDestroyed(this._destroyRef))
-      .subscribe({
-        next: (selectedItemsInGrid) => {
-          this.selectedItemsInGrid.set(selectedItemsInGrid);
-          this.sectionsInCanvas.set(this.currentSections);
-        },
-      });
+    effect(() => {
+      this.selectedItemsInGrid();
+      this.sectionsInCanvas.set(this.currentSections);
+    });
   }
 
   /**
@@ -251,14 +245,14 @@ export class InspectorComponent {
    * Reset selected item
    */
   resetSelectedItem() {
-    this._pageService.selectedItemsInGrid = {
+    this._canvasService.selectedItemsInGrid.set({
       page: null,
       section: null,
       row: null,
       column: null,
       element: null,
       canvas: this.gridType(),
-    };
+    });
   }
 
   /**
