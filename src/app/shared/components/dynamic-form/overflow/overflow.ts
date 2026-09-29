@@ -1,6 +1,7 @@
 import { Component, effect, input, output, signal } from '@angular/core';
 import { form, FormField } from '@angular/forms/signals';
 import { OverflowStylesI, OverflowT } from 'app/shared/interfaces/design.interface';
+import { defaultOverflowStyles } from 'app/shared/utils/grid.utils';
 
 @Component({
   selector: 'design-overflow-component',
@@ -71,15 +72,11 @@ import { OverflowStylesI, OverflowT } from 'app/shared/interfaces/design.interfa
 })
 export class DesignOverflowComponent {
   value = input.required<OverflowStylesI>();
-  updateValues = output<Record<string, string | number>>();
+  updateValues = output<Record<string, string>>();
 
   readonly overflows: OverflowT[] = ['visible', 'hidden', 'scroll', 'auto'];
 
-  overflow = signal<Required<OverflowStylesI>>({
-    overflow: 'auto',
-    overflowX: 'auto',
-    overflowY: 'auto',
-  });
+  overflow = signal<Required<OverflowStylesI>>(defaultOverflowStyles);
 
   overflowForm = form(this.overflow);
 
@@ -108,7 +105,7 @@ export class DesignOverflowComponent {
       const value = this.overflow();
       if (this.isInitializing) return;
 
-      this.updateValues.emit(value as unknown as Record<string, string | number>);
+      this.updateValues.emit(value);
     });
   }
 }

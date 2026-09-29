@@ -1,9 +1,9 @@
 import { inject } from '@angular/core';
-import { CanActivateChildFn, CanActivateFn, Router } from '@angular/router';
-import { of, switchMap } from 'rxjs';
+import { CanActivateChildFn, CanActivateFn, RedirectCommand, Router } from '@angular/router';
 import { AuthService } from '../services/auth.service';
+import { of, switchMap } from 'rxjs';
 
-export const AuthGuard: CanActivateFn | CanActivateChildFn = (route, state) => {
+export const AuthGuard: CanActivateFn | CanActivateChildFn = () => {
   const router: Router = inject(Router);
 
   // Check the authentication status
@@ -14,10 +14,8 @@ export const AuthGuard: CanActivateFn | CanActivateChildFn = (route, state) => {
         // If the user is not authenticated...
         if (!authenticated) {
           // Redirect to the sign-in page with a redirectUrl param
-          const redirectURL = state.url === '/sign-out' ? '' : `redirectURL=${state.url}`;
-          const urlTree = router.parseUrl(`auth/sign-in?${redirectURL}`);
-
-          return of(urlTree);
+          const urlTree = router.createUrlTree(['/auth/sign-in']);
+          return of(new RedirectCommand(urlTree));
         }
 
         // Allow the access

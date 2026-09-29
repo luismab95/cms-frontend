@@ -2,7 +2,7 @@
   [ngClass]="{
     'border-0! p-0! rounded-none!': preview(),
   }"
-  class="relative border-2 border-dashed border-gray-300 hover:border-gray-400 rounded-xl p-6 transition-all group/body"
+  class="page-preview relative border-2 border-dashed border-gray-300 hover:border-gray-400 rounded-xl p-2 transition-all group/body"
 >
   @if (!preview()) {
     <!-- ========================================================= -->
@@ -46,7 +46,7 @@
     ></div>
   }
 
-  <div [ngStyle]="gridStyles()" class="body relative">
+  <div [ngStyle]="gridStyles()" class="body">
     <!-- ========================================================= -->
     <!-- SECTIONS DROP LIST -->
     <!-- ========================================================= -->
@@ -64,8 +64,11 @@
 
         <div
           class="relative group/sec my-2"
+          cdkDrag
+          cdkDragBoundary=".sections"
+          [cdkDragDisabled]="preview()"
           [ngClass]="{
-            'border border-dashed border-indigo-500 rounded-xl px-2 py-4': !preview(),
+            'border border-dashed border-indigo-500 rounded-xl p-2': !preview(),
           }"
         >
           @if (!preview()) {
@@ -104,12 +107,8 @@
             ></div>
           }
           <section
-            cdkDrag
-            cdkDragBoundary=".sections"
-            [cdkDragDisabled]="preview()"
             [ngStyle]="gridConfigStyles(section.config)"
             [class]="'grid-section-' + section.uuid"
-            class="relative"
           >
             <!-- ================================================= -->
             <!-- ROWS -->
@@ -128,8 +127,11 @@
 
                 <div
                   class="relative group/row my-2"
+                  cdkDrag
+                  cdkDragBoundary=".rows"
+                  [cdkDragDisabled]="preview()"
                   [ngClass]="{
-                    'border border-dashed border-amber-300 rounded-lg px-2 py-6': !preview(),
+                    'border border-dashed border-amber-300 rounded-lg p-2': !preview(),
                   }"
                 >
                   @if (!preview()) {
@@ -139,9 +141,9 @@
                     >
                       <i cdkDragHandle class="fa-solid fa-grip-vertical cursor-grab"></i>
 
-                      <span> Fila {{ rowIndex + 1 }} </span>
+                      <span>Fila {{ rowIndex + 1 }}</span>
 
-                      <span class="text-[9px] opacity-75"> ({{ row.uuid }}) </span>
+                      <span class="text-[9px] opacity-75">({{ row.uuid }})</span>
 
                       <span class="text-[9px] opacity-75">
                         columnas: {{ row.columns.length }}
@@ -164,7 +166,6 @@
 
                   <!-- =========================================== -->
                   <!-- ROW REAL -->
-                  <!-- IMPORTANTE: aquí vive grid-row-{uuid} -->
                   <!-- =========================================== -->
 
                   @if (!preview() && selectedItemsInGrid()?.row?.uuid === row.uuid) {
@@ -173,28 +174,20 @@
                     ></div>
                   }
 
-                  <div
-                    cdkDrag
-                    cdkDragBoundary=".rows"
-                    [cdkDragDisabled]="preview()"
-                    [ngStyle]="gridConfigStyles(row.config)"
-                    [class]="'grid-row-' + row.uuid"
-                    class="relative"
-                  >
+                  <!-- Se mantiene el cdkDrag, pero SIN los estilos dinámicos -->
+                  <div>
                     <!-- ========================================= -->
                     <!-- COLUMNS CONTAINER -->
+                    <!-- Ahora aquí vive grid-row-{uuid} -->
                     <!-- ========================================= -->
 
                     <div
                       cdkDropList
                       cdkDropListOrientation="horizontal"
                       (cdkDropListDropped)="drop($event, row.columns)"
-                      [ngClass]="{
-                        'flex-row': previewType() === 'desktop' || previewType() === 'none',
-
-                        'flex-col': previewType() !== 'desktop' && previewType() !== 'none',
-                      }"
-                      class="flex columns"
+                      class="columns"
+                      [ngStyle]="gridConfigStyles(row.config)"
+                      [class]="'grid-row-' + row.uuid"
                     >
                       @for (column of row.columns; track column.uuid; let columnIndex = $index) {
                         <!-- ======================================= -->
@@ -202,9 +195,12 @@
                         <!-- ======================================= -->
 
                         <div
-                          class="relative group/column m-0.5"
+                          class="relative group/column w-full"
+                          cdkDrag
+                          cdkDragBoundary=".columns"
+                          [cdkDragDisabled]="preview()"
                           [ngClass]="{
-                            'border border-dashed border-slate-300 rounded-lg p-2 bg-white/40 hover:bg-white':
+                            'border border-dashed border-slate-300 rounded-lg p-2 bg-white/40':
                               !preview(),
                           }"
                         >
@@ -214,8 +210,7 @@
                               class="absolute -top-3 left-3 bg-slate-700 text-white text-[10px] px-2 py-0.5 rounded-full flex items-center gap-1 z-50"
                             >
                               <i cdkDragHandle class="fa-solid fa-grip-vertical cursor-grab"></i>
-
-                              <span> Columna {{ columnIndex + 1 }} </span>
+                              <span>Columna {{ columnIndex + 1 }}</span>
                             </div>
 
                             <!-- Column toolbar -->
@@ -234,25 +229,17 @@
 
                           <!-- ===================================== -->
                           <!-- COLUMN REAL -->
-                          <!-- IMPORTANTE: aquí vive -->
-                          <!-- grid-column-{uuid} -->
                           <!-- ===================================== -->
+
                           @if (!preview() && selectedItemsInGrid()?.column?.uuid === column.uuid) {
                             <div
                               class="absolute inset-0 ring-2 ring-slate-500 rounded-[inherit] pointer-events-none z-40"
                             ></div>
                           }
+
                           <div
-                            cdkDrag
-                            cdkDragBoundary=".columns"
-                            [cdkDragDisabled]="preview()"
                             [ngStyle]="gridConfigStyles(column.config)"
                             [class]="'grid-column-' + column.uuid"
-                            class="relative flex flex-col!"
-                            [ngClass]="{
-                              'flex-row w-full!':
-                                previewType() !== 'desktop' && previewType() !== 'none',
-                            }"
                           >
                             @if (!preview()) {
                               <!-- Column internal information -->
@@ -277,10 +264,7 @@
                               </div>
                             }
 
-                            <!-- ================================= -->
                             <!-- EMPTY COLUMN -->
-                            <!-- ================================= -->
-
                             @if (column.element == null) {
                               @if (!preview()) {
                                 <div
@@ -293,14 +277,11 @@
                                     <i class="fa-solid fa-plus"></i>
                                   </div>
 
-                                  <span class="text-[10px]"> Espacio vacío para contenido </span>
+                                  <span class="text-[10px]">Espacio vacío para contenido</span>
                                 </div>
                               }
                             } @else {
-                              <!-- ================================= -->
                               <!-- ELEMENT -->
-                              <!-- ================================= -->
-
                               <div class="relative group/element">
                                 @if (!preview()) {
                                   <div
@@ -338,27 +319,27 @@
                         </div>
                       }
                     </div>
-
-                    <!-- Add Column -->
-                    @if (editDesign() && !preview()) {
-                      <div
-                        class="mt-4 pt-3 border-t border-dashed border-slate-200 flex justify-center"
-                      >
-                        <button
-                          (click)="addColumn(row)"
-                          class="cursor-pointer inline-flex items-center gap-1.5 px-3 py-1 bg-white hover:bg-slate-50 border border-dashed border-slate-300 hover:border-slate-300 text-slate-600 hover:text-slate-700 rounded-full text-xs font-semibold shadow-sm transition-all"
-                          type="button"
-                        >
-                          <i class="fa-solid fa-table-columns"></i>
-
-                          <span>
-                            Añadir Columna dentro de Fila
-                            <b>{{ row.uuid }}</b>
-                          </span>
-                        </button>
-                      </div>
-                    }
                   </div>
+
+                  <!-- Add Column -->
+                  @if (editDesign() && !preview()) {
+                    <div
+                      class="mt-4 pt-3 border-t border-dashed border-slate-200 flex justify-center"
+                    >
+                      <button
+                        (click)="addColumn(row)"
+                        class="cursor-pointer inline-flex items-center gap-1.5 px-3 py-1 bg-white hover:bg-slate-50 border border-dashed border-slate-300 hover:border-slate-300 text-slate-600 hover:text-slate-700 rounded-full text-xs font-semibold shadow-sm transition-all"
+                        type="button"
+                      >
+                        <i class="fa-solid fa-table-columns"></i>
+
+                        <span>
+                          Añadir Columna dentro de Fila
+                          <b>{{ row.uuid }}</b>
+                        </span>
+                      </button>
+                    </div>
+                  }
                 </div>
               }
 
@@ -387,7 +368,6 @@
       <!-- ========================================================= -->
       <!-- ADD SECTION -->
       <!-- ========================================================= -->
-
       @if (!preview()) {
         <div
           (click)="addSection()"

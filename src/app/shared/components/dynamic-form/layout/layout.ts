@@ -11,6 +11,7 @@ import {
   LayoutStylesI,
 } from 'app/shared/interfaces/design.interface';
 import { TooltipDirective } from 'app/shared/directives/tooltip.directive';
+import { defaultLayoutStyles } from 'app/shared/utils/grid.utils';
 
 @Component({
   selector: 'design-layout-component',
@@ -39,7 +40,7 @@ import { TooltipDirective } from 'app/shared/directives/tooltip.directive';
 
             <span class="text-[10px] text-indigo-600 font-bold"> '{{ layout().display }}' </span>
           </div>
-          <div class="grid grid-cols-5 gap-1 bg-slate-100 p-0.5 rounded-lg text-center text-[10px]">
+          <div class="grid grid-cols-4 gap-1 bg-slate-100 p-0.5 rounded-lg text-center text-[10px]">
             @for (display of displays; track display) {
               <button
                 type="button"
@@ -409,17 +410,13 @@ import { TooltipDirective } from 'app/shared/directives/tooltip.directive';
 })
 export class DesignLayoutComponent {
   value = input.required<LayoutStylesI>();
-  updateValues = output<Record<string, string | number>>();
+  updateValues = output<Record<string, string>>();
 
   readonly displays: DisplayT[] = [
     'block',
     'inline',
-    // 'inline-block',
     'flex',
-    // 'inline-flex',
     'grid',
-    // 'inline-grid',
-    'none',
   ];
   readonly flexDirections: FlexDirectionT[] = ['row', 'row-reverse', 'column', 'column-reverse'];
   readonly flexWraps: FlexWrapT[] = ['nowrap', 'wrap', 'wrap-reverse'];
@@ -450,29 +447,7 @@ export class DesignLayoutComponent {
     'baseline',
   ];
 
-  layout = signal<Required<LayoutStylesI>>({
-    display: 'block',
-    width: '100%',
-    height: '400px',
-    minWidth: '',
-    maxWidth: '',
-    minHeight: '',
-    maxHeight: '',
-    boxSizing: 'unset',
-    flexDirection: 'row',
-    flexWrap: 'nowrap',
-    justifyContent: 'space-between',
-    alignItems: 'normal',
-    alignContent: 'normal',
-    flexGrow: 0,
-    flexShrink: 1,
-    flexBasis: '',
-    flex: '',
-    alignSelf: 'normal',
-    gap: '',
-    rowGap: '',
-    columnGap: '',
-  });
+  layout = signal<Required<LayoutStylesI>>(defaultLayoutStyles);
 
   layoutForm = form(this.layout);
 
@@ -502,7 +477,7 @@ export class DesignLayoutComponent {
       if (!value) return;
 
       this.isInitializing = true;
-        this.layout.update((current) => ({
+      this.layout.update((current) => ({
         ...current,
         ...value,
       }));
@@ -516,7 +491,7 @@ export class DesignLayoutComponent {
       const value = this.layout();
       if (this.isInitializing) return;
 
-      this.updateValues.emit(value as unknown as Record<string, string | number>);
+      this.updateValues.emit(value);
     });
   }
 
@@ -536,8 +511,8 @@ export class DesignLayoutComponent {
     }
 
     if (!['flex', 'inline-flex', 'grid', 'inline-grid'].includes(display)) {
-      this.layoutForm.flexGrow().value.set(0);
-      this.layoutForm.flexShrink().value.set(1);
+      this.layoutForm.flexGrow().value.set('0');
+      this.layoutForm.flexShrink().value.set('1');
       this.layoutForm.flexBasis().value.set('auto');
       this.layoutForm.flex().value.set('0 1 auto');
       this.layoutForm.alignSelf().value.set('auto');

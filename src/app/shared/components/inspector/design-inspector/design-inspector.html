@@ -123,9 +123,93 @@
           {{ stateElement() }}
         </span>
       </div>
-      <div class="grid grid-cols-3 gap-2">
-        @for (state of states; track state) {
-          <button
+      <div class="flex items-center gap-1.5 my-2.5">
+        <div class="relative flex-1">
+          <select
+            #statesAddSelect
+            aria-label="Seleccionar pseudo-estado para añadir"
+            class="w-full text-[11px] bg-slate-50 border border-slate-200 text-slate-700 rounded-md py-1 px-0.5 focus:ring-0 focus:shadow-xs focus:outline-none"
+          >
+            <option disabled="" selected="" value="">+ Añadir pseudo-estado...</option>
+            @for (state of states(); track state) {
+              <option [value]="state">
+                {{ state }}
+                @switch (state) {
+                  @case (':hover') {
+                    (Al pasar el ratón)
+                  }
+                  @case (':focus') {
+                    (Al presionar)
+                  }
+                  @case (':active') {
+                    (Al enfocar)
+                  }
+                  @case (':disabled') {
+                    (Deshabilitado)
+                  }
+                  @case (':visited') {
+                    (Visitado)
+                  }
+                }
+              </option>
+            }
+          </select>
+        </div>
+        <button
+          (click)="addState(statesAddSelect.value); statesAddSelect.value = ''"
+          class="cursor-pointer px-2.5 py-1 bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white font-medium text-[11px] rounded-md transition-colors shadow-xs flex items-center gap-1"
+          type="button"
+        >
+          <span>Agregar</span>
+        </button>
+      </div>
+      <div class="flex flex-col gap-1">
+        <span class="text-[9.5px] font-semibold text-slate-400 tracking-wide"
+          >ESTADOS CONFIGURADOS</span
+        >
+        <div class="flex flex-wrap gap-2">
+          @for (state of currentStates(); track state) {
+            @if (state === 'normal') {
+              <button
+                (click)="toggleDesignSate(state)"
+                [class.font-bold!]="stateElement() === state"
+                [class.text-white!]="stateElement() === state"
+                [class.bg-indigo-600!]="stateElement() === state"
+                [class.shadow-xs!]="stateElement() === state"
+                class="cursor-pointer flex items-center gap-1 px-2 py-1 rounded-md text-[11px] bg-slate-100 text-slate-700 hover:bg-slate-200"
+                type="button"
+              >
+                <span
+                  [class.bg-white!]="stateElement() === state"
+                  class="w-1.5 h-1.5 rounded-full bg-indigo-500"
+                ></span>
+                <span>{{ state }}</span>
+              </button>
+            } @else {
+              <div
+                [class.font-bold!]="stateElement() === state"
+                [class.text-white!]="stateElement() === state"
+                [class.bg-indigo-600!]="stateElement() === state"
+                [class.shadow-xs!]="stateElement() === state"
+                (click)="toggleDesignSate(state)"
+                class="flex items-center gap-1 px-2 py-1 rounded-md text-[11px] bg-slate-100 hover:bg-slate-200 text-slate-700 cursor-pointer border border-slate-200/80 transition-all"
+              >
+                <span
+                  [class.bg-white!]="stateElement() === state"
+                  class="w-1.5 h-1.5 rounded-full bg-emerald-500"
+                ></span>
+                <span>{{ state }}</span>
+                <button
+                  (click)="$event.stopPropagation(); removeState(state)"
+                  class="cursor-pointer text-slate-400 hover:text-red-500 ml-1 p-0.5 rounded transition-colors leading-none flex items-center"
+                  appTooltip="Eliminar estado {{ state }}"
+                  type="button"
+                >
+                  <i class="fa-solid fa-xmark fa-2xs"></i>
+                </button>
+              </div>
+            }
+            <!-- <button
             type="button"
             class="cursor-pointer shrink-0 px-2 py-1 rounded-md text-[11px] font-medium bg-slate-100 text-slate-600 hover:bg-slate-200 hover:text-slate-900 transition-colors flex items-center gap-1"
             (click)="toggleDesignSate(state)"
@@ -139,8 +223,9 @@
               class="w-1.5 h-1.5 rounded-full bg-slate-300"
             ></span>
             <span>{{ state }}</span>
-          </button>
-        }
+          </button> -->
+          }
+        </div>
       </div>
     </div>
 

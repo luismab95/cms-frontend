@@ -1,6 +1,7 @@
 import { Component, effect, input, output, signal } from '@angular/core';
 import { form, FormField } from '@angular/forms/signals';
 import { BorderStylesI, BorderStyleT } from 'app/shared/interfaces/design.interface';
+import { defaultBorderStyles } from 'app/shared/utils/grid.utils';
 
 @Component({
   selector: 'design-border-component',
@@ -219,23 +220,9 @@ import { BorderStylesI, BorderStyleT } from 'app/shared/interfaces/design.interf
 export class DesignBorderComponent {
   value = input.required<BorderStylesI>();
 
-  updateValues = output<Record<string, string | number>>();
+  updateValues = output<Record<string, string>>();
 
-  border = signal<Required<BorderStylesI>>({
-    border: '',
-    borderWidth: '',
-    borderStyle: '',
-    borderColor: '',
-    borderTop: '',
-    borderRight: '',
-    borderBottom: '',
-    borderLeft: '',
-    borderRadius: '',
-    borderTopLeftRadius: '',
-    borderTopRightRadius: '',
-    borderBottomRightRadius: '',
-    borderBottomLeftRadius: '',
-  });
+  border = signal<Required<BorderStylesI>>(defaultBorderStyles);
 
   borderForm = form(this.border);
 
@@ -243,21 +230,7 @@ export class DesignBorderComponent {
 
   private isInitializing = true;
 
-  private previousBorder: Required<BorderStylesI> = {
-    border: '',
-    borderWidth: '',
-    borderStyle: '',
-    borderColor: '',
-    borderTop: '',
-    borderRight: '',
-    borderBottom: '',
-    borderLeft: '',
-    borderRadius: '',
-    borderTopLeftRadius: '',
-    borderTopRightRadius: '',
-    borderBottomRightRadius: '',
-    borderBottomLeftRadius: '',
-  };
+  previousBorder: Required<BorderStylesI> = defaultBorderStyles;
 
   private readonly individualBorders = [
     'borderTop',
@@ -316,7 +289,7 @@ export class DesignBorderComponent {
         ...this.border(),
       };
 
-      this.updateValues.emit(this.border() as unknown as Record<string, string | number>);
+      this.updateValues.emit(this.border());
     });
   }
 

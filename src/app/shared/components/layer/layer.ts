@@ -16,7 +16,7 @@ import { TemplateService } from 'app/core/services/templates.service';
 import { ElementCMSI } from 'app/shared/interfaces/element.interface';
 import { CanvasT } from 'app/core/interfaces/page.interface';
 import { TooltipDirective } from 'app/shared/directives/tooltip.directive';
-import { ElementsManagerComponent } from '../elements-manager/elements-manager';
+import { ElementsManagerComponent } from '../inspector/elements-manager/elements-manager';
 
 @Component({
   selector: 'layer-component',

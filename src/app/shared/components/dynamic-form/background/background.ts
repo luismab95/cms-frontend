@@ -9,6 +9,7 @@ import {
   BackgroundStylesI,
 } from 'app/shared/interfaces/design.interface';
 import { TooltipDirective } from 'app/shared/directives/tooltip.directive';
+import { defaultBackgroundStyles } from 'app/shared/utils/grid.utils';
 
 @Component({
   selector: 'design-background-component',
@@ -137,22 +138,11 @@ import { TooltipDirective } from 'app/shared/directives/tooltip.directive';
 })
 export class DesignBackgroundComponent {
   value = input.required<BackgroundStylesI>();
-  updateValues = output<Record<string, string | number>>();
+  updateValues = output<Record<string, string>>();
 
-  background = signal<Required<BackgroundStylesI>>({
-    backgroundColor: '',
-    backgroundSize: '',
-    backgroundPosition: '',
-    backgroundRepeat: '',
-    backgroundAttachment: '',
-    backgroundClip: '',
-  });
+  background = signal<Required<BackgroundStylesI>>(defaultBackgroundStyles);
 
   backgroundForm = form(this.background);
-
-  applyChanges(): void {
-    this.updateValues.emit({ ...this.background() } as Record<string, string | number>);
-  }
 
   readonly backgroundSizes: BackgroundSizeT[] = ['auto', 'cover', 'contain', ''];
   readonly backgroundPositions: BackgroundPositionT[] = [
@@ -195,7 +185,7 @@ export class DesignBackgroundComponent {
       const value = this.background();
       if (this.isInitializing) return;
 
-      this.updateValues.emit(value as unknown as Record<string, string | number>);
+      this.updateValues.emit(value);
     });
   }
 

@@ -1,6 +1,7 @@
 import { Component, computed, effect, input, output, signal } from '@angular/core';
 import { form, FormField } from '@angular/forms/signals';
 import { PositionStylesI, PositionT } from 'app/shared/interfaces/design.interface';
+import { defaultPositionStyles } from 'app/shared/utils/grid.utils';
 
 @Component({
   selector: 'design-position-component',
@@ -87,20 +88,13 @@ import { PositionStylesI, PositionT } from 'app/shared/interfaces/design.interfa
 })
 export class DesignPositionComponent {
   value = input.required<PositionStylesI>();
-  updateValues = output<Record<string, string | number>>();
+  updateValues = output<Record<string, string>>();
 
   readonly positions: PositionT[] = ['relative', 'absolute', 'static', 'sticky', 'fixed'];
 
   readonly isStatic = computed(() => this.position().position === 'static');
 
-  position = signal<Required<PositionStylesI>>({
-    position: 'relative',
-    top: '',
-    right: '',
-    bottom: '',
-    left: '',
-    zIndex: '',
-  });
+  position = signal<Required<PositionStylesI>>(defaultPositionStyles);
 
   positionForm = form(this.position);
 
@@ -130,7 +124,7 @@ export class DesignPositionComponent {
       const value = this.position();
       if (this.isInitializing) return;
 
-      this.updateValues.emit(value as unknown as Record<string, string | number>);
+      this.updateValues.emit(value);
     });
   }
 

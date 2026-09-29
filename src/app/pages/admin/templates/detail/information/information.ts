@@ -18,6 +18,7 @@ import { Subject, takeUntil } from 'rxjs';
 import { GridComponent } from 'app/shared/components/grid/grid';
 import { PageService } from 'app/core/services/pages.service';
 import { SitieService } from 'app/core/services/sitie.service';
+import { createPageConfig } from 'app/shared/utils/grid.utils';
 
 @Component({
   selector: 'templates-information',
@@ -107,17 +108,20 @@ export class TemplatesInformationComponent implements OnInit, OnDestroy {
 
     this.templateForm.disable();
 
+    const newHeaderConfig = createPageConfig('header');
+    const newFooterConfig = createPageConfig('footer');
+
     // ADD data
     this.templateForm.value.data = {
       header: {
-        css: '.header{}',
+        css: newHeaderConfig.css,
+        config: newHeaderConfig.config,
         data: [],
-        config: { backgroundImage: '' },
       },
       footer: {
-        css: '.footer{}',
+        css: newFooterConfig.css,
+        config: newFooterConfig.config,
         data: [],
-        config: { backgroundImage: '' },
       },
     } as TemplateDataMongoI;
 

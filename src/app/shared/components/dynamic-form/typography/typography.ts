@@ -8,6 +8,7 @@ import {
   WhiteSpaceT,
   WordBreakT,
 } from 'app/shared/interfaces/design.interface';
+import { defaultTypographyStyles } from 'app/shared/utils/grid.utils';
 
 @Component({
   selector: 'design-typography-component',
@@ -273,28 +274,14 @@ import {
 })
 export class DesignTypographyComponent {
   value = input.required<TypographyStylesI>();
-  updateValues = output<Record<string, string | number>>();
+  updateValues = output<Record<string, string>>();
 
   readonly textAligns: TextAlignT[] = ['left', 'center', 'right', 'justify'];
   readonly whiteSpaces: WhiteSpaceT[] = ['normal', 'nowrap', 'pre', 'pre-wrap', 'pre-line'];
   readonly wordBreaks: WordBreakT[] = ['normal', 'break-all', 'break-word'];
   readonly textOverflows: TextOverflowT[] = ['clip', 'ellipsis'];
 
-  typography = signal<Required<TypographyStylesI>>({
-    fontFamily: 'Inter, sans-serif',
-    fontSize: '16px',
-    fontWeight: '600',
-    lineHeight: '1.5',
-    letterSpacing: '0',
-    color: '',
-    textAlign: 'center',
-    textTransform: 'none',
-    textDecoration: 'none',
-    fontStyle: 'normal',
-    whiteSpace: 'nowrap',
-    wordBreak: 'normal',
-    textOverflow: 'clip',
-  });
+  typography = signal<Required<TypographyStylesI>>(defaultTypographyStyles);
 
   typographyForm = form(this.typography);
 
@@ -323,7 +310,7 @@ export class DesignTypographyComponent {
       const value = this.typography();
       if (this.isInitializing) return;
 
-      this.updateValues.emit(value as unknown as Record<string, string | number>);
+      this.updateValues.emit(value);
     });
   }
 

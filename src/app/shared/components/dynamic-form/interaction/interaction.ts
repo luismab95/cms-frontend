@@ -5,6 +5,7 @@ import {
   InteractionStylesI,
   PointerEventsT,
 } from 'app/shared/interfaces/design.interface';
+import { defaultInteractionStyles } from 'app/shared/utils/grid.utils';
 
 @Component({
   selector: 'design-interaction-component',
@@ -53,7 +54,7 @@ import {
 })
 export class DesignInteractionComponent {
   value = input.required<InteractionStylesI>();
-  updateValues = output<Record<string, string | number>>();
+  updateValues = output<Record<string, string>>();
 
   readonly cursors: CursorT[] = [
     'auto',
@@ -72,10 +73,7 @@ export class DesignInteractionComponent {
   ];
   readonly pointerEvents: PointerEventsT[] = ['none', 'auto'];
 
-  interaction = signal<Required<InteractionStylesI>>({
-    cursor: 'pointer',
-    pointerEvents: 'auto',
-  });
+  interaction = signal<Required<InteractionStylesI>>(defaultInteractionStyles);
 
   interactionForm = form(this.interaction);
 
@@ -105,7 +103,7 @@ export class DesignInteractionComponent {
       const value = this.interaction();
       if (this.isInitializing) return;
 
-      this.updateValues.emit(value as unknown as Record<string, string | number>);
+      this.updateValues.emit(value);
     });
   }
 }

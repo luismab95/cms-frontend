@@ -1,15 +1,11 @@
 export type DeviceT = 'mobile' | 'tablet' | 'desktop';
 
-export interface StyleConfigI {
-  base: Record<string, string | number>;
-  states: Record<string, Record<string, string | number>>;
-}
-
 export interface ResponsiveCssJsonI {
   selector: string;
-  mobile: StyleConfigI;
-  tablet: StyleConfigI;
-  desktop: StyleConfigI;
+  mobile: Record<string, string>;
+  tablet: Record<string, string>;
+  desktop: Record<string, string>;
+  states: Partial<Record<StateElementT, Record<string, string>>>;
 }
 
 export type DesignModeT = 'UI' | 'CODE';
@@ -25,9 +21,17 @@ export type DesignSectionT =
   | 'overflow'
   | 'interaction';
 export type DisplayT =
-  'block' | 'inline' | 'inline-block' | 'flex' | 'inline-flex' | 'grid' | 'inline-grid' | 'none';
-export type FlexDirectionT = 'row' | 'row-reverse' | 'column' | 'column-reverse';
-export type FlexWrapT = 'nowrap' | 'wrap' | 'wrap-reverse';
+  | 'block'
+  | 'inline'
+  | 'inline-block'
+  | 'flex'
+  | 'inline-flex'
+  | 'grid'
+  | 'inline-grid'
+  | 'none'
+  | '';
+export type FlexDirectionT = 'row' | 'row-reverse' | 'column' | 'column-reverse' | '';
+export type FlexWrapT = 'nowrap' | 'wrap' | 'wrap-reverse' | '';
 export type JustifyContentT =
   | 'flex-start'
   | 'flex-end'
@@ -35,8 +39,10 @@ export type JustifyContentT =
   | 'space-between'
   | 'space-around'
   | 'space-evenly'
-  | 'stretch';
-export type AlignItemsT = 'normal' | 'stretch' | 'flex-start' | 'flex-end' | 'center' | 'baseline';
+  | 'stretch'
+  | '';
+export type AlignItemsT =
+  'normal' | 'stretch' | 'flex-start' | 'flex-end' | 'center' | 'baseline' | '';
 export type AlignContentT =
   | 'normal'
   | 'stretch'
@@ -45,10 +51,11 @@ export type AlignContentT =
   | 'center'
   | 'space-between'
   | 'space-around'
-  | 'space-evenly';
+  | 'space-evenly'
+  | '';
 export type AlignSelfT =
-  'auto' | 'normal' | 'stretch' | 'flex-start' | 'flex-end' | 'center' | 'baseline';
-export type BoxSizingT = 'unset' | 'border-box' | 'content-box';
+  'auto' | 'normal' | 'stretch' | 'flex-start' | 'flex-end' | 'center' | 'baseline' | '';
+export type BoxSizingT = 'unset' | 'border-box' | 'content-box' | '';
 
 export interface LayoutStylesI {
   display?: DisplayT;
@@ -64,8 +71,8 @@ export interface LayoutStylesI {
   justifyContent?: JustifyContentT;
   alignItems?: AlignItemsT;
   alignContent?: AlignContentT;
-  flexGrow?: number;
-  flexShrink?: number;
+  flexGrow?: string;
+  flexShrink?: string;
   flexBasis?: string;
   flex?: string;
   alignSelf?: AlignSelfT;
@@ -75,25 +82,23 @@ export interface LayoutStylesI {
 }
 
 export interface SpacingStylesI {
-  margin: string;
-  marginTop: string;
-  marginRight: string;
-  marginBottom: string;
-  marginLeft: string;
-  padding: string;
-  paddingTop: string;
-  paddingRight: string;
-  paddingBottom: string;
-  paddingLeft: string;
+  marginTop?: string;
+  marginRight?: string;
+  marginBottom?: string;
+  marginLeft?: string;
+  paddingTop?: string;
+  paddingRight?: string;
+  paddingBottom?: string;
+  paddingLeft?: string;
 }
 
-export type TextAlignT = 'left' | 'center' | 'right' | 'justify';
-export type TextTransformT = 'none' | 'uppercase' | 'lowercase' | 'capitalize';
-export type TextDecorationT = 'none' | 'underline' | 'overline' | 'line-through';
-export type FontStyleT = 'normal' | 'italic' | 'oblique';
-export type WhiteSpaceT = 'normal' | 'nowrap' | 'pre' | 'pre-wrap' | 'pre-line';
-export type WordBreakT = 'normal' | 'break-all' | 'break-word';
-export type TextOverflowT = 'clip' | 'ellipsis';
+export type TextAlignT = 'left' | 'center' | 'right' | 'justify' | '';
+export type TextTransformT = 'none' | 'uppercase' | 'lowercase' | 'capitalize' | '';
+export type TextDecorationT = 'none' | 'underline' | 'overline' | 'line-through' | '';
+export type FontStyleT = 'normal' | 'italic' | 'oblique' | '';
+export type WhiteSpaceT = 'normal' | 'nowrap' | 'pre' | 'pre-wrap' | 'pre-line' | '';
+export type WordBreakT = 'normal' | 'break-all' | 'break-word' | '';
+export type TextOverflowT = 'clip' | 'ellipsis' | '';
 export interface TypographyStylesI {
   fontFamily?: string;
   fontSize?: string;
@@ -140,7 +145,7 @@ export interface BorderStylesI {
   borderBottomRightRadius?: string;
   borderBottomLeftRadius?: string;
 }
-export type PositionT = 'static' | 'relative' | 'absolute' | 'fixed' | 'sticky';
+export type PositionT = 'static' | 'relative' | 'absolute' | 'fixed' | 'sticky' | '';
 export interface PositionStylesI {
   position?: PositionT;
   top?: string;
@@ -150,9 +155,9 @@ export interface PositionStylesI {
   zIndex?: string;
 }
 
-export type BoxShadowT = 'none' | 'weak' | 'medium' | 'strong';
+export type BoxShadowT = 'none' | 'weak' | 'medium' | 'strong' | '';
 export interface EffectsStylesI {
-  opacity?: number;
+  opacity?: string;
   boxShadow?: BoxShadowT;
   transform?: string;
   transition?: string;
@@ -160,7 +165,7 @@ export interface EffectsStylesI {
   backdropFilter?: string;
 }
 
-export type OverflowT = 'visible' | 'hidden' | 'scroll' | 'auto';
+export type OverflowT = 'visible' | 'hidden' | 'scroll' | 'auto' | '';
 export interface OverflowStylesI {
   overflow?: OverflowT;
   overflowX?: OverflowT;
@@ -180,8 +185,9 @@ export type CursorT =
   | 'grabbing'
   | 'crosshair'
   | 'zoom-in'
-  | 'zoom-out';
-export type PointerEventsT = 'auto' | 'none';
+  | 'zoom-out'
+  | '';
+export type PointerEventsT = 'auto' | 'none' | '';
 
 export interface InteractionStylesI {
   cursor?: CursorT;

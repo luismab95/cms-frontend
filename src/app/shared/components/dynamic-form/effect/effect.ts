@@ -1,7 +1,8 @@
-import { Component, effect, input, output, signal } from '@angular/core';
+import { Component, computed, effect, input, output, signal } from '@angular/core';
 import { DecimalPipe } from '@angular/common';
 import { form, FormField, max, min, schema } from '@angular/forms/signals';
 import { EffectsStylesI, BoxShadowT } from 'app/shared/interfaces/design.interface';
+import { defaultEffetsStyles } from 'app/shared/utils/grid.utils';
 
 @Component({
   selector: 'design-effect-component',
@@ -27,7 +28,7 @@ import { EffectsStylesI, BoxShadowT } from 'app/shared/interfaces/design.interfa
       <div class="p-3.5 space-y-3 bg-white">
         <div class="flex items-center justify-between">
           <span class="text-slate-600 text-[10px] font-medium">
-            opacity: {{ effect().opacity }}
+            opacity: {{ effect().opacity === '' ? 1 : effect().opacity }}
           </span>
 
           <div class="flex items-center gap-2 w-36">
@@ -35,11 +36,14 @@ import { EffectsStylesI, BoxShadowT } from 'app/shared/interfaces/design.interfa
               class="w-full accent-indigo-600 h-1 bg-slate-200 rounded cursor-pointer"
               type="range"
               step="0.01"
-              [formField]="effectForm.opacity"
+              (input)="setOpacity($any($event.target).value)"
+              [value]="effect().opacity === '' ? 1 : effect().opacity"
+              min="0"
+              max="1"
             />
 
             <span class="text-[10px] text-indigo-700 font-bold w-8 text-right">
-              {{ effect().opacity * 100 | number: '1.0-0' }}%
+              {{ opacity() | number: '1.0-0' }}%
             </span>
           </div>
         </div>
@@ -124,26 +128,17 @@ import { EffectsStylesI, BoxShadowT } from 'app/shared/interfaces/design.interfa
 export class DesignEffectsComponent {
   value = input.required<EffectsStylesI>();
 
-  updateValues = output<Record<string, string | number>>();
+  updateValues = output<Record<string, string>>();
 
   readonly boxShadows: BoxShadowT[] = ['none', 'weak', 'medium', 'strong'];
-
-  effect = signal<Required<EffectsStylesI>>({
-    opacity: 1,
-    boxShadow: 'none',
-    transform: '',
-    transition: '',
-    filter: '',
-    backdropFilter: '',
+  readonly opacity = computed(() => {
+    if (this.effect().opacity === '') return 100;
+    return Number(this.effect().opacity) * 100;
   });
 
-  effectForm = form(
-    this.effect,
-    schema((path) => {
-      min(path.opacity, 0);
-      max(path.opacity, 1);
-    }),
-  );
+  effect = signal<Required<EffectsStylesI>>(defaultEffetsStyles);
+
+  effectForm = form(this.effect);
 
   private isInitializing = true;
 
@@ -152,6 +147,7 @@ export class DesignEffectsComponent {
     weak: '0 1px 3px rgba(0, 0, 0, 0.12)',
     medium: '0 4px 10px rgba(0, 0, 0, 0.15)',
     strong: '0 10px 25px rgba(0, 0, 0, 0.20)',
+    '': '',
   };
 
   constructor() {
@@ -181,7 +177,7 @@ export class DesignEffectsComponent {
         return;
       }
 
-      this.updateValues.emit(value as unknown as Record<string, string | number>);
+      this.updateValues.emit(value);
     });
   }
 
@@ -205,5 +201,13 @@ export class DesignEffectsComponent {
    */
   getBoxShadowCss(value: BoxShadowT): string {
     return this.boxShadowValues[value];
+  }
+
+  /**
+   * Set opacity
+   * @param value
+   */
+  setOpacity(value: number) {
+    this.effectForm.opacity().value.set(value.toString());
   }
 }

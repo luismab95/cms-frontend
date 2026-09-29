@@ -15,6 +15,7 @@ import { MicrosityService } from 'app/core/services/micrositie.service';
 import { PageService } from 'app/core/services/pages.service';
 import { SitieService } from 'app/core/services/sitie.service';
 import { PermissionComponent } from 'app/shared/components/permission/permission';
+import { createPageConfig } from 'app/shared/utils/grid.utils';
 import { PermissionCode, validAction } from 'app/shared/utils/permission.utils';
 import { CmsValidators } from 'app/shared/utils/validators.util';
 import { Subject, takeUntil } from 'rxjs';
@@ -145,11 +146,12 @@ export class PagesInformationComponent implements OnInit, OnDestroy {
     this.pageForm.disable();
 
     // ADD data
+    const newPageConfig = createPageConfig('page');
     this.pageForm.value.data = {
       body: {
-        css: '.body{}',
+        css: newPageConfig.css,
+        config: newPageConfig.config,
         data: [],
-        config: { backgroundImage: '' },
       },
     } as PageDataMongoI;
 

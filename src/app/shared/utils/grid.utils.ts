@@ -9,7 +9,22 @@ import {
 import { generateRandomString } from './random.utils';
 import { ElementCMSI } from '../interfaces/element.interface';
 import * as csstree from 'css-tree';
-import { ResponsiveCssJsonI, DeviceT, StyleConfigI } from '../interfaces/design.interface';
+import { PositionStylesI } from '../interfaces/design.interface';
+import {
+  BackgroundStylesI,
+  BorderStylesI,
+  EffectsStylesI,
+  InteractionStylesI,
+  OverflowStylesI,
+} from '../interfaces/design.interface';
+import {
+  ResponsiveCssJsonI,
+  DeviceT,
+  LayoutStylesI,
+  SpacingStylesI,
+  TypographyStylesI,
+} from '../interfaces/design.interface';
+import { CanvasT } from 'app/core/interfaces/page.interface';
 
 export function validGrid(data: SectionI[]): boolean {
   if (!data.length) {
@@ -176,11 +191,18 @@ export function findElementByUuid(sections: SectionI[], uuid: string): ElementI 
   return null;
 }
 
+export const createPageConfig = (type: CanvasT): PageElementsConfigI => {
+  return {
+    css: `.${type === 'page' ? 'body' : type}{\n display: block;\n  width: 100%;\n  height: auto;\n  min-height: ${type === 'page' ? '600' : '200'}px;\n  padding-top: 10px;\n  padding-right: 10px;\n  padding-bottom: 10px;\n  padding-left: 10px;\n}`,
+    config: { backgroundImage: '' },
+  };
+};
+
 export const createElement = (elementSelected: ElementCMSI): ElementI => {
   const elementUuid = generateRandomString(8);
   return {
     uuid: elementUuid,
-    css: `.${elementSelected.css}-${elementUuid}{}`,
+    css: `.${elementSelected.css}-${elementUuid}{\n display: block;\n  width: 100%;\n  height: auto;\n  min-height: 40px;\n  padding: 10px;\n  padding-top: 10px;\n  padding-right: 10px;\n  padding-bottom: 10px;\n  padding-left: 10px;\n}`,
     config: elementSelected.config,
     name: elementSelected.name,
     text: elementSelected.text,
@@ -189,52 +211,40 @@ export const createElement = (elementSelected: ElementCMSI): ElementI => {
 };
 
 export const createColumn = (): ColumnI => {
-  const uuid = generateRandomString(8);
+  const columnUuid = generateRandomString(8);
   return {
-    uuid,
-    css: `.grid-column-${uuid}{}`,
-    config: {
-      backgroundImage: '',
-    },
+    uuid: columnUuid,
+    css: `.grid-column-${columnUuid}{\n display: block;\n  width: 100%;\n min-width: 100%;\n height: auto;\n  min-height: 40px;\n  padding-top: 12px;\n  padding-right: 12px;\n  padding-bottom: 12px;\n  padding-left: 12px;\n}`,
+    config: { backgroundImage: '' },
     element: null,
   };
 };
 
 export const createRow = (): RowI => {
-  const uuid = generateRandomString(8);
+  const rowUuid = generateRandomString(8);
   return {
-    uuid,
-    css: `.grid-column-${uuid}{}`,
-    config: {
-      backgroundImage: '',
-    },
-    columns: [],
+    uuid: rowUuid,
+    css: `.grid-row-${rowUuid}{\n display: flex;\n  width: 100%;\n  height: auto;\n  min-height: 100px;\n  flex-direction: column;\n justify-content: space-between;\n  align-items: center;\n  gap: 4px;\n padding-top: 12px;\n  padding-right: 12px;\n  padding-bottom: 12px;\n  padding-left: 12px;\n position: relative;\n }\n @container (min-width: 834px) {\n .grid-row-${rowUuid} {\n flex-direction: row;\n}\n}`,
+    config: { backgroundImage: '' },
+    columns: [
+      {
+        ...createColumn(),
+      },
+    ],
   };
 };
 
 export const createSection = (): SectionI => {
   const sectionUuid = generateRandomString(8);
-  const rowUuid = generateRandomString(8);
-  const columnUuid = generateRandomString(8);
   return {
     uuid: sectionUuid,
-    css: `.grid-section-${sectionUuid}{}`,
+    css: `.grid-section-${sectionUuid}{\n display: flex;\n  width: 100%;\n  height: auto;\n  min-height: 200px;\n  flex-direction: column;\n  gap: 4px;\n  padding-top: 12px;\n  padding-right: 12px;\n  padding-bottom: 12px;\n  padding-left: 12px;\n}`,
     config: {
       backgroundImage: '',
     },
     rows: [
       {
-        uuid: rowUuid,
-        css: `.grid-row-${rowUuid}{}`,
-        config: { backgroundImage: '' },
-        columns: [
-          {
-            uuid: columnUuid,
-            css: `.grid-column-${columnUuid}{}`,
-            config: { backgroundImage: '' },
-            element: null,
-          },
-        ],
+        ...createRow(),
       },
     ],
   };
@@ -296,6 +306,7 @@ export function cssToJson(css: string): ResponsiveCssJsonI {
     mobile: createStyleConfig(),
     tablet: createStyleConfig(),
     desktop: createStyleConfig(),
+    states: createStyleConfig(),
   };
 
   // ==========================================
@@ -304,7 +315,6 @@ export function cssToJson(css: string): ResponsiveCssJsonI {
 
   csstree.walk(ast, {
     visit: 'Rule',
-
     enter(node: any) {
       if (!result.selector) {
         result.selector = csstree.generate(node.prelude).trim();
@@ -313,7 +323,6 @@ export function cssToJson(css: string): ResponsiveCssJsonI {
   });
 
   const selector = result.selector;
-
   if (!selector) {
     return result;
   }
@@ -324,17 +333,15 @@ export function cssToJson(css: string): ResponsiveCssJsonI {
 
   csstree.walk(ast, {
     visit: 'Rule',
-
     enter(node: any) {
       const ruleSelector = csstree.generate(node.prelude).trim();
 
       if (ruleSelector === selector) {
-        Object.assign(result.mobile.base, parseDeclarations(node.block));
+        Object.assign(result.mobile, parseDeclarations(node.block));
       } else {
         const state = getState(ruleSelector, selector);
-
         if (state) {
-          result.mobile.states[state] = parseDeclarations(node.block);
+          result.states[state as keyof typeof result.states] = parseDeclarations(node.block);
         }
       }
     },
@@ -343,10 +350,8 @@ export function cssToJson(css: string): ResponsiveCssJsonI {
   // ==========================================
   // MEDIA QUERIES
   // ==========================================
-
   csstree.walk(ast, {
     visit: 'Atrule',
-
     enter(node: any) {
       if (node.name !== 'media') {
         return;
@@ -357,11 +362,9 @@ export function cssToJson(css: string): ResponsiveCssJsonI {
       }
 
       const media = csstree.generate(node.prelude).trim();
-
       let device: DeviceT | null = null;
 
       // MOBILE
-
       if (media === `(max-width: ${BREAKPOINTSCSS.mobileMax}px)`) {
         device = 'mobile';
       }
@@ -389,10 +392,8 @@ export function cssToJson(css: string): ResponsiveCssJsonI {
 
       csstree.walk(node.block, {
         visit: 'Rule',
-
         enter(rule: any) {
           const ruleSelector = csstree.generate(rule.prelude).trim();
-
           const declarations = parseDeclarations(rule.block);
 
           // ========================================
@@ -400,7 +401,7 @@ export function cssToJson(css: string): ResponsiveCssJsonI {
           // ========================================
 
           if (ruleSelector === selector) {
-            Object.assign(result[device].base, declarations);
+            Object.assign(result[device], declarations);
             return;
           }
 
@@ -409,9 +410,9 @@ export function cssToJson(css: string): ResponsiveCssJsonI {
           // ========================================
 
           const state = getState(ruleSelector, selector);
-
           if (state && DEFAULT_STATES.includes(`:${state}` as CssState)) {
-            result[device].states[`:${state}`] = declarations;
+            const cssState = `:${state}` as CssState;
+            result.states[cssState] = declarations;
           }
         },
       });
@@ -427,48 +428,23 @@ export function jsonToCss(json: ResponsiveCssJsonI): string {
   // ============================================================
   // MOBILE
   // ============================================================
-
-  const mobileStates = filterStateOverrides(json.mobile.base, json.mobile.states);
-
-  const mobileBase = generateDeclarations(json.mobile.base, '  ');
-
-  const mobileStateCss = generateStates(selector, mobileStates, '');
+  const mobileBase = generateDeclarations(json.mobile, '  ');
 
   if (mobileBase) {
     css.push(`${selector} {\n` + `${mobileBase}\n` + `}`);
   }
 
-  if (mobileStateCss) {
-    css.push(mobileStateCss);
-  }
-
   // ============================================================
   // TABLET
   // ============================================================
-
-  const tabletBase = getOverrides(json.tablet.base, json.mobile.base);
-
-  // Primero filtramos los estados de tablet contra
-  // el base de tablet.
-  const tabletStates = filterStateOverrides(json.tablet.base, json.tablet.states);
-
-  // Luego eliminamos propiedades que ya existen
-  // en el mismo estado de mobile.
-  const tabletStateOverrides = getStateOverrides(tabletStates, mobileStates);
-
+  const tabletBase = getOverrides(json.tablet, json.mobile);
   const tabletBaseCss = generateDeclarations(tabletBase, '    ');
 
-  const tabletStateCss = generateStates(selector, tabletStateOverrides, '  ');
-
-  if (tabletBaseCss || tabletStateCss) {
+  if (tabletBaseCss) {
     const rules: string[] = [];
 
     if (tabletBaseCss) {
       rules.push(`  ${selector} {\n` + `${tabletBaseCss}\n` + `  }`);
-    }
-
-    if (tabletStateCss) {
-      rules.push(tabletStateCss);
     }
 
     css.push(
@@ -482,28 +458,15 @@ export function jsonToCss(json: ResponsiveCssJsonI): string {
   // ============================================================
   // DESKTOP
   // ============================================================
-
-  const desktopBase = getOverrides(json.desktop.base, json.tablet.base);
-
-  const desktopStates = filterStateOverrides(json.desktop.base, json.desktop.states);
-
-  const desktopStateOverrides = getStateOverrides(desktopStates, tabletStates);
-
+  const desktopBase = getOverrides(json.desktop, json.tablet);
   const desktopBaseCss = generateDeclarations(desktopBase, '    ');
 
-  const desktopStateCss = generateStates(selector, desktopStateOverrides, '  ');
-
-  if (desktopBaseCss || desktopStateCss) {
+  if (desktopBaseCss) {
     const rules: string[] = [];
 
     if (desktopBaseCss) {
       rules.push(`  ${selector} {\n` + `${desktopBaseCss}\n` + `  }`);
     }
-
-    if (desktopStateCss) {
-      rules.push(desktopStateCss);
-    }
-
     css.push(
       `@container (min-width: ${BREAKPOINTSCSS.desktopMin}px) {\n` +
         `${rules.join('\n\n')}\n` +
@@ -511,20 +474,20 @@ export function jsonToCss(json: ResponsiveCssJsonI): string {
     );
   }
 
+  // ============================================================
+  // STATES
+  // ============================================================
+  const generalStates = json.states;
+  const StateCss = generateStates(selector, generalStates, '');
+  if (StateCss) {
+    css.push(StateCss);
+  }
+
   return css.join('\n\n');
 }
 
-function createStyleConfig(): StyleConfigI {
-  return {
-    base: {},
-    states: {
-      ':hover': {},
-      ':focus': {},
-      ':active': {},
-      ':disabled': {},
-      ':visited': {},
-    },
-  };
+function createStyleConfig(): Record<string, string> {
+  return {};
 }
 
 function getState(selector: string, baseSelector: string): string | null {
@@ -557,7 +520,7 @@ function camelToKebabCssPropertie(property: string): string {
   return property.replace(/[A-Z]/g, (match) => `-${match.toLowerCase()}`);
 }
 
-function generateDeclarations(styles: Record<string, string | number>, indent = ''): string {
+function generateDeclarations(styles: Record<string, string>, indent = ''): string {
   return Object.entries(styles)
     .filter(([, value]) => value !== null && value !== undefined && value !== '')
     .map(([property, value]) => {
@@ -568,7 +531,7 @@ function generateDeclarations(styles: Record<string, string | number>, indent = 
 
 function generateStates(
   selector: string,
-  states: Record<string, Record<string, string | number>>,
+  states: Record<string, Record<string, string>>,
   indent = '',
 ): string {
   return Object.entries(states)
@@ -589,8 +552,8 @@ function generateStates(
 }
 
 function getOverrides(
-  current: Record<string, string | number>,
-  previous: Record<string, string | number>,
+  current: Record<string, string>,
+  previous: Record<string, string>,
 ): Record<string, string> {
   const result: Record<string, string> = {};
   for (const [property, value] of Object.entries(current)) {
@@ -614,8 +577,8 @@ function getStateOverrides(
 }
 
 function filterStateOverrides(
-  base: Record<string, string | number>,
-  states: Record<string, Record<string, string | number>>,
+  base: Record<string, string>,
+  states: Record<string, Record<string, string>>,
 ): Record<string, Record<string, string>> {
   const result: Record<string, Record<string, string>> = {};
   for (const [state, styles] of Object.entries(states)) {
@@ -644,7 +607,7 @@ export function parseRule(css: string) {
 }
 
 export function splitStyles<T extends Record<string, any>>(
-  source: Record<string, string | number>,
+  source: Record<string, string>,
   template: T,
 ): T {
   const result = {} as T;
@@ -653,11 +616,9 @@ export function splitStyles<T extends Record<string, any>>(
     const value = source[key as string];
 
     if (value !== undefined) {
-      (result as Record<keyof T, string | number>)[key] =
-        typeof template[key] === 'number' ? Number(value) : value;
+      (result as Record<keyof T, string>)[key] = value;
     } else {
-      (result as Record<keyof T, string | number>)[key] =
-        typeof template[key] === 'number' ? 0 : '';
+      (result as Record<keyof T, string>)[key] = '';
     }
   }
 
@@ -665,26 +626,108 @@ export function splitStyles<T extends Record<string, any>>(
 }
 
 export function mergeStyleConfig(
-  defaultConfig: StyleConfigI,
-  currentConfig: StyleConfigI,
-): StyleConfigI {
-  const states = {
-    ...defaultConfig.states,
-  };
-
-  for (const state of Object.keys(currentConfig.states)) {
-    states[state] = {
-      ...defaultConfig.states[state],
-      ...currentConfig.states[state],
-    };
-  }
-
+  defaultConfig: Record<string, string>,
+  currentConfig: Record<string, string>,
+): Record<string, string> {
   return {
     ...defaultConfig,
-    base: {
-      ...defaultConfig.base,
-      ...currentConfig.base,
-    },
-    states,
+    ...currentConfig,
   };
 }
+
+export const defaultLayoutStyles: Required<LayoutStylesI> = {
+  display: 'block',
+  width: '100%',
+  height: '100%',
+  minWidth: '',
+  maxWidth: '',
+  minHeight: '40px',
+  maxHeight: '',
+  boxSizing: '',
+  flexDirection: '',
+  flexWrap: '',
+  justifyContent: '',
+  alignItems: '',
+  alignContent: '',
+  flexGrow: '',
+  flexShrink: '',
+  flexBasis: '',
+  flex: '',
+  alignSelf: '',
+  gap: '',
+  rowGap: '',
+  columnGap: '',
+};
+export const defaultSpacingStyles: Required<SpacingStylesI> = {
+  marginTop: '',
+  marginRight: '',
+  marginBottom: '',
+  marginLeft: '',
+  paddingTop: '10px',
+  paddingRight: '10px',
+  paddingBottom: '10px',
+  paddingLeft: '10px',
+};
+export const defaultTypographyStyles: Required<TypographyStylesI> = {
+  fontFamily: '',
+  fontSize: '',
+  fontWeight: '',
+  lineHeight: '',
+  letterSpacing: '',
+  color: '',
+  textAlign: '',
+  textTransform: '',
+  textDecoration: '',
+  fontStyle: '',
+  whiteSpace: '',
+  wordBreak: '',
+  textOverflow: '',
+};
+export const defaultBackgroundStyles: Required<BackgroundStylesI> = {
+  backgroundColor: '',
+  backgroundSize: '',
+  backgroundPosition: '',
+  backgroundRepeat: '',
+  backgroundAttachment: '',
+  backgroundClip: '',
+};
+export const defaultBorderStyles: Required<BorderStylesI> = {
+  border: '',
+  borderWidth: '',
+  borderStyle: '',
+  borderColor: '',
+  borderTop: '',
+  borderRight: '',
+  borderBottom: '',
+  borderLeft: '',
+  borderRadius: '',
+  borderTopLeftRadius: '',
+  borderTopRightRadius: '',
+  borderBottomRightRadius: '',
+  borderBottomLeftRadius: '',
+};
+export const defaultEffetsStyles: Required<EffectsStylesI> = {
+  opacity: '',
+  boxShadow: '',
+  transform: '',
+  transition: '',
+  filter: '',
+  backdropFilter: '',
+};
+export const defaultInteractionStyles: Required<InteractionStylesI> = {
+  cursor: '',
+  pointerEvents: '',
+};
+export const defaultOverflowStyles: Required<OverflowStylesI> = {
+  overflow: '',
+  overflowX: '',
+  overflowY: '',
+};
+export const defaultPositionStyles: Required<PositionStylesI> = {
+  position: '',
+  top: '',
+  right: '',
+  bottom: '',
+  left: '',
+  zIndex: '',
+};

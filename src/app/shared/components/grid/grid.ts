@@ -95,8 +95,15 @@ export class GridComponent implements OnDestroy {
    */
   constructor() {
     effect(() => {
-      this.sectionsInCanvas();
-      this.loadStyles();
+      const page = this.page();
+      if (!page) return;
+      this.loadStylesPages();
+    });
+
+    effect(() => {
+      const template = this.template();
+      if (!template) return;
+      // this.loadStylesPages();
     });
   }
 
@@ -114,7 +121,7 @@ export class GridComponent implements OnDestroy {
   /**
    * Load styles
    */
-  loadStyles(): void {
+  loadStylesPages(): void {
     const page = this.page();
     if (!page) return;
     const pageData = page.data;
@@ -138,7 +145,7 @@ export class GridComponent implements OnDestroy {
         }
       }
     }
-
+    
     this._dynamicStyleService.set(styleId, css.join('\n'));
     this._dynamicStyleService.set('body-dynamicStyles', pageData?.body.css ?? '');
   }
@@ -162,7 +169,7 @@ export class GridComponent implements OnDestroy {
   addSection() {
     const newSection = createSection();
     const previous = structuredClone(this.sectionsInCanvas());
-    this.currentSections = [...this.sectionsInCanvas(), newSection];
+    this.currentSections = structuredClone([...this.sectionsInCanvas(), newSection]);
     this.updateSelectionItem({
       page: null,
       section: newSection,
@@ -183,6 +190,7 @@ export class GridComponent implements OnDestroy {
     const previous = structuredClone(this.sectionsInCanvas());
     const row = createRow();
     section.rows.push(row);
+    this.currentSections = structuredClone(this.sectionsInCanvas());
     this.updateSelectionItem({
       page: null,
       section: null,
@@ -204,6 +212,7 @@ export class GridComponent implements OnDestroy {
     const previous = structuredClone(this.sectionsInCanvas());
     const column = createColumn();
     row.columns.push(column);
+    this.currentSections = structuredClone(this.sectionsInCanvas());
     this.updateSelectionItem({
       page: null,
       section: null,
@@ -259,8 +268,12 @@ export class GridComponent implements OnDestroy {
     if (!selectedItemsInGrid) return;
 
     this.updateSelectionItem({
-      ...selectedItemsInGrid,
-      column: column,
+      page: null,
+      section: null,
+      row: null,
+      column,
+      element: null,
+      canvas: selectedItemsInGrid.canvas,
     });
   }
 

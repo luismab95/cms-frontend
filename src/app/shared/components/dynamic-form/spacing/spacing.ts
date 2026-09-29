@@ -2,6 +2,7 @@ import { Component, effect, input, output, signal } from '@angular/core';
 import { form, FormField } from '@angular/forms/signals';
 import { TooltipDirective } from 'app/shared/directives/tooltip.directive';
 import { SpacingStylesI } from 'app/shared/interfaces/design.interface';
+import { defaultSpacingStyles } from 'app/shared/utils/grid.utils';
 
 @Component({
   selector: 'design-spacing-component',
@@ -26,9 +27,7 @@ import { SpacingStylesI } from 'app/shared/interfaces/design.interface';
         <div
           class="bg-amber-50/40 border border-amber-200/80 rounded-lg p-2.5 text-[10px] flex flex-col items-center justify-center relative"
         >
-          <span class="absolute top-1 left-2 text-[9px] font-bold text-amber-600"
-            >Margin: {{ spacing().margin }}</span
-          >
+          <span class="absolute top-1 left-2 text-[9px] font-bold text-amber-600">Margin</span>
           <input
             class="w-8 h-4 text-center border border-amber-300 rounded text-[10px] p-0 bg-white mb-1 shadow-2xs font-bold text-slate-700 focus:outline-none focus:ring-0 focus:shadow-xs"
             appTooltip="Margin Top"
@@ -47,7 +46,7 @@ import { SpacingStylesI } from 'app/shared/interfaces/design.interface';
               class="bg-indigo-50/80 border border-indigo-200 rounded-md p-1.5 flex-1 mx-1.5 flex flex-col items-center relative"
             >
               <span class="absolute top-0.5 left-1.5 text-[8px] font-bold text-indigo-700"
-                >Padding: {{ spacing().padding }}</span
+                >Padding</span
               >
               <input
                 class="w-8 h-4 text-center border border-indigo-300 rounded text-[9px] p-0 bg-white mb-1 text-indigo-800 font-bold mt-3 focus:outline-none focus:ring-0 focus:shadow-xs"
@@ -95,50 +94,17 @@ import { SpacingStylesI } from 'app/shared/interfaces/design.interface';
             [formField]="spacingForm.marginBottom"
           />
         </div>
-        <!-- Linked numeric inputs -->
-        <div class="grid grid-cols-2 gap-2 text-[10px]">
-          <div>
-            <span class="text-slate-500 font-medium block mb-1">Padding Shorthand</span>
-            <input
-              class="w-full border border-slate-200 rounded px-2 py-1 text-slate-700 focus:outline-none focus:ring-0 focus:shadow-xs"
-              type="text"
-              [formField]="spacingForm.padding"
-            />
-          </div>
-          <div>
-            <span class="text-slate-500 font-medium block mb-1">Margin Shorthand</span>
-            <input
-              class="w-full border border-slate-200 rounded px-2 py-1 text-slate-700 focus:outline-none focus:ring-0 focus:shadow-xs"
-              type="text"
-              [formField]="spacingForm.margin"
-            />
-          </div>
-        </div>
       </div>
     </details>
   `,
 })
 export class DesignSpacingComponent {
   value = input.required<SpacingStylesI>();
-  updateValues = output<Record<string, string | number>>();
+  updateValues = output<Record<string, string>>();
 
-  spacing = signal<SpacingStylesI>({
-    margin: '0px',
-    marginTop: '0px',
-    marginRight: '0px',
-    marginBottom: '0px',
-    marginLeft: '0px',
-    padding: '0px',
-    paddingTop: '0px',
-    paddingRight: '0px',
-    paddingBottom: '0px',
-    paddingLeft: '0px',
-  });
+  spacing = signal<Required<SpacingStylesI>>(defaultSpacingStyles);
 
   spacingForm = form(this.spacing);
-
-  private syncing = false;
-  private previous = this.spacing();
 
   private isInitializing = true;
 
@@ -149,12 +115,11 @@ export class DesignSpacingComponent {
     effect(() => {
       const value = this.value();
       if (!value) return;
-      this.syncing = true;
       this.isInitializing = true;
-      this.spacing.set(value);
-
-      this.previous = value;
-      this.syncing = false;
+      this.spacing.update((current) => ({
+        ...current,
+        ...value,
+      }));
 
       queueMicrotask(() => {
         this.isInitializing = false;
@@ -165,122 +130,7 @@ export class DesignSpacingComponent {
       const value = this.spacing();
       if (this.isInitializing) return;
 
-      this.updateValues.emit(value as unknown as Record<string, string | number>);
+      this.updateValues.emit(value);
     });
-
-    // Sincronización bidireccional
-    effect(() => {
-      if (this.syncing) return;
-
-      const current = this.spacing();
-      const prev = this.previous;
-
-      this.syncing = true;
-
-      const next = { ...current };
-
-      // -------- PADDING --------
-      if (current.padding !== prev.padding) {
-        const p = this.parseSpacing(current.padding);
-        next.paddingTop = p.top;
-        next.paddingRight = p.right;
-        next.paddingBottom = p.bottom;
-        next.paddingLeft = p.left;
-      } else if (
-        current.paddingTop !== prev.paddingTop ||
-        current.paddingRight !== prev.paddingRight ||
-        current.paddingBottom !== prev.paddingBottom ||
-        current.paddingLeft !== prev.paddingLeft
-      ) {
-        next.padding = this.composeSpacing(
-          current.paddingTop,
-          current.paddingRight,
-          current.paddingBottom,
-          current.paddingLeft,
-        );
-      }
-
-      // -------- MARGIN --------
-      if (current.margin !== prev.margin) {
-        const m = this.parseSpacing(current.margin);
-        next.marginTop = m.top;
-        next.marginRight = m.right;
-        next.marginBottom = m.bottom;
-        next.marginLeft = m.left;
-      } else if (
-        current.marginTop !== prev.marginTop ||
-        current.marginRight !== prev.marginRight ||
-        current.marginBottom !== prev.marginBottom ||
-        current.marginLeft !== prev.marginLeft
-      ) {
-        next.margin = this.composeSpacing(
-          current.marginTop,
-          current.marginRight,
-          current.marginBottom,
-          current.marginLeft,
-        );
-      }
-
-      if (JSON.stringify(next) !== JSON.stringify(current)) {
-        this.spacing.set(next);
-      }
-
-      this.previous = next;
-      this.syncing = false;
-    });
-  }
-
-  private parseSpacing(value: string) {
-    const values = value.trim().split(/\s+/);
-
-    switch (values.length) {
-      case 1:
-        return {
-          top: values[0],
-          right: values[0],
-          bottom: values[0],
-          left: values[0],
-        };
-
-      case 2:
-        return {
-          top: values[0],
-          right: values[1],
-          bottom: values[0],
-          left: values[1],
-        };
-
-      case 3:
-        return {
-          top: values[0],
-          right: values[1],
-          bottom: values[2],
-          left: values[1],
-        };
-
-      default:
-        return {
-          top: values[0] ?? '0',
-          right: values[1] ?? '0',
-          bottom: values[2] ?? '0',
-          left: values[3] ?? '0',
-        };
-    }
-  }
-
-  private composeSpacing(top: string, right: string, bottom: string, left: string) {
-    if (top === right && right === bottom && bottom === left) {
-      return top;
-    }
-
-    if (top === bottom && right === left) {
-      return `${top} ${right}`;
-    }
-
-    if (right === left) {
-      return `${top} ${right} ${bottom}`;
-    }
-
-    return `${top} ${right} ${bottom} ${left}`;
   }
 }
