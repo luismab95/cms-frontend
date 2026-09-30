@@ -122,9 +122,7 @@ export class InspectorComponent {
             ? 'section'
             : 'page';
   });
-  readonly selectedElement = computed(() => this.selectedItemsInGrid()?.element);
-  readonly dataTextLanguages = computed(() => this.selectedElement()?.dataText ?? null);
-  readonly textLanguages = computed(() => this.selectedElement()?.text ?? null);
+
   readonly tabsComputed = computed(() => {
     const selectedItem = this.selectedItemsInGrid();
     const tabs = this.tabs().filter((tab) => tab.id !== 2);
@@ -146,9 +144,9 @@ export class InspectorComponent {
   constructor() {
     effect(() => {
       const selectedItemsInGrid = this.selectedItemsInGrid();
-      if (selectedItemsInGrid) {
-        this.selectedTab.set(0);
-      }
+      if (selectedItemsInGrid) return;
+      this.selectedTab.set(0);
+      this.sectionsInCanvas.set(this.currentSections);
     });
 
     effect(() => {
@@ -173,11 +171,6 @@ export class InspectorComponent {
       );
 
       this.tabsLanguages.set(tabs);
-    });
-
-    effect(() => {
-      this.selectedItemsInGrid();
-      this.sectionsInCanvas.set(this.currentSections);
     });
   }
 

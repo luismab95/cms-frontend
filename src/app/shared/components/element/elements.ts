@@ -7,7 +7,7 @@ import {
   input,
   OnDestroy,
   signal,
-  ViewChild,
+  viewChild,
 } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { lastValueFrom } from 'rxjs';
@@ -33,10 +33,8 @@ declare global {
   templateUrl: './elements.html',
 })
 export class ElementsComponent implements AfterViewInit, OnDestroy {
-  @ViewChild('pluginContainer', {
-    static: true,
-  })
-  pluginContainer!: ElementRef<HTMLDivElement>;
+  private readonly pluginContainer =
+    viewChild.required<ElementRef<HTMLDivElement>>('pluginContainer');
 
   readonly element = input.required<ElementI>();
   readonly languageId = input.required<number>();
@@ -53,19 +51,9 @@ export class ElementsComponent implements AfterViewInit, OnDestroy {
     initialValue: [],
   });
 
-  /**
-   * Indica que el componente fue destruido.
-   */
   private destroyed = false;
-
-  /**
-   * Indica que ngAfterViewInit ya terminó.
-   *
-   * El effect no debe intentar cargar el plugin
-   * antes de que el ViewChild esté disponible.
-   */
   private initialized = false;
-
+  private previousPluginState: string | null = null;
   /**
    * Controla las cargas concurrentes del plugin.
    *
@@ -89,21 +77,25 @@ export class ElementsComponent implements AfterViewInit, OnDestroy {
 
       const languageId = this.languageId();
 
-      /**
-       * La primera carga se realiza en ngAfterViewInit.
-       */
-      if (!this.initialized) {
+      if (!this.initialized || this.destroyed) return;
+
+      const pluginState = JSON.stringify({
+        uuid: element.uuid,
+        name: element.name,
+        config: element.config,
+        text: element.text,
+        css: element.css,
+        dataText: element.dataText,
+        languageId,
+      });
+
+      if (pluginState === this.previousPluginState) {
         return;
       }
 
-      /**
-       * Evita ejecutar el effect sin necesidad.
-       */
-      if (this.destroyed) {
-        return;
-      }
+      this.previousPluginState = pluginState;
 
-       this.reloadPlugin(element, languageId);
+      this.reloadPlugin(element, languageId);
     });
   }
 
@@ -130,7 +122,7 @@ export class ElementsComponent implements AfterViewInit, OnDestroy {
     /**
      * Limpia el HTML generado por el plugin.
      */
-    this.pluginContainer?.nativeElement.replaceChildren();
+    this.pluginContainer().nativeElement.replaceChildren();
   }
 
   // --------------------------------------------------
@@ -144,6 +136,7 @@ export class ElementsComponent implements AfterViewInit, OnDestroy {
      * Si llega otra actualización mientras esta carga
      * está esperando HTTP, esta versión quedará obsoleta.
      */
+
     const version = ++this.pluginVersion;
 
     this.loading.set(true);
@@ -218,7 +211,6 @@ export class ElementsComponent implements AfterViewInit, OnDestroy {
         properties: {
           config: element.config,
           text: componentText,
-          css: element.css,
           uuid: element.uuid,
           class: this.getClassName(element.css),
           data: dataService,
@@ -246,7 +238,7 @@ export class ElementsComponent implements AfterViewInit, OnDestroy {
         return;
       }
 
-      this.pluginContainer.nativeElement.replaceChildren(div);
+      this.pluginContainer().nativeElement.replaceChildren(div);
 
       // --------------------------------------------------
       // LOAD JS
@@ -276,8 +268,6 @@ export class ElementsComponent implements AfterViewInit, OnDestroy {
       if (this.destroyed || version !== this.pluginVersion) {
         return;
       }
-
-      console.error('Error cargando plugin:', error);
 
       this.error.set('No se pudo cargar el plugin ' + element.name);
 

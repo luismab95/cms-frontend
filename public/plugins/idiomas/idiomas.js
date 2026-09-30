@@ -97,7 +97,7 @@ const css = `
 /* Dropdown */
 
 .language-options {
-    position: absolute;
+    position: fixed;
 
     top: calc(100% + 8px);
     left: 50%;
@@ -781,11 +781,7 @@ function loadIdiomasPlugin(idPlugin) {
 
     const styleElement =
         document.createElement('style');
-
     styleElement.id = styleId;
-
-    styleElement.textContent =
-        `${properties.css || ''} ${css}`;
-
+    styleElement.textContent = css;
     document.head.appendChild(styleElement);
 }

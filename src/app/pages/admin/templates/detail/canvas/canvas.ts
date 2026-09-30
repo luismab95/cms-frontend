@@ -82,7 +82,6 @@ export class TemplatesCanvas implements AfterViewInit, OnDestroy {
   private readonly _toastrService = inject(ToastrService);
   private readonly _languageService = inject(LanguageService);
   private readonly _canvasService = inject(CanvasService);
-  private readonly _dynamicStyleService = inject(DynamicStyleService);
 
   readonly template = toSignal(this._templateService.template$, { initialValue: null });
   readonly parameters = toSignal(this._parameterService.parameter$, { initialValue: [] });
@@ -199,8 +198,6 @@ export class TemplatesCanvas implements AfterViewInit, OnDestroy {
         this.confirmDraft();
         return;
       }
-
-      this.loadTemplateData();
     });
   }
 
@@ -236,7 +233,6 @@ export class TemplatesCanvas implements AfterViewInit, OnDestroy {
    * On destroy
    */
   ngOnDestroy(): void {
-    this._dynamicStyleService.remove('template-dynamicStyles');
     this.updateSelectionItem({
       page: null,
       section: null,
@@ -250,13 +246,6 @@ export class TemplatesCanvas implements AfterViewInit, OnDestroy {
   // -----------------------------------------------------------------------------------------------------
   // @ Public methods
   // -----------------------------------------------------------------------------------------------------
-
-  /**
-   * Load template data from the server and update the component properties accordingly.
-   */
-  loadTemplateData() {
-    this.loadStyles();
-  }
 
   /**
    * Update draft page
@@ -409,18 +398,6 @@ export class TemplatesCanvas implements AfterViewInit, OnDestroy {
   }
 
   /**
-   * Load styles
-   */
-  loadStyles() {
-    const template = this.template();
-    if (!template || !template.data) return;
-    const templateData = template.data;
-    const css = `${templateData!.header.css} ${templateData!.footer.css}`;
-    this._dynamicStyleService.remove('template-dynamicStyles');
-    this._dynamicStyleService.set('template-dynamicStyles', css ?? '');
-  }
-
-  /**
    * Set preview mode
    * @param mode
    */
@@ -486,7 +463,6 @@ export class TemplatesCanvas implements AfterViewInit, OnDestroy {
         } else {
           this.deleteDraft();
         }
-        this.loadTemplateData();
       });
   }
 
@@ -559,7 +535,6 @@ export class TemplatesCanvas implements AfterViewInit, OnDestroy {
           }
           this.deleteDraft();
           this._templateService.template = structuredClone({ ...template, draft: null! });
-          this.loadTemplateData();
           this.updateSelectionItem({
             page: null,
             section: null,

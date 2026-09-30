@@ -58,11 +58,5 @@ function loadImagenPlugin(idPlugin) {
         imagen.classList.add(data.properties.class);
 
         // Load events
-
-        // Load CSS
-        const styleElement = document.createElement('style');
-        styleElement.id = `style-${data.properties.uuid}`;
-        styleElement.textContent = data.properties.css;
-        document.head.appendChild(styleElement);
     }
 }

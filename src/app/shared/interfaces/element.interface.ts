@@ -1,4 +1,4 @@
-import { RegisteredFieldTypes } from "@ng-forge/dynamic-forms";
+import { RegisteredFieldTypes } from '@ng-forge/dynamic-forms';
 
 export declare enum TypeElementEnum {
   HEADER = 'header',
@@ -25,4 +25,13 @@ export interface ElementCMSI {
 
 export interface ElementDataI {
   [key: string]: string;
+}
+
+export interface LanguageFormData {
+  languageId: string;
+  [key: string]: string;
+}
+
+export interface LanguagesFormModel {
+  languages: LanguageFormData[];
 }

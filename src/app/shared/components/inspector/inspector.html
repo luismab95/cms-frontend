@@ -131,10 +131,8 @@
             @if (canEditContent()) {
               <languages-inspector-component
                 [gridType]="gridType()"
-                [languages]="languages().records"
                 [tabs]="tabsLanguages()"
-                [data]="dataTextLanguages()!"
-                [text]="textLanguages()!"
+                [languages]="languages().records"
               />
             } @else {
               <permission-component [style]="'minimal'" />

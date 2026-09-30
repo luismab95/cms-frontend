@@ -2,7 +2,7 @@
   [ngClass]="{
     'border-0! p-0! rounded-none!': preview(),
   }"
-  class="page-preview relative border-2 border-dashed border-gray-300 hover:border-gray-400 rounded-xl p-2 transition-all group/body"
+  class="page-preview relative border-2 border-dashed border-gray-300 hover:border-gray-400 rounded-xl p-2 transition-all group/grid"
 >
   @if (!preview()) {
     <!-- ========================================================= -->
@@ -28,8 +28,17 @@
 
     <!-- Body toolbar -->
     <div
-      class="absolute -top-3.5 right-4 hidden group-hover/body:flex items-center bg-white border border-slate-200 rounded-md shadow-sm divide-x divide-slate-100 text-slate-600 text-xs z-50"
+      class="absolute -top-3.5 right-4 hidden group-hover/grid:flex items-center bg-white border border-slate-200 rounded-md shadow-sm divide-x divide-slate-100 text-slate-600 text-xs z-50"
     >
+      @if (editDesign()) {
+        <button
+          (click)="addSection()"
+          class="cursor-pointer px-2 py-1 hover:text-slate-600 hover:bg-slate-50 flex items-center gap-1"
+          appTooltip="Agregar Sección"
+        >
+          <i class="fa-solid fa-object-group text-indigo-600"></i>
+        </button>
+      }
       <button
         (click)="selectPageConfig()"
         class="cursor-pointer px-2 py-1 hover:text-slate-600 hover:bg-slate-50 flex items-center gap-1"
@@ -40,13 +49,20 @@
     </div>
   }
 
-  @if (!preview() && selectedItemsInGrid()?.page) {
+  @if (!preview() && selectedItemsInGrid()?.page && selectedItemsInGrid()?.canvas === gridType()) {
     <div
       class="absolute inset-0 ring-2 ring-gray-500 rounded-[inherit] pointer-events-none z-40"
     ></div>
   }
 
-  <div [ngStyle]="gridStyles()" class="body">
+  <div
+    [ngStyle]="gridStyles()"
+    [class.body]="gridType() === 'page'"
+    [class.header]="gridType() === 'header'"
+    [class.footer]="gridType() === 'footer'"
+    [class.max-h-full!]="!preview()"
+    class="grid"
+  >
     <!-- ========================================================= -->
     <!-- SECTIONS DROP LIST -->
     <!-- ========================================================= -->
@@ -87,6 +103,15 @@
             <div
               class="absolute -top-3.5 right-4 hidden group-hover/sec:flex items-center bg-white border border-slate-200 rounded-md shadow-sm divide-x divide-slate-100 text-slate-600 text-xs z-50"
             >
+              @if (editDesign()) {
+                <button
+                  (click)="addRow(section)"
+                  class="cursor-pointer px-2 py-1 hover:bg-slate-50 flex items-center gap-1"
+                  appTooltip="Agregar Fila"
+                >
+                  <i class="fa-solid fa-table-list text-amber-600"></i>
+                </button>
+              }
               <button
                 (click)="selectSection(section)"
                 class="cursor-pointer px-2 py-1 hover:bg-slate-50 flex items-center gap-1"
@@ -154,6 +179,15 @@
                     <div
                       class="absolute -top-3.5 right-4 hidden group-hover/row:flex items-center bg-white border border-slate-200 rounded-md shadow-sm divide-x divide-slate-100 text-slate-600 text-xs z-50"
                     >
+                      @if (editDesign()) {
+                        <button
+                          (click)="addColumn(row)"
+                          class="cursor-pointer px-2 py-1 hover:bg-slate-50 flex items-center gap-1"
+                          appTooltip="Agregar Columna"
+                        >
+                          <i class="fa-solid fa-table-columns text-slate-600"></i>
+                        </button>
+                      }
                       <button
                         (click)="selectRow(row)"
                         class="cursor-pointer px-2 py-1 hover:bg-slate-50 flex items-center gap-1"
@@ -195,7 +229,7 @@
                         <!-- ======================================= -->
 
                         <div
-                          class="relative group/column w-full"
+                          class="relative group/column"
                           cdkDrag
                           cdkDragBoundary=".columns"
                           [cdkDragDisabled]="preview()"
@@ -203,6 +237,7 @@
                             'border border-dashed border-slate-300 rounded-lg p-2 bg-white/40':
                               !preview(),
                           }"
+                          [class]="'grid-column-' + column.uuid"
                         >
                           @if (!preview()) {
                             <!-- Column badge -->
@@ -237,10 +272,7 @@
                             ></div>
                           }
 
-                          <div
-                            [ngStyle]="gridConfigStyles(column.config)"
-                            [class]="'grid-column-' + column.uuid"
-                          >
+                          <div [ngStyle]="gridConfigStyles(column.config)">
                             @if (!preview()) {
                               <!-- Column internal information -->
                               <div
@@ -297,7 +329,12 @@
                                   </div>
                                 }
 
-                                <div class="relative">
+                                <div
+                                  [ngClass]="{
+                                    'pointer-events-auto!': preview(),
+                                  }"
+                                  class="relative pointer-events-none"
+                                >
                                   <elements
                                     class="w-full h-auto"
                                     [languageId]="languageId()!"
@@ -320,77 +357,10 @@
                       }
                     </div>
                   </div>
-
-                  <!-- Add Column -->
-                  @if (editDesign() && !preview()) {
-                    <div
-                      class="mt-4 pt-3 border-t border-dashed border-slate-200 flex justify-center"
-                    >
-                      <button
-                        (click)="addColumn(row)"
-                        class="cursor-pointer inline-flex items-center gap-1.5 px-3 py-1 bg-white hover:bg-slate-50 border border-dashed border-slate-300 hover:border-slate-300 text-slate-600 hover:text-slate-700 rounded-full text-xs font-semibold shadow-sm transition-all"
-                        type="button"
-                      >
-                        <i class="fa-solid fa-table-columns"></i>
-
-                        <span>
-                          Añadir Columna dentro de Fila
-                          <b>{{ row.uuid }}</b>
-                        </span>
-                      </button>
-                    </div>
-                  }
-                </div>
-              }
-
-              <!-- Add Row -->
-              @if (editDesign() && !preview()) {
-                <div class="mt-4 pt-3 border-t border-dashed border-slate-200 flex justify-center">
-                  <button
-                    (click)="addRow(section)"
-                    class="cursor-pointer inline-flex items-center gap-1.5 px-3 py-1 bg-white hover:bg-amber-50 border border-dashed border-slate-300 hover:border-amber-300 text-slate-600 hover:text-amber-700 rounded-full text-xs font-semibold shadow-sm transition-all"
-                    type="button"
-                  >
-                    <i class="fa-solid fa-table-list"></i>
-
-                    <span>
-                      Añadir Fila dentro de Sección
-                      <b>{{ section.uuid }}</b>
-                    </span>
-                  </button>
                 </div>
               }
             </div>
           </section>
-        </div>
-      }
-
-      <!-- ========================================================= -->
-      <!-- ADD SECTION -->
-      <!-- ========================================================= -->
-      @if (!preview()) {
-        <div
-          (click)="addSection()"
-          class="mt-4 border-2 border-dashed border-slate-300 hover:border-indigo-500 hover:bg-indigo-50/20 rounded-xl p-6 text-center transition-all cursor-pointer group"
-        >
-          <div class="flex flex-col items-center gap-2">
-            <div
-              class="w-10 h-10 rounded-full bg-slate-100 group-hover:bg-indigo-100 text-slate-500 group-hover:text-indigo-600 flex items-center justify-center transition-colors shadow-sm"
-            >
-              <i class="fa-solid fa-plus"></i>
-            </div>
-
-            <div>
-              <h4 class="text-xs font-bold text-slate-700 group-hover:text-indigo-700">
-                Añadir nueva Sección a tu Página
-              </h4>
-
-              <p class="text-[11px] text-slate-400">
-                Haz clic aquí para agregar una sección a tu página. Puedes personalizar su contenido
-                después.
-              </p>
-            </div>
-          </div>
         </div>
       }
     </div>

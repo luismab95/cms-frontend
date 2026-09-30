@@ -25,7 +25,6 @@ import { LanguageService } from 'app/shared/services/language.service';
 import { CanvasService } from 'app/core/services/canvas.service';
 import { PageService } from 'app/core/services/pages.service';
 import { ParameterService } from 'app/core/services/parameter.service';
-import { DynamicStyleService } from 'app/core/services/dynamic-style.service';
 import { TemplateService } from 'app/core/services/templates.service';
 import { filterPath, validGrid } from 'app/shared/utils/grid.utils';
 import { findParameter } from 'app/shared/utils/parameter.utils';
@@ -81,7 +80,6 @@ export class PagesCanvas implements AfterViewInit, OnDestroy {
   private readonly _toastrService = inject(ToastrService);
   private readonly _languageService = inject(LanguageService);
   private readonly _canvasService = inject(CanvasService);
-  private readonly _dynamicStyleService = inject(DynamicStyleService);
 
   readonly page = toSignal(this._pageService.page$, { initialValue: null });
   readonly parameters = toSignal(this._parameterService.parameter$, { initialValue: [] });
@@ -214,7 +212,6 @@ export class PagesCanvas implements AfterViewInit, OnDestroy {
    * On destroy
    */
   ngOnDestroy(): void {
-    this._dynamicStyleService.remove('body-dynamicStyles');
     this.updateSelectionItem({
       page: null,
       section: null,

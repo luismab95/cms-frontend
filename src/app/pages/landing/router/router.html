@@ -1,31 +1,27 @@
 @if (!loading()) {
-  <div class="w-screen h-screen">
-    <div class="w-full header sticky z-99">
-      <grid
-        [gridType]="'header'"
-        [pageElementsConfig]="{ css: '', config: {} }"
-        [languageId]="languageId()"
-        [preview]="true"
-        [previewType]="previewType()"
-      />
-    </div>
-    <div class="w-full body">
-      <grid
-        [gridType]="'page'"
-        [pageElementsConfig]="{ css: '', config: {} }"
-        [languageId]="languageId()"
-        [preview]="true"
-        [previewType]="previewType()"
-      />
-    </div>
-    <div class="w-full footer">
-      <grid
-        [gridType]="'footer'"
-        [pageElementsConfig]="{ css: '', config: {} }"
-        [languageId]="languageId()"
-        [preview]="true"
-        [previewType]="previewType()"
-      />
-    </div>
+  <div class="w-screen h-auto">
+    <grid
+      class="sticky z-99"
+      [gridType]="'header'"
+      [pageElementsConfig]="{ css: '', config: {} }"
+      [languageId]="languageId()"
+      [preview]="true"
+      [previewType]="previewType()"
+    />
+
+    <grid
+      [gridType]="'page'"
+      [pageElementsConfig]="{ css: '', config: {} }"
+      [languageId]="languageId()"
+      [preview]="true"
+      [previewType]="previewType()"
+    />
+    <grid
+      [gridType]="'footer'"
+      [pageElementsConfig]="{ css: '', config: {} }"
+      [languageId]="languageId()"
+      [preview]="true"
+      [previewType]="previewType()"
+    />
   </div>
 }

@@ -7,61 +7,42 @@
     >
       <i class="fa-solid fa-info text-indigo-500"></i>
     </div>
+
     <h4 class="text-xs font-bold text-slate-800 mb-1">No hay contenido para configurar.</h4>
+
     <p class="text-[11px] text-slate-500 leading-relaxed max-w-60">
       Este elemento no tiene textos para configurar su contenido en cada idioma.
     </p>
   </div>
 } @else {
-  <form [formGroup]="languageForm">
+  <form>
     <tabs-component [tabs]="tabs()" (selectedTabEvent)="selectLanguage($event)">
-      <!-- Language content -->
-      <div formArrayName="languages" class="grid grid-cols-1 gap-6">
+      <div class="grid grid-cols-1 gap-6">
         <div class="col-span-1 lg:col-span-12 space-y-6">
-          <!-- Selected language -->
-
-          @for (language of languagesFormArray.controls; track $index) {
-            <div
-              [formGroupName]="$index"
-              [class.hidden]="
-                selectedLanguage().toString() !== language.get('languageId')?.value.toString()
-              "
-            >
-              @for (control of getControls(language); track control) {
-                @if (control !== 'languageId') {
+          @for (language of languages(); track language.id; let index = $index) {
+            @if (selectedLanguage() === language.id) {
+              <div class="space-y-4">
+                @for (control of text() | keyvalue; track control.key) {
                   <div class="sm:col-span-4">
                     <div class="flex flex-col gap-1 items-start justify-between w-full">
-                      <label
-                        [class.text-red-500!]="language.get(control)?.invalid"
-                        class="text-[11px] text-slate-600"
-                        [for]="control"
-                      >
-                        Texto para: {{ control }} <span class="text-rose-500 font-bold">*</span>
+                      <label class="text-[11px] text-slate-600" [for]="control.key">
+                        Texto para:
+                        {{ control.key }}
+
+                        <span class="text-rose-500 font-bold"> * </span>
                       </label>
 
                       <textarea
-                        [formControlName]="control"
-                        class="w-full rounded-md border border-slate-200 bg-white px-2 py-1 text-[11px] text-slate-700 outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-500"
-                        [class.border-red-500!.text-red-500!]="language.get(control)?.invalid"
-                        [class.text-red-500!]="language.get(control)?.invalid"
-                        [class.placeholder:text-red-500!]="language.get(control)?.invalid"
-                        [id]="control"
-                        [name]="control"
-                        required=""
+                        [id]="control.key"
                         rows="5"
+                        [formField]="languageForm.languages[index][control.key]"
+                        class="w-full rounded-md border border-slate-200 bg-white px-2 py-1 text-[11px] text-slate-700 outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
                       ></textarea>
-
-                      <!-- Errores -->
-                      @if (language.get(control)?.invalid) {
-                        <p class="flex items-center gap-1 text-[11px] text-red-600">
-                          <span> {{ control | titlecase }} es obligatorio.</span>
-                        </p>
-                      }
                     </div>
                   </div>
                 }
-              }
-            </div>
+              </div>
+            }
           }
         </div>
       </div>

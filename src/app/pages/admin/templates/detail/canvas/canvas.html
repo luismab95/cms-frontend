@@ -327,7 +327,7 @@
           <layer-component
             #layer
             [class.hidden]="previewMode()"
-            [gridType]="selectedItemsInGrid()!.canvas"
+            [gridType]="selectedItemsInGrid()?.canvas ?? 'header'"
             (elementSelected)="addElement($event)"
           />
           <!--  PANEL - CANVAS -->
@@ -387,7 +387,7 @@
 
           <inspector-component
             [class.hidden]="previewMode()"
-            [gridType]="selectedItemsInGrid()!.canvas"
+            [gridType]="selectedItemsInGrid()?.canvas ?? 'header'"
           />
         </div>
       </section>

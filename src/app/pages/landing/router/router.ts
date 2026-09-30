@@ -9,6 +9,7 @@ import { GridComponent } from 'app/shared/components/grid/grid';
 import { SectionI } from 'app/shared/interfaces/grid.interface';
 import { TemplateI } from 'app/core/interfaces/template.interface';
 import { TemplateService } from 'app/core/services/templates.service';
+import { DynamicStyleService } from 'app/core/services/dynamic-style.service';
 
 @Component({
   selector: 'landing-router',
@@ -29,6 +30,7 @@ export class LandingRouterComponent implements OnInit, OnDestroy {
   private _deviceDetectorService = inject(DeviceDetectorService);
   private readonly _pageService = inject(PageService);
   private readonly _templateService = inject(TemplateService);
+  private readonly _dynamicStyleService = inject(DynamicStyleService);
   private readonly _router = inject(Router);
   private _metaService = inject(Meta);
   private _titleService = inject(Title);
@@ -127,6 +129,8 @@ export class LandingRouterComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this._unsubscribeAll))
       .subscribe({
         next: (res) => {
+          // this._dynamicStyleService.remove('page-dynamicStyles');
+
           this.languageId.set(res.message.languageId);
 
           this.updateMetaTags(this.languageId()!, res.message.details!);
@@ -135,9 +139,9 @@ export class LandingRouterComponent implements OnInit, OnDestroy {
           this.loadData(res.message, 'page');
 
           // Load CSS
-          const styleElement = document.createElement('style');
-          styleElement.textContent = `${res.message.data?.body.css} ${res.message.template.data?.header.css} ${res.message.template.data?.footer.css}`;
-          document.head.appendChild(styleElement);
+          // let css = `${res.message.data?.body.css} ${res.message.template.data?.header.css} ${res.message.template.data?.footer.css}`;
+          // css = css.replaceAll('@container', '@media');
+          // this._dynamicStyleService.set('page-dynamicStyles', css);
           this.loading.set(false);
         },
         error: (err) => {

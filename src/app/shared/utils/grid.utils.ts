@@ -25,6 +25,7 @@ import {
   TypographyStylesI,
 } from '../interfaces/design.interface';
 import { CanvasT } from 'app/core/interfaces/page.interface';
+import type { StyleSheet } from 'css-tree';
 
 export function validGrid(data: SectionI[]): boolean {
   if (!data.length) {
@@ -214,7 +215,7 @@ export const createColumn = (): ColumnI => {
   const columnUuid = generateRandomString(8);
   return {
     uuid: columnUuid,
-    css: `.grid-column-${columnUuid}{\n display: block;\n  width: 100%;\n min-width: 100%;\n height: auto;\n  min-height: 40px;\n  padding-top: 12px;\n  padding-right: 12px;\n  padding-bottom: 12px;\n  padding-left: 12px;\n}`,
+    css: `.grid-column-${columnUuid}{\n display: block;\n  width: 100%;\n height: auto;\n  min-height: 40px;\n  padding-top: 12px;\n  padding-right: 12px;\n  padding-bottom: 12px;\n  padding-left: 12px;\n}`,
     config: { backgroundImage: '' },
     element: null,
   };
@@ -299,7 +300,7 @@ export const DEFAULT_STATES = [':hover', ':focus', ':active', ':disabled', ':vis
 type CssState = (typeof DEFAULT_STATES)[number];
 
 export function cssToJson(css: string): ResponsiveCssJsonI {
-  const ast = csstree.parse(css);
+  const ast = csstree.parse(css) as StyleSheet;
 
   const result: ResponsiveCssJsonI = {
     selector: '',
@@ -323,37 +324,53 @@ export function cssToJson(css: string): ResponsiveCssJsonI {
   });
 
   const selector = result.selector;
+
   if (!selector) {
     return result;
   }
 
   // ==========================================
-  // REGLAS FUERA DE MEDIA
+  // REGLAS BASE
+  // SOLO REGLAS DIRECTAMENTE EN EL ROOT
   // ==========================================
 
-  csstree.walk(ast, {
-    visit: 'Rule',
-    enter(node: any) {
-      const ruleSelector = csstree.generate(node.prelude).trim();
+  ast.children.forEach((node: any) => {
+    if (node.type !== 'Rule') {
+      return;
+    }
 
-      if (ruleSelector === selector) {
-        Object.assign(result.mobile, parseDeclarations(node.block));
-      } else {
-        const state = getState(ruleSelector, selector);
-        if (state) {
-          result.states[state as keyof typeof result.states] = parseDeclarations(node.block);
-        }
-      }
-    },
+    const ruleSelector = csstree.generate(node.prelude).trim();
+
+    // ------------------------------
+    // BASE
+    // ------------------------------
+
+    if (ruleSelector === selector) {
+      Object.assign(result.mobile, parseDeclarations(node.block));
+
+      return;
+    }
+
+    // ------------------------------
+    // STATES
+    // ------------------------------
+
+    const state = getState(ruleSelector, selector);
+
+    if (state) {
+      result.states[state as keyof typeof result.states] = parseDeclarations(node.block);
+    }
   });
 
   // ==========================================
-  // MEDIA QUERIES
+  // MEDIA / CONTAINER QUERIES
   // ==========================================
+
   csstree.walk(ast, {
     visit: 'Atrule',
+
     enter(node: any) {
-      if (node.name !== 'media') {
+      if (node.name !== 'media' && node.name !== 'container') {
         return;
       }
 
@@ -361,63 +378,48 @@ export function cssToJson(css: string): ResponsiveCssJsonI {
         return;
       }
 
-      const media = csstree.generate(node.prelude).trim();
-      let device: DeviceT | null = null;
+      const query = csstree.generate(node.prelude).trim();
 
-      // MOBILE
-      if (media === `(max-width: ${BREAKPOINTSCSS.mobileMax}px)`) {
-        device = 'mobile';
-      }
-
-      // TABLET
-      else if (
-        media ===
-        `(min-width: ${BREAKPOINTSCSS.tabletMin}px) and (max-width: ${BREAKPOINTSCSS.tabletMax}px)`
-      ) {
-        device = 'tablet';
-      }
-
-      // DESKTOP
-      else if (media === `(min-width: ${BREAKPOINTSCSS.desktopMin}px)`) {
-        device = 'desktop';
-      }
+      const device = getDeviceFromQuery(query);
 
       if (!device) {
         return;
       }
 
-      // ----------------------------------------
-      // Buscar reglas dentro del @container
-      // ----------------------------------------
+      node.block.children.forEach((rule: any) => {
+        if (rule.type !== 'Rule') {
+          return;
+        }
 
-      csstree.walk(node.block, {
-        visit: 'Rule',
-        enter(rule: any) {
-          const ruleSelector = csstree.generate(rule.prelude).trim();
-          const declarations = parseDeclarations(rule.block);
+        const ruleSelector = csstree.generate(rule.prelude).trim();
 
-          // ========================================
-          // BASE / NORMAL
-          // ========================================
+        const declarations = parseDeclarations(rule.block);
 
-          if (ruleSelector === selector) {
-            Object.assign(result[device], declarations);
-            return;
-          }
+        // ========================================
+        // BASE
+        // ========================================
 
-          // ========================================
-          // STATE
-          // ========================================
+        if (ruleSelector === selector) {
+          Object.assign(result[device], declarations);
 
-          const state = getState(ruleSelector, selector);
-          if (state && DEFAULT_STATES.includes(`:${state}` as CssState)) {
-            const cssState = `:${state}` as CssState;
-            result.states[cssState] = declarations;
-          }
-        },
+          return;
+        }
+
+        // ========================================
+        // STATE
+        // ========================================
+
+        const state = getState(ruleSelector, selector);
+
+        if (state && DEFAULT_STATES.includes(`:${state}` as CssState)) {
+          const cssState = `:${state}` as CssState;
+
+          result.states[cssState] = declarations;
+        }
       });
     },
   });
+
   return result;
 }
 
@@ -488,6 +490,33 @@ export function jsonToCss(json: ResponsiveCssJsonI): string {
 
 function createStyleConfig(): Record<string, string> {
   return {};
+}
+
+function getDeviceFromQuery(query: string): DeviceT | null {
+  const normalized = query
+    .replace(/\s+/g, ' ')
+    .replace(/\s*:\s*/g, ':')
+    .trim();
+
+  // MOBILE
+  if (normalized === `(max-width:${BREAKPOINTSCSS.mobileMax}px)`) {
+    return 'mobile';
+  }
+
+  // TABLET
+  if (
+    normalized ===
+    `(min-width:${BREAKPOINTSCSS.tabletMin}px) and (max-width:${BREAKPOINTSCSS.tabletMax}px)`
+  ) {
+    return 'tablet';
+  }
+
+  // DESKTOP
+  if (normalized === `(min-width:${BREAKPOINTSCSS.desktopMin}px)`) {
+    return 'desktop';
+  }
+
+  return null;
 }
 
 function getState(selector: string, baseSelector: string): string | null {

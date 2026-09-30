@@ -1,4 +1,13 @@
-import { Component, inject, input, signal, effect, computed, DestroyRef } from '@angular/core';
+import {
+  Component,
+  inject,
+  input,
+  signal,
+  effect,
+  computed,
+  DestroyRef,
+  untracked,
+} from '@angular/core';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { DynamicForm, EventDispatcher, RegisteredFieldTypes } from '@ng-forge/dynamic-forms';
@@ -119,20 +128,21 @@ export class PropertiesInspectorComponent {
 
     effect(() => {
       const item = this.itemSelectedInGrid();
-
       if (!item) return;
 
-      if (item.element) {
-        this.fields.set(this.getElementConfig(item.element.name));
-        this.formValue.set(item.element.config);
-        return;
-      }
+      untracked(() => {
+        if (item.element) {
+          this.fields.set(this.getElementConfig(item.element.name));
+          this.formValue.set(item.element.config);
+          return;
+        }
 
-      const type = this.typeItem();
-      const inspector = this.inspectors[type as Exclude<typeof type, 'element' | ''>];
+        const type = this.typeItem();
+        const inspector = this.inspectors[type as Exclude<typeof type, 'element' | ''>];
 
-      this.fields.set(inspector.fields);
-      this.formValue.set(inspector.config(item) ?? {});
+        this.fields.set(inspector.fields);
+        this.formValue.set(inspector.config(item) ?? {});
+      });
     });
   }
 
@@ -160,6 +170,7 @@ export class PropertiesInspectorComponent {
       }
       const newConfig = updateConfigPageElement(page, value);
       this._canvasService.configByType[selected.canvas].set(newConfig);
+      this._canvasService.selectedItemsInGrid.set({ ...selected, page: newConfig });
       this._canvasService.updateChangesPageConfigInCanvas(selected.canvas, newConfig.config);
       return;
     }
@@ -176,6 +187,7 @@ export class PropertiesInspectorComponent {
     const next = strategy.update(sectionsInCanvas, item.uuid, newItem);
     const current = structuredClone(next);
     this.currentSections = current;
+    this._canvasService.selectedItemsInGrid.set({ ...selected, [`${type}`]: newItem });
     this._canvasService.updateChangesInCanvas(this.gridType(), previous, next);
   }
 

@@ -351,6 +351,7 @@ export class DesignInspectorComponent {
       }
       const newConfig = updateCssPageElement(page, value);
       this._canvasService.configByType[selected.canvas].set(newConfig);
+      this._canvasService.selectedItemsInGrid.set({ ...selected, page: newConfig });
       this._canvasService.updateChangesPageCssInCanvas(selected.canvas, newConfig.css);
       return;
     }
@@ -368,6 +369,7 @@ export class DesignInspectorComponent {
     const next = strategy.update(sectionsInCanvas, item.uuid, newItem);
     const current = structuredClone(next);
     this.currentSections = current;
+    this._canvasService.selectedItemsInGrid.set({ ...selected, [`${type}`]: newItem });
     this._canvasService.updateChangesInCanvas(this.gridType(), previous, next);
   }
 
@@ -432,11 +434,11 @@ export class DesignInspectorComponent {
   getPreviousValues(css: string, selector: string) {
     this.getInitialValues(selector);
     const defaultValues = this.cssJson();
-    const currentValues = cssToJson(css);    
+    const currentValues = cssToJson(css);
 
     const mergeStylesMobile = mergeStyleConfig(defaultValues.mobile, currentValues.mobile);
-    const mergeStylesTablet = mergeStyleConfig(defaultValues.tablet, currentValues.tablet);
-    const mergeStylesDesktop = mergeStyleConfig(defaultValues.desktop, currentValues.desktop);
+    const mergeStylesTablet = mergeStyleConfig(mergeStylesMobile, currentValues.tablet);
+    const mergeStylesDesktop = mergeStyleConfig(mergeStylesMobile, currentValues.desktop);
 
     const mergedValues: ResponsiveCssJsonI = {
       selector,
@@ -449,8 +451,6 @@ export class DesignInspectorComponent {
         Object.keys(currentValues.desktop).length === 0 ? mergeStylesMobile : mergeStylesDesktop,
       states: { ...currentValues.states },
     };
-
-
 
     this.cssJson.set(mergedValues);
     this.getCurrentBreakPointValues();

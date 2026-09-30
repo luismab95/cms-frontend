@@ -96,14 +96,17 @@ export class GridComponent implements OnDestroy {
   constructor() {
     effect(() => {
       const page = this.page();
-      if (!page) return;
-      this.loadStylesPages();
+      if (!page || !page.data || this.gridType() !== 'page') return;
+      this.loadStylesPages('body-dynamicStyles', page.data.body.css);
     });
 
     effect(() => {
       const template = this.template();
-      if (!template) return;
-      // this.loadStylesPages();
+      if (!template || !template.data || this.gridType() === 'page') return;
+      if (this.gridType() === 'header')
+        this.loadStylesPages('header-dynamicStyles', template.data.header.css);
+      if (this.gridType() === 'footer')
+        this.loadStylesPages('footer-dynamicStyles', template.data.footer.css);
     });
   }
 
@@ -111,7 +114,9 @@ export class GridComponent implements OnDestroy {
    * OnDestroy
    */
   ngOnDestroy(): void {
-    this._dynamicStyleService.remove(`${this.gridType()}-dynamicSectionStyles`);
+    this._dynamicStyleService.remove(
+      `${this.gridType() === 'page' ? 'body' : this.gridType()}-dynamicStyles`,
+    );
   }
 
   // -----------------------------------------------------------------------------------------------------
@@ -121,18 +126,11 @@ export class GridComponent implements OnDestroy {
   /**
    * Load styles
    */
-  loadStylesPages(): void {
-    const page = this.page();
-    if (!page) return;
-    const pageData = page.data;
-
-    this._dynamicStyleService.remove('body-dynamicStyles');
-    this._dynamicStyleService.remove(`${this.gridType()}-dynamicSectionStyles`);
-
-    const styleId = `${this.gridType()}-dynamicSectionStyles`;
-    document.getElementById(styleId)?.remove();
+  loadStylesPages(styleId: string, cssContainer: string): void {
+    this._dynamicStyleService.remove(styleId);
 
     const css: string[] = [];
+    css.push(cssContainer);
     for (const section of this.sectionsInCanvas()) {
       css.push(section.css);
       for (const row of section.rows) {
@@ -145,9 +143,8 @@ export class GridComponent implements OnDestroy {
         }
       }
     }
-    
+
     this._dynamicStyleService.set(styleId, css.join('\n'));
-    this._dynamicStyleService.set('body-dynamicStyles', pageData?.body.css ?? '');
   }
 
   /**
@@ -425,10 +422,16 @@ export class GridComponent implements OnDestroy {
     });
   }
 
+  /**
+   *  Current sections
+   */
   private get currentSections(): SectionI[] {
     return this._canvasService.sectionsByType[this.gridType()].get();
   }
 
+  /**
+   * Update data sections
+   */
   private set currentSections(value: SectionI[]) {
     this._canvasService.sectionsByType[this.gridType()].set(value);
   }
