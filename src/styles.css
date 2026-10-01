@@ -643,7 +643,224 @@ html {
   border-color: #a5b4fc;
 }
 
+/* previews */
 
 .page-preview {
   container-type: inline-size;
+}
+
+.preview-iframe {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  min-width: 1440px;
+  height: 100vh;
+  border: 0;
+  transform: scale(0.28);
+  transform-origin: top left;
+}
+
+.preview-template {
+  width: 1440px;
+  min-height: 700px;
+  transform-origin: top left;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+/* ========================================================= */
+/* DEFAULT                                                   */
+/* ========================================================= */
+
+.container-title,
+.container-toolbar,
+.section-badge,
+.section-toolbar,
+.row-badge,
+.row-toolbar,
+.column-badge,
+.column-toolbar,
+.element-badge,
+.element-toolbar {
+  display: none;
+}
+
+
+/* ========================================================= */
+/* CONTAINER                                                 */
+/* ========================================================= */
+
+.container-editor:hover>.container-title,
+.container-editor:hover>.container-toolbar {
+  display: flex;
+}
+
+
+/* ========================================================= */
+/* SECTION                                                   */
+/* ========================================================= */
+
+.section-editor:hover>.section-badge,
+.section-editor:hover>.section-toolbar {
+  display: flex;
+}
+
+
+/* ========================================================= */
+/* ROW                                                       */
+/* ========================================================= */
+
+.row-editor:hover>.row-badge,
+.row-editor:hover>.row-toolbar {
+  display: flex;
+}
+
+
+/* ========================================================= */
+/* COLUMN                                                    */
+/* ========================================================= */
+
+.column-editor:hover>.column-badge,
+.column-editor:hover>.column-toolbar {
+  display: flex;
+}
+
+
+/* ========================================================= */
+/* ELEMENT                                                   */
+/* ========================================================= */
+
+.element-editor:hover>.element-badge,
+.element-editor:hover>.element-toolbar {
+  display: flex;
+}
+
+
+/* ========================================================= */
+/* IMPORTANT: ELEMENT HOVER                                  */
+/* Oculta controles de todos sus padres                     */
+/* ========================================================= */
+
+.container-editor:has(.element-editor:hover)>.container-title,
+.container-editor:has(.element-editor:hover)>.container-toolbar {
+  display: none;
+}
+
+.section-editor:has(.element-editor:hover)>.section-badge,
+.section-editor:has(.element-editor:hover)>.section-toolbar {
+  display: none;
+}
+
+.row-editor:has(.element-editor:hover)>.row-badge,
+.row-editor:has(.element-editor:hover)>.row-toolbar {
+  display: none;
+}
+
+.column-editor:has(.element-editor:hover)>.column-badge,
+.column-editor:has(.element-editor:hover)>.column-toolbar {
+  display: none;
+}
+
+
+/* ========================================================= */
+/* COLUMN HOVER                                              */
+/* ========================================================= */
+
+.container-editor:has(.column-editor:hover)>.container-title,
+.container-editor:has(.column-editor:hover)>.container-toolbar {
+  display: none;
+}
+
+.section-editor:has(.column-editor:hover)>.section-badge,
+.section-editor:has(.column-editor:hover)>.section-toolbar {
+  display: none;
+}
+
+.row-editor:has(.column-editor:hover)>.row-badge,
+.row-editor:has(.column-editor:hover)>.row-toolbar {
+  display: none;
+}
+
+
+/* ========================================================= */
+/* ROW HOVER                                                 */
+/* ========================================================= */
+
+.container-editor:has(.row-editor:hover)>.container-title,
+.container-editor:has(.row-editor:hover)>.container-toolbar {
+  display: none;
+}
+
+.section-editor:has(.row-editor:hover)>.section-badge,
+.section-editor:has(.row-editor:hover)>.section-toolbar {
+  display: none;
+}
+
+
+/* ========================================================= */
+/* SECTION HOVER                                             */
+/* ========================================================= */
+
+.container-editor:has(.section-editor:hover)>.container-title,
+.container-editor:has(.section-editor:hover)>.container-toolbar {
+  display: none;
+}
+
+/* languages switch */
+
+.language-select {
+  width: auto;
+  min-width: 170px;
+}
+
+/* Contenedor principal */
+.language-select ::ng-deep .ng-select-container {
+  min-height: 36px;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+/* Elimina estilos default */
+.language-select ::ng-deep .ng-value-container {
+  padding: 0 !important;
+}
+
+.language-select ::ng-deep .ng-arrow-wrapper {
+  display: none;
+}
+
+.language-select ::ng-deep .ng-clear-wrapper {
+  display: none;
+}
+
+/* Dropdown */
+.language-select ::ng-deep .ng-dropdown-panel {
+  margin-top: 6px;
+  padding: 4px;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  background: white;
+  box-shadow:
+    0 10px 15px -3px rgb(15 23 42 / 0.08),
+    0 4px 6px -4px rgb(15 23 42 / 0.08);
+}
+
+/* Opciones */
+.language-select ::ng-deep .ng-option {
+  padding: 0 !important;
+  background: transparent !important;
+}
+
+/* Opción seleccionada */
+.language-select ::ng-deep .ng-option-selected {
+  background: #f8fafc !important;
+}
+
+/* Hover */
+.language-select ::ng-deep .ng-option-marked {
+  background: #f8fafc !important;
 }
