@@ -43,15 +43,15 @@ import {
   updateSection,
 } from 'app/shared/utils/grid.utils';
 import { TooltipDirective } from 'app/shared/directives/tooltip.directive';
-import { DesignLayoutComponent } from 'app/shared/components/dynamic-form/layout/layout';
-import { DesignSpacingComponent } from 'app/shared/components/dynamic-form/spacing/spacing';
-import { DesignTypographyComponent } from 'app/shared/components/dynamic-form/typography/typography';
-import { DesignBackgroundComponent } from 'app/shared/components/dynamic-form/background/background';
-import { DesignBorderComponent } from 'app/shared/components/dynamic-form/border/border';
-import { DesignPositionComponent } from 'app/shared/components/dynamic-form/position/position';
-import { DesignEffectsComponent } from 'app/shared/components/dynamic-form/effect/effect';
-import { DesignOverflowComponent } from 'app/shared/components/dynamic-form/overflow/overflow';
-import { DesignInteractionComponent } from 'app/shared/components/dynamic-form/interaction/interaction';
+import { DesignLayoutComponent } from 'app/shared/components/design/layout/layout';
+import { DesignSpacingComponent } from 'app/shared/components/design/spacing/spacing';
+import { DesignTypographyComponent } from 'app/shared/components/design/typography/typography';
+import { DesignBackgroundComponent } from 'app/shared/components/design/background/background';
+import { DesignBorderComponent } from 'app/shared/components/design/border/border';
+import { DesignPositionComponent } from 'app/shared/components/design/position/position';
+import { DesignEffectsComponent } from 'app/shared/components/design/effect/effect';
+import { DesignOverflowComponent } from 'app/shared/components/design/overflow/overflow';
+import { DesignInteractionComponent } from 'app/shared/components/design/interaction/interaction';
 import { STYLE_PERMISSIONS } from 'app/shared/utils/design.utils';
 
 @Component({
