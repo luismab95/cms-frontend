@@ -17,7 +17,7 @@
 } @else {
   <form>
     <tabs-component [tabs]="tabs()" (selectedTabEvent)="selectLanguage($event)">
-      <div class="grid grid-cols-1 gap-6">
+      <div class="grid grid-cols-1 gap-4">
         <div class="col-span-1 lg:col-span-12 space-y-6">
           @for (language of languages(); track language.id; let index = $index) {
             @if (selectedLanguage() === language.id) {

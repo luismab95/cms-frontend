@@ -1,4 +1,4 @@
-import { Component, effect, input, output, signal } from '@angular/core';
+import { Component, DestroyRef, effect, inject, input, output, signal } from '@angular/core';
 import { form, FormField } from '@angular/forms/signals';
 import {
   BackgroundAttachmentT,
@@ -10,6 +10,8 @@ import {
 } from 'app/shared/interfaces/design.interface';
 import { TooltipDirective } from 'app/shared/directives/tooltip.directive';
 import { defaultBackgroundStyles } from 'app/shared/utils/grid.utils';
+import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
+import { debounceTime, distinctUntilChanged } from 'rxjs';
 
 @Component({
   selector: 'design-background-component',
@@ -24,7 +26,7 @@ import { defaultBackgroundStyles } from 'app/shared/utils/grid.utils';
         >
           <i class="w-3.5 h-3.5 text-indigo-600 fa-solid fa-fill-drip"></i>
           <span
-            >4. Fondo
+            >Fondo
             <i
               appTooltip="La imagen de fondo se puede configurar en la pestaña de propiedades."
               class="fa-solid fa-circle-info text-indigo-600"
@@ -165,6 +167,8 @@ export class DesignBackgroundComponent {
 
   private isInitializing = true;
 
+  private readonly _destroyRef = inject(DestroyRef);
+
   /**
    * Constructor
    */
@@ -181,12 +185,18 @@ export class DesignBackgroundComponent {
       });
     });
 
-    effect(() => {
-      const value = this.background();
-      if (this.isInitializing) return;
-
-      this.updateValues.emit(value);
-    });
+    toObservable(this.background)
+      .pipe(
+        debounceTime(600),
+        distinctUntilChanged(
+          (previous, current) => JSON.stringify(previous) === JSON.stringify(current),
+        ),
+        takeUntilDestroyed(this._destroyRef),
+      )
+      .subscribe((value) => {
+        if (this.isInitializing) return;
+        this.updateValues.emit(value);
+      });
   }
 
   /**

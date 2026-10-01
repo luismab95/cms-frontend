@@ -15,7 +15,11 @@ import { FormsModule } from '@angular/forms';
 import { NgClass, UpperCasePipe } from '@angular/common';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { ToastrService } from '@iqx-limited/ngx-toastr';
-import { NgLabelTemplateDirective, NgSelectComponent } from '@ng-select/ng-select';
+import {
+  NgLabelTemplateDirective,
+  NgOptionTemplateDirective,
+  NgSelectComponent,
+} from '@ng-select/ng-select';
 import { PageI, PreviewModeT } from 'app/core/interfaces/page.interface';
 import { ElementCMSI } from 'app/shared/interfaces/element.interface';
 import { SelectedItemsInGridI } from 'app/shared/interfaces/grid.interface';
@@ -46,6 +50,7 @@ import { filter, interval, take } from 'rxjs';
     UpperCasePipe,
     NgSelectComponent,
     NgLabelTemplateDirective,
+    NgOptionTemplateDirective,
     GridComponent,
     TooltipDirective,
     LayerComponent,
@@ -122,22 +127,7 @@ export class PagesCanvas implements AfterViewInit, OnDestroy {
    * Constructor
    */
   constructor() {
-    this._templateService.template = {
-      name: 'preview',
-      description: 'preview',
-      data: {
-        header: {
-          data: [],
-          css: '',
-          config: {},
-        },
-        footer: {
-          data: [],
-          css: '',
-          config: {},
-        },
-      },
-    };
+    this._templateService.template = null;
     interval(300_000)
       .pipe(
         filter(() => !this.previewMode()),
@@ -369,6 +359,7 @@ export class PagesCanvas implements AfterViewInit, OnDestroy {
    * Toggle preview mode
    */
   togglePreviewMode() {
+    this.preview.set('desktop');
     this.previewMode.update((preview) => !preview);
   }
 
@@ -468,8 +459,10 @@ export class PagesCanvas implements AfterViewInit, OnDestroy {
 
   /**
    * Open language select
+   * @param event
    */
-  openLanguageSelect() {
+  openLanguageSelect(event: MouseEvent): void {
+    event.stopPropagation();
     this.languageSelect().open();
   }
 

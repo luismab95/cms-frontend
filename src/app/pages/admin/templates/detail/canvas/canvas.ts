@@ -15,7 +15,11 @@ import { FormsModule } from '@angular/forms';
 import { NgClass, UpperCasePipe } from '@angular/common';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { ToastrService } from '@iqx-limited/ngx-toastr';
-import { NgLabelTemplateDirective, NgSelectComponent } from '@ng-select/ng-select';
+import {
+  NgLabelTemplateDirective,
+  NgOptionTemplateDirective,
+  NgSelectComponent,
+} from '@ng-select/ng-select';
 import { PreviewModeT } from 'app/core/interfaces/page.interface';
 import { ElementCMSI } from 'app/shared/interfaces/element.interface';
 import { SelectedItemsInGridI } from 'app/shared/interfaces/grid.interface';
@@ -48,6 +52,7 @@ import { filter, interval, take } from 'rxjs';
     UpperCasePipe,
     NgSelectComponent,
     NgLabelTemplateDirective,
+    NgOptionTemplateDirective,
     GridComponent,
     TooltipDirective,
     LayerComponent,
@@ -146,16 +151,7 @@ export class TemplatesCanvas implements AfterViewInit, OnDestroy {
    * Constructor
    */
   constructor() {
-    this._pageService.page = {
-      name: 'preview',
-      data: {
-        body: {
-          data: [],
-          css: '',
-          config: {},
-        },
-      },
-    };
+    this._pageService.page = null;
     interval(300_000)
       .pipe(
         filter(() => !this.previewMode()),
@@ -409,6 +405,7 @@ export class TemplatesCanvas implements AfterViewInit, OnDestroy {
    * Toggle preview mode
    */
   togglePreviewMode() {
+    this.preview.set('desktop');
     this.previewMode.update((preview) => !preview);
   }
 
@@ -504,8 +501,10 @@ export class TemplatesCanvas implements AfterViewInit, OnDestroy {
 
   /**
    * Open language select
+   * @param event
    */
-  openLanguageSelect() {
+  openLanguageSelect(event: MouseEvent): void {
+    event.stopPropagation();
     this.languageSelect().open();
   }
 

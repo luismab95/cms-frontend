@@ -52,6 +52,7 @@ import { DesignPositionComponent } from 'app/shared/components/dynamic-form/posi
 import { DesignEffectsComponent } from 'app/shared/components/dynamic-form/effect/effect';
 import { DesignOverflowComponent } from 'app/shared/components/dynamic-form/overflow/overflow';
 import { DesignInteractionComponent } from 'app/shared/components/dynamic-form/interaction/interaction';
+import { STYLE_PERMISSIONS } from 'app/shared/utils/design.utils';
 
 @Component({
   selector: 'design-inspector-component',
@@ -88,9 +89,10 @@ export class DesignInspectorComponent {
   designMode = signal<DesignModeT>('UI');
   designBreakpoint = signal<DeviceT>('mobile');
   stateElement = signal<StateElementT>('normal');
+  initialized = signal<boolean>(false);
 
   cssControl: FormControl = new FormControl();
-  initialized = signal<boolean>(false);
+  permissions = STYLE_PERMISSIONS;
 
   private readonly _canvasService = inject(CanvasService);
 
@@ -146,6 +148,18 @@ export class DesignInspectorComponent {
     minimap: { enabled: false },
   };
 
+  readonly permissionsByItem = computed(() => {
+    const item = this.selectedItemsInGrid();
+    return item?.element
+      ? this.permissions.element
+      : item?.column
+        ? this.permissions.column
+        : item?.row
+          ? this.permissions.row
+          : item?.section
+            ? this.permissions.section
+            : this.permissions.container;
+  });
   readonly typeItem = computed(() => {
     const item = this.selectedItemsInGrid();
     return item?.element

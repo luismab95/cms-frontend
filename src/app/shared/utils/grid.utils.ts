@@ -698,7 +698,7 @@ export const defaultSpacingStyles: Required<SpacingStylesI> = {
   paddingLeft: '10px',
 };
 export const defaultTypographyStyles: Required<TypographyStylesI> = {
-  fontFamily: '',
+  fontFamily: 'Inter, sans-serif',
   fontSize: '',
   fontWeight: '',
   lineHeight: '',
@@ -721,15 +721,10 @@ export const defaultBackgroundStyles: Required<BackgroundStylesI> = {
   backgroundClip: '',
 };
 export const defaultBorderStyles: Required<BorderStylesI> = {
-  border: '',
-  borderWidth: '',
-  borderStyle: '',
-  borderColor: '',
   borderTop: '',
   borderRight: '',
   borderBottom: '',
   borderLeft: '',
-  borderRadius: '',
   borderTopLeftRadius: '',
   borderTopRightRadius: '',
   borderBottomRightRadius: '',

@@ -1,4 +1,13 @@
-import { Component, computed, effect, input, output, signal } from '@angular/core';
+import {
+  Component,
+  computed,
+  DestroyRef,
+  effect,
+  inject,
+  input,
+  output,
+  signal,
+} from '@angular/core';
 import { form, FormField } from '@angular/forms/signals';
 import {
   DisplayT,
@@ -12,6 +21,8 @@ import {
 } from 'app/shared/interfaces/design.interface';
 import { TooltipDirective } from 'app/shared/directives/tooltip.directive';
 import { defaultLayoutStyles } from 'app/shared/utils/grid.utils';
+import { toObservable, takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { debounceTime, distinctUntilChanged } from 'rxjs';
 
 @Component({
   selector: 'design-layout-component',
@@ -25,7 +36,7 @@ import { defaultLayoutStyles } from 'app/shared/utils/grid.utils';
           class="flex items-center gap-2 font-bold text-slate-800 text-[11px] uppercase tracking-wide"
         >
           <i class="w-3.5 h-3.5 text-indigo-600 fa-solid fa-table-columns"></i>
-          <span>1. Disposición & Flexbox</span>
+          <span>Disposición & Flexbox</span>
         </div>
         <i
           class="w-3.5 h-3.5 text-slate-400 group-open/sec:rotate-180 transition-transform fa-solid fa-chevron-down"
@@ -412,12 +423,7 @@ export class DesignLayoutComponent {
   value = input.required<LayoutStylesI>();
   updateValues = output<Record<string, string>>();
 
-  readonly displays: DisplayT[] = [
-    'block',
-    'inline',
-    'flex',
-    'grid',
-  ];
+  readonly displays: DisplayT[] = ['block', 'inline', 'flex', 'grid'];
   readonly flexDirections: FlexDirectionT[] = ['row', 'row-reverse', 'column', 'column-reverse'];
   readonly flexWraps: FlexWrapT[] = ['nowrap', 'wrap', 'wrap-reverse'];
   readonly justifyContents: JustifyContentT[] = [
@@ -468,6 +474,8 @@ export class DesignLayoutComponent {
 
   private isInitializing = true;
 
+  private readonly _destroyRef = inject(DestroyRef);
+
   /**
    *
    */
@@ -487,12 +495,18 @@ export class DesignLayoutComponent {
       });
     });
 
-    effect(() => {
-      const value = this.layout();
-      if (this.isInitializing) return;
-
-      this.updateValues.emit(value);
-    });
+    toObservable(this.layout)
+      .pipe(
+        debounceTime(600),
+        distinctUntilChanged(
+          (previous, current) => JSON.stringify(previous) === JSON.stringify(current),
+        ),
+        takeUntilDestroyed(this._destroyRef),
+      )
+      .subscribe((value) => {
+        if (this.isInitializing) return;
+        this.updateValues.emit(value);
+      });
   }
 
   /**

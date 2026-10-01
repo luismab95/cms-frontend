@@ -143,8 +143,8 @@ export class GridComponent implements OnDestroy {
         }
       }
     }
-
-    this._dynamicStyleService.set(styleId, css.join('\n'));
+    const uniqueCss = css.join('\n').replaceAll('@contaiener', '@media');
+    this._dynamicStyleService.set(styleId, uniqueCss);
   }
 
   /**
@@ -257,25 +257,15 @@ export class GridComponent implements OnDestroy {
 
   /**
    * Open element panel
-   * @param data
+   * @param column
    */
   openElementsManagerPanel(column: ColumnI): void {
+    this.selectColumn(column);
     this.openElementsPanel.emit();
-    const selectedItemsInGrid = this.selectedItemsInGrid();
-    if (!selectedItemsInGrid) return;
-
-    this.updateSelectionItem({
-      page: null,
-      section: null,
-      row: null,
-      column,
-      element: null,
-      canvas: selectedItemsInGrid.canvas,
-    });
   }
 
   /**
-   *
+   * Select page config and reset the nested selections.
    */
   selectPageConfig() {
     this.updateSelectionItem({

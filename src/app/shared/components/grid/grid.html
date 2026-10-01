@@ -2,7 +2,7 @@
   [ngClass]="{
     'border-0! p-0! rounded-none!': preview(),
   }"
-  class="page-preview relative border-2 border-dashed border-gray-300 hover:border-gray-400 rounded-xl p-2 transition-all group/grid"
+  class="page-preview relative border-2 border-dashed border-gray-300 hover:border-gray-400 rounded-xl p-2 transition-all container-editor"
 >
   @if (!preview()) {
     <!-- ========================================================= -->
@@ -10,7 +10,7 @@
     <!-- ========================================================= -->
 
     <div
-      class="absolute -top-3 left-4 bg-gray-700 text-white text-[10px] font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wider flex items-center gap-1.5 shadow-sm z-50"
+      class="container-title absolute -top-3 left-4 bg-gray-700 text-white hidden text-[10px] font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wider items-center gap-1.5 shadow-sm z-50"
     >
       <i class="fa-solid fa-boxes-stacked"></i>
 
@@ -28,7 +28,7 @@
 
     <!-- Body toolbar -->
     <div
-      class="absolute -top-3.5 right-4 hidden group-hover/grid:flex items-center bg-white border border-slate-200 rounded-md shadow-sm divide-x divide-slate-100 text-slate-600 text-xs z-50"
+      class="container-toolbar absolute -top-3.5 right-4 hidden items-center bg-white border border-slate-200 rounded-md shadow-sm divide-x divide-slate-100 text-slate-600 text-xs z-50"
     >
       @if (editDesign()) {
         <button
@@ -39,6 +39,7 @@
           <i class="fa-solid fa-object-group text-indigo-600"></i>
         </button>
       }
+
       <button
         (click)="selectPageConfig()"
         class="cursor-pointer px-2 py-1 hover:text-slate-600 hover:bg-slate-50 flex items-center gap-1"
@@ -79,7 +80,7 @@
         <!-- ===================================================== -->
 
         <div
-          class="relative group/sec my-2"
+          class="relative section-editor my-2"
           cdkDrag
           cdkDragBoundary=".sections"
           [cdkDragDisabled]="preview()"
@@ -90,7 +91,7 @@
           @if (!preview()) {
             <!-- Section badge -->
             <div
-              class="absolute -top-3.5 left-4 flex items-center gap-1.5 bg-indigo-600 text-white text-xs font-semibold px-2.5 py-0.5 rounded shadow-sm z-50"
+              class="section-badge absolute -top-3.5 left-4 hidden items-center gap-1.5 bg-indigo-600 text-white text-xs font-semibold px-2.5 py-0.5 rounded shadow-sm z-50"
             >
               <i cdkDragHandle class="fa-solid fa-grip-vertical text-indigo-200 cursor-grab"></i>
 
@@ -101,7 +102,7 @@
 
             <!-- Section toolbar -->
             <div
-              class="absolute -top-3.5 right-4 hidden group-hover/sec:flex items-center bg-white border border-slate-200 rounded-md shadow-sm divide-x divide-slate-100 text-slate-600 text-xs z-50"
+              class="section-toolbar absolute -top-3.5 right-4 hidden items-center bg-white border border-slate-200 rounded-md shadow-sm divide-x divide-slate-100 text-slate-600 text-xs z-50"
             >
               @if (editDesign()) {
                 <button
@@ -112,6 +113,7 @@
                   <i class="fa-solid fa-table-list text-amber-600"></i>
                 </button>
               }
+
               <button
                 (click)="selectSection(section)"
                 class="cursor-pointer px-2 py-1 hover:bg-slate-50 flex items-center gap-1"
@@ -124,13 +126,14 @@
 
           <!-- =================================================== -->
           <!-- SECTION REAL -->
-          <!-- IMPORTANTE: aquí vive grid-section-{uuid} -->
           <!-- =================================================== -->
+
           @if (!preview() && selectedItemsInGrid()?.section?.uuid === section.uuid) {
             <div
               class="absolute inset-0 ring-2 ring-indigo-500 rounded-[inherit] pointer-events-none z-40"
             ></div>
           }
+
           <section
             [ngStyle]="gridConfigStyles(section.config)"
             [class]="'grid-section-' + section.uuid"
@@ -151,7 +154,7 @@
                 <!-- ============================================= -->
 
                 <div
-                  class="relative group/row my-2"
+                  class="relative row-editor my-2"
                   cdkDrag
                   cdkDragBoundary=".rows"
                   [cdkDragDisabled]="preview()"
@@ -162,13 +165,13 @@
                   @if (!preview()) {
                     <!-- Row badge -->
                     <div
-                      class="absolute -top-2.5 left-3 bg-amber-500 text-white text-[10px] font-semibold px-2 py-0.5 rounded-full flex items-center gap-1 shadow-sm z-50"
+                      class="row-badge absolute -top-2.5 left-3 bg-amber-500 text-white text-[10px] font-semibold px-2 py-0.5 rounded-full hidden items-center gap-1 shadow-sm z-50"
                     >
                       <i cdkDragHandle class="fa-solid fa-grip-vertical cursor-grab"></i>
 
-                      <span>Fila {{ rowIndex + 1 }}</span>
+                      <span> Fila {{ rowIndex + 1 }} </span>
 
-                      <span class="text-[9px] opacity-75">({{ row.uuid }})</span>
+                      <span class="text-[9px] opacity-75"> ({{ row.uuid }}) </span>
 
                       <span class="text-[9px] opacity-75">
                         columnas: {{ row.columns.length }}
@@ -177,7 +180,7 @@
 
                     <!-- Row toolbar -->
                     <div
-                      class="absolute -top-3.5 right-4 hidden group-hover/row:flex items-center bg-white border border-slate-200 rounded-md shadow-sm divide-x divide-slate-100 text-slate-600 text-xs z-50"
+                      class="row-toolbar absolute -top-3.5 right-4 hidden items-center bg-white border border-slate-200 rounded-md shadow-sm divide-x divide-slate-100 text-slate-600 text-xs z-50"
                     >
                       @if (editDesign()) {
                         <button
@@ -188,6 +191,7 @@
                           <i class="fa-solid fa-table-columns text-slate-600"></i>
                         </button>
                       }
+
                       <button
                         (click)="selectRow(row)"
                         class="cursor-pointer px-2 py-1 hover:bg-slate-50 flex items-center gap-1"
@@ -208,11 +212,9 @@
                     ></div>
                   }
 
-                  <!-- Se mantiene el cdkDrag, pero SIN los estilos dinámicos -->
                   <div>
                     <!-- ========================================= -->
                     <!-- COLUMNS CONTAINER -->
-                    <!-- Ahora aquí vive grid-row-{uuid} -->
                     <!-- ========================================= -->
 
                     <div
@@ -229,7 +231,7 @@
                         <!-- ======================================= -->
 
                         <div
-                          class="relative group/column"
+                          class="relative column-editor"
                           cdkDrag
                           cdkDragBoundary=".columns"
                           [cdkDragDisabled]="preview()"
@@ -242,15 +244,16 @@
                           @if (!preview()) {
                             <!-- Column badge -->
                             <div
-                              class="absolute -top-3 left-3 bg-slate-700 text-white text-[10px] px-2 py-0.5 rounded-full flex items-center gap-1 z-50"
+                              class="column-badge absolute -top-3 left-3 bg-slate-700 text-white text-[10px] px-2 py-0.5 rounded-full hidden items-center gap-1 z-50"
                             >
                               <i cdkDragHandle class="fa-solid fa-grip-vertical cursor-grab"></i>
-                              <span>Columna {{ columnIndex + 1 }}</span>
+
+                              <span> Columna {{ columnIndex + 1 }} ({{ column.uuid }}) </span>
                             </div>
 
                             <!-- Column toolbar -->
                             <div
-                              class="absolute -top-3.5 right-4 hidden group-hover/column:flex items-center bg-white border border-slate-200 rounded-md shadow-sm divide-x divide-slate-100 text-slate-600 text-xs z-50"
+                              class="column-toolbar absolute -top-3.5 right-4 hidden items-center bg-white border border-slate-200 rounded-md shadow-sm divide-x divide-slate-100 text-slate-600 text-xs z-50"
                             >
                               <button
                                 (click)="selectColumn(column)"
@@ -272,31 +275,9 @@
                             ></div>
                           }
 
-                          <div [ngStyle]="gridConfigStyles(column.config)">
-                            @if (!preview()) {
-                              <!-- Column internal information -->
-                              <div
-                                class="flex flex-col items-center justify-between text-[11px] text-slate-400 pb-2 border-b border-slate-100 mb-2 w-full relative z-20"
-                              >
-                                <div>
-                                  <span class="font-medium text-slate-500">
-                                    Columna {{ column.uuid }}
-                                  </span>
-                                </div>
-
-                                @if (column.element !== null) {
-                                  <div class="flex items-center gap-1 mt-1">
-                                    <span
-                                      class="text-[9px] bg-indigo-100 text-indigo-700 px-1.5 py-0.5 rounded font-bold"
-                                    >
-                                      Elemento {{ column.element.name }}
-                                    </span>
-                                  </div>
-                                }
-                              </div>
-                            }
-
+                          <div [ngStyle]="gridConfigStyles(column.config)" [class.p-3]="!preview()">
                             <!-- EMPTY COLUMN -->
+
                             @if (column.element == null) {
                               @if (!preview()) {
                                 <div
@@ -309,15 +290,39 @@
                                     <i class="fa-solid fa-plus"></i>
                                   </div>
 
-                                  <span class="text-[10px]">Espacio vacío para contenido</span>
+                                  <span class="text-[10px]"> Espacio vacío para contenido </span>
                                 </div>
                               }
                             } @else {
                               <!-- ELEMENT -->
-                              <div class="relative group/element">
+
+                              <div
+                                [ngClass]="{
+                                  'border border-dashed border-emerald-300 rounded-lg p-2 bg-white/40':
+                                    !preview(),
+                                }"
+                                class="relative element-editor"
+                              >
                                 @if (!preview()) {
+                                  <!-- Element badge -->
                                   <div
-                                    class="absolute -top-3.5 right-4 hidden group-hover/element:flex items-center bg-white border border-slate-200 rounded-md shadow-sm z-50"
+                                    class="element-badge absolute -top-3 left-3 bg-emerald-700 text-white text-[10px] px-2 py-0.5 rounded-full hidden items-center gap-1 z-50"
+                                  >
+                                    <i
+                                      cdkDragHandle
+                                      class="fa-solid fa-grip-vertical cursor-grab"
+                                    ></i>
+
+                                    <span>
+                                      Elemento
+                                      {{ column.element.name }}
+                                      ({{ column.element.uuid }})
+                                    </span>
+                                  </div>
+
+                                  <!-- Element toolbar -->
+                                  <div
+                                    class="element-toolbar absolute -top-3.5 right-4 hidden items-center bg-white border border-slate-200 rounded-md shadow-sm z-50"
                                   >
                                     <button
                                       (click)="selectElement(column.element)"

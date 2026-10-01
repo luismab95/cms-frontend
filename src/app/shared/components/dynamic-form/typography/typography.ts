@@ -1,14 +1,18 @@
-import { Component, effect, input, output, signal } from '@angular/core';
+import { Component, DestroyRef, effect, inject, input, output, signal } from '@angular/core';
+import { toObservable, takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { form, FormField } from '@angular/forms/signals';
 import { TooltipDirective } from 'app/shared/directives/tooltip.directive';
 import {
+  FontFamilyOptionI,
   TextAlignT,
   TextOverflowT,
   TypographyStylesI,
   WhiteSpaceT,
   WordBreakT,
 } from 'app/shared/interfaces/design.interface';
+import { FONT_FAMILIES } from 'app/shared/utils/design.utils';
 import { defaultTypographyStyles } from 'app/shared/utils/grid.utils';
+import { debounceTime, distinctUntilChanged } from 'rxjs';
 
 @Component({
   selector: 'design-typography-component',
@@ -22,7 +26,7 @@ import { defaultTypographyStyles } from 'app/shared/utils/grid.utils';
           class="flex items-center gap-2 font-bold text-slate-800 text-[11px] uppercase tracking-wide"
         >
           <i class="w-3.5 h-3.5 text-indigo-600 fa-solid fa-font"></i>
-          <span>3. Tipografía</span>
+          <span>Tipografía</span>
         </div>
         <i
           class="w-3.5 h-3.5 text-slate-400 group-open/sec:rotate-180 transition-transform fa-solid fa-chevron-down"
@@ -31,48 +35,23 @@ import { defaultTypographyStyles } from 'app/shared/utils/grid.utils';
       <div class="p-3.5 space-y-3 bg-white">
         <!-- Font Family -->
         <div>
-          <label class="text-[10px] text-slate-500 font-medium block mb-0.5">font-family</label>
-          <div class="flex items-centerbg-white">
+          <label class="text-[10px] text-slate-500 font-medium block mb-0.5"
+            >font-family</label
+          >
+          <div class="flex items-center bg-white">
             <select
               [formField]="typographyForm.fontFamily"
               class="w-full border border-slate-200 rounded py-0.5 px-2 text-xs text-slate-700 bg-white focus:ring-0 focus:outline-none focus:shadow-xs"
             >
-              <option value="system-ui, sans-serif">System UI</option>
-              <optgroup label="Sans Serif">
-                <option value="Inter, sans-serif">Inter</option>
-                <option value="Arial, sans-serif">Arial</option>
-                <option value="Helvetica, Arial, sans-serif">Helvetica</option>
-                <option value="'Segoe UI', sans-serif">Segoe UI</option>
-                <option value="Verdana, sans-serif">Verdana</option>
-                <option value="Tahoma, sans-serif">Tahoma</option>
-                <option value="'Trebuchet MS', sans-serif">Trebuchet MS</option>
-                <option value="Geneva, sans-serif">Geneva</option>
-                <option value="Calibri, sans-serif">Calibri</option>
-              </optgroup>
-              <optgroup label="Serif">
-                <option value="Georgia, serif">Georgia</option>
-                <option value="'Times New Roman', serif">Times New Roman</option>
-                <option value="Times, serif">Times</option>
-                <option value="Garamond, serif">Garamond</option>
-                <option value="Baskerville, serif">Baskerville</option>
-                <option value="'Palatino Linotype', Palatino, serif">Palatino</option>
-                <option value="Cambria, serif">Cambria</option>
-              </optgroup>
-              <optgroup label="Monospace">
-                <option value="'Courier New', monospace">Courier New</option>
-                <option value="Courier, monospace">Courier</option>
-                <option value="Consolas, monospace">Consolas</option>
-                <option value="Monaco, monospace">Monaco</option>
-                <option value="Menlo, monospace">Menlo</option>
-                <option value="'Lucida Console', monospace">Lucida Console</option>
-              </optgroup>
-              <optgroup label="Display">
-                <option value="Impact, fantasy">Impact</option>
-              </optgroup>
-              <optgroup label="Cursive">
-                <option value="'Comic Sans MS', cursive">Comic Sans MS</option>
-                <option value="'Brush Script MT', cursive">Brush Script MT</option>
-              </optgroup>
+              @for (group of fontGroups; track group.category) {
+                <optgroup [label]="group.label">
+                  @for (font of group.fonts; track font.value) {
+                    <option [value]="font.value">
+                      {{ font.label }}
+                    </option>
+                  }
+                </optgroup>
+              }
             </select>
           </div>
         </div>
@@ -280,6 +259,31 @@ export class DesignTypographyComponent {
   readonly whiteSpaces: WhiteSpaceT[] = ['normal', 'nowrap', 'pre', 'pre-wrap', 'pre-line'];
   readonly wordBreaks: WordBreakT[] = ['normal', 'break-all', 'break-word'];
   readonly textOverflows: TextOverflowT[] = ['clip', 'ellipsis'];
+  readonly fontGroups = [
+    {
+      label: 'Sans Serif',
+      category: 'sans-serif' as const,
+    },
+    {
+      label: 'Serif',
+      category: 'serif' as const,
+    },
+    {
+      label: 'Monospace',
+      category: 'monospace' as const,
+    },
+    {
+      label: 'Display',
+      category: 'display' as const,
+    },
+    {
+      label: 'Cursive',
+      category: 'cursive' as const,
+    },
+  ].map((group) => ({
+    ...group,
+    fonts: FONT_FAMILIES.filter((font) => font.category === group.category),
+  }));
 
   typography = signal<Required<TypographyStylesI>>(defaultTypographyStyles);
 
@@ -287,12 +291,14 @@ export class DesignTypographyComponent {
 
   private isInitializing = true;
 
+  private readonly _destroyRef = inject(DestroyRef);
+
   /**
    * Constructor
    */
   constructor() {
     effect(() => {
-      const value = this.value();
+      const value = this.value();      
       if (!value) return;
 
       this.isInitializing = true;
@@ -306,12 +312,18 @@ export class DesignTypographyComponent {
       });
     });
 
-    effect(() => {
-      const value = this.typography();
-      if (this.isInitializing) return;
-
-      this.updateValues.emit(value);
-    });
+    toObservable(this.typography)
+      .pipe(
+        debounceTime(600),
+        distinctUntilChanged(
+          (previous, current) => JSON.stringify(previous) === JSON.stringify(current),
+        ),
+        takeUntilDestroyed(this._destroyRef),
+      )
+      .subscribe((value) => {
+        if (this.isInitializing) return;
+        this.updateValues.emit(value);
+      });
   }
 
   /**

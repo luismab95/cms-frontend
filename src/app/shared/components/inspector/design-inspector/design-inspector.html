@@ -218,58 +218,76 @@
     <div class="flex-1 overflow-y-auto divide-y divide-slate-100 text-xs">
       @if (initialized()) {
         <!-- SECTION 1: LAYOUT (Disposición & Flexbox) -->
-        <design-layout-component
-          [value]="layoutValue()"
-          (updateValues)="updateStyleConfig($event, 'layout')"
-        />
+        @if (permissionsByItem().layout) {
+          <design-layout-component
+            [value]="layoutValue()"
+            (updateValues)="updateStyleConfig($event, 'layout')"
+          />
+        }
 
         <!-- SECTION 2: SPACING (Espaciado & Box Model) -->
-        <design-spacing-component
-          [value]="spacingValue()"
-          (updateValues)="updateStyleConfig($event, 'spacing')"
-        />
+        @if (permissionsByItem().spacing) {
+          <design-spacing-component
+            [value]="spacingValue()"
+            (updateValues)="updateStyleConfig($event, 'spacing')"
+          />
+        }
 
         <!-- SECTION 3: TYPOGRAPHY (Tipografía) -->
-        <design-typography-component
-          [value]="typographyValue()"
-          (updateValues)="updateStyleConfig($event, 'typography')"
-        />
+        @if (permissionsByItem().typography) {
+          <design-typography-component
+            [value]="typographyValue()"
+            (updateValues)="updateStyleConfig($event, 'typography')"
+          />
+        }
 
         <!-- SECTION 4: BACKGROUND (Fondo) -->
-        <design-background-component
-          [value]="backgroundValue()"
-          (updateValues)="updateStyleConfig($event, 'background')"
-        />
+        @if (permissionsByItem().background) {
+          <design-background-component
+            [value]="backgroundValue()"
+            (updateValues)="updateStyleConfig($event, 'background')"
+          />
+        }
 
         <!-- SECTION 5: BORDER (Bordes & Radios) -->
-        <design-border-component
-          [value]="borderValue()"
-          (updateValues)="updateStyleConfig($event, 'border')"
-        />
+        @if (permissionsByItem().border) {
+          <design-border-component
+            [value]="borderValue()"
+            (updateValues)="updateStyleConfig($event, 'border')"
+          />
+        }
 
         <!-- SECTION 6: POSITION (Posicionamiento) -->
-        <design-position-component
-          [value]="positionValue()"
-          (updateValues)="updateStyleConfig($event, 'position')"
-        />
+        @if (permissionsByItem().position) {
+          <design-position-component
+            [value]="positionValue()"
+            (updateValues)="updateStyleConfig($event, 'position')"
+          />
+        }
 
         <!-- SECTION 7: EFFECTS (Efectos & Transiciones) -->
-        <design-effect-component
-          [value]="effectValue()"
-          (updateValues)="updateStyleConfig($event, 'effect')"
-        />
+        @if (permissionsByItem().effects) {
+          <design-effect-component
+            [value]="effectValue()"
+            (updateValues)="updateStyleConfig($event, 'effect')"
+          />
+        }
 
         <!-- SECTION 8: OVERFLOW (Desbordamiento) -->
-        <design-overflow-component
-          [value]="overflowValue()"
-          (updateValues)="updateStyleConfig($event, 'overflow')"
-        />
+        @if (permissionsByItem().overflow) {
+          <design-overflow-component
+            [value]="overflowValue()"
+            (updateValues)="updateStyleConfig($event, 'overflow')"
+          />
+        }
 
         <!-- SECTION 9: INTERACTION (Interacción) -->
-        <design-interaction-component
-          [value]="interactionValue()"
-          (updateValues)="updateStyleConfig($event, 'interaction')"
-        />
+        @if (permissionsByItem().interaction) {
+          <design-interaction-component
+            [value]="interactionValue()"
+            (updateValues)="updateStyleConfig($event, 'interaction')"
+          />
+        }
       }
     </div>
   }

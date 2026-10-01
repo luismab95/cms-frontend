@@ -162,13 +162,14 @@
                 </div>
                 <!-- Page Canvas Content Box -->
                 <div
+                  #previewContainer
                   class="w-full h-full relative flex flex-col items-center z-10 bg-white/20 opacity-50"
                 >
                   <iframe
                     [src]="previewPage()"
-                    class="w-full h-full"
-                    frameborder="0"
                     loading="lazy"
+                    class="preview-iframe pointer-events-none"
+                    [style.transform]="'scale(' + previewContainer.clientWidth / 1440 + ')'"
                   ></iframe>
                 </div>
               </div>

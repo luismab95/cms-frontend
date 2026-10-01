@@ -499,15 +499,15 @@
             >
               <div>
                 <div
-                  class="relative h-52 w-full overflow-hidden bg-slate-100 rounded-xl border border-slate-100/50"
+                  #previewContainer
+                  class="relative h-52 w-full overflow-hidden bg-slate-100 rounded-xl border border-slate-100/50 hover:scale-110 transition-transform"
                 >
-                  <div class="relative w-full h-full">
-                    <iframe
-                      [src]="item.safePreviewPath"
-                      loading="lazy"
-                      class="w-full h-full pointer-events-none group-hover:scale-105 transition-transform duration-300"
-                    ></iframe>
-                  </div>
+                  <iframe
+                    [src]="item.safePreviewPath"
+                    loading="lazy"
+                    class="preview-iframe pointer-events-none"
+                    [style.transform]="'scale(' + previewContainer.clientWidth / 1440 + ')'"
+                  ></iframe>
                   <div
                     [ngClass]="{
                       'bg-indigo-500/75': i === 0,
@@ -524,7 +524,6 @@
                       }"
                       class="fa-solid text-xs"
                     ></i>
-
                     <span class="font-medium text-white"> #{{ i + 1 }} Top </span>
                   </div>
                   <span
@@ -544,11 +543,12 @@
                       /{{ item.lang }}{{ item.path }}
                     </p>
                   </div>
+
                   <div class="text-right">
-                    <span class="text-base leading-6 font-semibold text-indigo-600">{{
-                      item.visits
-                    }}</span>
-                    <span class="text-[11px] leading-4 text-slate-500 block">Visitas</span>
+                    <span class="text-base leading-6 font-semibold text-indigo-600">
+                      {{ item.visits }}
+                    </span>
+                    <span class="text-[11px] leading-4 text-slate-500 block"> Visitas </span>
                   </div>
                 </div>
               </div>

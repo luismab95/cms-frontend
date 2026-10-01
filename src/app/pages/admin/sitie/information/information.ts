@@ -1,4 +1,12 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import {
+  AfterViewInit,
+  Component,
+  ElementRef,
+  OnInit,
+  inject,
+  signal,
+  viewChild,
+} from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import {
   FormsModule,
@@ -16,7 +24,6 @@ import { PermissionCode, validAction } from 'app/shared/utils/permission.utils';
 import { GridComponent } from 'app/shared/components/grid/grid';
 import { CmsValidators } from 'app/shared/utils/validators.util';
 import { TooltipDirective } from 'app/shared/directives/tooltip.directive';
-import { PageService } from 'app/core/services/pages.service';
 import { Subject, takeUntil } from 'rxjs';
 
 @Component({
@@ -24,14 +31,17 @@ import { Subject, takeUntil } from 'rxjs';
   templateUrl: './information.html',
   imports: [FormsModule, ReactiveFormsModule, PermissionComponent, GridComponent, TooltipDirective],
 })
-export class SitieInformationComponent implements OnInit {
+export class SitieInformationComponent implements OnInit, AfterViewInit {
+  private readonly previewContainer =
+    viewChild.required<ElementRef<HTMLElement>>('previewContainer');
+
+  previewScale = signal(1);
   selectedTemplate = signal(0);
 
   private readonly _formBuilder = inject(UntypedFormBuilder);
   private readonly _sitieService = inject(SitieService);
   private readonly _templateService = inject(TemplateService);
   private readonly _toastrService = inject(ToastrService);
-  private readonly _pageService = inject(PageService);
 
   private _unsubscribeAll: Subject<any> = new Subject<any>();
   private styleElement?: HTMLStyleElement;
@@ -82,6 +92,18 @@ export class SitieInformationComponent implements OnInit {
       if (findTemplate === null) return;
       this.loadTemplate(findTemplate);
     }
+  }
+
+  /**
+   * AfterViewInit
+   */
+  ngAfterViewInit(): void {
+    const element = this.previewContainer().nativeElement;
+    const observer = new ResizeObserver(([entry]) => {
+      const width = entry.contentRect.width;
+      this.previewScale.set(width / 1440);
+    });
+    observer.observe(element);
   }
 
   /**

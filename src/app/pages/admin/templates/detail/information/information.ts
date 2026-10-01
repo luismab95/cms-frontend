@@ -1,4 +1,13 @@
-import { Component, inject, OnDestroy, OnInit } from '@angular/core';
+import {
+  AfterViewInit,
+  Component,
+  ElementRef,
+  inject,
+  OnDestroy,
+  OnInit,
+  signal,
+  viewChild,
+} from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import {
   FormsModule,
@@ -25,7 +34,12 @@ import { createPageConfig } from 'app/shared/utils/grid.utils';
   templateUrl: './information.html',
   imports: [FormsModule, ReactiveFormsModule, PermissionComponent, GridComponent],
 })
-export class TemplatesInformationComponent implements OnInit, OnDestroy {
+export class TemplatesInformationComponent implements OnInit, AfterViewInit, OnDestroy {
+  private readonly previewContainer =
+    viewChild.required<ElementRef<HTMLElement>>('previewContainer');
+
+  previewScale = signal(1);
+
   private readonly _formBuilder = inject(UntypedFormBuilder);
   private readonly _templateService = inject(TemplateService);
   private readonly _toastrService = inject(ToastrService);
@@ -70,6 +84,18 @@ export class TemplatesInformationComponent implements OnInit, OnDestroy {
       this.templateForm.patchValue({ ...template });
       this.loadTemplate(template);
     }
+  }
+
+  /**
+   * AfterViewInit
+   */
+  ngAfterViewInit(): void {
+    const element = this.previewContainer().nativeElement;
+    const observer = new ResizeObserver(([entry]) => {
+      const width = entry.contentRect.width;
+      this.previewScale.set(width / 1440);
+    });
+    observer.observe(element);
   }
 
   /**

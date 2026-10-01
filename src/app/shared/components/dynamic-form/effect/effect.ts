@@ -1,8 +1,19 @@
-import { Component, computed, effect, input, output, signal } from '@angular/core';
+import {
+  Component,
+  computed,
+  DestroyRef,
+  effect,
+  inject,
+  input,
+  output,
+  signal,
+} from '@angular/core';
 import { DecimalPipe } from '@angular/common';
 import { form, FormField, max, min, schema } from '@angular/forms/signals';
 import { EffectsStylesI, BoxShadowT } from 'app/shared/interfaces/design.interface';
 import { defaultEffetsStyles } from 'app/shared/utils/grid.utils';
+import { toObservable, takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { debounceTime, distinctUntilChanged } from 'rxjs';
 
 @Component({
   selector: 'design-effect-component',
@@ -17,7 +28,7 @@ import { defaultEffetsStyles } from 'app/shared/utils/grid.utils';
         >
           <i class="w-3.5 h-3.5 text-indigo-600 fa-solid fa-wand-magic-sparkles"></i>
 
-          <span>7. Efectos &amp; Transiciones</span>
+          <span>Efectos &amp; Transiciones</span>
         </div>
 
         <i
@@ -150,6 +161,8 @@ export class DesignEffectsComponent {
     '': '',
   };
 
+  private readonly _destroyRef = inject(DestroyRef);
+
   constructor() {
     effect(() => {
       const value = this.value();
@@ -170,15 +183,18 @@ export class DesignEffectsComponent {
       });
     });
 
-    effect(() => {
-      const value = this.effect();
-
-      if (this.isInitializing) {
-        return;
-      }
-
-      this.updateValues.emit(value);
-    });
+    toObservable(this.effect)
+      .pipe(
+        debounceTime(600),
+        distinctUntilChanged(
+          (previous, current) => JSON.stringify(previous) === JSON.stringify(current),
+        ),
+        takeUntilDestroyed(this._destroyRef),
+      )
+      .subscribe((value) => {
+        if (this.isInitializing) return;
+        this.updateValues.emit(value);
+      });
   }
 
   /**

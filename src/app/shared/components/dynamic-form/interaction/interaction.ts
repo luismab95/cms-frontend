@@ -1,4 +1,5 @@
-import { Component, effect, input, output, signal } from '@angular/core';
+import { Component, DestroyRef, effect, inject, input, output, signal } from '@angular/core';
+import { toObservable, takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { form, FormField } from '@angular/forms/signals';
 import {
   CursorT,
@@ -6,6 +7,7 @@ import {
   PointerEventsT,
 } from 'app/shared/interfaces/design.interface';
 import { defaultInteractionStyles } from 'app/shared/utils/grid.utils';
+import { debounceTime, distinctUntilChanged } from 'rxjs';
 
 @Component({
   selector: 'design-interaction-component',
@@ -19,7 +21,7 @@ import { defaultInteractionStyles } from 'app/shared/utils/grid.utils';
           class="flex items-center gap-2 font-bold text-slate-800 text-[11px] uppercase tracking-wide"
         >
           <i class="w-3.5 h-3.5 text-indigo-600 fa-solid fa-arrow-pointer"></i>
-          <span>9. Interacción</span>
+          <span>Interacción</span>
         </div>
         <i
           class="w-3.5 h-3.5 text-slate-400 group-open/sec:rotate-180 transition-transform fa-solid fa-chevron-down"
@@ -79,6 +81,8 @@ export class DesignInteractionComponent {
 
   private isInitializing = true;
 
+  private readonly _destroyRef = inject(DestroyRef);
+
   /**
    * Constructor
    */
@@ -99,11 +103,17 @@ export class DesignInteractionComponent {
       });
     });
 
-    effect(() => {
-      const value = this.interaction();
-      if (this.isInitializing) return;
-
-      this.updateValues.emit(value);
-    });
+    toObservable(this.interaction)
+      .pipe(
+        debounceTime(600),
+        distinctUntilChanged(
+          (previous, current) => JSON.stringify(previous) === JSON.stringify(current),
+        ),
+        takeUntilDestroyed(this._destroyRef),
+      )
+      .subscribe((value) => {
+        if (this.isInitializing) return;
+        this.updateValues.emit(value);
+      });
   }
 }

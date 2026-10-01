@@ -36,107 +36,127 @@ interface FileFieldProps extends Record<string, unknown> {
     @let f = ngf.field();
     @let inputId = ngf.key() + '-input';
 
-    <div class="flex items-start justify-between flex-col w-full! gap-1">
-      <div>
-        <div
-          [class.border-red-500!]="ngf.errorsToDisplay().length > 0"
-          [class.border-dashed]="ngf.errorsToDisplay().length === 0"
-          class="bg-[#fcfdff] p-4 rounded-xl border border-slate-300 hover:border-indigo-500 transition-colors group"
-        >
-          <div class="flex items-center space-x-4">
-            <!-- Circular Avatar Preview with subtle camera overlay -->
-            <div class="relative shrink-0">
-              <div
-                class="w-16 h-16 rounded-full bg-slate-100 border-2 border-slate-200 flex items-center justify-center text-slate-400 shadow-inner group-hover:border-brand-300 transition-all overflow-hidden"
-              >
-                @if (previewUrl() !== null) {
-                  @if (props()?.type === 'image') {
-                    <img class="w-full h-full object-cover" [src]="getImage()" [alt]="'preview'" />
-                  } @else {
-                    <i
-                      class="fa-xl group-hover:text-indigo-600 transition-colors"
-                      [ngClass]="{
-                        'fa-solid fa-file-pdf text-red-600': props()?.type === 'pdf',
-                        'fa-solid fa-file-audio text-blue-600': props()?.type === 'audio',
-                        'fa-solid fa-file-video text-green-600': props()?.type === 'video',
-                        'fa-solid fa-file-lines text-gray-600': props()?.type === 'text',
-                        'fa-solid fa-file text-gray-500': props()?.type === 'file',
-                      }"
-                    ></i>
-                  }
+    <div class="w-full">
+      <div
+        [class.border-red-500!]="ngf.errorsToDisplay().length > 0"
+        [class.border-dashed]="ngf.errorsToDisplay().length === 0"
+        class="group w-full rounded-xl border border-slate-200 bg-white p-3 transition-all hover:border-indigo-400 hover:shadow-sm"
+      >
+        <!-- Preview + información -->
+        <div class="flex items-center gap-3">
+          <!-- Preview -->
+          <div class="relative shrink-0">
+            <div
+              class="flex h-14 w-14 items-center justify-center overflow-hidden rounded-lg border border-slate-200 bg-slate-50 text-slate-400 transition-colors group-hover:border-indigo-200"
+            >
+              @if (previewUrl() !== null) {
+                @if (props()?.type === 'image') {
+                  <img class="h-full w-full object-contain" [src]="getImage()" alt="preview" />
                 } @else {
                   <i
-                    class="fa-xl group-hover:text-indigo-600 transition-colors"
+                    class="fa-lg"
                     [ngClass]="{
-                      'fa-regular fa-camera text-indigo-600': props()?.type === 'image',
-                      'fa-solid fa-file-pdf text-red-600': props()?.type === 'pdf',
-                      'fa-solid fa-file-audio text-blue-600': props()?.type === 'audio',
-                      'fa-solid fa-file-video text-green-600': props()?.type === 'video',
-                      'fa-solid fa-file-lines text-gray-600': props()?.type === 'text',
-                      'fa-solid fa-file text-gray-500': props()?.type === 'file',
+                      'fa-solid fa-file-pdf text-red-500': props()?.type === 'pdf',
+                      'fa-solid fa-file-audio text-blue-500': props()?.type === 'audio',
+                      'fa-solid fa-file-video text-green-500': props()?.type === 'video',
+                      'fa-solid fa-file-lines text-slate-500': props()?.type === 'text',
+                      'fa-solid fa-file text-slate-400': props()?.type === 'file',
                     }"
                   ></i>
                 }
-              </div>
-              <!-- Badge plus indicator -->
-              <div
-                class="absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-indigo-600 text-white flex items-center justify-center shadow"
+              } @else {
+                <i
+                  class="fa-lg transition-colors group-hover:text-indigo-500"
+                  [ngClass]="{
+                    'fa-regular fa-camera text-indigo-500': props()?.type === 'image',
+                    'fa-solid fa-file-pdf text-red-500': props()?.type === 'pdf',
+                    'fa-solid fa-file-audio text-blue-500': props()?.type === 'audio',
+                    'fa-solid fa-file-video text-green-500': props()?.type === 'video',
+                    'fa-solid fa-file-lines text-slate-500': props()?.type === 'text',
+                    'fa-solid fa-file text-slate-400': props()?.type === 'file',
+                  }"
+                ></i>
+              }
+            </div>
+
+            <!-- Add badge -->
+            <div
+              class="absolute -bottom-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-indigo-600 text-white shadow-sm"
+            >
+              <i class="fa-solid fa-plus fa-2xs"></i>
+            </div>
+          </div>
+
+          <!-- Label -->
+          <div class="min-w-0 flex-1">
+            <div class="flex items-start">
+              <p
+                [class.text-red-500!]="ngf.errorsToDisplay().length > 0"
+                class="truncate text-sm font-semibold text-slate-800"
+                [title]="ngf.label() | dynamicText | async"
               >
-                <i class="fa-solid fa-plus fa-2xs"></i>
-              </div>
-            </div>
-            <!-- Upload Actions and Specs -->
-            <div class="flex-1 min-w-0">
-              <div class="flex items-center justify-between">
-                <p
-                  [class.text-red-500!]="ngf.errorsToDisplay().length > 0"
-                  class="text-sm font-semibold text-slate-800"
-                >
-                  {{ ngf.label() | dynamicText | async }}
-                  @if (props()?.required) {
-                    <span class="ml-1 text-red-500">*</span>
-                  }
-                </p>
-              </div>
-              <p class="text-xs text-slate-400 mt-0.5">{{ props()?.hint }}</p>
-              <div class="mt-2.5 flex items-center space-x-2">
-                @if (previewUrl() === null) {
-                  <label
-                    (click)="toggleFileManager(null)"
-                    class="cursor-pointer inline-flex items-center px-2.5 py-1 rounded-md text-xs font-semibold bg-white border border-slate-200 text-slate-700 shadow-sm hover:bg-slate-50 transition-colors"
-                  >
-                    <span>{{ props()?.placeholder }}</span>
-                  </label>
-                } @else {
-                  <label
-                    (click)="clearFile()"
-                    class="cursor-pointer inline-flex items-center px-2.5 py-1 rounded-md text-xs font-semibold bg-white border border-slate-200 text-slate-700 shadow-sm hover:bg-slate-50 transition-colors"
-                  >
-                    <span>{{ props()?.remove }}</span>
-                  </label>
+                {{ ngf.label() | dynamicText | async }}
+
+                @if (props()?.required) {
+                  <span class="ml-0.5 text-red-500">*</span>
                 }
-              </div>
+              </p>
             </div>
+
+            @if (props()?.hint) {
+              <p class="mt-0.5 line-clamp-2 text-[11px] leading-4 text-slate-400">
+                {{ props()?.hint }}
+              </p>
+            }
           </div>
         </div>
 
-        <input
-          ngForgeControl
-          [id]="inputId"
-          [formField]="f"
-          [type]="'text'"
-          [placeholder]="ngf.placeholder ?? ''"
-          [attr.aria-invalid]="ngf.errorsToDisplay().length > 0"
-          class="hidden"
-        />
-
-        <!-- Errores -->
-        @if (ngf.errorsToDisplay()[0]; as error) {
-          <div role="alert" [id]="ngf.errorId()" class="text-xs text-red-500">
-            {{ error.message }}
-          </div>
-        }
+        <!-- Action -->
+        <div class="mt-3 w-full">
+          @if (previewUrl() === null) {
+            <button
+              type="button"
+              (click)="toggleFileManager(null)"
+              class="flex w-full cursor-pointer items-center justify-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-semibold text-slate-700 transition-colors hover:border-indigo-200 hover:bg-indigo-50 hover:text-indigo-700"
+            >
+              <i class="fa-solid fa-cloud-arrow-up text-[11px]"></i>
+              <span class="truncate">{{ props()?.placeholder }}</span>
+            </button>
+          } @else {
+            <button
+              type="button"
+              (click)="clearFile()"
+              class="flex w-full cursor-pointer items-center justify-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-semibold text-slate-700 transition-colors hover:border-red-200 hover:bg-red-50 hover:text-red-600"
+            >
+              <i class="fa-solid fa-trash-can text-[11px]"></i>
+              <span class="truncate">{{ props()?.remove }}</span>
+            </button>
+          }
+        </div>
       </div>
+
+      <!-- Hidden control -->
+      <input
+        ngForgeControl
+        [id]="inputId"
+        [formField]="f"
+        [type]="'text'"
+        [placeholder]="ngf.placeholder ?? ''"
+        [attr.aria-invalid]="ngf.errorsToDisplay().length > 0"
+        class="hidden"
+      />
+
+      <!-- Error -->
+      @if (ngf.errorsToDisplay()[0]; as error) {
+        <div
+          role="alert"
+          [id]="ngf.errorId()"
+          class="mt-1.5 flex items-start gap-1 text-[11px] leading-4 text-red-500"
+        >
+          <i class="fa-solid fa-circle-exclamation mt-0.5 text-[10px]"></i>
+          <span>{{ error.message }}</span>
+        </div>
+      }
     </div>
 
     @if (isOpenFileManager()) {
@@ -187,7 +207,7 @@ export default class TailwindFileFieldComponent implements AfterViewInit {
   /**
    * Open file manager
    */
-  toggleFileManager(path: string | null) {    
+  toggleFileManager(path: string | null) {
     if (path !== null) {
       this.previewUrl.set(path);
       this.setFieldValue(path);

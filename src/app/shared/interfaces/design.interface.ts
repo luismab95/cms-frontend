@@ -99,6 +99,17 @@ export type FontStyleT = 'normal' | 'italic' | 'oblique' | '';
 export type WhiteSpaceT = 'normal' | 'nowrap' | 'pre' | 'pre-wrap' | 'pre-line' | '';
 export type WordBreakT = 'normal' | 'break-all' | 'break-word' | '';
 export type TextOverflowT = 'clip' | 'ellipsis' | '';
+export type FontFamilyCategoryT =
+  | 'sans-serif'
+  | 'serif'
+  | 'monospace'
+  | 'display'
+  | 'cursive';
+export interface FontFamilyOptionI {
+  label: string;
+  value: string;
+  category: FontFamilyCategoryT;
+}
 export interface TypographyStylesI {
   fontFamily?: string;
   fontSize?: string;
@@ -129,17 +140,11 @@ export interface BackgroundStylesI {
   backgroundClip?: BackgroundClipT;
 }
 
-export type BorderStyleT = 'none' | 'solid' | 'dashed' | 'dotted' | 'double' | '';
 export interface BorderStylesI {
-  border?: string;
-  borderWidth?: string;
-  borderStyle?: BorderStyleT;
-  borderColor?: string;
   borderTop?: string;
   borderRight?: string;
   borderBottom?: string;
   borderLeft?: string;
-  borderRadius?: string;
   borderTopLeftRadius?: string;
   borderTopRightRadius?: string;
   borderBottomRightRadius?: string;
@@ -193,3 +198,16 @@ export interface InteractionStylesI {
   cursor?: CursorT;
   pointerEvents?: PointerEventsT;
 }
+
+export type CanvasNodeTypeT = 'container' | 'section' | 'row' | 'column' | 'element';
+export type StyleCategoryT =
+  | 'layout'
+  | 'spacing'
+  | 'typography'
+  | 'background'
+  | 'border'
+  | 'position'
+  | 'effects'
+  | 'overflow'
+  | 'interaction';
+export type StylePermissionsT = Record<StyleCategoryT, boolean>;

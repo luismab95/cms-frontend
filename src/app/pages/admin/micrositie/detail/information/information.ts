@@ -1,4 +1,13 @@
-import { Component, OnInit, computed, inject, signal } from '@angular/core';
+import {
+  AfterViewInit,
+  Component,
+  ElementRef,
+  OnInit,
+  computed,
+  inject,
+  signal,
+  viewChild,
+} from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import {
   FormsModule,
@@ -25,7 +34,11 @@ import { Subject, takeUntil } from 'rxjs';
   templateUrl: './information.html',
   imports: [FormsModule, ReactiveFormsModule, GridComponent, TooltipDirective],
 })
-export class MicrositieInformationComponent implements OnInit {
+export class MicrositieInformationComponent implements OnInit, AfterViewInit {
+  private readonly previewContainer =
+    viewChild.required<ElementRef<HTMLElement>>('previewContainer');
+
+  previewScale = signal(1);
   selectedTemplate = signal(0);
 
   private readonly _formBuilder = inject(UntypedFormBuilder);
@@ -91,6 +104,18 @@ export class MicrositieInformationComponent implements OnInit {
     const findTemplate = this.currentTemplate;
     if (findTemplate === null) return;
     this.loadTemplate(findTemplate);
+  }
+
+  /**
+   * AfterViewInit
+   */
+  ngAfterViewInit(): void {
+    const element = this.previewContainer().nativeElement;
+    const observer = new ResizeObserver(([entry]) => {
+      const width = entry.contentRect.width;
+      this.previewScale.set(width / 1440);
+    });
+    observer.observe(element);
   }
 
   /**

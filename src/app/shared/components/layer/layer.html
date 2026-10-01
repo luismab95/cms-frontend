@@ -1,5 +1,5 @@
 <div
-  [class.w-76]="!layersCollapsed()"
+  [class.w-70]="!layersCollapsed()"
   [class.w-14]="layersCollapsed()"
   class="flex h-full min-h-0 shrink-0 flex-col border-r border-slate-200 bg-white select-none z-20 transition-all duration-300 overflow-hidden"
 >
@@ -220,10 +220,10 @@
 
     <!-- ÁRBOL -->
     @if (!layersCollapsed()) {
-      <div class="flex-1 min-h-0 overflow-y-auto overflow-x-hidden p-3 text-xs">
+      <div class="flex-1 min-h-0 overflow-y-auto overflow-x-hidden py-3 px-2 text-xs">
         <!-- HEADER -->
         <div
-          class="flex items-center justify-between px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-slate-400"
+          class="flex items-center justify-between p-1 text-[10px] font-bold uppercase tracking-wider text-slate-400"
         >
           <span>Árbol DOM del Documento</span>
           <span class="text-slate-400">
