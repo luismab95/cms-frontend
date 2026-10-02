@@ -10,8 +10,8 @@ import {
 } from '@angular/core';
 import { toObservable, takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { form, FormField } from '@angular/forms/signals';
-import { PositionStylesI, PositionT } from 'app/shared/interfaces/design.interface';
-import { defaultPositionStyles } from 'app/shared/utils/grid.utils';
+import { PositionStylesI, PositionT } from '@shared/interfaces';
+import { defaultPositionStyles } from '@shared/utils';
 import { debounceTime, distinctUntilChanged } from 'rxjs';
 
 @Component({

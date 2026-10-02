@@ -1,4 +1,4 @@
-import { PaginationResquestI } from "app/shared/interfaces/response.interface";
+import { PaginationResquestI } from '@shared/interfaces';
 
 export interface FileI {
   id?: number;

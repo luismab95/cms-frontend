@@ -1,4 +1,12 @@
-import { ChangeDetectorRef, Component, OnInit, ViewChild, inject, signal } from '@angular/core';
+import {
+  ChangeDetectorRef,
+  Component,
+  DestroyRef,
+  OnInit,
+  ViewChild,
+  inject,
+  signal,
+} from '@angular/core';
 import {
   FormControl,
   FormsModule,
@@ -22,6 +30,7 @@ import { LanguageI } from 'app/shared/interfaces/language.interfaces';
 import { Subject, takeUntil } from 'rxjs';
 import { PaginationResponseI } from 'app/shared/interfaces/response.interface';
 import { CmsValidators } from 'app/shared/utils/validators.util';
+import { toSignal } from '@angular/core/rxjs-interop';
 
 @Component({
   selector: 'sign-in',
@@ -37,29 +46,24 @@ import { CmsValidators } from 'app/shared/utils/validators.util';
   providers: [IpUtils],
 })
 export class AuthSignIn implements OnInit {
-  @ViewChild('signInNgForm') signInNgForm!: NgForm;
-
-  signInForm!: UntypedFormGroup;
-  ip: string | undefined;
+  ip = signal<string | null>(null);
   passwordVisible = signal<boolean>(false);
-  parameters = signal<ParameterI[]>([]);
-  languages = signal<LanguageI[]>([]);
   validateFormControl = CmsValidators.validateFormControl;
   getErrorMessage = CmsValidators.getErrorMessage;
 
-  readonly selectedLanguage = new FormControl<string | null>(null);
-
   private _unsubscribeAll: Subject<any> = new Subject<any>();
 
-  private readonly _parameterService = inject(ParameterService);
   private readonly _authService = inject(AuthService);
-  private readonly _ipUtils = inject(IpUtils);
-  private readonly _activatedRoute = inject(ActivatedRoute);
-  private readonly _formBuilder = inject(UntypedFormBuilder);
-  private readonly _router = inject(Router);
-  private readonly _changeDetectorRef = inject(ChangeDetectorRef);
+  private readonly _parameterService = inject(ParameterService);
   private readonly _toastrService = inject(ToastrService);
   private readonly _languageService = inject(LanguageService);
+  private readonly _destroyRef = inject(DestroyRef);
+  private readonly _router = inject(Router);
+  private readonly _activatedRoute = inject(ActivatedRoute);
+  private readonly _ipUtils = inject(IpUtils);
+
+  readonly parameters = toSignal(this._parameterService.parameter$);
+  readonly languages = toSignal(this._languageService.languages$);
 
   /**
    * Constructor

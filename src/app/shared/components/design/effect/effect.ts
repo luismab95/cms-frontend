@@ -9,11 +9,11 @@ import {
   signal,
 } from '@angular/core';
 import { DecimalPipe } from '@angular/common';
-import { form, FormField, max, min, schema } from '@angular/forms/signals';
-import { EffectsStylesI, BoxShadowT } from 'app/shared/interfaces/design.interface';
-import { defaultEffetsStyles } from 'app/shared/utils/grid.utils';
+import { form, FormField } from '@angular/forms/signals';
 import { toObservable, takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { debounceTime, distinctUntilChanged } from 'rxjs';
+import { BoxShadowT, EffectsStylesI } from '@shared/interfaces';
+import { defaultEffetsStyles } from '@shared/utils';
 
 @Component({
   selector: 'design-effect-component',
@@ -167,12 +167,9 @@ export class DesignEffectsComponent {
     effect(() => {
       const value = this.value();
 
-      if (!value) {
-        return;
-      }
+      if (!value) return;
 
       this.isInitializing = true;
-
       this.effect.update((current) => ({
         ...current,
         ...value,
@@ -199,7 +196,6 @@ export class DesignEffectsComponent {
 
   /**
    * Sets the selected box-shadow preset.
-   *
    * @param value Box-shadow preset.
    */
   setBoxShadow(value: BoxShadowT): void {
@@ -211,7 +207,6 @@ export class DesignEffectsComponent {
 
   /**
    * Returns the CSS value for a box-shadow preset.
-   *
    * @param value Box-shadow preset.
    * @returns Valid CSS box-shadow value.
    */

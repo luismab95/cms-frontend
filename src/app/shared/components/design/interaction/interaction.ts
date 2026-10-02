@@ -1,12 +1,8 @@
 import { Component, DestroyRef, effect, inject, input, output, signal } from '@angular/core';
 import { toObservable, takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { form, FormField } from '@angular/forms/signals';
-import {
-  CursorT,
-  InteractionStylesI,
-  PointerEventsT,
-} from 'app/shared/interfaces/design.interface';
-import { defaultInteractionStyles } from 'app/shared/utils/grid.utils';
+import { CursorT, InteractionStylesI, PointerEventsT } from '@shared/interfaces';
+import { defaultInteractionStyles } from '@shared/utils';
 import { debounceTime, distinctUntilChanged } from 'rxjs';
 
 @Component({

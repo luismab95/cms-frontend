@@ -1,27 +1,19 @@
-import { Directive, ElementRef, HostListener, Input, Renderer2, OnDestroy } from '@angular/core';
+import {
+  Directive,
+  ElementRef,
+  HostListener,
+  Renderer2,
+  OnDestroy,
+  input,
+  inject,
+} from '@angular/core';
 
 type TooltipPosition = 'top' | 'bottom' | 'left' | 'right';
 
 @Directive({
   selector: '[appTooltip]',
-  standalone: true,
 })
 export class TooltipDirective implements OnDestroy {
-  @Input('appTooltip') tooltip = '';
-  @Input() tooltipPosition: TooltipPosition = 'top';
-  @Input() tooltipDisabled = false;
-  @Input() tooltipDelay = 300;
-
-  private tooltipElement?: HTMLElement;
-  private arrowElement?: HTMLElement;
-
-  private showTimeout?: ReturnType<typeof setTimeout>;
-
-  constructor(
-    private readonly el: ElementRef<HTMLElement>,
-    private readonly renderer: Renderer2,
-  ) {}
-
   @HostListener('mouseenter')
   onMouseEnter(): void {
     this.showTooltipWithDelay();
@@ -44,79 +36,67 @@ export class TooltipDirective implements OnDestroy {
     this.destroyTooltip();
   }
 
+  readonly tooltip = input<string>('', {
+    alias: 'appTooltip',
+  });
+  tooltipPosition = input<TooltipPosition>('top');
+  tooltipDisabled = input<boolean>(false);
+  tooltipDelay = input<number>(300);
+
+  private tooltipElement?: HTMLElement;
+  private showTimeout?: ReturnType<typeof setTimeout>;
+
+  private readonly el = inject(ElementRef<HTMLElement>);
+  private readonly renderer = inject(Renderer2);
+
+  /**
+   * Show tooltip delay
+   * @returns
+   */
   private showTooltipWithDelay(): void {
-    if (this.tooltipDisabled || !this.tooltip || this.tooltipElement || this.showTimeout) {
+    if (this.tooltipDisabled() || !this.tooltip() || this.tooltipElement || this.showTimeout)
       return;
-    }
 
     this.showTimeout = setTimeout(() => {
       this.showTimeout = undefined;
-
-      if (this.tooltipDisabled || !this.tooltip || this.tooltipElement) {
-        return;
-      }
+      if (this.tooltipDisabled() || !this.tooltip || this.tooltipElement) return;
 
       this.createTooltip();
-    }, this.tooltipDelay);
+    }, this.tooltipDelay());
   }
 
+  /**
+   * Create tooltip
+   */
   private createTooltip(): void {
-    const host = this.el.nativeElement;
-
     const tooltip = this.renderer.createElement('div') as HTMLElement;
 
     this.tooltipElement = tooltip;
-
-    this.renderer.setProperty(tooltip, 'textContent', this.tooltip);
-
+    this.renderer.setProperty(tooltip, 'textContent', this.tooltip());
     this.addTooltipClasses(tooltip);
 
-    // Flecha
     const arrow = this.renderer.createElement('span') as HTMLElement;
-
-    this.arrowElement = arrow;
-
     this.addArrowClasses(arrow);
-
     this.renderer.appendChild(tooltip, arrow);
-
-    /**
-     * Importante:
-     * El tooltip se agrega al BODY y no al host.
-     *
-     * Esto evita problemas con:
-     * - overflow-hidden
-     * - contenedores pequeños
-     * - límites del padre
-     * - elementos con tamaños reducidos
-     */
     this.renderer.appendChild(document.body, tooltip);
 
-    /**
-     * Posicionamos después de insertarlo para poder
-     * obtener correctamente su tamaño.
-     */
     requestAnimationFrame(() => {
-      if (!this.tooltipElement) {
-        return;
-      }
+      if (!this.tooltipElement) return;
 
       this.positionTooltip();
-
       this.renderer.removeClass(this.tooltipElement, 'opacity-0');
-
       this.renderer.removeClass(this.tooltipElement, 'scale-95');
-
       this.renderer.addClass(this.tooltipElement, 'opacity-100');
-
       this.renderer.addClass(this.tooltipElement, 'scale-100');
     });
   }
 
+  /**
+   * Position of tooltip
+   * @returns
+   */
   private positionTooltip(): void {
-    if (!this.tooltipElement) {
-      return;
-    }
+    if (!this.tooltipElement) return;
 
     const host = this.el.nativeElement;
     const tooltip = this.tooltipElement;
@@ -125,54 +105,41 @@ export class TooltipDirective implements OnDestroy {
     const tooltipRect = tooltip.getBoundingClientRect();
 
     const gap = 8;
-
     let top = 0;
     let left = 0;
 
-    switch (this.tooltipPosition) {
+    switch (this.tooltipPosition()) {
       case 'bottom':
         top = hostRect.bottom + gap;
         left = hostRect.left + hostRect.width / 2 - tooltipRect.width / 2;
         break;
-
       case 'left':
         top = hostRect.top + hostRect.height / 2 - tooltipRect.height / 2;
-
         left = hostRect.left - tooltipRect.width - gap;
         break;
-
       case 'right':
         top = hostRect.top + hostRect.height / 2 - tooltipRect.height / 2;
-
         left = hostRect.right + gap;
         break;
-
       case 'top':
       default:
         top = hostRect.top - tooltipRect.height - gap;
-
         left = hostRect.left + hostRect.width / 2 - tooltipRect.width / 2;
         break;
     }
 
-    /**
-     * Evita que el tooltip se salga horizontalmente
-     * de la ventana.
-     */
     const padding = 8;
-
     left = Math.max(padding, Math.min(left, window.innerWidth - tooltipRect.width - padding));
-
-    /**
-     * Evita que se salga verticalmente.
-     */
     top = Math.max(padding, Math.min(top, window.innerHeight - tooltipRect.height - padding));
 
     this.renderer.setStyle(tooltip, 'top', `${top}px`);
-
     this.renderer.setStyle(tooltip, 'left', `${left}px`);
   }
 
+  /**
+   * Styles
+   * @param tooltip
+   */
   private addTooltipClasses(tooltip: HTMLElement): void {
     const baseClasses = [
       'pointer-events-none',
@@ -203,6 +170,10 @@ export class TooltipDirective implements OnDestroy {
     });
   }
 
+  /**
+   * Add arrow in tooltip
+   * @param arrow
+   */
   private addArrowClasses(arrow: HTMLElement): void {
     const baseClasses = ['absolute', 'h-0', 'w-0', 'border-solid', 'border-transparent'];
 
@@ -210,7 +181,7 @@ export class TooltipDirective implements OnDestroy {
       this.renderer.addClass(arrow, className);
     });
 
-    switch (this.tooltipPosition) {
+    switch (this.tooltipPosition()) {
       case 'bottom':
         [
           'bottom-full',
@@ -223,7 +194,6 @@ export class TooltipDirective implements OnDestroy {
           this.renderer.addClass(arrow, className);
         });
         break;
-
       case 'left':
         [
           'left-full',
@@ -236,7 +206,6 @@ export class TooltipDirective implements OnDestroy {
           this.renderer.addClass(arrow, className);
         });
         break;
-
       case 'right':
         [
           'right-full',
@@ -249,7 +218,6 @@ export class TooltipDirective implements OnDestroy {
           this.renderer.addClass(arrow, className);
         });
         break;
-
       case 'top':
       default:
         [
@@ -266,17 +234,20 @@ export class TooltipDirective implements OnDestroy {
     }
   }
 
+  /**
+   * Destroy tooltip
+   * @returns
+   */
   private destroyTooltip(): void {
-    if (!this.tooltipElement) {
-      return;
-    }
+    if (!this.tooltipElement) return;
 
     this.renderer.removeChild(document.body, this.tooltipElement);
-
     this.tooltipElement = undefined;
-    this.arrowElement = undefined;
   }
 
+  /**
+   * Cancel show
+   */
   private cancelShow(): void {
     if (this.showTimeout) {
       clearTimeout(this.showTimeout);
@@ -284,6 +255,9 @@ export class TooltipDirective implements OnDestroy {
     }
   }
 
+  /**
+   * OnDestroy
+   */
   ngOnDestroy(): void {
     this.cancelShow();
     this.destroyTooltip();

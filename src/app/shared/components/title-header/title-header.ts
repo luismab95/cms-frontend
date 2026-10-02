@@ -1,8 +1,7 @@
 import { Component, effect, inject, input, signal } from '@angular/core';
-import { toSignal } from '@angular/core/rxjs-interop';
 import { Router } from '@angular/router';
-import { NavigationI } from 'app/core/interfaces/navigation.interface';
-import { NavigationService } from 'app/core/services/navigation.service';
+import { NavigationService } from '@core/services/navigation.service';
+import { NavigationI } from '@core/interfaces';
 
 @Component({
   selector: 'title-header-component',
@@ -17,21 +16,16 @@ export class TitleHeaderComponent {
   private readonly _navigationService = inject(NavigationService);
   private readonly _router = inject(Router);
 
-  readonly navigations = toSignal(this._navigationService.navigation$, { initialValue: [] });
+  readonly navigations = this._navigationService.navigation;
 
   /**
-   *
+   * Constructor
    */
   constructor() {
     effect(() => {
       const navigations = this.navigations();
-
       let currentLink = this._router.url.replace('/admin/', '');
-      // PARA DETALLE DE PAGINAS EN MICROSITIOS
-      if (currentLink === 'content/microsities/detail') {
-        currentLink = 'content/pages';
-      }
-
+      if (currentLink === 'content/microsities/detail') currentLink = 'content/pages';
       const currentNavigation = this._navigationService.getCurrentNavigation(
         navigations,
         currentLink,

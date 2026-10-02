@@ -1,7 +1,7 @@
 import { Component, HostListener } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
-import { InactivityTimerService } from './shared/services/inactivity.service';
-import { LoadingBarComponent } from './shared/components/loading-bar/loading-bar';
+import { LoadingBarComponent } from '@shared/components';
+import { InactivityTimerService } from '@shared/services';
 import AOS from 'aos';
 
 AOS.init({
@@ -20,6 +20,7 @@ export class App {
   onActivity(_event: MouseEvent | KeyboardEvent): void {
     this._inactivityTimerService.activityDetected();
   }
+  
   /**
    * Constructor
    */

@@ -7,33 +7,34 @@ import {
 } from '@angular/cdk/drag-drop';
 import { NgClass, NgStyle } from '@angular/common';
 import { Component, computed, effect, inject, input, OnDestroy, output } from '@angular/core';
-import { toSignal } from '@angular/core/rxjs-interop';
+import { CanvasT } from '@core/interfaces';
 import {
+  PageService,
+  CanvasService,
+  DynamicStyleService,
+  ParameterService,
+  TemplateService,
+} from '@core/services';
+import { TooltipDirective } from '@shared/directives';
+import {
+  PageElementsConfigI,
+  SectionI,
+  RowI,
+  ElementCMSI,
   ColumnI,
   ElementI,
-  HistoryCMSI,
-  PageElementsConfigI,
-  RowI,
-  SectionI,
   SelectedItemsInGridI,
-} from 'app/shared/interfaces/grid.interface';
-import { CanvasT } from 'app/core/interfaces/page.interface';
-import { ElementCMSI } from 'app/shared/interfaces/element.interface';
+  HistoryCMSI,
+} from '@shared/interfaces';
 import {
-  createRow,
-  createSection,
-  createColumn,
-  updateColumn,
-  createElement,
+  findParameter,
   filterPath,
-} from 'app/shared/utils/grid.utils';
-import { findParameter } from 'app/shared/utils/parameter.utils';
-import { TooltipDirective } from 'app/shared/directives/tooltip.directive';
-import { CanvasService } from 'app/core/services/canvas.service';
-import { DynamicStyleService } from 'app/core/services/dynamic-style.service';
-import { PageService } from 'app/core/services/pages.service';
-import { ParameterService } from 'app/core/services/parameter.service';
-import { TemplateService } from 'app/core/services/templates.service';
+  createSection,
+  createRow,
+  createColumn,
+  createElement,
+  updateColumn,
+} from '@shared/utils';
 import { ElementsComponent } from '../element/elements';
 
 @Component({
@@ -66,9 +67,9 @@ export class GridComponent implements OnDestroy {
   private readonly _parameterService = inject(ParameterService);
   private readonly _templateService = inject(TemplateService);
 
-  readonly page = toSignal(this._pageService.page$, { initialValue: null });
-  readonly template = toSignal(this._templateService.template$, { initialValue: null });
-  readonly parameters = toSignal(this._parameterService.parameter$, { initialValue: [] });
+  readonly page = this._pageService.page;
+  readonly template = this._templateService.template;
+  readonly parameters = this._parameterService.publicParameters;
 
   readonly selectedItemsInGrid = this._canvasService.selectedItemsInGrid;
 
@@ -78,13 +79,9 @@ export class GridComponent implements OnDestroy {
   readonly sectionsInCanvas = computed(() => {
     return this._canvasService.sectionsByType[this.gridType()].get();
   });
-
   readonly gridConfigStyles = (config: { [key: string]: any }) => {
     const backgroundImage = config['backgroundImage'];
-    if (!backgroundImage || backgroundImage === '' || backgroundImage === 'null') {
-      return {};
-    }
-
+    if (!backgroundImage || backgroundImage === '' || backgroundImage === 'null') return {};
     return {
       'background-image': `url('${this.urlStatics()}/${filterPath(backgroundImage)}')`,
     };
@@ -119,16 +116,13 @@ export class GridComponent implements OnDestroy {
     );
   }
 
-  // -----------------------------------------------------------------------------------------------------
-  // @ Public methods
-  // -----------------------------------------------------------------------------------------------------
-
   /**
    * Load styles
+   * @param styleId
+   * @param cssContainer
    */
   loadStylesPages(styleId: string, cssContainer: string): void {
     this._dynamicStyleService.remove(styleId);
-
     const css: string[] = [];
     css.push(cssContainer);
     for (const section of this.sectionsInCanvas()) {
@@ -143,7 +137,7 @@ export class GridComponent implements OnDestroy {
         }
       }
     }
-    const uniqueCss = css.join('\n').replaceAll('@contaiener', '@media');
+    const uniqueCss = css.join('\n').replaceAll('@container', '@media');
     this._dynamicStyleService.set(styleId, uniqueCss);
   }
 
@@ -181,7 +175,7 @@ export class GridComponent implements OnDestroy {
 
   /**
    * Add row to sections
-   * @param row
+   * @param section
    */
   addRow(section: SectionI) {
     const previous = structuredClone(this.sectionsInCanvas());
@@ -377,7 +371,7 @@ export class GridComponent implements OnDestroy {
     if (this.gridType() === 'page') {
       const page = this.page();
       if (!page) return;
-      this._pageService.page = {
+      this._pageService.page.set({
         ...page,
         data: {
           ...page.data,
@@ -385,11 +379,11 @@ export class GridComponent implements OnDestroy {
             ...state.body!,
           },
         },
-      };
+      });
     } else {
       const template = this.template();
       if (!template) return;
-      this._templateService.template = {
+      this._templateService.template.set({
         ...template,
         data: {
           ...template.data,
@@ -400,7 +394,7 @@ export class GridComponent implements OnDestroy {
             ...state.footer!,
           },
         },
-      };
+      });
     }
     this.updateSelectionItem({
       page: null,
@@ -421,6 +415,7 @@ export class GridComponent implements OnDestroy {
 
   /**
    * Update data sections
+   * @param value
    */
   private set currentSections(value: SectionI[]) {
     this._canvasService.sectionsByType[this.gridType()].set(value);

@@ -20,7 +20,6 @@
           "
         >
           <div class="flex items-start gap-3.5">
-            <!-- Icono -->
             <div
               class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg transition"
               [class]="
@@ -31,8 +30,6 @@
             >
               <i [class]="item.icon + ' h-5 w-5'"></i>
             </div>
-
-            <!-- Información -->
             <div>
               <div class="flex items-center gap-2">
                 <span
@@ -52,8 +49,6 @@
               </p>
             </div>
           </div>
-
-          <!-- Flecha únicamente para el activo -->
           @if (selectedPanel() === i) {
             <svg
               class="mt-0.5 h-5 w-5 shrink-0 text-indigo-600"
@@ -76,10 +71,7 @@
   </div>
 
   <!-- items for mobile-->
-  <div
-    #itemsContainer
-    class="lg:hidden flex items-center gap-1 overflow-x-auto sm:gap-2"
-  >
+  <div #itemsContainer class="lg:hidden flex items-center gap-1 overflow-x-auto sm:gap-2">
     @for (item of panels(); track i; let i = $index) {
       <button
         type="button"
@@ -102,7 +94,6 @@
       </button>
     }
   </div>
-
   <div
     #contentScroll
     [class.max-h-90]="height() <= 639"

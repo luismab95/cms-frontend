@@ -1,16 +1,16 @@
-import { Component, effect, inject, OnDestroy, OnInit, output, signal } from '@angular/core';
-import { toSignal } from '@angular/core/rxjs-interop';
+import { Component, DestroyRef, effect, inject, output, signal } from '@angular/core';
 import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { ElementService } from 'app/core/services/element.service';
-import { ElementCMSI } from 'app/shared/interfaces/element.interface';
-import { Subject, debounceTime, takeUntil } from 'rxjs';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { ElementService } from '@core/services';
+import { ElementCMSI } from '@shared/interfaces';
+import { debounceTime } from 'rxjs';
 
 @Component({
   selector: 'elements-manager-component',
   templateUrl: './elements-manager.html',
   imports: [ReactiveFormsModule, FormsModule],
 })
-export class ElementsManagerComponent implements OnInit, OnDestroy {
+export class ElementsManagerComponent {
   elementSelected = output<ElementCMSI>();
 
   selectedElement = signal<ElementCMSI | null>(null);
@@ -18,13 +18,10 @@ export class ElementsManagerComponent implements OnInit, OnDestroy {
 
   searchInputControl: FormControl = new FormControl();
 
-  private _unsubscribeAll: Subject<any> = new Subject<any>();
-
   private readonly _elementService = inject(ElementService);
+  private readonly _destroyRef = inject(DestroyRef);
 
-  readonly elements = toSignal(this._elementService.elements$, {
-    initialValue: { records: [], total: 0, page: 0, totalPage: 0 },
-  });
+  readonly elements = this._elementService.elements;
 
   /**
    * Constructor
@@ -36,34 +33,16 @@ export class ElementsManagerComponent implements OnInit, OnDestroy {
     });
   }
 
-  // -----------------------------------------------------------------------------------------------------
-  // @ Lifecycle hooks
-  // -----------------------------------------------------------------------------------------------------
-
   /**
    * On init
    */
   ngOnInit(): void {
-    // Subscribe to search input field value changes
     this.searchInputControl.valueChanges
-      .pipe(debounceTime(700), takeUntil(this._unsubscribeAll))
+      .pipe(debounceTime(700), takeUntilDestroyed(this._destroyRef))
       .subscribe((search: string) => {
         if (search) this.search(search);
       });
   }
-
-  /**
-   * On destroy
-   */
-  ngOnDestroy(): void {
-    // Unsubscribe from all subscriptions
-    this._unsubscribeAll.next(null);
-    this._unsubscribeAll.complete();
-  }
-
-  // -----------------------------------------------------------------------------------------------------
-  // @ Public methods
-  // -----------------------------------------------------------------------------------------------------
 
   /**
    * Set element
@@ -75,6 +54,7 @@ export class ElementsManagerComponent implements OnInit, OnDestroy {
 
   /**
    * Add element
+   * @param element
    */
   addElement(element: ElementCMSI) {
     this.elementSelected.emit(element);

@@ -2,18 +2,13 @@
   (click)="closeFileManager()"
   class="absolute inset-0 bg-slate-900/35 backdrop-blur-[2px] transition-opacity z-60 overflow-hidden"
 ></div>
-
-<!-- BEGIN: SlideOverDrawer -->
 <div
-  aria-labelledby="modal-title"
-  aria-modal="true"
   class="fixed inset-0 z-80 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm transition-all"
   role="dialog"
 >
   <div
     class="relative mx-auto my-4 flex w-full max-w-5xl flex-col overflow-hidden rounded-xl bg-white shadow-2xl"
   >
-    <!-- HEADER -->
     <header class="z-20 flex items-center justify-between bg-white px-6 py-4 shadow-sm">
       <div class="flex items-center gap-4">
         <div
@@ -42,8 +37,6 @@
         </button>
       </div>
     </header>
-
-    <!-- INFO BANNER -->
     <div class="flex items-center justify-between bg-gray-100 px-6 py-2.5">
       <div class="flex items-center gap-2.5">
         <div
@@ -57,10 +50,7 @@
         </p>
       </div>
     </div>
-
-    <!-- TOOLBAR -->
     <div class="z-10 flex flex-row items-center justify-between gap-3 bg-white px-6 py-3 shadow-sm">
-      <!-- SEARCH -->
       <div class="relative min-w-96 lg:w-80">
         <i
           class="fa-solid fa-magnifying-glass pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-sm text-gray-400"
@@ -82,8 +72,6 @@
           </button>
         }
       </div>
-
-      <!-- Quick Dropzone Banner inside grid -->
       <div class="w-full p-4 flex items-center justify-end">
         <input
           #newFile
@@ -101,37 +89,28 @@
         </button>
       </div>
     </div>
-
-    <!-- BODY -->
     <div class="flex h-120 w-full flex-row overflow-hidden bg-gray-50">
-      <!-- MEDIA GRID -->
       <div class="flex-1 space-y-4 overflow-y-auto p-6">
-        <!-- empty -->
         @if (files().records.length === 0) {
           <div class="flex flex-1 flex-col items-center justify-center text-center h-full p-4">
-            <!-- Icono ilustrado moderno SVG: Lupa con archivo vacío -->
             <div class="relative w-20 h-20 mb-4 flex items-center justify-center">
               <div
                 class="w-16 h-16 rounded-2xl bg-indigo-50 border border-indigo-100 flex items-center justify-center shadow-inner"
               >
                 <i class="fa-solid fa-magnifying-glass text-indigo-500 fa-2xl"></i>
               </div>
-              <!-- Badge de interrogación sutil -->
               <div
                 class="absolute -top-1 -right-1 w-6 h-6 rounded-full bg-amber-400 text-slate-950 font-black text-xs flex items-center justify-center shadow-sm"
               >
                 ?
               </div>
             </div>
-            <!-- Titular descriptivo -->
             <h3 class="text-sm font-bold text-slate-800 mb-1.5">No se encontraron archivos</h3>
-            <!-- Explicación amigable -->
             <p class="text-xs text-slate-500 leading-relaxed max-w-65 mb-4">
               No encontramos archivos que coincidan con
               <span class="font-semibold text-slate-700">"{{ searchInputControl.value }}"</span>.
               Prueba con otros términos.
             </p>
-            <!-- Botón principal de acción -->
             <button
               (click)="clearSearch()"
               class="w-auto cursor-pointer py-2 px-3 rounded-lg border border-indigo-600 text-indigo-600 hover:bg-indigo-50 font-semibold text-xs transition shadow-xs flex items-center justify-center gap-1.5"
@@ -142,20 +121,17 @@
             </button>
           </div>
         } @else {
-          <!-- GRID -->
           <div
             [class.grid-cols-3!]="selectedFile() !== null"
             class="grid grid-cols-2 gap-4 sm:grid-cols-3 xl:grid-cols-4"
           >
             @for (file of files().records; track file.id) {
-              <!-- CARD -->
               <div
                 class="group relative flex cursor-pointer flex-col justify-between rounded-xl bg-white p-2.5 shadow-sm transition-all hover:shadow-md"
                 [class.ring-2]="file.id === selectedFile()?.id"
                 [class.ring-indigo-600]="file.id === selectedFile()?.id"
                 (click)="selectFile(file)"
               >
-                <!-- SELECTED -->
                 @if (file.id === selectedFile()?.id) {
                   <div
                     class="absolute right-2 top-2 z-10 flex h-6 w-6 items-center justify-center rounded-full bg-indigo-600 text-white shadow-md"
@@ -163,8 +139,6 @@
                     <i class="fa-solid fa-check text-xs"></i>
                   </div>
                 }
-
-                <!-- PREVIEW -->
                 <div
                   class="relative flex h-32 w-full items-center justify-center overflow-hidden rounded-lg"
                   [ngClass]="{
@@ -174,7 +148,6 @@
                     'bg-gray-200': isAudio(file),
                   }"
                 >
-                  <!-- IMAGE / SVG / PNG / WEBP -->
                   @if (isImage(file)) {
                     <img
                       class="h-full w-full object-contain transition-transform duration-300 group-hover:scale-105"
@@ -182,10 +155,7 @@
                       [alt]="file.description || file.name || file.filename"
                       loading="lazy"
                     />
-                  }
-
-                  <!-- PDF -->
-                  @else if (isPdf(file)) {
+                  } @else if (isPdf(file)) {
                     <div
                       class="relative flex h-16 w-12 flex-col items-center justify-center rounded bg-white shadow-sm"
                     >
@@ -193,10 +163,7 @@
 
                       <span class="mt-0.5 text-[9px] font-bold text-red-600"> PDF </span>
                     </div>
-                  }
-
-                  <!-- AUDIO -->
-                  @else if (isAudio(file)) {
+                  } @else if (isAudio(file)) {
                     <div class="flex flex-col items-center justify-center">
                       <div class="mb-2 flex h-10 items-end gap-1">
                         <span class="h-3 w-1 rounded-full bg-gray-500"></span>
@@ -206,7 +173,6 @@
                         <span class="h-8 w-1 rounded-full bg-gray-500"></span>
                         <span class="h-4 w-1 rounded-full bg-gray-500"></span>
                       </div>
-
                       <button
                         type="button"
                         class="flex h-7 w-7 items-center justify-center rounded-full bg-indigo-600 text-white shadow transition-transform hover:scale-105"
@@ -215,10 +181,7 @@
                         <i class="fa-solid fa-play text-xs"></i>
                       </button>
                     </div>
-                  }
-
-                  <!-- OTHER -->
-                  @else {
+                  } @else {
                     <div class="flex flex-col items-center text-gray-400">
                       <i class="fa-solid fa-file text-3xl"></i>
 
@@ -227,9 +190,6 @@
                       </span>
                     </div>
                   }
-
-                  <!-- TYPE BADGE -->
-
                   @if (isImage(file)) {
                     <span
                       class="absolute bottom-1.5 left-1.5 rounded bg-black/70 px-1.5 py-0.5 text-xs text-white backdrop-blur-sm"
@@ -250,8 +210,6 @@
                     </span>
                   }
                 </div>
-
-                <!-- DETAILS -->
                 <div class="mt-2.5 px-1">
                   <h3
                     class="truncate text-sm font-medium text-gray-900"
@@ -259,12 +217,10 @@
                   >
                     {{ file.name || file.filename }}
                   </h3>
-
                   <div class="mt-0.5 flex items-center justify-between text-xs text-gray-500">
                     <span>
                       {{ getFileExtension(file) }}
                     </span>
-
                     <span>
                       {{ formatFileSize(file.size) }}
                     </span>
@@ -283,10 +239,8 @@
           class="flex w-full flex-col justify-between overflow-y-auto bg-white shadow-md lg:w-96"
         >
           <div class="space-y-5 p-6">
-            <!-- HEADER -->
             <div class="flex items-center justify-between">
               <h2 class="text-lg font-semibold text-gray-900">Detalles del recurso</h2>
-
               <span
                 [class.bg-emerald-50]="selectedFile()?.id !== null"
                 [class.text-emerald-600]="selectedFile()?.id !== null"
@@ -297,8 +251,6 @@
                 {{ selectedFile()?.id !== null ? 'Sincronizado' : 'Por sincronizar' }}
               </span>
             </div>
-
-            <!-- PREVIEW -->
             <div class="relative h-48 w-full overflow-hidden rounded-xl bg-gray-100">
               @if (isImage(selectedFile()!)) {
                 <img
@@ -324,8 +276,6 @@
                 </div>
               }
             </div>
-
-            <!-- FILE NAME -->
             <form [formGroup]="fileForm">
               <div class="rounded-xl bg-gray-50 p-3.5">
                 @if (selectedFile()?.id !== null) {
@@ -338,7 +288,6 @@
                     {{ selectedFile()?.name }}
                   </p>
                 } @else {
-                  <!-- name -->
                   <div>
                     <label
                       [class.text-red-500!]="validateFormControl(fileForm, 'name')"
@@ -371,8 +320,6 @@
                         type="text"
                       />
                     </div>
-
-                    <!-- Errores -->
                     @if (getErrorMessage(fileForm, 'name') !== '') {
                       <p class="mt-1.5 flex items-center gap-1 text-sm text-red-600">
                         <i class="fa-solid fa-circle-exclamation"></i>
@@ -388,7 +335,6 @@
                       {{ selectedFile()?.description }}
                     </p>
                   } @else {
-                    <!-- description -->
                     <div>
                       <label
                         [class.text-red-500!]="validateFormControl(fileForm, 'description')"
@@ -456,11 +402,9 @@
       }
     </div>
 
-    <!-- FOOTER -->
     <footer
       class="z-20 flex flex-wrap items-center justify-between gap-4 bg-white px-6 py-3.5 shadow-sm"
     >
-      <!-- SELECTED -->
       <div class="flex items-center gap-3">
         @if (selectedFile() !== null) {
           <div
@@ -478,7 +422,6 @@
           </div>
         }
       </div>
-      <!-- ACTIONS -->
       <div class="flex items-center gap-3">
         <button
           (click)="closeFileManager()"

@@ -1,170 +1,89 @@
 import { HttpClient } from '@angular/common/http';
-import { Injectable } from '@angular/core';
-import { ResponseI } from 'app/shared/interfaces/response.interface';
-import {
-  CountElementsI,
-  Top10PagesI,
-  VisitI,
-  WeekVisitI,
-  YearVisitI,
-} from 'app/core/interfaces/home.interface';
+import { inject, Injectable, signal } from '@angular/core';
+import { CountElementsI, Top10PagesI, VisitI, WeekVisitI, YearVisitI } from '@core/interfaces';
+import { ResponseI } from '@shared/interfaces';
 import { environment } from 'environments/environment';
-import { Observable, ReplaySubject, tap } from 'rxjs';
+import { Observable, tap } from 'rxjs';
 
 @Injectable({ providedIn: 'root' })
 export class HomeService {
-  private prefix = 'ms-cms';
-  private url = environment.apiUrl;
-  private _countElements: ReplaySubject<CountElementsI> = new ReplaySubject<CountElementsI>(1);
-  private _weekVisit: ReplaySubject<WeekVisitI> = new ReplaySubject<WeekVisitI>(1);
-  private _yearVisit: ReplaySubject<YearVisitI> = new ReplaySubject<YearVisitI>(1);
-  private _visitVsPages: ReplaySubject<VisitI> = new ReplaySubject<VisitI>(1);
-  private _top10Pages: ReplaySubject<Top10PagesI[]> = new ReplaySubject<Top10PagesI[]>(1);
+  countElements = signal<CountElementsI | null>(null);
+  weekVisit = signal<WeekVisitI | null>(null);
+  yearVisit = signal<YearVisitI | null>(null);
+  visitVsPages = signal<VisitI | null>(null);
+  top10Pages = signal<Top10PagesI[]>([]);
 
-  /**
-   * Constructor
-   */
-  constructor(private _httpClient: HttpClient) {}
+  private readonly prefix = 'ms-cms';
+  private readonly url = environment.apiUrl;
 
-  // -----------------------------------------------------------------------------------------------------
-  // @ Accessors
-  // -----------------------------------------------------------------------------------------------------
-
-  /**
-   * Setter & getter for weekVisit
-   *
-   * @param value
-   */
-  set weekVisit(value: WeekVisitI) {
-    // Store the value
-    this._weekVisit.next(value);
-  }
-
-  get weekVisit$(): Observable<WeekVisitI> {
-    return this._weekVisit.asObservable();
-  }
-
-  /**
-   * Setter & getter for YearVisitI
-   *
-   * @param value
-   */
-  set yearVisit(value: YearVisitI) {
-    // Store the value
-    this._yearVisit.next(value);
-  }
-
-  get yearVisit$(): Observable<YearVisitI> {
-    return this._yearVisit.asObservable();
-  }
-
-  /**
-   * Setter & getter for visitVsPages
-   *
-   * @param value
-   */
-  set visitVsPages(value: VisitI) {
-    // Store the value
-    this._visitVsPages.next(value);
-  }
-
-  get visitVsPages$(): Observable<VisitI> {
-    return this._visitVsPages.asObservable();
-  }
-
-  /**
-   * Setter & getter for top10Pages
-   *
-   * @param value
-   */
-  set top10Pages(value: Top10PagesI[]) {
-    // Store the value
-    this._top10Pages.next(value);
-  }
-
-  get top10Pages$(): Observable<Top10PagesI[]> {
-    return this._top10Pages.asObservable();
-  }
-
-  /**
-   * Setter & getter for count elements
-   *
-   * @param value
-   */
-  set countElements(value: CountElementsI) {
-    // Store the value
-    this._countElements.next(value);
-  }
-
-  get countElements$(): Observable<CountElementsI> {
-    return this._countElements.asObservable();
-  }
-
-  // -----------------------------------------------------------------------------------------------------
-  // @ Public methods
-  // -----------------------------------------------------------------------------------------------------
+  private readonly _httpClient = inject(HttpClient);
 
   /**
    * Get count elements
+   * @returns
    */
   getCountElements(): Observable<ResponseI<CountElementsI>> {
     return this._httpClient
       .get<ResponseI<CountElementsI>>(`${this.url}/${this.prefix}/dashboard/count-elements`)
       .pipe(
         tap((response) => {
-          this._countElements.next(response.message);
+          this.countElements.set(response.message);
         }),
       );
   }
 
   /**
    * Get week visit
+   * @returns
    */
   getWeekVisit(): Observable<ResponseI<WeekVisitI>> {
     return this._httpClient
       .get<ResponseI<WeekVisitI>>(`${this.url}/${this.prefix}/dashboard/week-visits`)
       .pipe(
         tap((response) => {
-          this._weekVisit.next(response.message);
+          this.weekVisit.set(response.message);
         }),
       );
   }
 
   /**
    * Get year visit
+   * @returns
    */
   getYearVisit(): Observable<ResponseI<YearVisitI>> {
     return this._httpClient
       .get<ResponseI<YearVisitI>>(`${this.url}/${this.prefix}/dashboard/year-visits`)
       .pipe(
         tap((response) => {
-          this._yearVisit.next(response.message);
+          this.yearVisit.set(response.message);
         }),
       );
   }
 
   /**
    * Get visitors vs page views
+   * @returns
    */
   getVisitVsPages(): Observable<ResponseI<VisitI>> {
     return this._httpClient
       .get<ResponseI<VisitI>>(`${this.url}/${this.prefix}/dashboard/visits`)
       .pipe(
         tap((response) => {
-          this._visitVsPages.next(response.message);
+          this.visitVsPages.set(response.message);
         }),
       );
   }
 
   /**
    * Get top 10 pages
+   * @returns
    */
   getTop10Pages(): Observable<ResponseI<Top10PagesI[]>> {
     return this._httpClient
       .get<ResponseI<Top10PagesI[]>>(`${this.url}/${this.prefix}/dashboard/top-10-pages`)
       .pipe(
         tap((response) => {
-          this._top10Pages.next(response.message);
+          this.top10Pages.set(response.message);
         }),
       );
   }

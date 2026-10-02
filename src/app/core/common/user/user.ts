@@ -2,75 +2,47 @@ import { TemplatePortal } from '@angular/cdk/portal';
 import { Overlay, OverlayRef } from '@angular/cdk/overlay';
 import {
   Component,
+  DestroyRef,
   ElementRef,
   inject,
   OnDestroy,
-  OnInit,
   TemplateRef,
-  ViewChild,
+  viewChild,
   ViewContainerRef,
 } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
-import { AuthService } from 'app/core/services/auth.service';
-import { UserService } from 'app/core/services/user.service';
-import { Subject } from 'rxjs';
-import { toSignal } from '@angular/core/rxjs-interop';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { UserService, AuthService } from '@core/services';
 
 @Component({
   selector: 'user-component',
   templateUrl: './user.html',
   imports: [RouterLink],
 })
-export class User implements OnInit, OnDestroy {
-  @ViewChild('userOrigin') private _userOrigin!: ElementRef<HTMLElement>;
-  @ViewChild('userPanel')
-  private _userPanel!: TemplateRef<any>;
+export class User implements OnDestroy {
+  private readonly userOrigin = viewChild.required<ElementRef<HTMLElement>>('userOrigin');
+  private readonly userPanel = viewChild.required<TemplateRef<any>>('userPanel');
 
   private _overlayRef!: OverlayRef;
-  private _unsubscribeAll: Subject<any> = new Subject<any>();
 
-  private _router = inject(Router);
-  private _userService = inject(UserService);
-  private _authService = inject(AuthService);
-  private _overlay = inject(Overlay);
-  private _viewContainerRef = inject(ViewContainerRef);
+  private readonly _router = inject(Router);
+  private readonly _userService = inject(UserService);
+  private readonly _authService = inject(AuthService);
+  private readonly _overlay = inject(Overlay);
+  private readonly _viewContainerRef = inject(ViewContainerRef);
+  private readonly _destroyRef = inject(DestroyRef);
 
-  readonly user = toSignal(this._userService.userLogin$, { initialValue: null });
-  readonly role = toSignal(this._userService.role$, { initialValue: null });
-
-  /**
-   * Constructor
-   */
-  constructor() {}
-
-  // -----------------------------------------------------------------------------------------------------
-  // @ Lifecycle hooks
-  // -----------------------------------------------------------------------------------------------------
-
-  /**
-   * On init
-   */
-  ngOnInit(): void {
-    // Subscribe to user changes
-  }
+  readonly user = this._userService.userLogin;
+  readonly role = this._userService.role;
 
   /**
    * On destroy
    */
   ngOnDestroy(): void {
-    // Unsubscribe from all subscriptions
-    this._unsubscribeAll.next(null);
-    this._unsubscribeAll.complete();
-
-    // Dispose the overlay
     if (this._overlayRef) {
       this._overlayRef.dispose();
     }
   }
-
-  // -----------------------------------------------------------------------------------------------------
-  // @ Public methods
-  // -----------------------------------------------------------------------------------------------------
 
   /**
    * Sign out
@@ -78,29 +50,23 @@ export class User implements OnInit, OnDestroy {
   signOut(): void {
     const token = this._authService.accessToken;
     this._authService.signOut();
-    this._authService.logout(token).subscribe({
-      next: () => {
-        this._router.navigate(['/auth/sign-out']);
-      },
-    });
+    this._authService
+      .logout(token)
+      .pipe(takeUntilDestroyed(this._destroyRef))
+      .subscribe({
+        next: () => {
+          this._router.navigate(['/auth/sign-out']);
+        },
+      });
   }
 
   /**
    * Open the notifications panel
    */
   openPanel(): void {
-    // Return if the notifications panel or its origin is not defined
-    if (!this._userPanel || !this._userOrigin) {
-      return;
-    }
-
-    // Create the overlay if it doesn't exist
-    if (!this._overlayRef) {
-      this._createOverlay();
-    }
-
-    // Attach the portal to the overlay
-    this._overlayRef.attach(new TemplatePortal(this._userPanel, this._viewContainerRef));
+    if (!this.userPanel() || !this.userOrigin()) return;
+    if (!this._overlayRef) this._createOverlay();
+    this._overlayRef.attach(new TemplatePortal(this.userPanel(), this._viewContainerRef));
   }
 
   /**
@@ -110,21 +76,16 @@ export class User implements OnInit, OnDestroy {
     this._overlayRef.detach();
   }
 
-  // -----------------------------------------------------------------------------------------------------
-  // @ Private methods
-  // -----------------------------------------------------------------------------------------------------
-
   /**
    * Create the overlay
    */
   private _createOverlay(): void {
-    // Create the overlay
     this._overlayRef = this._overlay.create({
       hasBackdrop: true,
       scrollStrategy: this._overlay.scrollStrategies.block(),
       positionStrategy: this._overlay
         .position()
-        .flexibleConnectedTo(this._userOrigin.nativeElement)
+        .flexibleConnectedTo(this.userOrigin().nativeElement)
         .withLockedPosition(true)
         .withPush(true)
         .withPositions([
@@ -155,9 +116,11 @@ export class User implements OnInit, OnDestroy {
         ]),
     });
 
-    // Detach the overlay from the portal on backdrop click
-    this._overlayRef.backdropClick().subscribe(() => {
-      this._overlayRef.detach();
-    });
+    this._overlayRef
+      .backdropClick()
+      .pipe(takeUntilDestroyed(this._destroyRef))
+      .subscribe(() => {
+        this._overlayRef.detach();
+      });
   }
 }

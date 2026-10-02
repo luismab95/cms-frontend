@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, input } from '@angular/core';
 import { AsyncPipe } from '@angular/common';
 import { FormField } from '@angular/forms/signals';
 import {
@@ -80,10 +80,5 @@ export default class SelectFieldComponent {
   protected readonly ngf = injectNgForgeField<string>();
 
   readonly props = input<SelectProps>();
-
-  /**
-   * optionsFieldMapper asigna directamente
-   * esta propiedad.
-   */
   readonly options = input<SelectOption[]>([]);
 }

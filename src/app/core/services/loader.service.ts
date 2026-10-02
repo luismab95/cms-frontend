@@ -5,8 +5,12 @@ import { BehaviorSubject } from 'rxjs';
   providedIn: 'root',
 })
 export class LoaderService {
-  public isLoading = new BehaviorSubject<boolean>(false);
+  public readonly isLoading = new BehaviorSubject<boolean>(false);
 
+  /**
+   * Set the loading state  
+   * @param value
+   */
   setIsloading(value: boolean) {
     this.isLoading.next(value);
   }

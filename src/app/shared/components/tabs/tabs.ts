@@ -6,9 +6,9 @@ import {
   input,
   output,
   signal,
-  ViewChild,
+  viewChild,
 } from '@angular/core';
-import { TabI } from 'app/shared/interfaces/drawer.interface';
+import { TabI } from '@shared/interfaces';
 
 @Component({
   selector: 'tabs-component',
@@ -16,9 +16,8 @@ import { TabI } from 'app/shared/interfaces/drawer.interface';
   imports: [],
 })
 export class TabsComponent implements AfterViewInit {
-  @ViewChild('contentScroll') contentScroll!: ElementRef<HTMLDivElement>;
-  @ViewChild('tabsContainer')
-  tabsContainer!: ElementRef<HTMLDivElement>;
+  private readonly tabsContainer = viewChild.required<ElementRef<HTMLDivElement>>('tabsContainer');
+  private readonly contentScroll = viewChild.required<ElementRef<HTMLDivElement>>('contentScroll');
 
   tabs = input.required<TabI[]>();
   selectedTabEvent = output<number>();
@@ -45,7 +44,7 @@ export class TabsComponent implements AfterViewInit {
   onSelectTab(tab: number) {
     this.selectedTab.set(tab);
     this.selectedTabEvent.emit(tab);
-    this.contentScroll.nativeElement.scrollTo({
+    this.contentScroll().nativeElement.scrollTo({
       top: 0,
       behavior: 'auto',
     });
@@ -65,7 +64,7 @@ export class TabsComponent implements AfterViewInit {
    * @returns
    */
   checkTabsScroll(): void {
-    const element = this.tabsContainer?.nativeElement;
+    const element = this.tabsContainer().nativeElement;
     if (!element) return;
     this.showLeftArrow.set(element.scrollLeft > 0);
     this.showRightArrow.set(element.scrollLeft + element.clientWidth < element.scrollWidth - 1);
@@ -73,9 +72,10 @@ export class TabsComponent implements AfterViewInit {
 
   /***
    * Scroll tabs
+   * @param direction
    */
   scrollTabs(direction: 'left' | 'right'): void {
-    const element = this.tabsContainer?.nativeElement;
+    const element = this.tabsContainer().nativeElement;
     if (!element) return;
     element.scrollBy({
       left: direction === 'left' ? -160 : 160,

@@ -1,63 +1,20 @@
 import { HttpClient } from '@angular/common/http';
-import { Injectable } from '@angular/core';
-import {
-  PaginationResponseI,
-  PaginationResquestI,
-  ResponseI,
-} from 'app/shared/interfaces/response.interface';
+import { inject, Injectable, signal } from '@angular/core';
+import { PaginationResponseI, PaginationResquestI, ResponseI } from '@shared/interfaces';
+import { buildQueryParams, DefaultPaginationParams } from '@shared/utils';
+import { TemplateI } from '@core/interfaces';
 import { environment } from 'environments/environment';
-import { TemplateI } from '../interfaces/template.interface';
-import { Observable, ReplaySubject, tap, EMPTY, of } from 'rxjs';
+import { Observable, tap, of } from 'rxjs';
 
 @Injectable({ providedIn: 'root' })
 export class TemplateService {
-  // Private
-  private prefix = 'ms-cms';
-  private url = environment.apiUrl;
-  private _templates: ReplaySubject<PaginationResponseI<TemplateI[]>> = new ReplaySubject<
-    PaginationResponseI<TemplateI[]>
-  >(1);
-  private _template: ReplaySubject<TemplateI | null> = new ReplaySubject<TemplateI | null>(1);
-  /**
-   * Constructor
-   */
-  constructor(private _httpClient: HttpClient) {}
+  templates = signal<PaginationResponseI<TemplateI[]>>(DefaultPaginationParams<TemplateI[]>());
+  template = signal<TemplateI | null>(null);
 
-  // -----------------------------------------------------------------------------------------------------
-  // @ Accessors
-  // -----------------------------------------------------------------------------------------------------
+  private readonly prefix = 'ms-cms';
+  private readonly url = environment.apiUrl;
 
-  /**
-   * Setter & getter for templates
-   *
-   * @param value
-   */
-  set templates(value: PaginationResponseI<TemplateI[]>) {
-    // Store the value
-    this._templates.next(value);
-  }
-
-  get templates$(): Observable<PaginationResponseI<TemplateI[]>> {
-    return this._templates.asObservable();
-  }
-
-  /**
-   * Setter & getter for template
-   *
-   * @param value
-   */
-  set template(value: TemplateI | null) {
-    // Store the value
-    this._template.next(value);
-  }
-
-  get template$(): Observable<TemplateI | null> {
-    return this._template.asObservable();
-  }
-
-  // -----------------------------------------------------------------------------------------------------
-  // @ Public methods
-  // -----------------------------------------------------------------------------------------------------
+  private readonly _httpClient = inject(HttpClient);
 
   /**
    * Get all templates
@@ -65,18 +22,15 @@ export class TemplateService {
    * @returns
    */
   getAll(params: PaginationResquestI): Observable<ResponseI<PaginationResponseI<TemplateI[]>>> {
-    let queryParams: string = `?limit=${params.limit}&page=${params.page}&`;
-    if (params.search !== null) queryParams += `search=${params.search}&`;
-    if (params.status !== null) queryParams += `status=${params.status}&`;
-
+    const queryParams = buildQueryParams(params);
     return this._httpClient
       .get<ResponseI<PaginationResponseI<TemplateI[]>>>(
         `${this.url}/${this.prefix}/templates${queryParams}`,
       )
       .pipe(
         tap((response) => {
-          this._templates.next(response.message);
-          this._template.next(null);
+          this.templates.set(response.message);
+          this.template.set(null);
         }),
       );
   }
@@ -88,37 +42,37 @@ export class TemplateService {
    */
   find(templateId: number): Observable<ResponseI<TemplateI> | null> {
     if (templateId === 0) {
-      this._template.next(null!);
+      this.template.set(null);
       return of(null);
     }
     return this._httpClient
       .get<ResponseI<TemplateI>>(`${this.url}/${this.prefix}/templates/${templateId}`)
       .pipe(
         tap((response) => {
-          this._template.next(response.message);
+          this.template.set(response.message);
         }),
       );
   }
 
   /**
    * Create the template
-   *
    * @param template
+   * @returns
    */
   create(template: TemplateI): Observable<ResponseI<TemplateI>> {
     return this._httpClient
       .post<ResponseI<TemplateI>>(`${this.url}/${this.prefix}/templates`, { ...template })
       .pipe(
         tap((response) => {
-          this._template.next(response.message);
+          this.template.set(response.message);
         }),
       );
   }
 
   /**
    * Delete the template
-   *
    * @param templateId
+   * @returns
    */
   delete(templateId: number): Observable<ResponseI<string>> {
     return this._httpClient.delete<ResponseI<string>>(
@@ -131,6 +85,7 @@ export class TemplateService {
    *
    * @param templateId
    * @param template
+   * @returns
    */
   saveDraft(templateId: number, template: TemplateI): Observable<ResponseI<string>> {
     return this._httpClient.patch<ResponseI<string>>(
@@ -141,24 +96,24 @@ export class TemplateService {
 
   /**
    * Delete draft template
-   *
    * @param templateId
+   * @returns
    */
   deleteDraft(templateId: number): Observable<ResponseI<TemplateI>> {
     return this._httpClient
       .delete<ResponseI<TemplateI>>(`${this.url}/${this.prefix}/templates/draft/${templateId}`)
       .pipe(
         tap((response) => {
-          this._template.next(response.message);
+          this.template.set(response.message);
         }),
       );
   }
 
   /**
    * Update the template
-   *
    * @param templateId
    * @param template
+   * @returns
    */
   update(templateId: number, template: TemplateI): Observable<ResponseI<TemplateI>> {
     return this._httpClient
@@ -167,7 +122,7 @@ export class TemplateService {
       })
       .pipe(
         tap((response) => {
-          this._template.next(response.message);
+          this.template.set(response.message);
         }),
       );
   }

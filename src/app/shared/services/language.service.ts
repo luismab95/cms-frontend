@@ -1,50 +1,18 @@
 import { HttpClient } from '@angular/common/http';
-import { inject, Injectable } from '@angular/core';
-import {
-  PaginationResponseI,
-  PaginationResquestI,
-  ResponseI,
-} from 'app/shared/interfaces/response.interface';
+import { inject, Injectable, signal } from '@angular/core';
+import { PaginationResponseI, LanguageI, PaginationResquestI, ResponseI } from '@shared/interfaces';
+import { buildQueryParams, DefaultPaginationParams } from '@shared/utils';
 import { environment } from 'environments/environment';
-import { Observable, ReplaySubject, tap } from 'rxjs';
-import { LanguageI } from '../interfaces/language.interfaces';
+import { Observable, tap } from 'rxjs';
 
 @Injectable({ providedIn: 'root' })
 export class LanguageService {
-  private prefix = 'ms-cms';
-  private url = environment.apiUrl;
-  private _languages: ReplaySubject<PaginationResponseI<LanguageI[]>> = new ReplaySubject<
-    PaginationResponseI<LanguageI[]>
-  >(1);
+  languages = signal<PaginationResponseI<LanguageI[]>>(DefaultPaginationParams<LanguageI[]>());
 
-  private _httpClient = inject(HttpClient);
+  private readonly prefix = 'ms-cms';
+  private readonly url = environment.apiUrl;
 
-  /**
-   * Constructor
-   */
-  constructor() {}
-
-  // -----------------------------------------------------------------------------------------------------
-  // @ Accessors
-  // -----------------------------------------------------------------------------------------------------
-
-  /**
-   * Setter & getter for sitie
-   *
-   * @param value
-   */
-  set languages(value: PaginationResponseI<LanguageI[]>) {
-    // Store the value
-    this._languages.next(value);
-  }
-
-  get languages$(): Observable<PaginationResponseI<LanguageI[]>> {
-    return this._languages.asObservable();
-  }
-
-  // -----------------------------------------------------------------------------------------------------
-  // @ Public methods
-  // -----------------------------------------------------------------------------------------------------
+  private readonly _httpClient = inject(HttpClient);
 
   /**
    * Get all languages
@@ -52,17 +20,14 @@ export class LanguageService {
    * @returns
    */
   getAll(params: PaginationResquestI): Observable<ResponseI<PaginationResponseI<LanguageI[]>>> {
-    let queryParams: string = `?limit=${params.limit}&page=${params.page}&`;
-    if (params.search !== null) queryParams += `search=${params.search}&`;
-    if (params.status !== null) queryParams += `status=${params.status}&`;
-
+    const queryParams = buildQueryParams(params);
     return this._httpClient
       .get<ResponseI<PaginationResponseI<LanguageI[]>>>(
         `${this.url}/${this.prefix}/languages${queryParams}`,
       )
       .pipe(
         tap((response) => {
-          this._languages.next(response.message);
+          this.languages.set(response.message);
         }),
       );
   }
@@ -74,7 +39,7 @@ export class LanguageService {
   getAllPublic(): Observable<LanguageI[]> {
     return this._httpClient.get<LanguageI[]>(`${this.url}/${this.prefix}/public/languages`).pipe(
       tap((response) => {
-        this._languages.next({
+        this.languages.set({
           records: response,
           total: response.length,
           page: 1,
@@ -86,19 +51,20 @@ export class LanguageService {
 
   /**
    * Create the language
-   *
    * @param language
+   * @returns
    */
   create(language: LanguageI): Observable<ResponseI<string>> {
-    return this._httpClient.post<ResponseI<string>>(`${this.url}/${this.prefix}/languages`, {
-      ...language,
-    });
+    return this._httpClient.post<ResponseI<string>>(
+      `${this.url}/${this.prefix}/languages`,
+      language,
+    );
   }
 
   /**
    * Delete the language
-   *
    * @param languageId
+   * @returns
    */
   delete(languageId: number): Observable<ResponseI<string>> {
     return this._httpClient.delete<ResponseI<string>>(
@@ -108,14 +74,14 @@ export class LanguageService {
 
   /**
    * Update the language
-   *
    * @param languageId
    * @param language
+   * @returns
    */
   update(languageId: number, language: LanguageI): Observable<ResponseI<LanguageI>> {
     return this._httpClient.patch<ResponseI<LanguageI>>(
       `${this.url}/${this.prefix}/languages/${languageId}`,
-      { ...language },
+      language,
     );
   }
 }

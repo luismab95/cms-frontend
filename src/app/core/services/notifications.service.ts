@@ -1,47 +1,39 @@
 import { HttpClient } from '@angular/common/http';
-import { Injectable } from '@angular/core';
-import { ResponseI } from 'app/shared/interfaces/response.interface';
-import { environment } from 'environments/environment';
+import { inject, Injectable, signal } from '@angular/core';
 import { io, Socket } from 'socket.io-client';
-import { NotifyI } from '../interfaces/notification.interface';
-import { Observable, ReplaySubject, tap } from 'rxjs';
+import { ResponseI } from '@shared/interfaces';
+import { NotifyI } from '@core/interfaces';
+import { environment } from 'environments/environment';
+import { Observable, tap } from 'rxjs';
 
 @Injectable({ providedIn: 'root' })
 export class NotificationsService {
-  private socket: Socket;
+  notifications = signal<NotifyI[]>([]);
 
-  private url = environment.apiUrl;
-  private prefix = 'ms-cms';
-  private _notifications: ReplaySubject<NotifyI[]> = new ReplaySubject<NotifyI[]>(1);
+  private readonly socket = signal<Socket>(null as unknown as Socket);
+  private readonly url = environment.apiUrl;
+  private readonly prefix = 'ms-cms';
+
+  private readonly _httpClient = inject(HttpClient);
 
   /**
    * Constructor
    */
-  constructor(private _httpClient: HttpClient) {
-    this.socket = io(`${this.url}`, {
-      path: `/${this.prefix}/notify-socket/socket.io`,
-    });
+  constructor() {
+    this.socket.set(
+      io(`${this.url}`, {
+        path: `/${this.prefix}/notify-socket/socket.io`,
+      }),
+    );
   }
-
-  // -----------------------------------------------------------------------------------------------------
-  // @ Accessors
-  // -----------------------------------------------------------------------------------------------------
 
   /**
-   * Getter for notifications
+   * Listen for incoming notifications
+   * @returns
    */
-  get notifications$(): Observable<NotifyI[]> {
-    return this._notifications.asObservable();
-  }
-
-  // -----------------------------------------------------------------------------------------------------
-  // @ Public methods
-  // -----------------------------------------------------------------------------------------------------
-
-  // Recibir notificaciones
-  onNotification(): Observable<any> {
+  onNotification(): Observable<NotifyI> {
     return new Observable((observer) => {
-      this.socket.on('receiveNotification', (data: any) => {
+      this.socket().on('receiveNotification', (data: any) => {
         const audio = new Audio('audios/notify.wav');
         audio.play();
         observer.next(data);
@@ -49,25 +41,30 @@ export class NotificationsService {
     });
   }
 
+  /**
+   * Join a notification room
+   * @param roleId
+   */
   joinRoom(roleId: string) {
-    this.socket.emit('joinRoom', roleId);
+    this.socket().emit('joinRoom', roleId);
   }
 
   /**
    * Get all notifications
+   * @returns
    */
   getAll(): Observable<ResponseI<NotifyI[]>> {
     return this._httpClient.get<ResponseI<NotifyI[]>>(`${this.url}/${this.prefix}/notify`).pipe(
       tap((response) => {
-        this._notifications.next(response.message);
+        this.notifications.set(response.message);
       }),
     );
   }
 
   /**
    * Update the notification
-   *
    * @param id
+   * @returns
    */
   update(id: number): Observable<ResponseI<string>> {
     return this._httpClient

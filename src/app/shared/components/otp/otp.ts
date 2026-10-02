@@ -1,6 +1,6 @@
-import { Component, computed, input, OnInit, output, ViewChild } from '@angular/core';
-import { ParameterI } from 'app/core/interfaces/parameter.interface';
-import { findParameter } from 'app/shared/utils/parameter.utils';
+import { Component, computed, input, OnInit, output, signal, viewChild } from '@angular/core';
+import { ParameterI } from '@core/interfaces';
+import { findParameter } from '@shared/utils';
 import { NgxOtpInputComponent } from 'ngx-otp-input';
 
 @Component({
@@ -9,60 +9,54 @@ import { NgxOtpInputComponent } from 'ngx-otp-input';
   imports: [NgxOtpInputComponent],
 })
 export class OtpComponent implements OnInit {
-  @ViewChild('otpInput') ngxOtp: NgxOtpInputComponent | undefined;
+  private readonly otpInput = viewChild.required<NgxOtpInputComponent>('otpInput');
 
   parameters = input.required<ParameterI[]>();
   hasError = input.required<boolean>();
   otpEvent = output<string>();
 
-  otpInputConfig!: { otpLength: number; inputMode: string; autoFocus: boolean; regexp: RegExp };
+  otpInputConfig = signal<{
+    otpLength: number;
+    inputMode: string;
+    autoFocus: boolean;
+    regexp: RegExp;
+  } | null>(null);
   patterNumber = new RegExp(/\d+/g);
   patterLetters = new RegExp(/\b[a-zA-Z]+\b/g);
   patterNumberLetters = new RegExp(/\b[a-zA-Z0-9]+\b/g);
   otpLong: string = '';
   otpType: string = '';
 
-  getStatus = computed(() => {
+  readonly getStatus = computed(() => {
     const hasError = this.hasError();
     return hasError ? 'error' : 'success';
   });
 
   /**
-   * Constructor
-   */
-  constructor() {}
-
-  /**
    * On init
    */
   ngOnInit(): void {
-    // Get OTP parameters
     this.otpLong = findParameter('OTP_LONG', this.parameters())?.value ?? '6';
     this.otpType = findParameter('OTP_TYPE', this.parameters())?.value ?? 'NUMBER';
-
-    this.otpInputConfig = {
+    this.otpInputConfig.set({
       otpLength: Number(this.otpLong),
       inputMode: 'text',
       autoFocus: true,
       regexp: this.patterNumber,
-    };
+    });
 
     switch (this.otpType) {
       case 'NUMBER':
-        this.otpInputConfig.regexp = this.patterNumber;
+        this.otpInputConfig.update((prev) => ({ ...prev!, regexp: this.patterNumber }));
         break;
       case 'LETTER':
-        this.otpInputConfig.regexp = this.patterLetters;
+        this.otpInputConfig.update((prev) => ({ ...prev!, regexp: this.patterLetters }));
         break;
       case 'COMBINED':
-        this.otpInputConfig.regexp = this.patterNumberLetters;
+        this.otpInputConfig.update((prev) => ({ ...prev!, regexp: this.patterNumberLetters }));
         break;
     }
   }
-
-  // -----------------------------------------------------------------------------------------------------
-  // @ Public methods
-  // -----------------------------------------------------------------------------------------------------
 
   /**
    * Get value of OTP
@@ -76,6 +70,7 @@ export class OtpComponent implements OnInit {
    * Clear otp
    */
   clear() {
-    if (this.ngxOtp !== undefined) this.ngxOtp.reset();
+    if (!this.otpInput()) return;
+    this.otpInput().reset();
   }
 }

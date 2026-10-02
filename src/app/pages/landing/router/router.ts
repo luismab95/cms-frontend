@@ -1,22 +1,19 @@
-import { Component, OnDestroy, OnInit, computed, effect, inject, signal } from '@angular/core';
+import { Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
 import { NavigationEnd, Router } from '@angular/router';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Meta, Title } from '@angular/platform-browser';
-import { PageService } from 'app/core/services/pages.service';
 import { DeviceDetectorService, DeviceType } from 'ngx-device-detector';
-import { distinctUntilChanged, filter, Subject, takeUntil } from 'rxjs';
-import { PageDetailReferenceI, PageI } from 'app/core/interfaces/page.interface';
-import { GridComponent } from 'app/shared/components/grid/grid';
-import { SectionI } from 'app/shared/interfaces/grid.interface';
-import { TemplateI } from 'app/core/interfaces/template.interface';
-import { TemplateService } from 'app/core/services/templates.service';
-import { DynamicStyleService } from 'app/core/services/dynamic-style.service';
+import { PageService, TemplateService } from '@core/services';
+import { TemplateI, PageI, PageDetailReferenceI } from '@core/interfaces';
+import { GridComponent } from '@shared/components';
+import { distinctUntilChanged, filter } from 'rxjs';
 
 @Component({
   selector: 'landing-router',
   templateUrl: './router.html',
   imports: [GridComponent],
 })
-export class LandingRouterComponent implements OnInit, OnDestroy {
+export class LandingRouterComponent implements OnInit {
   loading = signal<boolean>(true);
   previousLangValue = signal<string>(window.location.pathname.split('/')[1]);
 
@@ -25,17 +22,15 @@ export class LandingRouterComponent implements OnInit, OnDestroy {
   page = signal<string | null>(null);
   micrositie = signal<string | null>(null);
 
-  private _unsubscribeAll: Subject<any> = new Subject<any>();
-
-  private _deviceDetectorService = inject(DeviceDetectorService);
+  private readonly _deviceDetectorService = inject(DeviceDetectorService);
   private readonly _pageService = inject(PageService);
   private readonly _templateService = inject(TemplateService);
-  private readonly _dynamicStyleService = inject(DynamicStyleService);
+  private readonly _destroyRef = inject(DestroyRef);
   private readonly _router = inject(Router);
-  private _metaService = inject(Meta);
-  private _titleService = inject(Title);
+  private readonly _metaService = inject(Meta);
+  private readonly _titleService = inject(Title);
 
-  previewType = computed(() => {
+  readonly previewType = computed(() => {
     const { deviceType } = this._deviceDetectorService.deviceInfo();
     switch (deviceType) {
       case DeviceType.Mobile:
@@ -74,22 +69,8 @@ export class LandingRouterComponent implements OnInit, OnDestroy {
    * On init
    */
   ngOnInit(): void {
-    // get page
     this.getPage();
   }
-
-  /**
-   * On destroy
-   */
-  ngOnDestroy(): void {
-    // Unsubscribe from all subscriptions
-    this._unsubscribeAll.next(null);
-    this._unsubscribeAll.complete();
-  }
-
-  // -----------------------------------------------------------------------------------------------------
-  // @ Public methods
-  // -----------------------------------------------------------------------------------------------------
 
   /**
    * Get page
@@ -126,22 +107,13 @@ export class LandingRouterComponent implements OnInit, OnDestroy {
         micrositie: this.micrositie()!,
         preview,
       })
-      .pipe(takeUntil(this._unsubscribeAll))
+      .pipe(takeUntilDestroyed(this._destroyRef))
       .subscribe({
         next: (res) => {
-          // this._dynamicStyleService.remove('page-dynamicStyles');
-
           this.languageId.set(res.message.languageId);
-
           this.updateMetaTags(this.languageId()!, res.message.details!);
-
           this.loadData(res.message.template, 'template');
           this.loadData(res.message, 'page');
-
-          // Load CSS
-          // let css = `${res.message.data?.body.css} ${res.message.template.data?.header.css} ${res.message.template.data?.footer.css}`;
-          // css = css.replaceAll('@container', '@media');
-          // this._dynamicStyleService.set('page-dynamicStyles', css);
           this.loading.set(false);
         },
         error: (err) => {
@@ -156,22 +128,21 @@ export class LandingRouterComponent implements OnInit, OnDestroy {
 
   /**
    * Set data to grid
-   * @param grid
+   * @param data
    * @param item
    */
   loadData(data: TemplateI | PageI, item: 'template' | 'page') {
-    if (item === 'page') this._pageService.page = data as PageI;
-    if (item === 'template') this._templateService.template = data as TemplateI;
+    if (item === 'page') this._pageService.page.set(data as PageI);
+    if (item === 'template') this._templateService.template.set(data as TemplateI);
   }
 
   /**
    * Update meta
-   * @param LanguageId
+   * @param languageId
    * @param details
    */
   updateMetaTags(languageId: number, details: PageDetailReferenceI[]) {
     const findLanguage = details.find((detail) => detail.languageId === languageId);
-
     this._titleService.setTitle(findLanguage?.alias.text!);
     this._metaService.updateTag({
       name: 'description',

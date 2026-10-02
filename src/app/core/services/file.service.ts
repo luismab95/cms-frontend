@@ -1,26 +1,21 @@
 import { HttpClient } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
-import { ResponseI } from 'app/shared/interfaces/response.interface';
+import { FileUploadI } from '@core/interfaces';
+import { ResponseI } from '@shared/interfaces';
 import { environment } from 'environments/environment';
 import { Observable } from 'rxjs';
-import { FileUploadI } from '../interfaces/file.interface';
 
 @Injectable({ providedIn: 'root' })
 export class FileService {
-  private prefix = 'ms-file';
-  private url = environment.apiUrl;
-  private _httpClient = inject(HttpClient);
+  private readonly prefix = 'ms-file';
+  private readonly url = environment.apiUrl;
 
-  // -----------------------------------------------------------------------------------------------------
-  // @ Accessors
-  // -----------------------------------------------------------------------------------------------------
-
-  // -----------------------------------------------------------------------------------------------------
-  // @ Public methods
-  // -----------------------------------------------------------------------------------------------------
+  private readonly _httpClient = inject(HttpClient);
 
   /**
-   * Update file
+   * Upload file
+   * @param file
+   * @param saveInfo
    * @returns
    */
   uploadFile(file: File, saveInfo: boolean = true): Observable<ResponseI<FileUploadI>> {

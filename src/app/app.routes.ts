@@ -1,37 +1,28 @@
 import { Router, Routes } from '@angular/router';
 import { inject } from '@angular/core';
-import { Layout } from './layout/layout';
-import { LanguageService } from './shared/services/language.service';
-import { HomeService } from './core/services/home.service';
+import { NoAuthGuard, AuthGuard, MenuGuard } from '@core/guards';
+import {
+  HomeService,
+  SitieService,
+  TemplateService,
+  MicrosityService,
+  PageService,
+  ElementService,
+  FileManagerService,
+  ParameterService,
+  UserService,
+} from '@core/services';
+import { Layout } from '@layout/layout';
+import { LanguageService, RoleService } from '@shared/services';
 import { initialDataResolver } from './app.resolvers';
-import { NoAuthGuard } from './core/guards/noAuth.guard';
-import { AuthGuard } from './core/guards/auth.guard';
-import { MenuGuard } from './core/guards/menu.guard';
-import { SitieService } from './core/services/sitie.service';
-import { TemplateService } from './core/services/templates.service';
-import { ParameterService } from './core/services/parameter.service';
-import { RoleService } from './shared/services/role.service';
-import { UserService } from './core/services/user.service';
-import { FileManagerService } from './core/services/file-manager.service';
-import { MicrosityService } from './core/services/micrositie.service';
-import { PageService } from './core/services/pages.service';
-import { ElementService } from './core/services/element.service';
 
 export const routes: Routes = [
-  // Redirect empty path to 'default sitie'
   { path: '', pathMatch: 'full', redirectTo: 'es' },
-
-  // Redirect signed-in user to the '/dashboards/project'
-  //
-  // After the user signs in, the sign-in page will redirect the user to the 'signed-in-redirect'
-  // path. Below is another redirection for that path to redirect the user to the desired
-  // location. This is a small convenience to keep all main routes together here on this file.
   {
     path: 'signed-in-redirect',
     pathMatch: 'full',
     redirectTo: 'admin/dashboards/home',
   },
-
   // Auth routes for guests
   {
     path: 'auth',
@@ -81,7 +72,6 @@ export const routes: Routes = [
       },
     ],
   },
-
   // Admin routes
   {
     path: 'admin',
@@ -382,7 +372,6 @@ export const routes: Routes = [
       },
     ],
   },
-
   {
     path: 'error',
     data: {
@@ -447,6 +436,5 @@ export const routes: Routes = [
       },
     ],
   },
-
   { path: '**', redirectTo: '404-not-found' },
 ];

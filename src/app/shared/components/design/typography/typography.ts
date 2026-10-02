@@ -1,17 +1,15 @@
 import { Component, DestroyRef, effect, inject, input, output, signal } from '@angular/core';
 import { toObservable, takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { form, FormField } from '@angular/forms/signals';
-import { TooltipDirective } from 'app/shared/directives/tooltip.directive';
+import { TooltipDirective } from '@shared/directives';
 import {
-  FontFamilyOptionI,
-  TextAlignT,
-  TextOverflowT,
   TypographyStylesI,
+  TextAlignT,
   WhiteSpaceT,
   WordBreakT,
-} from 'app/shared/interfaces/design.interface';
-import { FONT_FAMILIES } from 'app/shared/utils/design.utils';
-import { defaultTypographyStyles } from 'app/shared/utils/grid.utils';
+  TextOverflowT,
+} from '@shared/interfaces';
+import { FONT_FAMILIES, defaultTypographyStyles } from '@shared/utils';
 import { debounceTime, distinctUntilChanged } from 'rxjs';
 
 @Component({
@@ -35,9 +33,7 @@ import { debounceTime, distinctUntilChanged } from 'rxjs';
       <div class="p-3.5 space-y-3 bg-white">
         <!-- Font Family -->
         <div>
-          <label class="text-[10px] text-slate-500 font-medium block mb-0.5"
-            >font-family</label
-          >
+          <label class="text-[10px] text-slate-500 font-medium block mb-0.5">font-family</label>
           <div class="flex items-center bg-white">
             <select
               [formField]="typographyForm.fontFamily"
@@ -298,7 +294,7 @@ export class DesignTypographyComponent {
    */
   constructor() {
     effect(() => {
-      const value = this.value();      
+      const value = this.value();
       if (!value) return;
 
       this.isInitializing = true;
@@ -328,6 +324,7 @@ export class DesignTypographyComponent {
 
   /**
    * Updates the background color from the color picker.
+   * @param event
    */
   onBackgroundColorChange(event: Event): void {
     const color = (event.target as HTMLInputElement).value;

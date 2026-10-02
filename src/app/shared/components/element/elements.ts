@@ -1,3 +1,4 @@
+import { HttpClient } from '@angular/common/http';
 import {
   AfterViewInit,
   Component,
@@ -9,15 +10,11 @@ import {
   signal,
   viewChild,
 } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-import { lastValueFrom } from 'rxjs';
-import { toSignal } from '@angular/core/rxjs-interop';
-
-import { ParameterService } from 'app/core/services/parameter.service';
-import { ElementI } from 'app/shared/interfaces/grid.interface';
-import { findParameter } from 'app/shared/utils/parameter.utils';
-import { PluginLoaderService } from 'app/core/services/plugin-loader.service';
+import { ParameterService, PluginLoaderService } from '@core/services';
+import { ElementI } from '@shared/interfaces';
+import { findParameter } from '@shared/utils';
 import { environment } from 'environments/environment';
+import { lastValueFrom } from 'rxjs';
 
 type PluginEvent = (uuid: string) => void;
 
@@ -47,36 +44,20 @@ export class ElementsComponent implements AfterViewInit, OnDestroy {
   private readonly parameterService = inject(ParameterService);
   private readonly pluginLoader = inject(PluginLoaderService);
 
-  readonly parameters = toSignal(this.parameterService.parameter$, {
-    initialValue: [],
-  });
+  readonly parameters = this.parameterService.parameters;
 
   private destroyed = false;
   private initialized = false;
   private previousPluginState: string | null = null;
-  /**
-   * Controla las cargas concurrentes del plugin.
-   *
-   * Si el usuario modifica varias veces rápidamente,
-   * una carga vieja no podrá sobrescribir una nueva.
-   */
   private pluginVersion = 0;
 
+  /**
+   * Constructor
+   */
   constructor() {
-    /**
-     * Detecta cambios en:
-     *
-     * - element()
-     * - languageId()
-     *
-     * Cada vez que alguno cambie, se vuelve a cargar
-     * el contenido del plugin.
-     */
     effect(() => {
       const element = this.element();
-
       const languageId = this.languageId();
-
       if (!this.initialized || this.destroyed) return;
 
       const pluginState = JSON.stringify({
@@ -88,124 +69,68 @@ export class ElementsComponent implements AfterViewInit, OnDestroy {
         dataText: element.dataText,
         languageId,
       });
-
-      if (pluginState === this.previousPluginState) {
-        return;
-      }
+      if (pluginState === this.previousPluginState) return;
 
       this.previousPluginState = pluginState;
-
       this.reloadPlugin(element, languageId);
     });
   }
 
-  // --------------------------------------------------
-  // Angular lifecycle
-  // --------------------------------------------------
-
+  /**
+   * AfterViewInit
+   */
   async ngAfterViewInit(): Promise<void> {
     this.initialized = true;
-
     await this.reloadPlugin(this.element(), this.languageId());
   }
 
+  /**
+   * OnDestroy
+   */
   ngOnDestroy(): void {
     this.destroyed = true;
-
-    /**
-     * Invalida cualquier carga pendiente.
-     */
     this.pluginVersion++;
-
     this.destroyPluginStyles();
-
-    /**
-     * Limpia el HTML generado por el plugin.
-     */
     this.pluginContainer().nativeElement.replaceChildren();
   }
 
-  // --------------------------------------------------
-  // LOAD / RELOAD PLUGIN
-  // --------------------------------------------------
-
+  /**
+   * Reload plugin
+   * @param element
+   * @param languageId
+   * @returns
+   */
   private async reloadPlugin(element: ElementI, languageId: number): Promise<void> {
-    /**
-     * Generamos una versión única para esta carga.
-     *
-     * Si llega otra actualización mientras esta carga
-     * está esperando HTTP, esta versión quedará obsoleta.
-     */
-
     const version = ++this.pluginVersion;
-
     this.loading.set(true);
     this.error.set(null);
 
     try {
       const pluginName = element.name.toLowerCase();
-
-      // --------------------------------------------------
-      // STATIC URL
-      // --------------------------------------------------
-
       const parameters = this.parameters();
 
       this.urlStatics.set(findParameter('APP_STATICS_URL', parameters)?.value ?? '');
-
-      // --------------------------------------------------
-      // COMPONENT TEXT
-      // --------------------------------------------------
-
       const componentText = this.getComponentText(element, languageId);
 
-      // --------------------------------------------------
-      // LOAD SERVICE DATA
-      // --------------------------------------------------
-
       let dataService: unknown = null;
-
-      if ('service' in element.config) {
+      if ('service' in element.config)
         dataService = await this.loadData(`${environment.apiUrl}${element.config['service']}`);
-      }
 
-      if (this.destroyed || version !== this.pluginVersion) {
-        return;
-      }
+      if (this.destroyed || version !== this.pluginVersion) return;
 
-      if ('custom-service' in element.config) {
+      if ('custom-service' in element.config)
         dataService = await this.loadData(element.config['custom-service']);
-      }
 
-      if (this.destroyed || version !== this.pluginVersion) {
-        return;
-      }
-
-      // --------------------------------------------------
-      // LOAD HTML
-      // --------------------------------------------------
+      if (this.destroyed || version !== this.pluginVersion) return;
 
       const html = await this.loadHTMLFile(`/plugins/${pluginName}/${pluginName}.html`);
 
-      if (!html || this.destroyed || version !== this.pluginVersion) {
-        return;
-      }
-
-      // --------------------------------------------------
-      // CREATE PLUGIN CONTAINER
-      // --------------------------------------------------
+      if (!html || this.destroyed || version !== this.pluginVersion) return;
 
       const div = document.createElement('div');
-
       div.id = `div-${element.uuid}`;
-
       div.style.width = '100%';
-
       div.style.height = 'auto';
-
-      // --------------------------------------------------
-      // PLUGIN PROPERTIES
-      // --------------------------------------------------
 
       const properties = {
         properties: {
@@ -223,118 +148,70 @@ export class ElementsComponent implements AfterViewInit, OnDestroy {
       };
 
       div.setAttribute('data-properties', JSON.stringify(properties));
-
-      // --------------------------------------------------
-      // INSERT HTML
-      // --------------------------------------------------
-
       div.innerHTML = html;
-
-      /**
-       * Verificamos nuevamente porque el HTML
-       * pudo tardar en descargarse.
-       */
-      if (this.destroyed || version !== this.pluginVersion) {
-        return;
-      }
+      if (this.destroyed || version !== this.pluginVersion) return;
 
       this.pluginContainer().nativeElement.replaceChildren(div);
 
-      // --------------------------------------------------
-      // LOAD JS
-      // --------------------------------------------------
-
       await this.pluginLoader.load(`/plugins/${pluginName}/${pluginName}.js`, pluginName);
-
-      if (this.destroyed || version !== this.pluginVersion) {
-        return;
-      }
-
-      // --------------------------------------------------
-      // INITIALIZE PLUGIN
-      // --------------------------------------------------
+      if (this.destroyed || version !== this.pluginVersion) return;
 
       this.handleScriptLoaded(pluginName, element.uuid);
-
-      if (this.destroyed || version !== this.pluginVersion) {
-        return;
-      }
+      if (this.destroyed || version !== this.pluginVersion) return;
 
       this.loading.set(false);
     } catch (error) {
-      /**
-       * Si la carga quedó obsoleta no mostramos error.
-       */
-      if (this.destroyed || version !== this.pluginVersion) {
-        return;
-      }
-
+      if (this.destroyed || version !== this.pluginVersion) return;
       this.error.set('No se pudo cargar el plugin ' + element.name);
-
       this.loading.set(false);
     }
   }
 
-  // --------------------------------------------------
-  // TEXT
-  // --------------------------------------------------
-
+  /**
+   * Get component text
+   * @param element
+   * @param languageId
+   * @returns
+   */
   private getComponentText(element: ElementI, languageId: number): unknown {
-    /**
-     * No existen traducciones.
-     */
-    if (!element.dataText?.length) {
-      return element.text;
-    }
+    if (!element.dataText?.length) return element.text;
 
-    /**
-     * Buscar traducción del idioma seleccionado.
-     */
     const translation = element.dataText.find((item) => Number(item['languageId']) === languageId);
+    if (!translation) return element.text;
 
-    /**
-     * No existe traducción para ese idioma.
-     */
-    if (!translation) {
-      return element.text;
-    }
-
-    /**
-     * No enviar languageId al plugin.
-     */
     const { languageId: _languageId, ...rest } = translation;
-
     return rest;
   }
 
-  // --------------------------------------------------
-  // CSS CLASS
-  // --------------------------------------------------
-
+  /**
+   * Get class name
+   * @param css
+   * @returns
+   */
   private getClassName(css: string): string {
     const selector = css.split('{')[0]?.trim() ?? '';
-
     return selector.split('.')[1] ?? '';
   }
 
-  // --------------------------------------------------
-  // LOAD DATA
-  // --------------------------------------------------
-
+  /**
+   * Load data
+   * @param url
+   * @returns
+   */
   private async loadData(url: string): Promise<unknown> {
     try {
       return await lastValueFrom(this.http.get(url));
     } catch (error) {
       console.error(`Error obteniendo datos desde ${url}`, error);
-
       return null;
     }
   }
 
-  // --------------------------------------------------
-  // LOAD HTML
-  // --------------------------------------------------
-
+  /**
+   * Load HTML File
+   * @param filePath
+   * @returns
+   */
   private async loadHTMLFile(filePath: string): Promise<string | null> {
     try {
       return await lastValueFrom(
@@ -344,18 +221,17 @@ export class ElementsComponent implements AfterViewInit, OnDestroy {
       );
     } catch (error) {
       console.error(`Error cargando HTML: ${filePath}`, error);
-
       return null;
     }
   }
 
-  // --------------------------------------------------
-  // PLUGIN EVENTS
-  // --------------------------------------------------
-
+  /**
+   * Handle ScriptLoaded
+   * @param pluginName
+   * @param uuid
+   */
   private handleScriptLoaded(pluginName: string, uuid: string): void {
     const eventName = `${pluginName}PluginEvent` as `${string}PluginEvent`;
-
     const event = window[eventName];
 
     if (typeof event === 'function') {
@@ -365,19 +241,14 @@ export class ElementsComponent implements AfterViewInit, OnDestroy {
     }
   }
 
-  // --------------------------------------------------
-  // DESTROY PLUGIN STYLES
-  // --------------------------------------------------
-
+  /**
+   * Destroy plugin styles
+   * @returns
+   */
   private destroyPluginStyles(): void {
     const uuid = this.element()?.uuid;
-
-    if (!uuid) {
-      return;
-    }
-
+    if (!uuid) return;
     const style = document.getElementById(`style-${uuid}`);
-
     style?.remove();
   }
 }

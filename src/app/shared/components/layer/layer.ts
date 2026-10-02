@@ -1,21 +1,17 @@
 import { Component, signal, inject, input, output, computed, effect } from '@angular/core';
 import { NgClass, NgTemplateOutlet } from '@angular/common';
 import { CdkDrag, CdkDragDrop, CdkDropList, moveItemInArray } from '@angular/cdk/drag-drop';
-import { toSignal } from '@angular/core/rxjs-interop';
+import { CanvasT } from '@core/interfaces';
+import { ElementService, PageService, TemplateService, CanvasService } from '@core/services';
+import { TooltipDirective } from '@shared/directives';
 import {
+  ElementCMSI,
+  SectionI,
+  RowI,
   ColumnI,
   ElementI,
-  RowI,
-  SectionI,
   SelectedItemsInGridI,
-} from 'app/shared/interfaces/grid.interface';
-import { ElementService } from 'app/core/services/element.service';
-import { CanvasService } from 'app/core/services/canvas.service';
-import { PageService } from 'app/core/services/pages.service';
-import { TemplateService } from 'app/core/services/templates.service';
-import { ElementCMSI } from 'app/shared/interfaces/element.interface';
-import { CanvasT } from 'app/core/interfaces/page.interface';
-import { TooltipDirective } from 'app/shared/directives/tooltip.directive';
+} from '@shared/interfaces';
 import { ElementsManagerComponent } from './elements-manager/elements-manager';
 
 @Component({
@@ -48,16 +44,9 @@ export class LayerComponent {
   private readonly _templateService = inject(TemplateService);
   private readonly _canvasService = inject(CanvasService);
 
-  readonly page = toSignal(this._pageService.page$, { initialValue: null });
-  readonly template = toSignal(this._templateService.template$, { initialValue: null });
-  readonly elements = toSignal(this._elementService.elements$, {
-    initialValue: {
-      records: [],
-      total: 0,
-      page: 0,
-      totalPage: 0,
-    },
-  });
+  readonly page = this._pageService.page;
+  readonly template = this._templateService.template;
+  readonly elements = this._elementService.elements;
   readonly selectedItemsInGrid = this._canvasService.selectedItemsInGrid;
 
   readonly currentGridType = computed(() => this.gridType());

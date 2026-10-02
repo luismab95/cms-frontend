@@ -1,7 +1,6 @@
 import { Component, inject, input } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { toSignal } from '@angular/core/rxjs-interop';
-import { UserService } from 'app/core/services/user.service';
+import { UserService } from '@core/services';
 
 @Component({
   selector: 'permission-component',
@@ -14,15 +13,6 @@ export class PermissionComponent {
 
   private readonly _userService = inject(UserService);
 
-  readonly user = toSignal(this._userService.userLogin$, { initialValue: null });
-  readonly role = toSignal(this._userService.role$, { initialValue: null });
-
-  /**
-   * Constructor
-   */
-  constructor() {}
-
-  // -----------------------------------------------------------------------------------------------------
-  // @ Private methods
-  // -----------------------------------------------------------------------------------------------------
+  readonly user = this._userService.userLogin;
+  readonly role = this._userService.role;
 }

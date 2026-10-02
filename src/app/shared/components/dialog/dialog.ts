@@ -1,22 +1,12 @@
-import { Component, inject, OnInit } from '@angular/core';
-import { DialogService } from 'app/core/services/dialog.service';
+import { Component, inject } from '@angular/core';
+import { DialogService } from '@core/services';
 
 @Component({
   selector: 'dialog-component',
   templateUrl: './dialog.html',
 })
-export class DialogComponent implements OnInit {
-  public _dialogService = inject(DialogService);
-
-  /**
-   * Constructor
-   */
-  constructor() {}
-
-  /**
-   * On Init
-   */
-  ngOnInit(): void {}
+export class DialogComponent {
+  public readonly _dialogService = inject(DialogService);
 
   /**
    * Confirm click

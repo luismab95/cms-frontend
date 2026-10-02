@@ -11,15 +11,6 @@ export class ReviewModeComponent {
   deleteChangeEvent = output<boolean>();
 
   /**
-   * Constructor
-   */
-  constructor() {}
-
-  // -----------------------------------------------------------------------------------------------------
-  // @ Private methods
-  // -----------------------------------------------------------------------------------------------------
-
-  /**
    * Delete changes
    */
   deleteChanges() {

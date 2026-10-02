@@ -1,23 +1,28 @@
 import { Component, signal, inject, effect, computed, input } from '@angular/core';
 import { NgClass } from '@angular/common';
-import { toSignal } from '@angular/core/rxjs-interop';
-import { ElementService } from 'app/core/services/element.service';
-import { PageService } from 'app/core/services/pages.service';
-import { LanguageService } from 'app/shared/services/language.service';
-import { CanvasService } from 'app/core/services/canvas.service';
-import { ParameterService } from 'app/core/services/parameter.service';
-import { TemplateService } from 'app/core/services/templates.service';
-import { ElementI, SectionI } from 'app/shared/interfaces/grid.interface';
-import { TabI } from 'app/shared/interfaces/drawer.interface';
-import { CanvasT } from 'app/core/interfaces/page.interface';
-import { TooltipDirective } from 'app/shared/directives/tooltip.directive';
-import { PermissionCode, validAction } from 'app/shared/utils/permission.utils';
-import { findParameter } from 'app/shared/utils/parameter.utils';
-import { deleteColumn, deleteElement, deleteRow } from 'app/shared/utils/grid.utils';
+import { CanvasT } from '@core/interfaces';
+import {
+  ElementService,
+  PageService,
+  ParameterService,
+  CanvasService,
+  TemplateService,
+} from '@core/services';
+import { TooltipDirective } from '@shared/directives';
+import { TabI, SectionI, ElementI } from '@shared/interfaces';
+import { LanguageService } from '@shared/services';
+import {
+  PermissionCode,
+  findParameter,
+  validAction,
+  deleteRow,
+  deleteColumn,
+  deleteElement,
+} from '@shared/utils';
 import { PermissionComponent } from '../permission/permission';
+import { DesignInspectorComponent } from './design-inspector/design-inspector';
 import { LangugesInspectorComponent } from './languages-inspector/languages-inspector';
 import { PropertiesInspectorComponent } from './properties-inspector/properties-inspector';
-import { DesignInspectorComponent } from './design-inspector/design-inspector';
 
 @Component({
   selector: 'inspector-component',
@@ -72,28 +77,11 @@ export class InspectorComponent {
   private readonly _canvasService = inject(CanvasService);
   private readonly _templateService = inject(TemplateService);
 
-  readonly page = toSignal(this._pageService.page$, { initialValue: null });
-  readonly template = toSignal(this._templateService.template$, { initialValue: null });
-  readonly languages = toSignal(this._languageService.languages$, {
-    initialValue: {
-      records: [],
-      total: 0,
-      page: 0,
-      totalPage: 0,
-    },
-  });
-  readonly elements = toSignal(this._elementService.elements$, {
-    initialValue: {
-      records: [],
-      total: 0,
-      page: 0,
-      totalPage: 0,
-    },
-  });
-  readonly parameters = toSignal(this._parameterService.parameter$, {
-    initialValue: [],
-  });
-
+  readonly page = this._pageService.page;
+  readonly template = this._templateService.template;
+  readonly languages = this._languageService.languages;
+  readonly elements = this._elementService.elements;
+  readonly parameters = this._parameterService.publicParameters;
   readonly selectedItemsInGrid = this._canvasService.selectedItemsInGrid;
 
   readonly urlStatics = computed(
@@ -122,7 +110,6 @@ export class InspectorComponent {
             ? 'section'
             : 'page';
   });
-
   readonly tabsComputed = computed(() => {
     const selectedItem = this.selectedItemsInGrid();
     const tabs = this.tabs().filter((tab) => tab.id !== 2);
@@ -151,14 +138,9 @@ export class InspectorComponent {
 
     effect(() => {
       const languages = this.languages().records;
-      if (!languages.length) {
-        return;
-      }
+      if (!languages.length) return;
 
-      if (this.selectedLanguage() >= languages.length) {
-        this.selectedLanguage.set(0);
-      }
-
+      if (this.selectedLanguage() >= languages.length) this.selectedLanguage.set(0);
       const tabs: TabI[] = languages.map(
         (lang) =>
           ({
@@ -169,7 +151,6 @@ export class InspectorComponent {
             description: lang.lang,
           }) as TabI,
       );
-
       this.tabsLanguages.set(tabs);
     });
   }
@@ -230,7 +211,6 @@ export class InspectorComponent {
         this.deleteElement(this.selectedItemsInGrid()?.element?.uuid!);
         break;
     }
-
     this.resetSelectedItem();
   }
 
@@ -310,10 +290,7 @@ export class InspectorComponent {
    * @returns
    */
   itemIconBackgroundClass(): string {
-    if (this.isEmpty()) {
-      return 'bg-indigo-100';
-    }
-
+    if (this.isEmpty()) return 'bg-indigo-100';
     return (
       {
         page: 'bg-gray-100',
@@ -330,9 +307,7 @@ export class InspectorComponent {
    * @returns
    */
   itemIconClass(): string {
-    if (this.isEmpty()) {
-      return 'fa-solid fa-sliders text-gray-600';
-    }
+    if (this.isEmpty()) return 'fa-solid fa-sliders text-gray-600';
 
     const icons: Record<string, string> = {
       page: `fa-solid text-gray-600  ${
@@ -347,9 +322,8 @@ export class InspectorComponent {
       column: 'fa-solid fa-table-columns text-slate-600',
     };
 
-    if (this.typeItem() === 'element') {
+    if (this.typeItem() === 'element')
       return `${this.getElementIcon(this.selectedItemsInGrid()!.element!)} text-emerald-600`;
-    }
 
     return icons[this.typeItem()] ?? 'fa-solid fa-cube text-slate-600';
   }
@@ -359,9 +333,7 @@ export class InspectorComponent {
    * @returns
    */
   itemTitle(): string {
-    if (this.isEmpty()) {
-      return 'Inspector de Propiedades';
-    }
+    if (this.isEmpty()) return 'Inspector de Propiedades';
 
     switch (this.typeItem()) {
       case 'page':
@@ -388,9 +360,7 @@ export class InspectorComponent {
    * @returns
    */
   itemUuid(): string {
-    if (this.isEmpty()) {
-      return '';
-    }
+    if (this.isEmpty()) return '';
 
     const selected = this.selectedItemsInGrid();
     switch (this.typeItem()) {

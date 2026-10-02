@@ -1,76 +1,86 @@
-import { inject, Injectable } from '@angular/core';
+import { inject, Injectable, signal } from '@angular/core';
 import { Router } from '@angular/router';
-
-import { Observable, Subject, lastValueFrom, timer } from 'rxjs';
+import { AuthService, UserService, ParameterService } from '@core/services';
+import { findParameter } from '@shared/utils';
+import { Subject, lastValueFrom, timer } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
-import { findParameter } from '../utils/parameter.utils';
-import { AuthService } from 'app/core/services/auth.service';
-import { ParameterService } from 'app/core/services/parameter.service';
-import { UserService } from 'app/core/services/user.service';
-import { UserI } from 'app/core/interfaces/user.interface';
 
 @Injectable({
   providedIn: 'root',
 })
 export class InactivityTimerService {
-  private user!: UserI;
-  private _activity$: Subject<void> = new Subject<void>();
-  private _inactivityTimer$!: Observable<number>;
-  private _inactivityValue!: number;
-  private _unsubscribe$: Subject<void> = new Subject<void>();
+  private readonly _authService = inject(AuthService);
+  private readonly _userService = inject(UserService);
+  private readonly _parameterService = inject(ParameterService);
+  private readonly _router = inject(Router);
 
-  private _authService = inject(AuthService);
-  private _userService = inject(UserService);
-  private _parameterService = inject(ParameterService);
-  private _router = inject(Router);
+  private readonly _user = this._userService.userLogin;
 
+  private readonly _inactivityValue = signal(0);
+
+  private readonly _activity$ = new Subject<void>();
+  private readonly _unsubscribe$ = new Subject<void>();
+
+  readonly inactivityValue = this._inactivityValue.asReadonly();
+
+  /**
+   * Constructor
+   */
   constructor() {
-    this.restartTimer();
-    this.setValueTime();
     this._activity$.subscribe(() => this.restartTimer());
-    this._userService.userLogin$.subscribe((user: UserI) => {
-      if (user) {
-        this.user = user;
-      }
-    });
+    this.loadInactivityTime();
   }
 
-  async setValueTime() {
+  /**
+   * Load time for inactivity
+   */
+  private async loadInactivityTime(): Promise<void> {
     const response = await lastValueFrom(this._parameterService.getPublic());
-    const inactivityParam = findParameter('APP_INACTIVITY', response.message)?.value;
-    this._inactivityValue = Number(inactivityParam) * 60 * 1000;
+    const value = findParameter('APP_INACTIVITY', response.message)?.value;
+    this._inactivityValue.set(Number(value) * 60 * 1000);
+    this.restartTimer();
   }
 
-  private async restartTimer() {
-    if (this._inactivityTimer$) {
-      this._unsubscribe$.next();
-    }
-    if (this._inactivityValue) {
-      this._inactivityTimer$ = timer(this._inactivityValue);
-      this._inactivityTimer$
-        .pipe(takeUntil(this._activity$), takeUntil(this._unsubscribe$))
-        .subscribe(async () => {
-          const user = { ...this.user };
-          const token = this._authService.accessToken;
-          const url = window.location.pathname;
-          const urlSplit = url.split('/');
+  /**
+   * Reset timer
+   * @returns
+   */
+  private restartTimer(): void {
+    this._unsubscribe$.next();
 
-          if (token && urlSplit[1] == 'admin') {
-            await lastValueFrom(this._authService.logout(token));
-            await lastValueFrom(this._authService.signOut());
+    const timeout = this._inactivityValue();
+    if (!timeout) return;
 
-            this._router.navigate([
-              'auth/unlock-session',
-              {
-                email: user.email,
-                name: `${user.firstname} ${user.lastname}`,
-              },
-            ]);
-          }
-        });
-    }
+    timer(timeout)
+      .pipe(takeUntil(this._activity$), takeUntil(this._unsubscribe$))
+      .subscribe(() => this.handleInactivity());
   }
 
+  /**
+   * Detect activity/inactivity
+   * @returns
+   */
+  private async handleInactivity(): Promise<void> {
+    const token = this._authService.accessToken;
+    if (!token || !window.location.pathname.startsWith('/admin')) return;
+
+    const user = this._user();
+    if (!user) return;
+
+    await lastValueFrom(this._authService.logout(token));
+    await lastValueFrom(this._authService.signOut());
+    this._router.navigate([
+      'auth/unlock-session',
+      {
+        email: user.email,
+        name: `${user.firstname} ${user.lastname}`,
+      },
+    ]);
+  }
+
+  /**
+   * Detect activity
+   */
   activityDetected(): void {
     this._activity$.next();
   }

@@ -1,4 +1,4 @@
-import { PageElementsI } from 'app/shared/interfaces/grid.interface';
+import { PageElementsI } from '@shared/interfaces';
 
 export interface TemplateI {
   id?: number;

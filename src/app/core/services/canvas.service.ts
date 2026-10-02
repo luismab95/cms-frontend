@@ -1,15 +1,13 @@
 import { inject, Injectable, signal } from '@angular/core';
-import { toSignal } from '@angular/core/rxjs-interop';
+import { CanvasT } from '@core/interfaces';
 import {
   HistoryChangeI,
-  HistoryCMSI,
-  PageElementsConfigI,
-  SectionI,
   SelectedItemsInGridI,
-} from 'app/shared/interfaces/grid.interface';
-import { TemplateService } from './templates.service';
-import { PageService } from './pages.service';
-import { CanvasT } from '../interfaces/page.interface';
+  SectionI,
+  PageElementsConfigI,
+  HistoryCMSI,
+} from '@shared/interfaces';
+import { PageService, TemplateService } from '@core/services';
 
 @Injectable({
   providedIn: 'root',
@@ -26,8 +24,8 @@ export class CanvasService {
   private readonly _pageService = inject(PageService);
   private readonly _templateService = inject(TemplateService);
 
-  readonly page = toSignal(this._pageService.page$, { initialValue: null });
-  readonly template = toSignal(this._templateService.template$, { initialValue: null });
+  readonly page = this._pageService.page;
+  readonly template = this._templateService.template;
 
   readonly sectionsByType = {
     page: {
@@ -35,7 +33,7 @@ export class CanvasService {
       set: (sections: SectionI[]) => {
         const page = this.page();
         if (!page) return;
-        this._pageService.page = {
+        this._pageService.page.set({
           ...page,
           data: {
             ...page.data,
@@ -44,7 +42,7 @@ export class CanvasService {
               data: sections,
             },
           },
-        };
+        });
       },
     },
     header: {
@@ -52,7 +50,7 @@ export class CanvasService {
       set: (sections: SectionI[]) => {
         const template = this.template();
         if (!template) return;
-        this._templateService.template = {
+        this._templateService.template.set({
           ...template,
           data: {
             ...template.data!,
@@ -61,7 +59,7 @@ export class CanvasService {
               data: sections,
             },
           },
-        };
+        });
       },
     },
     footer: {
@@ -69,7 +67,7 @@ export class CanvasService {
       set: (sections: SectionI[]) => {
         const template = this.template();
         if (!template) return;
-        this._templateService.template = {
+        this._templateService.template.set({
           ...template,
           data: {
             ...template.data!,
@@ -78,7 +76,7 @@ export class CanvasService {
               data: sections,
             },
           },
-        };
+        });
       },
     },
   } satisfies Record<
@@ -94,7 +92,7 @@ export class CanvasService {
       set: (pageElementsConfig: PageElementsConfigI) => {
         const page = this.page();
         if (!page) return;
-        this._pageService.page = {
+        this._pageService.page.set({
           ...page,
           data: {
             ...page.data,
@@ -104,7 +102,7 @@ export class CanvasService {
               config: pageElementsConfig.config,
             },
           },
-        };
+        });
       },
     },
     header: {
@@ -112,7 +110,7 @@ export class CanvasService {
       set: (pageElementsConfig: PageElementsConfigI) => {
         const template = this.template();
         if (!template) return;
-        this._templateService.template = {
+        this._templateService.template.set({
           ...template,
           data: {
             ...template.data!,
@@ -122,7 +120,7 @@ export class CanvasService {
               config: pageElementsConfig.config,
             },
           },
-        };
+        });
       },
     },
     footer: {
@@ -130,7 +128,7 @@ export class CanvasService {
       set: (pageElementsConfig: PageElementsConfigI) => {
         const template = this.template();
         if (!template) return;
-        this._templateService.template = {
+        this._templateService.template.set({
           ...template,
           data: {
             ...template.data!,
@@ -140,7 +138,7 @@ export class CanvasService {
               config: pageElementsConfig.config,
             },
           },
-        };
+        });
       },
     },
   } satisfies Record<
@@ -160,7 +158,6 @@ export class CanvasService {
     const source = (gridType === 'page' ? this.page()?.data : this.template()?.data) as any;
     const currentConfig: { [key: string]: any } =
       source[gridType === 'page' ? 'body' : gridType].config;
-
     if (!source) return;
 
     const createHistory = (config: { [key: string]: any }): HistoryCMSI => ({
@@ -178,7 +175,6 @@ export class CanvasService {
             ? null
             : source.footer,
     });
-
     this.commit(createHistory(currentConfig), createHistory(config));
   }
 
@@ -219,7 +215,6 @@ export class CanvasService {
    */
   updateChangesInCanvas(gridType: CanvasT, previous: SectionI[], next: SectionI[]) {
     const source = (gridType === 'page' ? this.page()?.data : this.template()?.data) as any;
-
     if (!source) return;
 
     const createHistory = (data: SectionI[]): HistoryCMSI => ({
@@ -237,26 +232,19 @@ export class CanvasService {
             ? null
             : source.footer,
     });
-
     this.commit(createHistory(previous), createHistory(next));
   }
 
   /**
-   * Guarda un cambio completo del canvas.
-   *
-   * Puede haber cambios en header, body o footer,
-   * pero todos forman parte del mismo historial.
-   *
-   * @param previous Estado del canvas antes del cambio.
-   * @param next Estado del canvas después del cambio.
+   * Store a change in the history.
+   * @param previous
+   * @param next
    */
   commit(previous: HistoryCMSI, next: HistoryCMSI): void {
     const currentIndex = this.currentIndex();
     const previousState = structuredClone(previous);
     const nextState = structuredClone(next);
 
-    // Si hicimos undo y luego hacemos un nuevo cambio,
-    // eliminamos todo lo que estaba por delante.
     if (currentIndex < this.history().length - 1) {
       this.history.update((items) => items.slice(0, currentIndex + 1));
     }
@@ -269,76 +257,52 @@ export class CanvasService {
       },
     ]);
 
-    // Limitar historial
-    if (this.history().length > this.MAX_HISTORY) {
-      this.history.update((items) => items.slice(1));
-    }
-
+    if (this.history().length > this.MAX_HISTORY) this.history.update((items) => items.slice(1));
     this.currentIndex.set(this.history().length - 1);
-
     this.updateAvailability();
   }
 
   /**
-   * Undo.
-   *
-   * @returns Estado anterior del canvas, o null si no hay cambios que deshacer.
+   * Undo
+   * @returns
    */
   undo(): HistoryCMSI | null {
     const index = this.currentIndex();
-
-    if (index < 0) {
-      return null;
-    }
-
+    if (index < 0) return null;
     const change = this.history()[index];
-
     this.currentIndex.set(index - 1);
-
     this.updateAvailability();
-
     return structuredClone(change.previous);
   }
 
   /**
-   * Redo.
-   *
-   * @returns Siguiente estado del canvas, o null si no hay cambios que rehacer.
+   * Redo
+   * @returns
    */
   redo(): HistoryCMSI | null {
     const nextIndex = this.currentIndex() + 1;
-
-    if (nextIndex >= this.history().length) {
-      return null;
-    }
-
+    if (nextIndex >= this.history().length) return null;
     const change = this.history()[nextIndex];
-
     this.currentIndex.set(nextIndex);
-
     this.updateAvailability();
-
     return structuredClone(change.next);
   }
 
   /**
-   * Limpia todo el historial.
+   * Clear the history of changes.
    */
   clear(): void {
     this.history.set([]);
-
     this.currentIndex.set(-1);
-
     this.updateAvailability();
   }
 
   /**
-   * Actualiza disponibilidad de undo/redo.
+   * Update the availability of undo and redo actions based on the current index and history length.
    */
   private updateAvailability(): void {
     const index = this.currentIndex();
     const length = this.history().length;
-
     this.canUndo.set(index >= 0);
     this.canRedo.set(index < length - 1);
   }

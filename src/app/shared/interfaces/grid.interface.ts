@@ -1,4 +1,4 @@
-import { CanvasT } from 'app/core/interfaces/page.interface';
+import { CanvasT } from '@core/interfaces';
 import { ElementDataI } from './element.interface';
 
 export interface SelectedItemsInGridI {

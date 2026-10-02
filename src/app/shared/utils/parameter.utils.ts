@@ -1,4 +1,4 @@
-import { ParameterI } from 'app/core/interfaces/parameter.interface';
+import { ParameterI } from '@core/interfaces';
 
 /**
  * Find parameter by code

@@ -1,24 +1,15 @@
-import { Component, OnInit, output } from '@angular/core';
+import { Component, output } from '@angular/core';
 
 @Component({
   selector: 'modal-component',
   templateUrl: './modal.html',
 })
-export class ModalComponent implements OnInit {
+export class ModalComponent {
   closeModalEvent = output<boolean>();
 
   /**
-   * Constructor
-   */
-  constructor() {}
-
-  /**
-   * On Init
-   */
-  ngOnInit(): void {}
-
-  /**
    * Close Modal
+   * @param load
    */
   closeModal(load: boolean) {
     this.closeModalEvent.emit(load);

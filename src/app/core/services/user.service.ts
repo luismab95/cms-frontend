@@ -1,110 +1,26 @@
 import { HttpClient } from '@angular/common/http';
-import { inject, Injectable } from '@angular/core';
-import {
-  PaginationResponseI,
-  PaginationResquestI,
-  ResponseI,
-} from 'app/shared/interfaces/response.interface';
-import { StorageUtils } from 'app/shared/utils/storage.util';
-import { environment } from 'environments/environment';
-import { UserI, RoleI, PermissionI, SessionUserI } from '../interfaces/user.interface';
-import { Observable, ReplaySubject, tap } from 'rxjs';
+import { inject, Injectable, signal } from '@angular/core';
+import { UserI, RoleI, PermissionI, SessionUserI } from '@core/interfaces';
+import { PaginationResponseI, PaginationResquestI, ResponseI } from '@shared/interfaces';
+import { buildQueryParams, DefaultPaginationParams, StorageUtils } from '@shared/utils';
 import { NavigationService } from './navigation.service';
+import { environment } from 'environments/environment';
+import { Observable, tap } from 'rxjs';
 
 @Injectable({ providedIn: 'root' })
 export class UserService {
-  private prefix = 'ms-security';
-  private url = environment.apiUrl;
-  private _httpClient = inject(HttpClient);
-  private _user: ReplaySubject<UserI> = new ReplaySubject<UserI>(1);
-  private _userLogin: ReplaySubject<UserI> = new ReplaySubject<UserI>(1);
-  private _users: ReplaySubject<PaginationResponseI<UserI[]>> = new ReplaySubject<
-    PaginationResponseI<UserI[]>
-  >(1);
-  private _role: ReplaySubject<RoleI> = new ReplaySubject<RoleI>(1);
-  private _permission: ReplaySubject<PermissionI> = new ReplaySubject<PermissionI>(1);
+  users = signal<PaginationResponseI<UserI[]>>(DefaultPaginationParams<UserI[]>());
+  user = signal<UserI | null>(null);
+  userLogin = signal<UserI | null>(null);
+  role = signal<RoleI | null>(null);
+  permission = signal<PermissionI | null>(null);
 
+  private readonly prefix = 'ms-security';
+  private readonly url = environment.apiUrl;
 
-  private _navigationService = inject(NavigationService);
-  private _storageUtils = inject(StorageUtils);
-
-  // -----------------------------------------------------------------------------------------------------
-  // @ Accessors
-  // -----------------------------------------------------------------------------------------------------
-
-  /**
-   * Setter & getter for user
-   *
-   * @param value
-   */
-  set user(value: UserI) {
-    // Store the value
-    this._user.next(value);
-  }
-
-  get user$(): Observable<UserI> {
-    return this._user.asObservable();
-  }
-
-  /**
-   * Setter & getter for userLogin
-   *
-   * @param value
-   */
-  set userLogin(value: UserI) {
-    // Store the value
-    this._userLogin.next(value);
-  }
-
-  get userLogin$(): Observable<UserI> {
-    return this._userLogin.asObservable();
-  }
-
-  /**
-   * Setter & getter for role
-   *
-   * @param value
-   */
-  set role(value: RoleI) {
-    // Store the value
-    this._role.next(value);
-  }
-
-  get role$(): Observable<RoleI> {
-    return this._role.asObservable();
-  }
-
-  /**
-   * Setter & getter for navigation
-   *
-   * @param value
-   */
-  set permission(value: PermissionI) {
-    // Store the value
-    this._permission.next(value);
-  }
-
-  get permission$(): Observable<PermissionI> {
-    return this._permission.asObservable();
-  }
-
-  /**
-   * Setter & getter for users
-   *
-   * @param value
-   */
-  set users(value: PaginationResponseI<UserI[]>) {
-    // Store the value
-    this._users.next(value);
-  }
-
-  get users$(): Observable<PaginationResponseI<UserI[]>> {
-    return this._users.asObservable();
-  }
-
-  // -----------------------------------------------------------------------------------------------------
-  // @ Public methods
-  // -----------------------------------------------------------------------------------------------------
+  private readonly _httpClient = inject(HttpClient);
+  private readonly _navigationService = inject(NavigationService);
+  private readonly _storageUtils = inject(StorageUtils);
 
   /**
    * Get all users
@@ -112,17 +28,14 @@ export class UserService {
    * @returns
    */
   getAll(params: PaginationResquestI): Observable<ResponseI<PaginationResponseI<UserI[]>>> {
-    let queryParams: string = `?limit=${params.limit}&page=${params.page}&`;
-    if (params.search !== null) queryParams += `search=${params.search}&`;
-    if (params.status !== null) queryParams += `status=${params.status}&`;
-
+    const queryParams = buildQueryParams(params);
     return this._httpClient
       .get<ResponseI<PaginationResponseI<UserI[]>>>(
         `${this.url}/${this.prefix}/users${queryParams}`,
       )
       .pipe(
         tap((response) => {
-          this._users.next(response.message);
+          this.users.set(response.message);
         }),
       );
   }
@@ -135,10 +48,10 @@ export class UserService {
       .get<ResponseI<SessionUserI>>(`${this.url}/${this.prefix}/users/session`)
       .pipe(
         tap((response) => {
-          this._userLogin.next(response.message.user);
-          this._role.next(response.message.role);
-          this._navigationService._navigation.next(response.message.navigation);
-          this._permission.next(response.message.permission);
+          this.userLogin.set(response.message.user);
+          this.role.set(response.message.role);
+          this._navigationService.navigation.set(response.message.navigation);
+          this.permission.set(response.message.permission);
           this._storageUtils.saveLocalStorage(
             'actions',
             JSON.stringify(response.message.permission.scope[0].action),
@@ -153,19 +66,17 @@ export class UserService {
 
   /**
    * Create the user
-   *
    * @param user
+   * @returns
    */
   create(user: UserI): Observable<ResponseI<string>> {
-    return this._httpClient.post<ResponseI<string>>(`${this.url}/${this.prefix}/users`, {
-      ...user,
-    });
+    return this._httpClient.post<ResponseI<string>>(`${this.url}/${this.prefix}/users`, user);
   }
 
   /**
    * Delete the user
-   *
    * @param userId
+   * @returns
    */
   delete(userId: number): Observable<ResponseI<string>> {
     return this._httpClient.delete<ResponseI<string>>(`${this.url}/${this.prefix}/users/${userId}`);
@@ -173,16 +84,16 @@ export class UserService {
 
   /**
    * Update the user
-   *
    * @param userId
    * @param user
+   * @returns
    */
   update(userId: number, user: UserI): Observable<ResponseI<UserI>> {
     return this._httpClient
-      .patch<ResponseI<UserI>>(`${this.url}/${this.prefix}/users/${userId}`, { ...user })
+      .patch<ResponseI<UserI>>(`${this.url}/${this.prefix}/users/${userId}`, user)
       .pipe(
         tap((response) => {
-          this._user.next(response.message);
+          this.user.set(response.message);
         }),
       );
   }

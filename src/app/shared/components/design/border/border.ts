@@ -1,8 +1,8 @@
 import { Component, DestroyRef, effect, inject, input, output, signal } from '@angular/core';
 import { toObservable, takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { form, FormField } from '@angular/forms/signals';
-import { BorderStylesI } from 'app/shared/interfaces/design.interface';
-import { defaultBorderStyles } from 'app/shared/utils/grid.utils';
+import { BorderStylesI } from '@shared/interfaces';
+import { defaultBorderStyles } from '@shared/utils';
 import { debounceTime, distinctUntilChanged } from 'rxjs';
 
 @Component({

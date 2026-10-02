@@ -9,8 +9,8 @@ import {
 export class CmsValidators {
   /**
    * Check for empty (optional fields) values
-   *
    * @param value
+   * @returns
    */
   static isEmptyInputValue(value: any): boolean {
     return value == null || value.length === 0;
@@ -18,9 +18,9 @@ export class CmsValidators {
 
   /**
    * Must match validator
-   *
-   * @param controlPath A dot-delimited string values that define the path to the control.
-   * @param matchingControlPath A dot-delimited string values that define the path to the matching control.
+   * @param controlPath
+   * @param matchingControlPath
+   * @returns
    */
   static mustMatch(controlPath: string, matchingControlPath: string): ValidatorFn {
     return (formGroup: AbstractControl): ValidationErrors | null => {
@@ -68,6 +68,7 @@ export class CmsValidators {
   static validateOnlyFormControl(formControl: FormControl): boolean {
     return formControl.invalid && formControl.touched;
   }
+
   static getErrorMessageFormControl(formControl: FormControl): string {
     if (!formControl.touched) return '';
     if (!formControl || !formControl.errors) return '';

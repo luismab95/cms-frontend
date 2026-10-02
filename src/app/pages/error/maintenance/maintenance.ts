@@ -6,9 +6,4 @@ import { RouterLink } from '@angular/router';
   templateUrl: './maintenance.html',
   imports: [RouterLink],
 })
-export class Maintenance {
-  /**
-   * Constructor
-   */
-  constructor() {}
-}
+export class Maintenance {}

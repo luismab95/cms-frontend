@@ -1,70 +1,42 @@
 import { HttpClient } from '@angular/common/http';
-import { Injectable } from '@angular/core';
-import { FileI, FilePaginationResquestI } from '../interfaces/file.interface';
-import { PaginationResponseI, ResponseI } from 'app/shared/interfaces/response.interface';
+import { inject, Injectable, signal } from '@angular/core';
+import { FileI, FilePaginationResquestI } from '@core/interfaces';
+import { PaginationResponseI, ResponseI } from '@shared/interfaces';
+import { buildQueryParams, DefaultPaginationParams } from '@shared/utils';
 import { environment } from 'environments/environment';
-import { Observable, ReplaySubject, tap } from 'rxjs';
+import { Observable, tap } from 'rxjs';
 
 @Injectable({ providedIn: 'root' })
 export class FileManagerService {
-  // Private
-  private prefix = 'ms-cms';
-  private url = environment.apiUrl;
-  private _files: ReplaySubject<PaginationResponseI<FileI[]>> = new ReplaySubject<
-    PaginationResponseI<FileI[]>
-  >(1);
+  files = signal<PaginationResponseI<FileI[]>>(DefaultPaginationParams<FileI[]>());
 
-  /**
-   * Constructor
-   */
-  constructor(private _httpClient: HttpClient) {}
+  private readonly prefix = 'ms-cms';
+  private readonly url = environment.apiUrl;
 
-  // -----------------------------------------------------------------------------------------------------
-  // @ Accessors
-  // -----------------------------------------------------------------------------------------------------
-
-  /**
-   * Setter & getter for files
-   *
-   * @param value
-   */
-  set files(value: PaginationResponseI<FileI[]>) {
-    // Store the value
-    this._files.next(value);
-  }
-
-  get files$(): Observable<PaginationResponseI<FileI[]>> {
-    return this._files.asObservable();
-  }
-
-  // -----------------------------------------------------------------------------------------------------
-  // @ Public methods
-  // -----------------------------------------------------------------------------------------------------
+  private readonly _httpClient = inject(HttpClient);
 
   /**
    * Get files
+   * @param params
+   * @returns
    */
   getFiles(params: FilePaginationResquestI): Observable<ResponseI<PaginationResponseI<FileI[]>>> {
-    let queryParams: string = `?limit=${params.limit}&page=${params.page}&`;
-    if (params.search !== null) queryParams += `search=${params.search}&`;
-    if (params.status !== null) queryParams += `status=${params.status}&`;
-    if (params.mimeType !== null) queryParams += `mimeType=${params.mimeType}&`;
-
+    const queryParams = buildQueryParams(params);
     return this._httpClient
       .get<ResponseI<PaginationResponseI<FileI[]>>>(
         `${this.url}/${this.prefix}/files${queryParams}`,
       )
       .pipe(
         tap((response) => {
-          this._files.next(response.message);
+          this.files.set(response.message);
         }),
       );
   }
 
   /**
    * Create the file
-   *
    * @param user
+   * @returns
    */
   create(file: FileI): Observable<ResponseI<string>> {
     return this._httpClient.post<ResponseI<string>>(`${this.url}/${this.prefix}/files`, {
@@ -74,8 +46,8 @@ export class FileManagerService {
 
   /**
    * Delete the file
-   *
    * @param fileId
+   * @returns
    */
   delete(fileId: number): Observable<ResponseI<string>> {
     return this._httpClient.delete<ResponseI<string>>(`${this.url}/${this.prefix}/files/${fileId}`);
@@ -83,9 +55,9 @@ export class FileManagerService {
 
   /**
    * Update the file
-   *
    * @param fileId
    * @param file
+   * @returns
    */
   update(fileId: number, file: FileI): Observable<ResponseI<string>> {
     return this._httpClient.patch<ResponseI<string>>(`${this.url}/${this.prefix}/files/${fileId}`, {

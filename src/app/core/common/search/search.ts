@@ -1,80 +1,67 @@
 import {
   Component,
   computed,
+  DestroyRef,
+  effect,
   ElementRef,
   inject,
   OnDestroy,
-  OnInit,
   signal,
   TemplateRef,
-  ViewChild,
+  viewChild,
   ViewContainerRef,
 } from '@angular/core';
-import { debounceTime, distinctUntilChanged, Subject, takeUntil } from 'rxjs';
+import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
 import { Overlay, OverlayRef } from '@angular/cdk/overlay';
 import { TemplatePortal } from '@angular/cdk/portal';
 import { NgClass } from '@angular/common';
-import { NavigationService } from 'app/core/services/navigation.service';
-import { NavigationI } from 'app/core/interfaces/navigation.interface';
-import { ChangeDetectorRef } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { NavigationI } from '@core/interfaces';
+import { NavigationService } from '@core/services';
+import { debounceTime, distinctUntilChanged } from 'rxjs';
 
 @Component({
   selector: 'search-component',
   templateUrl: './search.html',
   imports: [RouterLink, NgClass],
 })
-export class Search implements OnInit, OnDestroy {
-  @ViewChild('searchOrigin') private _searchOrigin!: ElementRef<HTMLElement>;
-  @ViewChild('searchPanel')
-  private _searchPanel!: TemplateRef<any>;
+export class Search implements OnDestroy {
+  private readonly searchOrigin = viewChild.required<ElementRef<HTMLElement>>('searchOrigin');
+  private readonly searchPanel = viewChild.required<TemplateRef<any>>('searchPanel');
 
-  navigation = signal<NavigationI[]>([]);
   navigationSearch = signal<NavigationI[]>([]);
+  searchValue = signal<string>('');
   currrentNavigation = signal<NavigationI | null>(null);
 
-  totalResults = computed(
+  readonly totalResults = computed(
     () => this.navigationSearch().flatMap((nav) => nav.children ?? []).length,
   );
 
   private _overlayRef!: OverlayRef;
-  private searchSubject = new Subject<string>();
-  private _unsubscribeAll: Subject<any> = new Subject<any>();
 
+  private _destroyRef = inject(DestroyRef);
   private _overlay = inject(Overlay);
   private _viewContainerRef = inject(ViewContainerRef);
   private _navigationService = inject(NavigationService);
-  private _changeDetectorRef = inject(ChangeDetectorRef);
+
+  readonly navigation = this._navigationService.navigation;
 
   /**
    * Constructor
    */
   constructor() {
-    this.searchSubject
-      .pipe(debounceTime(400), distinctUntilChanged(), takeUntil(this._unsubscribeAll))
+    effect(() => {
+      const navigation = this.navigation();
+      const currentPath = window.location.pathname.replace(/^\/admin\//, '');
+      this.currrentNavigation.set(
+        this._navigationService.getCurrentNavigation(navigation, currentPath),
+      );
+    });
+
+    toObservable(this.searchValue)
+      .pipe(debounceTime(400), distinctUntilChanged(), takeUntilDestroyed(this._destroyRef))
       .subscribe((term) => {
         this.search(term);
-      });
-  }
-
-  // -----------------------------------------------------------------------------------------------------
-  // @ Lifecycle hooks
-  // -----------------------------------------------------------------------------------------------------
-
-  /**
-   * On init
-   */
-  ngOnInit(): void {
-    // Subscribe to  data
-    this._navigationService.navigation$
-      .pipe(takeUntil(this._unsubscribeAll))
-      .subscribe((navigation: NavigationI[]) => {
-        this.navigation.set(navigation);
-        const currentPath = window.location.pathname.replace(/^\/admin\//, '');
-        this.currrentNavigation.set(
-          this._navigationService.getCurrentNavigation(navigation, currentPath),
-        );
-        this._changeDetectorRef.markForCheck();
       });
   }
 
@@ -82,31 +69,18 @@ export class Search implements OnInit, OnDestroy {
    * On destroy
    */
   ngOnDestroy(): void {
-    // Unsubscribe from all subscriptions
-    this._unsubscribeAll.next(null);
-    this._unsubscribeAll.complete();
+    if (this._overlayRef) {
+      this._overlayRef.dispose();
+    }
   }
-
-  // -----------------------------------------------------------------------------------------------------
-  // @ Public methods
-  // -----------------------------------------------------------------------------------------------------
 
   /**
    * Open the notifications panel
    */
   openPanel(): void {
-    // Return if the notifications panel or its origin is not defined
-    if (!this._searchPanel || !this._searchOrigin) {
-      return;
-    }
-
-    // Create the overlay if it doesn't exist
-    if (!this._overlayRef) {
-      this._createOverlay();
-    }
-
-    // Attach the portal to the overlay
-    this._overlayRef.attach(new TemplatePortal(this._searchPanel, this._viewContainerRef));
+    if (!this.searchPanel() || !this.searchOrigin()) return;
+    if (!this._overlayRef) this._createOverlay();
+    this._overlayRef.attach(new TemplatePortal(this.searchPanel(), this._viewContainerRef));
   }
 
   /**
@@ -122,7 +96,7 @@ export class Search implements OnInit, OnDestroy {
    */
   onSearch(event: Event): void {
     const input = event.target as HTMLInputElement;
-    this.searchSubject.next(input.value);
+    this.searchValue.set(input.value);
   }
 
   /**
@@ -133,12 +107,7 @@ export class Search implements OnInit, OnDestroy {
     input.value = '';
     input.focus();
     this.closePanel();
-    this._changeDetectorRef.markForCheck();
   }
-
-  // -----------------------------------------------------------------------------------------------------
-  // @ Private methods
-  // -----------------------------------------------------------------------------------------------------
 
   /**
    * Create the overlay
@@ -150,7 +119,7 @@ export class Search implements OnInit, OnDestroy {
       scrollStrategy: this._overlay.scrollStrategies.block(),
       positionStrategy: this._overlay
         .position()
-        .flexibleConnectedTo(this._searchOrigin.nativeElement)
+        .flexibleConnectedTo(this.searchOrigin().nativeElement)
         .withLockedPosition(true)
         .withPush(true)
         .withPositions([
@@ -163,10 +132,12 @@ export class Search implements OnInit, OnDestroy {
         ]),
     });
 
-    // Detach the overlay from the portal on backdrop click
-    this._overlayRef.backdropClick().subscribe(() => {
-      this._overlayRef.detach();
-    });
+    this._overlayRef
+      .backdropClick()
+      .pipe(takeUntilDestroyed(this._destroyRef))
+      .subscribe(() => {
+        this._overlayRef.detach();
+      });
   }
 
   /**
@@ -195,35 +166,23 @@ export class Search implements OnInit, OnDestroy {
    */
   filterNavigation(navigation: NavigationI[], search: string): NavigationI[] {
     const term = search.trim().toLowerCase();
-
-    if (!term) {
-      return navigation;
-    }
+    if (!term) return navigation;
 
     const result: NavigationI[] = [];
-
     for (const item of navigation) {
       const matchesTitle = item.title.toLowerCase().includes(term);
-
       const matchesSubtitle = item.subtitle?.toLowerCase().includes(term) ?? false;
-
       const filteredChildren: NavigationI[] = item.children
         ? this.filterNavigation(item.children, term)
         : [];
-
       if (matchesTitle || matchesSubtitle || filteredChildren.length > 0) {
         const filteredItem: NavigationI = {
           ...item,
         };
-
-        if (item.children) {
-          filteredItem.children = filteredChildren;
-        }
-
+        if (item.children) filteredItem.children = filteredChildren;
         result.push(filteredItem);
       }
     }
-
     return result;
   }
 }

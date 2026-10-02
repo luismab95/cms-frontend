@@ -1,32 +1,14 @@
-import { Component, input, OnInit } from '@angular/core';
-import { ParameterI } from 'app/core/interfaces/parameter.interface';
-import { findParameter, getLogo } from 'app/shared/utils/parameter.utils';
+import { Component, input } from '@angular/core';
+import { ParameterI } from '@core/interfaces';
+import { findParameter, getLogo } from '@shared/utils';
 
 @Component({
   selector: 'auth-component',
   templateUrl: './auth.html',
   imports: [],
 })
-export class AuthComponent implements OnInit {
+export class AuthComponent {
   readonly parameters = input<ParameterI[]>([]);
-
-  /**
-   * Constructor
-   */
-  constructor() {}
-
-  // -----------------------------------------------------------------------------------------------------
-  // @ Lifecycle hooks
-  // -----------------------------------------------------------------------------------------------------
-
-  /**
-   * On init
-   */
-  ngOnInit(): void {}
-
-  // -----------------------------------------------------------------------------------------------------
-  // @ Public methods
-  // -----------------------------------------------------------------------------------------------------
 
   /**
    * Get value of auth background

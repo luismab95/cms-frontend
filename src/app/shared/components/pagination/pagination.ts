@@ -25,68 +25,36 @@ export class PaginationComponent {
     const current = this.page();
     const totalPages = this.pages();
 
-    // No hay paginación
-    if (totalPages <= 1) {
-      return [1];
-    }
-
-    // Hasta 7 páginas: mostramos todas
-    if (totalPages <= 7) {
-      return Array.from({ length: totalPages }, (_, index) => index + 1);
-    }
+    if (totalPages <= 1) return [1];
+    if (totalPages <= 7) return Array.from({ length: totalPages }, (_, index) => index + 1);
 
     const result: PageItem[] = [];
-
-    // Siempre mostrar primera página
     result.push(1);
 
-    /*
-     * Primeras páginas
-     *
-     * 1 2 3 4 5 ... 100
-     */
     if (current <= 4) {
       result.push(2, 3, 4, 5);
       result.push('...');
       result.push(totalPages);
-
       return result;
     }
 
-    /*
-     * Últimas páginas
-     *
-     * 1 ... 96 97 98 99 100
-     */
     if (current >= totalPages - 3) {
       result.push('...');
       result.push(totalPages - 4, totalPages - 3, totalPages - 2, totalPages - 1, totalPages);
-
       return result;
     }
 
-    /*
-     * Página intermedia
-     *
-     * 1 ... 499 500 501 ... 1000
-     */
     result.push('...');
-
     result.push(current - 1, current, current + 1);
-
     result.push('...');
     result.push(totalPages);
 
     return result;
   });
   readonly startItem = computed(() => {
-    if (this.total() === 0) {
-      return 0;
-    }
-
+    if (this.total() === 0) return 0;
     return (this.page() - 1) * this.limit() + 1;
   });
-
   readonly endItem = computed(() => {
     return Math.min(this.page() * this.limit(), this.total());
   });
@@ -97,10 +65,7 @@ export class PaginationComponent {
    * @returns
    */
   changeEvent(page: number): void {
-    if (page < 1 || page > this.pages() || page === this.page()) {
-      return;
-    }
-
+    if (page < 1 || page > this.pages() || page === this.page()) return;
     this.pageEvent.emit(page);
   }
 

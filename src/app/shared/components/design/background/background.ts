@@ -1,16 +1,16 @@
 import { Component, DestroyRef, effect, inject, input, output, signal } from '@angular/core';
 import { form, FormField } from '@angular/forms/signals';
+import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
+import { TooltipDirective } from '@shared/directives';
 import {
-  BackgroundAttachmentT,
-  BackgroundClipT,
+  BackgroundStylesI,
+  BackgroundSizeT,
   BackgroundPositionT,
   BackgroundRepeatT,
-  BackgroundSizeT,
-  BackgroundStylesI,
-} from 'app/shared/interfaces/design.interface';
-import { TooltipDirective } from 'app/shared/directives/tooltip.directive';
-import { defaultBackgroundStyles } from 'app/shared/utils/grid.utils';
-import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
+  BackgroundAttachmentT,
+  BackgroundClipT,
+} from '@shared/interfaces';
+import { defaultBackgroundStyles } from '@shared/utils';
 import { debounceTime, distinctUntilChanged } from 'rxjs';
 
 @Component({
@@ -201,6 +201,8 @@ export class DesignBackgroundComponent {
 
   /**
    * Updates the background color from the color picker.
+   * @param event
+   * @returns
    */
   onBackgroundColorChange(event: Event): void {
     const color = (event.target as HTMLInputElement).value;

@@ -1,24 +1,18 @@
 import { inject } from '@angular/core';
 import { CanActivateChildFn, CanActivateFn, Router } from '@angular/router';
+import { AuthService } from '@core/services';
 import { of, switchMap } from 'rxjs';
-import { AuthService } from '../services/auth.service';
 
-export const MenuGuard: CanActivateFn | CanActivateChildFn = (route, state) => {
+export const MenuGuard: CanActivateFn | CanActivateChildFn = (_, state) => {
   const router: Router = inject(Router);
-
-  // Check the authentication status
   return inject(AuthService)
-    .checkMenu(state)
+    .checkNavigation(state)
     .pipe(
       switchMap((response) => {
-        // If the user is not authenticated...
         if (!response) {
-          // Redirect to the home page
           const urlTree = router.parseUrl(`admin/`);
           return of(urlTree);
         }
-
-        // Allow the access
         return of(true);
       }),
     );

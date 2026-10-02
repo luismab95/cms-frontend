@@ -9,20 +9,20 @@ import {
   signal,
 } from '@angular/core';
 import { form, FormField } from '@angular/forms/signals';
+import { toObservable, takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { debounceTime, distinctUntilChanged } from 'rxjs';
+import { TooltipDirective } from '@shared/directives';
 import {
+  AlignContentT,
+  AlignItemsT,
+  AlignSelfT,
   DisplayT,
   FlexDirectionT,
   FlexWrapT,
   JustifyContentT,
-  AlignItemsT,
-  AlignContentT,
-  AlignSelfT,
   LayoutStylesI,
-} from 'app/shared/interfaces/design.interface';
-import { TooltipDirective } from 'app/shared/directives/tooltip.directive';
-import { defaultLayoutStyles } from 'app/shared/utils/grid.utils';
-import { toObservable, takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { debounceTime, distinctUntilChanged } from 'rxjs';
+} from '@shared/interfaces';
+import { defaultLayoutStyles } from '@shared/utils';
 
 @Component({
   selector: 'design-layout-component',
@@ -461,14 +461,8 @@ export class DesignLayoutComponent {
   readonly isGrid = computed(() => ['grid', 'inline-grid'].includes(this.layout().display));
   readonly isFlexOrGrid = computed(() => this.isFlex() || this.isGrid());
   readonly canUseAlignContent = computed(() => {
-    if (this.isGrid()) {
-      return true;
-    }
-
-    if (this.isFlex()) {
-      return this.layout().flexWrap !== 'nowrap';
-    }
-
+    if (this.isGrid()) return true;
+    if (this.isFlex()) return this.layout().flexWrap !== 'nowrap';
     return false;
   });
 

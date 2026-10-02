@@ -7,6 +7,11 @@ const isProduction = environment.production;
 
 @Injectable({ providedIn: 'root' })
 export class StorageUtils {
+  /**
+   * Save encryptStorage key
+   * @param key
+   * @param value
+   */
   saveLocalStorage(key: string, value: string) {
     if (isProduction) {
       const hash = encryptStorage.hash(key);
@@ -16,6 +21,11 @@ export class StorageUtils {
     }
   }
 
+  /**
+   * Get encryptStorage for key
+   * @param key
+   * @returns
+   */
   getLocalStorage(key: string): string | undefined {
     if (isProduction) {
       const hash = encryptStorage.hash(key);
@@ -25,6 +35,11 @@ export class StorageUtils {
     }
   }
 
+  /**
+   * Delete encryptStorage fro key
+   * @param key
+   * @returns
+   */
   deleteKeyStorage(key: string) {
     if (isProduction) {
       const hash = encryptStorage.hash(key);
@@ -32,14 +47,5 @@ export class StorageUtils {
     } else {
       localStorage.removeItem(key);
     }
-  }
-}
-
-export function getLocalStorage(key: string): string | undefined {
-  if (isProduction) {
-    const hash = encryptStorage.hash(key);
-    return encryptStorage.getItem(hash) || undefined;
-  } else {
-    return localStorage.getItem(key) ?? undefined;
   }
 }

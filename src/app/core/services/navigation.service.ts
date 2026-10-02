@@ -1,63 +1,26 @@
-import { Injectable } from '@angular/core';
-import { NavigationI } from '../interfaces/navigation.interface';
-import { Observable, ReplaySubject } from 'rxjs';
+import { Injectable, signal } from '@angular/core';
+import { NavigationI } from '@core/interfaces';
 
 @Injectable({ providedIn: 'root' })
 export class NavigationService {
-  public _navigation: ReplaySubject<NavigationI[]> = new ReplaySubject<NavigationI[]>(1);
-  public _isOpenNavigation: ReplaySubject<boolean> = new ReplaySubject<boolean>(1);
-
-  // -----------------------------------------------------------------------------------------------------
-  // @ Accessors
-  // -----------------------------------------------------------------------------------------------------
-
-  /**
-   * Getter for navigation
-   */
-  get navigation$(): Observable<NavigationI[]> {
-    return this._navigation.asObservable();
-  }
-
-  /**
-   * Getter for isOpenNavigation
-   */
-  get isOpenNavigation$(): Observable<boolean> {
-    return this._isOpenNavigation.asObservable();
-  }
-
-  /**
-   * Setter & getter for isOpenNavigation
-   * @param value
-   */
-  set isOpenNavigation(value: boolean) {
-    this._isOpenNavigation.next(value);
-  }
-
-  // -----------------------------------------------------------------------------------------------------
-  // @ Public methods
-  // -----------------------------------------------------------------------------------------------------
+  navigation = signal<NavigationI[]>([]);
+  isOpenNavigation = signal<boolean>(false);
 
   /**
    * Get current link
-   * @param items 
-   * @param link 
-   * @returns 
+   * @param items
+   * @param link
+   * @returns
    */
-  getCurrentNavigation(items: NavigationI[], link: string): NavigationI | null {    
+  getCurrentNavigation(items: NavigationI[], link: string): NavigationI | null {
     for (const item of items) {
-      if (item?.link === link) {
-        return item;
-      }
+      if (item?.link === link) return item;
 
       if (item.children?.length) {
         const found = this.getCurrentNavigation(item.children, link);
-
-        if (found) {
-          return found;
-        }
+        if (found) return found;
       }
     }
-
     return null;
   }
 }

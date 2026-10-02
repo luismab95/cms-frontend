@@ -1,4 +1,3 @@
-// tailwind-input-field.component.ts
 import { ChangeDetectionStrategy, Component, input } from '@angular/core';
 import { AsyncPipe } from '@angular/common';
 import { FormField } from '@angular/forms/signals';
@@ -61,8 +60,6 @@ export interface InputProps extends Record<string, unknown> {
         </div>
       }
     </div>
-
-    
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

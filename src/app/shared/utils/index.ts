@@ -8,3 +8,4 @@ export * from './permission.utils';
 export * from './random.utils';
 export * from './storage.util';
 export * from './validators.util';
+export * from './service.utils';

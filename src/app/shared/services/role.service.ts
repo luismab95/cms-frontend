@@ -1,39 +1,18 @@
 import { HttpClient } from '@angular/common/http';
-import { inject, Injectable } from '@angular/core';
-import { RoleI } from 'app/core/interfaces/user.interface';
-import { ResponseI } from 'app/shared/interfaces/response.interface';
+import { inject, Injectable, signal } from '@angular/core';
+import { RoleI } from '@core/interfaces';
+import { ResponseI } from '@shared/interfaces';
 import { environment } from 'environments/environment';
-import { Observable, ReplaySubject, tap } from 'rxjs';
+import { Observable, tap } from 'rxjs';
 
 @Injectable({ providedIn: 'root' })
 export class RoleService {
-  private url = environment.apiUrl;
-  private prefix = 'ms-security';
-  private _roles: ReplaySubject<RoleI[]> = new ReplaySubject<RoleI[]>(1);
-  
-  private _httpClient = inject(HttpClient);
+  roles = signal<RoleI[]>([]);
 
-  // -----------------------------------------------------------------------------------------------------
-  // @ Accessors
-  // -----------------------------------------------------------------------------------------------------
+  private readonly url = environment.apiUrl;
+  private readonly prefix = 'ms-security';
 
-  /**
-   * Setter & getter for roles
-   *
-   * @param value
-   */
-  set roles(value: RoleI[]) {
-    // Store the value
-    this._roles.next(value);
-  }
-
-  get roles$(): Observable<RoleI[]> {
-    return this._roles.asObservable();
-  }
-
-  // -----------------------------------------------------------------------------------------------------
-  // @ Public methods
-  // -----------------------------------------------------------------------------------------------------
+  private readonly _httpClient = inject(HttpClient);
 
   /**
    * Get all roles
@@ -42,7 +21,7 @@ export class RoleService {
   getAll(): Observable<ResponseI<RoleI[]>> {
     return this._httpClient.get<ResponseI<RoleI[]>>(`${this.url}/${this.prefix}/roles`).pipe(
       tap((response) => {
-        this._roles.next(response.message);
+        this.roles.set(response.message);
       }),
     );
   }

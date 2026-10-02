@@ -1,7 +1,6 @@
 import {
   Component,
-  OnDestroy,
-  OnInit,
+  DestroyRef,
   computed,
   effect,
   inject,
@@ -9,8 +8,8 @@ import {
   output,
   signal,
 } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { NgClass } from '@angular/common';
-import { toSignal } from '@angular/core/rxjs-interop';
 import {
   FormControl,
   ReactiveFormsModule,
@@ -18,22 +17,19 @@ import {
   UntypedFormGroup,
   Validators,
 } from '@angular/forms';
-import { FileI, FilePaginationResquestI, FileUploadI } from 'app/core/interfaces/file.interface';
-import { FileManagerService } from 'app/core/services/file-manager.service';
-import { ParameterService } from 'app/core/services/parameter.service';
-import { findParameter } from 'app/shared/utils/parameter.utils';
-import { Subject, debounceTime, of, switchMap, takeUntil } from 'rxjs';
 import { ToastrService } from '@iqx-limited/ngx-toastr';
-import { FileService } from 'app/core/services/file.service';
-import { ResponseI } from 'app/shared/interfaces/response.interface';
-import { CmsValidators } from 'app/shared/utils/validators.util';
+import { FileI, FilePaginationResquestI, FileUploadI } from '@core/interfaces';
+import { FileManagerService, ParameterService, FileService } from '@core/services';
+import { ResponseI } from '@shared/interfaces';
+import { CmsValidators, findParameter } from '@shared/utils';
+import { debounceTime, of, switchMap } from 'rxjs';
 
 @Component({
   selector: 'files-manager',
   templateUrl: './files-manager.html',
   imports: [ReactiveFormsModule, NgClass],
 })
-export class ImagesManagerComponent implements OnInit, OnDestroy {
+export class ImagesManagerComponent {
   mimeType = input<string | null>(null);
   onSelectedFileEvent = output<string | null>();
 
@@ -47,24 +43,20 @@ export class ImagesManagerComponent implements OnInit, OnDestroy {
   validateFormControl = CmsValidators.validateFormControl;
   getErrorMessage = CmsValidators.getErrorMessage;
 
+  private readonly _destroyRef = inject(DestroyRef);
   private readonly _fileManagerService = inject(FileManagerService);
   private readonly _parameterService = inject(ParameterService);
   private readonly _toastrService = inject(ToastrService);
   private readonly _fileService = inject(FileService);
   private readonly _formBuilder = inject(UntypedFormBuilder);
 
-  private _unsubscribeAll: Subject<any> = new Subject<any>();
+  readonly parameters = this._parameterService.publicParameters;
+  readonly files = this._fileManagerService.files;
 
-  readonly parameters = toSignal(this._parameterService.parameter$, { initialValue: [] });
-  readonly files = toSignal(this._fileManagerService.files$, {
-    initialValue: { records: [], total: 0, page: 0, totalPage: 0 },
-  });
-
-  urlPreview = computed(() => {
+  readonly urlPreview = computed(() => {
     const seletedFile = this.selectedFile();
     if (seletedFile === null) return '';
     if (seletedFile.id !== null) return seletedFile.url;
-
     const file = this.loadFile();
     return file ? URL.createObjectURL(file) : null;
   });
@@ -78,34 +70,22 @@ export class ImagesManagerComponent implements OnInit, OnDestroy {
       const mimeType = this.mimeType();
       this.getAll(1, null, true, mimeType!);
     });
+
     this.fileForm = this._formBuilder.group({
       name: ['', [Validators.required]],
       description: ['', [Validators.required, Validators.maxLength(255)]],
     });
   }
 
-  // -----------------------------------------------------------------------------------------------------
-  // @ Lifecycle hooks
-  // -----------------------------------------------------------------------------------------------------
-
   /**
    * On init
    */
   ngOnInit(): void {
     this.searchInputControl.valueChanges
-      .pipe(debounceTime(700), takeUntil(this._unsubscribeAll))
+      .pipe(debounceTime(700), takeUntilDestroyed(this._destroyRef))
       .subscribe((search: string) => {
         if (search) this.getAll(1, search === '' ? null : search, null, this.mimeType()!);
       });
-  }
-
-  /**
-   * On destroy
-   */
-  ngOnDestroy(): void {
-    // Unsubscribe from all subscriptions
-    this._unsubscribeAll.next(null);
-    this._unsubscribeAll.complete();
   }
 
   /**
@@ -127,7 +107,7 @@ export class ImagesManagerComponent implements OnInit, OnDestroy {
     };
     this._fileManagerService
       .getFiles(params)
-      .pipe(takeUntil(this._unsubscribeAll))
+      .pipe(takeUntilDestroyed(this._destroyRef))
       .subscribe({
         error: (response) => {
           this._toastrService.error(response.error.message, 'Aviso');
@@ -137,7 +117,7 @@ export class ImagesManagerComponent implements OnInit, OnDestroy {
 
   /**
    * Select file
-
+   * @param file
    */
   selectFile(file: FileI) {
     this.fileForm.get('name')?.setValue(file.name);
@@ -215,22 +195,14 @@ export class ImagesManagerComponent implements OnInit, OnDestroy {
   }
 
   /**
-   *
+   * Format size file
    * @param size
    * @returns
    */
   formatFileSize(size?: number): string {
-    if (!size) {
-      return '0 KB';
-    }
-
-    if (size < 1024) {
-      return `${size} B`;
-    }
-
-    if (size < 1024 * 1024) {
-      return `${(size / 1024).toFixed(1)} KB`;
-    }
+    if (!size) return '0 KB';
+    if (size < 1024) return `${size} B`;
+    if (size < 1024 * 1024) return `${(size / 1024).toFixed(1)} KB`;
     return `${(size / (1024 * 1024)).toFixed(1)} MB`;
   }
 
@@ -249,12 +221,9 @@ export class ImagesManagerComponent implements OnInit, OnDestroy {
    * Add file
    */
   new() {
-    if (this.selectedFile()?.id !== null) {
-      return;
-    }
+    if (this.selectedFile()?.id !== null) return;
 
     const file = this.loadFile();
-
     const upload$ =
       file !== null
         ? this._fileService.uploadFile(file, false)
@@ -280,7 +249,7 @@ export class ImagesManagerComponent implements OnInit, OnDestroy {
           }
           return this._fileManagerService.create(this.selectedFile()!);
         }),
-        takeUntil(this._unsubscribeAll),
+        takeUntilDestroyed(this._destroyRef),
       )
       .subscribe({
         next: () => {
@@ -302,7 +271,6 @@ export class ImagesManagerComponent implements OnInit, OnDestroy {
   setFile(event: any) {
     const file: File = event.target.files[0];
     if (!file) return;
-
     this.loadFile.set(file);
     const newFile = {
       id: null,
@@ -312,7 +280,6 @@ export class ImagesManagerComponent implements OnInit, OnDestroy {
       size: file.size,
       filename: file.name,
     } as unknown as FileI;
-
     this.selectedFile.set(newFile);
   }
 }

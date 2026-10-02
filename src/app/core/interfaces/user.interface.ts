@@ -1,4 +1,4 @@
-import { NavigationI } from "./navigation.interface";
+import { NavigationI } from './navigation.interface';
 
 export interface UserI {
   id?: number;

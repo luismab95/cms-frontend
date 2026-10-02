@@ -1,68 +1,20 @@
 import { HttpClient } from '@angular/common/http';
-import { inject, Injectable } from '@angular/core';
-import { PaginationResponseI, ResponseI } from 'app/shared/interfaces/response.interface';
+import { inject, Injectable, signal } from '@angular/core';
+import { buildQueryParams, buildQueryParamsPage, DefaultPaginationParams } from '@shared/utils';
+import { PageI, PagePaginationResquestI, GetPageI, PageRenderI } from '@core/interfaces';
+import { PaginationResponseI, ResponseI } from '@shared/interfaces';
 import { environment } from 'environments/environment';
-import {
-  PageI,
-  PagePaginationResquestI,
-  GetPageI,
-  PageRenderI,
-} from '../interfaces/page.interface';
-import { SelectedItemsInGridI } from 'app/shared/interfaces/grid.interface';
-import { Observable, of, ReplaySubject, tap } from 'rxjs';
+import { Observable, of, tap } from 'rxjs';
 
 @Injectable({ providedIn: 'root' })
 export class PageService {
-  // Private
-  private prefix = 'ms-cms';
-  private url = environment.apiUrl;
-  private _pages: ReplaySubject<PaginationResponseI<PageI[]>> = new ReplaySubject<
-    PaginationResponseI<PageI[]>
-  >(1);
-  private _page: ReplaySubject<PageI | null> = new ReplaySubject<PageI | null>(1);
+  pages = signal<PaginationResponseI<PageI[]>>(DefaultPaginationParams<PageI[]>());
+  page = signal<PageI | null>(null);
 
-  private _httpClient = inject(HttpClient);
+  private readonly prefix = 'ms-cms';
+  private readonly url = environment.apiUrl;
 
-  /**
-   * Constructor
-   */
-  constructor() {}
-
-  // -----------------------------------------------------------------------------------------------------
-  // @ Accessors
-  // -----------------------------------------------------------------------------------------------------
-
-  /**
-   * Setter & getter for pages
-   *
-   * @param value
-   */
-  set pages(value: PaginationResponseI<PageI[]>) {
-    // Store the value
-    this._pages.next(value);
-  }
-
-  get pages$(): Observable<PaginationResponseI<PageI[]>> {
-    return this._pages.asObservable();
-  }
-
-  /**
-   * Setter & getter for page
-   *
-   * @param value
-   */
-  set page(value: PageI | null) {
-    // Store the value
-    this._page.next(value);
-  }
-
-  get page$(): Observable<PageI | null> {
-    return this._page.asObservable();
-  }
-
-  // -----------------------------------------------------------------------------------------------------
-  // @ Public methods
-  // -----------------------------------------------------------------------------------------------------
+  private readonly _httpClient = inject(HttpClient);
 
   /**
    * Get all pages
@@ -70,18 +22,14 @@ export class PageService {
    * @returns
    */
   getAll(params: PagePaginationResquestI): Observable<ResponseI<PaginationResponseI<PageI[]>>> {
-    let queryParams: string = `?limit=${params.limit}&page=${params.page}&`;
-    if (params.search !== null) queryParams += `search=${params.search}&`;
-    if (params.status !== null) queryParams += `status=${params.status}&`;
-    if (params.micrositieId !== null) queryParams += `micrositieId=${params.micrositieId}&`;
-
+    const queryParams = buildQueryParams(params);
     return this._httpClient
       .get<ResponseI<PaginationResponseI<PageI[]>>>(
         `${this.url}/${this.prefix}/pages${queryParams}`,
       )
       .pipe(
         tap((response) => {
-          this._pages.next(response.message);
+          this.pages.set(response.message);
         }),
       );
   }
@@ -93,46 +41,47 @@ export class PageService {
    */
   find(pageId: number): Observable<ResponseI<PageI> | null> {
     if (pageId === 0) {
-      this._page.next(null!);
+      this.page.set(null);
       return of(null);
     }
     return this._httpClient
       .get<ResponseI<PageI>>(`${this.url}/${this.prefix}/pages/${pageId}`)
       .pipe(
         tap((response) => {
-          this._page.next(response.message);
+          this.page.set(response.message);
         }),
       );
   }
 
   /**
    * Create the page
-   *
    * @param page
+   * @returns
    */
   create(page: PageI): Observable<ResponseI<PageI>> {
     return this._httpClient
       .post<ResponseI<PageI>>(`${this.url}/${this.prefix}/pages`, { ...page })
       .pipe(
         tap((response) => {
-          this._page.next(response.message);
+          this.page.set(response.message);
         }),
       );
   }
 
   /**
    * Delete the page
-   *
    * @param pageId
+   * @returns
    */
   delete(pageId: number): Observable<ResponseI<string>> {
     return this._httpClient.delete<ResponseI<string>>(`${this.url}/${this.prefix}/pages/${pageId}`);
   }
 
   /**
-   * Save the page
-   *
+   * Save the page draft
+   * @param pageId
    * @param page
+   * @returns
    */
   saveDraft(pageId: number, page: PageI): Observable<ResponseI<string>> {
     return this._httpClient.patch<ResponseI<string>>(
@@ -145,15 +94,15 @@ export class PageService {
 
   /**
    * Delete draft page
-   *
    * @param pageId
+   * @returns
    */
   deleteDraft(pageId: number): Observable<ResponseI<PageI>> {
     return this._httpClient
       .delete<ResponseI<PageI>>(`${this.url}/${this.prefix}/pages/draft/${pageId}`)
       .pipe(
         tap((response) => {
-          this._page.next(response.message);
+          this.page.set(response.message);
         }),
       );
   }
@@ -163,13 +112,14 @@ export class PageService {
    *
    * @param pageId
    * @param page
+   * @returns
    */
   update(pageId: number, page: PageI): Observable<ResponseI<PageI>> {
     return this._httpClient
-      .patch<ResponseI<PageI>>(`${this.url}/${this.prefix}/pages/${pageId}`, { ...page })
+      .patch<ResponseI<PageI>>(`${this.url}/${this.prefix}/pages/${pageId}`, page)
       .pipe(
         tap((response) => {
-          this._page.next(response.message);
+          this.page.set(response.message);
         }),
       );
   }
@@ -180,11 +130,7 @@ export class PageService {
    * @returns
    */
   getPage(params: GetPageI): Observable<ResponseI<PageRenderI>> {
-    let queryParams: string = `?lang=${params.lang}&`;
-    if (params.page !== null) queryParams += `page=${params.page}&`;
-    if (params.micrositie !== null) queryParams += `micrositie=${params.micrositie}&`;
-    queryParams += `preview=${params.preview ? 'true' : 'false'}&`;
-
+    const queryParams = buildQueryParamsPage(params);
     return this._httpClient.get<ResponseI<PageRenderI>>(
       `${this.url}/${this.prefix}/public/page${queryParams}`,
     );

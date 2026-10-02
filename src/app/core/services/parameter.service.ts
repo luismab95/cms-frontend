@@ -1,77 +1,44 @@
 import { HttpClient } from '@angular/common/http';
-import { inject, Injectable } from '@angular/core';
-import { ResponseI } from 'app/shared/interfaces/response.interface';
-import { ParameterI } from '../interfaces/parameter.interface';
+import { inject, Injectable, signal } from '@angular/core';
+import { ParameterI } from '@core/interfaces';
+import { ResponseI } from '@shared/interfaces';
 import { environment } from 'environments/environment';
-import { Observable, ReplaySubject, tap } from 'rxjs';
+import { Observable, tap } from 'rxjs';
 
 @Injectable({ providedIn: 'root' })
 export class ParameterService {
-  private prefix = 'ms-security';
-  private url = environment.apiUrl;
-  private _parameter: ReplaySubject<ParameterI[]> = new ReplaySubject<ParameterI[]>(1);
-  private _parameters: ReplaySubject<ParameterI[]> = new ReplaySubject<ParameterI[]>(1);
-  private _httpClient = inject(HttpClient);
-  // -----------------------------------------------------------------------------------------------------
-  // @ Accessors
-  // -----------------------------------------------------------------------------------------------------
+  parameters = signal<ParameterI[]>([]);
+  publicParameters = signal<ParameterI[]>([]);
 
-  /**
-   * Setter & getter for parameter
-   *
-   * @param value
-   */
-  set parameter(value: ParameterI[]) {
-    // Store the value
-    this._parameter.next(value);
-  }
+  private readonly prefix = 'ms-security';
+  private readonly url = environment.apiUrl;
 
-  get parameter$(): Observable<ParameterI[]> {
-    return this._parameter.asObservable();
-  }
-
-  /**
-   * Setter & getter for parameters
-   *
-   * @param value
-   */
-  set parameters(value: ParameterI[]) {
-    // Store the value
-    this._parameters.next(value);
-  }
-
-  get parameters$(): Observable<ParameterI[]> {
-    return this._parameters.asObservable();
-  }
-
-  // -----------------------------------------------------------------------------------------------------
-  // @ Public methods
-  // -----------------------------------------------------------------------------------------------------
+  private readonly _httpClient = inject(HttpClient);
 
   /**
    * Get public parameters
-   *
+   * @returns
    */
   getPublic(): Observable<ResponseI<ParameterI[]>> {
     return this._httpClient
       .get<ResponseI<ParameterI[]>>(`${this.url}/${this.prefix}/parameters/public`)
       .pipe(
         tap((response) => {
-          this._parameter.next(response.message);
+          this.publicParameters.set(response.message);
         }),
       );
   }
 
   /**
    * Get all public
-   *
+   * @returns
    */
   getAll(): Observable<ResponseI<ParameterI[]>> {
     return this._httpClient
       .get<ResponseI<ParameterI[]>>(`${this.url}/${this.prefix}/parameters`)
       .pipe(
         tap((response) => {
-          this._parameters.next(response.message);
+          this.parameters.set(response.message);
         }),
       );
   }

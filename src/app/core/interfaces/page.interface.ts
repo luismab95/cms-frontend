@@ -1,5 +1,4 @@
-import { PaginationResquestI } from 'app/shared/interfaces/response.interface';
-import { PageElementsI } from 'app/shared/interfaces/grid.interface';
+import { PageElementsI, PaginationResquestI } from '@shared/interfaces';
 import { TemplateI } from './template.interface';
 
 export declare enum ModeEnum {

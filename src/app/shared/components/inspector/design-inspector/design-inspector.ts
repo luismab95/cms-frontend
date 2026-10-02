@@ -2,14 +2,24 @@ import { Component, computed, effect, inject, input, signal, untracked } from '@
 import { NgClass, TitleCasePipe } from '@angular/common';
 import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { EditorComponent } from 'ngx-monaco-editor-v2';
-import { CanvasService } from 'app/core/services/canvas.service';
-import { SectionI, SelectedItemsInGridI } from 'app/shared/interfaces/grid.interface';
-import { CanvasT } from 'app/core/interfaces/page.interface';
+import { CanvasT } from '@core/interfaces';
+import { CanvasService } from '@core/services';
+import { DesignBackgroundComponent } from '@shared/components/design/background/background';
+import { DesignBorderComponent } from '@shared/components/design/border/border';
+import { DesignEffectsComponent } from '@shared/components/design/effect/effect';
+import { DesignInteractionComponent } from '@shared/components/design/interaction/interaction';
+import { DesignLayoutComponent } from '@shared/components/design/layout/layout';
+import { DesignOverflowComponent } from '@shared/components/design/overflow/overflow';
+import { DesignPositionComponent } from '@shared/components/design/position/position';
+import { DesignSpacingComponent } from '@shared/components/design/spacing/spacing';
+import { DesignTypographyComponent } from '@shared/components/design/typography/typography';
+import { TooltipDirective } from '@shared/directives';
 import {
   ResponsiveCssJsonI,
   DesignModeT,
   DeviceT,
   StateElementT,
+  SelectedItemsInGridI,
   LayoutStylesI,
   SpacingStylesI,
   TypographyStylesI,
@@ -20,39 +30,30 @@ import {
   OverflowStylesI,
   InteractionStylesI,
   DesignSectionT,
-} from 'app/shared/interfaces/design.interface';
+  SectionI,
+} from '@shared/interfaces';
 import {
-  cssToJson,
-  defaultBackgroundStyles,
-  defaultBorderStyles,
-  defaultEffetsStyles,
-  defaultInteractionStyles,
+  STYLE_PERMISSIONS,
+  updateSection,
+  updateRow,
+  updateColumn,
+  updateElement,
   defaultLayoutStyles,
-  defaultOverflowStyles,
-  defaultPositionStyles,
   defaultSpacingStyles,
   defaultTypographyStyles,
-  jsonToCss,
-  mergeStyleConfig,
+  defaultBackgroundStyles,
+  defaultBorderStyles,
+  defaultPositionStyles,
+  defaultEffetsStyles,
+  defaultOverflowStyles,
+  defaultInteractionStyles,
   parseRule,
-  splitStyles,
-  updateColumn,
+  jsonToCss,
+  cssToJson,
   updateCssPageElement,
-  updateElement,
-  updateRow,
-  updateSection,
-} from 'app/shared/utils/grid.utils';
-import { TooltipDirective } from 'app/shared/directives/tooltip.directive';
-import { DesignLayoutComponent } from 'app/shared/components/design/layout/layout';
-import { DesignSpacingComponent } from 'app/shared/components/design/spacing/spacing';
-import { DesignTypographyComponent } from 'app/shared/components/design/typography/typography';
-import { DesignBackgroundComponent } from 'app/shared/components/design/background/background';
-import { DesignBorderComponent } from 'app/shared/components/design/border/border';
-import { DesignPositionComponent } from 'app/shared/components/design/position/position';
-import { DesignEffectsComponent } from 'app/shared/components/design/effect/effect';
-import { DesignOverflowComponent } from 'app/shared/components/design/overflow/overflow';
-import { DesignInteractionComponent } from 'app/shared/components/design/interaction/interaction';
-import { STYLE_PERMISSIONS } from 'app/shared/utils/design.utils';
+  splitStyles,
+  mergeStyleConfig,
+} from '@shared/utils';
 
 @Component({
   selector: 'design-inspector-component',
@@ -352,9 +353,7 @@ export class DesignInspectorComponent {
     if (!this.initialized()) return;
 
     const selected = this.selectedItemsInGrid();
-    if (!selected) {
-      return;
-    }
+    if (!selected) return;
 
     const type = this.typeItem();
 
@@ -372,9 +371,7 @@ export class DesignInspectorComponent {
 
     const strategy = this.updateStrategies[type];
     const item = strategy.getItem(selected);
-    if (!item) {
-      return;
-    }
+    if (!item) return;
 
     const sectionsInCanvas = this.currentSections;
     const previous = structuredClone(sectionsInCanvas);
@@ -513,7 +510,8 @@ export class DesignInspectorComponent {
 
   /**
    * Sync changes in mobile
-   * @param responsive
+   * @param previousStylesMobile
+   * @param nextStylesMobile
    * @returns
    */
   syncMobile(
@@ -559,6 +557,7 @@ export class DesignInspectorComponent {
 
   /**
    * currentSections
+   * @param sections
    */
   private set currentSections(sections: SectionI[]) {
     this._canvasService.sectionsByType[this.gridType()].set(sections);

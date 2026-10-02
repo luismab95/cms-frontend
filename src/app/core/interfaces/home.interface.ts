@@ -1,4 +1,4 @@
-import { formatNumber } from 'app/shared/utils/number.utils';
+import { formatNumber } from '@shared/utils';
 import { ApexAxisChartSeries, ApexNonAxisChartSeries, ApexOptions } from 'ng-apexcharts';
 
 export interface CountElementsI {

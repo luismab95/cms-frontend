@@ -5,12 +5,11 @@
   class="cursor-pointer relative p-2 rounded-lg text-[#565e74] hover:bg-[#eff4ff] hover:text-[#0b1c30] transition-colors"
 >
   <i class="fa-regular fa-bell fa-lg"></i>
-
-  @if (unreadCount > 0) {
+  @if (unreadCount() > 0) {
     <span
       class="absolute top-1.5 right-1.5 w-4 h-4 rounded-full bg-red-500 text-white text-[10px] flex items-center justify-center font-bold"
     >
-      {{ unreadCount }}
+      {{ unreadCount() }}
     </span>
   }
 </button>
@@ -21,12 +20,11 @@
     class="bg-white rounded-2xl shadow-2xl border border-slate-200/80 overflow-hidden transition-all w-full max-h-150 overflow-y-auto scrollbar-thin"
   >
     <div class="sticky top-0 z-30 p-4 border-b border-slate-100 bg-white/95 backdrop-blur-md">
-      <!-- Título -->
       <div class="flex items-center justify-between mb-3">
         <div class="flex items-center gap-2">
           <h3 class="font-bold text-slate-900 text-sm">Notificaciones</h3>
           <span class="bg-indigo-100 text-indigo-700 text-xs font-bold px-2 py-0.5 rounded-full">
-            3 Nuevas
+            {{ unreadCount() }} Nuevas
           </span>
         </div>
         <div class="flex items-center gap-1">
@@ -41,28 +39,24 @@
       </div>
 
       <div class="flex items-center gap-1.5 flex-wrap">
-        <!-- Todas -->
         <button
           class="cursor-pointer px-2.5 py-1 text-xs font-semibold rounded-lg bg-indigo-600 text-white shadow-sm"
           type="button"
         >
           Todas (3)
         </button>
-        <!-- Pendientes -->
         <button
           class="cursor-pointer px-2.5 py-1 text-xs font-semibold rounded-lg bg-slate-200/80 text-slate-700 hover:bg-slate-300/80 transition"
           type="button"
         >
           Pendientes (1)
         </button>
-        <!-- Rechazadas -->
         <button
           class="cursor-pointer px-2.5 py-1 text-xs font-semibold rounded-lg bg-slate-200/80 text-slate-700 hover:bg-slate-300/80 transition"
           type="button"
         >
           Rechazadas (1)
         </button>
-        <!-- Aprobadas -->
         <button
           class="cursor-pointer px-2.5 py-1 text-xs font-semibold rounded-lg bg-slate-200/80 text-slate-700 hover:bg-slate-300/80 transition"
           type="button"
@@ -73,7 +67,6 @@
     </div>
     <div class="divide-y divide-slate-100">
       <div class="p-4 hover:bg-slate-50/40 transition bg-slate-50/15 flex gap-3 group">
-        <!-- Icono -->
         <div class="shrink-0 pt-0.5">
           <span
             class="w-8 h-8 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center border border-rose-200 shadow-sm"
@@ -81,9 +74,7 @@
             <i class="fa-solid fa-xmark"></i>
           </span>
         </div>
-        <!-- Contenido -->
         <div class="flex-1 min-w-0">
-          <!-- Título + tiempo -->
           <div class="flex items-center justify-between gap-2">
             <span class="text-xs font-bold text-rose-700 uppercase tracking-wide">
               Cambios Rechazados
@@ -195,7 +186,7 @@
             <span class="text-slate-800"> Default micrositie </span>
           </p>
 
-         <!-- Descripción -->
+          <!-- Descripción -->
           <p class="text-xs text-slate-600 mt-1">
             Cambios por
             <strong class="text-slate-800 font-semibold"> Laura Valdés </strong>

@@ -1,21 +1,20 @@
 import { Component, computed, DestroyRef, effect, inject, input, signal } from '@angular/core';
 import { KeyValuePipe } from '@angular/common';
 import { form, FormField } from '@angular/forms/signals';
-import { CanvasT } from 'app/core/interfaces/page.interface';
+import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
+import { TabsComponent } from '@shared/components';
+import { CanvasT } from '@core/interfaces';
+import { PageService, TemplateService, CanvasService } from '@core/services';
 import {
+  TabI,
+  LanguageI,
+  LanguagesFormModel,
   ElementDataI,
   LanguageFormData,
-  LanguagesFormModel,
-} from 'app/shared/interfaces/element.interface';
-import { LanguageI } from 'app/shared/interfaces/language.interfaces';
-import { TabI } from 'app/shared/interfaces/drawer.interface';
-import { ElementI, SectionI } from 'app/shared/interfaces/grid.interface';
-import { updateElement } from 'app/shared/utils/grid.utils';
-import { CanvasService } from 'app/core/services/canvas.service';
-import { TemplateService } from 'app/core/services/templates.service';
-import { PageService } from 'app/core/services/pages.service';
-import { TabsComponent } from '../../tabs/tabs';
-import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
+  ElementI,
+  SectionI,
+} from '@shared/interfaces';
+import { updateElement } from '@shared/utils';
 import { debounceTime, distinctUntilChanged } from 'rxjs';
 
 @Component({
@@ -35,6 +34,7 @@ export class LangugesInspectorComponent {
   readonly languageModel = signal<LanguagesFormModel>({
     languages: [],
   });
+
   readonly languageForm = form(this.languageModel);
 
   private readonly _pageService = inject(PageService);
@@ -135,27 +135,19 @@ export class LangugesInspectorComponent {
     const selectedItem = this.selectedItemsInGrid();
 
     const selectedElement = this.selectedElement();
-
-    if (!selectedElement || !selectedItem) {
-      return;
-    }
+    if (!selectedElement || !selectedItem) return;
 
     const updatedElement: ElementI = {
       ...selectedElement,
-
       dataText: [...value.languages] as ElementDataI[],
     };
 
     const sections = this.currentSections;
-
     const previous = structuredClone(sections);
-
     const updatedSections = updateElement(sections, updatedElement.uuid, updatedElement);
-
     const next = structuredClone(updatedSections);
 
     this.currentSections = next;
-
     this._canvasService.selectedItemsInGrid.set({
       ...selectedItem,
       element: updatedElement,

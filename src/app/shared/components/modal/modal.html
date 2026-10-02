@@ -1,9 +1,10 @@
-<!-- Overlay Backdrop -->
 <div
   class="fixed inset-0 bg-slate-900/35 backdrop-blur-[2px] transition-opacity z-60 overflow-hidden overflow-x-hidden"
   (click)="closeModal(false)"
 ></div>
-<!-- BEGIN: SlideOverDrawer -->
-<div data-aos="fade-left" class="fixed inset-y-0 top-0 right-0 max-w-full h-screen flex z-70 overflow-x-hidden">
+<div
+  data-aos="fade-left"
+  class="fixed inset-y-0 top-0 right-0 max-w-full h-screen flex z-70 overflow-x-hidden"
+>
   <ng-content />
 </div>

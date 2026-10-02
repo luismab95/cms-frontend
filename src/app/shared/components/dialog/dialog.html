@@ -1,14 +1,11 @@
 @if (_dialogService.isOpen()) {
   <div
-    aria-labelledby="modal-title"
-    aria-modal="true"
     class="fixed inset-0 z-80 flex items-center justify-center p-4 bg-white-900/60 backdrop-blur-xs transition-all"
     role="dialog"
   >
     <div
       class="relative w-full max-w-md bg-white rounded-2xl border border-slate-200/80 shadow-2xl overflow-hidden p-6 text-left"
     >
-      <!-- Close X button -->
       <button
         (click)="_dialogService.toggleDialog()"
         aria-label="Cerrar diálogo"
@@ -17,8 +14,6 @@
       >
         <i class="fa-solid fa-xmark"></i>
       </button>
-
-      <!-- Header with warning icon and title -->
       <div class="flex items-start space-x-4">
         @if (_dialogService.dialogData()?.type === 'warning') {
           <div
@@ -39,8 +34,6 @@
           ></p>
         </div>
       </div>
-
-      <!-- Action Buttons -->
       <div class="mt-6 flex flex-col sm:flex-row items-center justify-end gap-2.5 pt-2">
         <button
           (click)="onCancelAction()"

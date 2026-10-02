@@ -1,44 +1,23 @@
 import { HttpClient } from '@angular/common/http';
-import { inject, Injectable } from '@angular/core';
-import { ElementCMSI } from 'app/shared/interfaces/element.interface';
+import { inject, Injectable, signal } from '@angular/core';
 import {
+  ElementCMSI,
   PaginationResponseI,
   PaginationResquestI,
   ResponseI,
-} from 'app/shared/interfaces/response.interface';
+} from '@shared/interfaces';
+import { buildQueryParams, DefaultPaginationParams } from '@shared/utils';
 import { environment } from 'environments/environment';
-import { Observable, ReplaySubject, tap } from 'rxjs';
+import { Observable, tap } from 'rxjs';
 
 @Injectable({ providedIn: 'root' })
 export class ElementService {
-  private prefix = 'ms-cms';
-  private url = environment.apiUrl;
-  private _elements: ReplaySubject<PaginationResponseI<ElementCMSI[]>> = new ReplaySubject<
-    PaginationResponseI<ElementCMSI[]>
-  >(1);
-  private _httpClient = inject(HttpClient);
+  elements = signal<PaginationResponseI<ElementCMSI[]>>(DefaultPaginationParams<ElementCMSI[]>());
 
-  // -----------------------------------------------------------------------------------------------------
-  // @ Accessors
-  // -----------------------------------------------------------------------------------------------------
+  private readonly prefix = 'ms-cms';
+  private readonly url = environment.apiUrl;
 
-  /**
-   * Setter & getter for elements
-   *
-   * @param value
-   */
-  set elements(value: PaginationResponseI<ElementCMSI[]>) {
-    // Store the value
-    this._elements.next(value);
-  }
-
-  get elements$(): Observable<PaginationResponseI<ElementCMSI[]>> {
-    return this._elements.asObservable();
-  }
-
-  // -----------------------------------------------------------------------------------------------------
-  // @ Public methods
-  // -----------------------------------------------------------------------------------------------------
+  private readonly _httpClient = inject(HttpClient);
 
   /**
    * Get all elements
@@ -46,17 +25,14 @@ export class ElementService {
    * @returns
    */
   getAll(params: PaginationResquestI): Observable<ResponseI<PaginationResponseI<ElementCMSI[]>>> {
-    let queryParams: string = `?limit=${params.limit}&page=${params.page}&`;
-    if (params.search !== null) queryParams += `search=${params.search}&`;
-    if (params.status !== null) queryParams += `status=${params.status}&`;
-
+    const queryParams = buildQueryParams(params);
     return this._httpClient
       .get<ResponseI<PaginationResponseI<ElementCMSI[]>>>(
         `${this.url}/${this.prefix}/elements${queryParams}`,
       )
       .pipe(
         tap((response) => {
-          this._elements.next(response.message);
+          this.elements.set(response.message);
         }),
       );
   }

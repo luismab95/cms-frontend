@@ -9,25 +9,22 @@ import {
   untracked,
 } from '@angular/core';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop';
+import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
 import { DynamicForm, EventDispatcher, RegisteredFieldTypes } from '@ng-forge/dynamic-forms';
-import { SectionI, SelectedItemsInGridI } from 'app/shared/interfaces/grid.interface';
-import { CanvasT } from 'app/core/interfaces/page.interface';
+import { CanvasT } from '@core/interfaces';
+import { ElementService, PageService, CanvasService, TemplateService } from '@core/services';
+import { SelectedItemsInGridI, SectionI } from '@shared/interfaces';
 import {
+  SECTIONFORMTYPESCONFIG,
+  ROWFORMTYPESCONFIG,
   COLUMNFORMTYPESCONFIG,
   PAGEFORMTYPESCONFIG,
-  ROWFORMTYPESCONFIG,
-  SECTIONFORMTYPESCONFIG,
-  updateColumn,
-  updateConfigPageElement,
-  updateElement,
-  updateRow,
   updateSection,
-} from 'app/shared/utils/grid.utils';
-import { ElementService } from 'app/core/services/element.service';
-import { PageService } from 'app/core/services/pages.service';
-import { CanvasService } from 'app/core/services/canvas.service';
-import { TemplateService } from 'app/core/services/templates.service';
+  updateRow,
+  updateColumn,
+  updateElement,
+  updateConfigPageElement,
+} from '@shared/utils';
 import { debounceTime, pairwise, skip } from 'rxjs';
 
 @Component({
@@ -48,11 +45,9 @@ export class PropertiesInspectorComponent {
   private readonly _canvasService = inject(CanvasService);
   private readonly _templateService = inject(TemplateService);
 
-  readonly page = toSignal(this._pageService.page$, { initialValue: null });
-  readonly template = toSignal(this._templateService.template$, { initialValue: null });
-  readonly elements = toSignal(this._elementService.elements$, {
-    initialValue: { records: [], total: 0, page: 0, totalPage: 0 },
-  });
+  readonly page = this._pageService.page;
+  readonly template = this._templateService.template;
+  readonly elements = this._elementService.elements;
 
   readonly itemSelectedInGrid = this._canvasService.selectedItemsInGrid;
 
@@ -61,7 +56,6 @@ export class PropertiesInspectorComponent {
   }));
   readonly typeItem = computed(() => {
     const item = this.itemSelectedInGrid();
-
     return item?.element
       ? 'element'
       : item?.column
@@ -114,7 +108,7 @@ export class PropertiesInspectorComponent {
   };
 
   /**
-   * Constructort
+   * Constructor
    */
   constructor() {
     toObservable(this.formValue)
@@ -155,19 +149,21 @@ export class PropertiesInspectorComponent {
     return this.elementTypes().get(name) ?? [];
   }
 
+  /**
+   * Update Item
+   * @param value
+   * @returns
+   */
   updateItem(value: Record<string, unknown>) {
     const selected = this.itemSelectedInGrid();
-    if (!selected) {
-      return;
-    }
+    if (!selected) return;
 
     const type = this.typeItem();
 
     if (type === 'page') {
       const page = selected.page;
-      if (!page) {
-        return;
-      }
+      if (!page) return;
+
       const newConfig = updateConfigPageElement(page, value);
       this._canvasService.configByType[selected.canvas].set(newConfig);
       this._canvasService.selectedItemsInGrid.set({ ...selected, page: newConfig });
@@ -177,9 +173,7 @@ export class PropertiesInspectorComponent {
 
     const strategy = this.updateStrategies[type];
     const item = strategy.getItem(selected);
-    if (!item) {
-      return;
-    }
+    if (!item) return;
 
     const sectionsInCanvas = this.currentSections;
     const previous = structuredClone(sectionsInCanvas);
@@ -200,6 +194,7 @@ export class PropertiesInspectorComponent {
 
   /**
    * currentSections
+   * @param sections
    */
   private set currentSections(sections: SectionI[]) {
     this._canvasService.sectionsByType[this.gridType()].set(sections);

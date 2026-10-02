@@ -1,8 +1,8 @@
 import { Component, DestroyRef, effect, inject, input, output, signal } from '@angular/core';
 import { toObservable, takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { form, FormField } from '@angular/forms/signals';
-import { OverflowStylesI, OverflowT } from 'app/shared/interfaces/design.interface';
-import { defaultOverflowStyles } from 'app/shared/utils/grid.utils';
+import { OverflowStylesI, OverflowT } from '@shared/interfaces';
+import { defaultOverflowStyles } from '@shared/utils';
 import { debounceTime, distinctUntilChanged } from 'rxjs';
 
 @Component({

@@ -1,4 +1,4 @@
-import { Injectable } from "@angular/core";
+import { Injectable } from '@angular/core';
 
 @Injectable({
   providedIn: 'root',
@@ -6,28 +6,32 @@ import { Injectable } from "@angular/core";
 export class DynamicStyleService {
   private readonly styles = new Map<string, HTMLStyleElement>();
 
+  /**
+   * Set the dynamic style for a given id
+   * @param id
+   * @param css
+   */
   set(id: string, css: string): void {
     let element = this.styles.get(id);
 
     if (!element) {
       element = document.createElement('style');
       element.id = id;
-
       document.head.appendChild(element);
-
       this.styles.set(id, element);
     }
 
     element.textContent = css;
   }
 
+  /**
+   * Remove the dynamic style for a given id
+   * @param id
+   * @returns
+   */
   remove(id: string): void {
     const element = this.styles.get(id);
-
-    if (!element) {
-      return;
-    }
-
+    if (!element) return;
     element.remove();
     this.styles.delete(id);
   }

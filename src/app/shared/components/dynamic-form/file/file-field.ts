@@ -1,13 +1,5 @@
 import { AsyncPipe, NgClass } from '@angular/common';
-import {
-  AfterViewInit,
-  ChangeDetectionStrategy,
-  Component,
-  inject,
-  input,
-  signal,
-} from '@angular/core';
-import { toSignal } from '@angular/core/rxjs-interop';
+import { AfterViewInit, Component, inject, input, signal } from '@angular/core';
 import { FormField } from '@angular/forms/signals';
 import {
   DynamicTextPipe,
@@ -15,9 +7,9 @@ import {
   NgForgeControl,
   NgForgeFieldHost,
 } from '@ng-forge/dynamic-forms/integration';
-import { ParameterService } from 'app/core/services/parameter.service';
-import { ImagesManagerComponent } from '../../files-manager/files-manager';
-import { findParameter } from 'app/shared/utils/parameter.utils';
+import { ParameterService } from '@core/services';
+import { ImagesManagerComponent } from '@shared/components';
+import { findParameter } from '@shared/utils';
 
 interface FileFieldProps extends Record<string, unknown> {
   accept?: string;
@@ -166,8 +158,6 @@ interface FileFieldProps extends Record<string, unknown> {
       />
     }
   `,
-
-  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export default class TailwindFileFieldComponent implements AfterViewInit {
   protected readonly ngf = injectNgForgeField<string>();
@@ -180,10 +170,10 @@ export default class TailwindFileFieldComponent implements AfterViewInit {
 
   private _parameterService = inject(ParameterService);
 
-  readonly parameters = toSignal(this._parameterService.parameter$, { initialValue: [] });
+  readonly parameters = this._parameterService.publicParameters;
 
   /**
-   *
+   * Constructor
    */
   constructor() {
     this.urlStatics.set(findParameter('APP_STATICS_URL', this.parameters())?.value!);

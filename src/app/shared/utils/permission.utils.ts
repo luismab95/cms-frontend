@@ -1,4 +1,5 @@
-import { getLocalStorage } from './storage.util';
+import { inject } from '@angular/core';
+import { StorageUtils } from './storage.util';
 
 export enum PermissionCode {
   homePanel = '1Y92kqNW',
@@ -51,6 +52,7 @@ export enum PermissionCode {
  * @returns
  */
 export function validAction(code: string) {
-  const actions = JSON.parse(getLocalStorage('actions') || '[]');
+  const _storageUtils = inject(StorageUtils);
+  const actions = JSON.parse(_storageUtils.getLocalStorage('actions') || '[]');
   return actions.includes(code);
 }

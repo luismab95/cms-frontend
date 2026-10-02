@@ -1,7 +1,6 @@
 <div
   class="mt-auto border-t border-slate-200 bg-white px-6 py-3.5 flex flex-col sm:flex-row items-center justify-center lg:justify-between gap-4"
 >
-  <!-- Información -->
   @if (showLimit()) {
     <div class="hidden lg:flex items-center flex-col lg:flex-row gap-3 text-xs text-slate-600">
       <span class="font-medium"> Registros por página: </span>
@@ -12,19 +11,15 @@
         [items]="[10, 25, 50, 100]"
       >
       </ng-select>
-
       <span class="hidden lg:block text-slate-400">|</span>
-
       <span class="font-semibold text-slate-800">
         {{ startItem() }} - {{ endItem() }} de {{ total() }} registros vistos en tabla
       </span>
     </div>
-  }@else {
+  } @else {
     <div></div>
   }
-  <!-- PAGINACIÓN -->
   <div class="flex items-center gap-1">
-    <!-- Primera -->
     <button
       type="button"
       (click)="firstPage()"
@@ -34,8 +29,6 @@
     >
       <i class="fa-solid fa-angles-left"></i>
     </button>
-
-    <!-- Anterior -->
     <button
       type="button"
       (click)="previousPage()"
@@ -45,8 +38,6 @@
     >
       <i class="fa-solid fa-angle-left"></i>
     </button>
-
-    <!-- Páginas -->
     @for (item of pageNumbers(); track $index) {
       @if (item === '...') {
         <span class="min-w-8 h-8 flex items-center justify-center text-xs text-slate-400">
@@ -70,7 +61,6 @@
       }
     }
 
-    <!-- Siguiente -->
     <button
       type="button"
       (click)="nextPage()"
@@ -80,8 +70,6 @@
     >
       <i class="fa-solid fa-angle-right"></i>
     </button>
-
-    <!-- Última -->
     <button
       type="button"
       (click)="lastPage()"
