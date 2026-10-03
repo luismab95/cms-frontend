@@ -1,57 +1,48 @@
+import { Component, signal, inject, DestroyRef, effect } from '@angular/core';
+import { RouterLink, Router, ActivatedRoute } from '@angular/router';
+import { email, form, FormField, required, submit } from '@angular/forms/signals';
+import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
+import { NgClass, UpperCasePipe } from '@angular/common';
 import {
-  ChangeDetectorRef,
-  Component,
-  DestroyRef,
-  OnInit,
-  ViewChild,
-  inject,
-  signal,
-} from '@angular/core';
-import {
-  FormControl,
-  FormsModule,
-  NgForm,
-  ReactiveFormsModule,
-  UntypedFormBuilder,
-  UntypedFormGroup,
-  Validators,
-} from '@angular/forms';
-import { NgLabelTemplateDirective, NgSelectComponent } from '@ng-select/ng-select';
-import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+  NgSelectComponent,
+  NgLabelTemplateDirective,
+  NgOptionTemplateDirective,
+} from '@ng-select/ng-select';
 import { ToastrService } from '@iqx-limited/ngx-toastr';
-import { ParameterI } from 'app/core/interfaces/parameter.interface';
-import { AuthService } from 'app/core/services/auth.service';
-import { ParameterService } from 'app/core/services/parameter.service';
-import { AuthComponent } from 'app/shared/components/auth/auth';
-import { IpUtils } from 'app/shared/utils/ip.utils';
-import { getLogo } from 'app/shared/utils/parameter.utils';
-import { LanguageService } from 'app/shared/services/language.service';
-import { LanguageI } from 'app/shared/interfaces/language.interfaces';
-import { Subject, takeUntil } from 'rxjs';
-import { PaginationResponseI } from 'app/shared/interfaces/response.interface';
-import { CmsValidators } from 'app/shared/utils/validators.util';
-import { toSignal } from '@angular/core/rxjs-interop';
+import { AuthService, ParameterService } from '@core/services';
+import { IpUtils, getLogo, hasError } from '@shared/utils';
+import { LanguageService } from '@shared/services';
+import { AuthComponent } from '@shared/components';
+import { firstValueFrom } from 'rxjs';
 
 @Component({
   selector: 'sign-in',
   templateUrl: './sign-in.html',
   imports: [
     AuthComponent,
+    FormField,
     RouterLink,
-    FormsModule,
-    ReactiveFormsModule,
     NgSelectComponent,
     NgLabelTemplateDirective,
+    NgOptionTemplateDirective,
+    NgClass,
+    UpperCasePipe,
   ],
   providers: [IpUtils],
 })
-export class AuthSignIn implements OnInit {
-  ip = signal<string | null>(null);
+export class AuthSignIn {
   passwordVisible = signal<boolean>(false);
-  validateFormControl = CmsValidators.validateFormControl;
-  getErrorMessage = CmsValidators.getErrorMessage;
+  signInModel = signal<{ email: string; password: string; selectedLanguage: string }>({
+    email: '',
+    password: '',
+    selectedLanguage: 'es',
+  });
 
-  private _unsubscribeAll: Subject<any> = new Subject<any>();
+  signInForm = form(this.signInModel, (schemaPath) => {
+    required(schemaPath.email, { message: 'Dirección de correo electrónico es obligatorio.' });
+    email(schemaPath.email, { message: 'Dirección de correo electrónico no válido.' });
+    required(schemaPath.password, { message: 'Contraseña es obligatorio.' });
+  });
 
   private readonly _authService = inject(AuthService);
   private readonly _parameterService = inject(ParameterService);
@@ -62,106 +53,62 @@ export class AuthSignIn implements OnInit {
   private readonly _activatedRoute = inject(ActivatedRoute);
   private readonly _ipUtils = inject(IpUtils);
 
-  readonly parameters = toSignal(this._parameterService.parameter$);
-  readonly languages = toSignal(this._languageService.languages$);
+  readonly hasError = hasError;
+  readonly parameters = this._parameterService.publicParameters;
+  readonly languages = this._languageService.languages;
+
+  readonly ip = toSignal(this._ipUtils.getClientIp(), { initialValue: '' });
 
   /**
    * Constructor
    */
   constructor() {
-    this._parameterService.parameter$
-      .pipe(takeUntil(this._unsubscribeAll))
-      .subscribe((parameters: ParameterI[]) => {
-        this.parameters.set(parameters);
-        this._changeDetectorRef.markForCheck();
-      });
-
-    this._languageService.languages$
-      .pipe(takeUntil(this._unsubscribeAll))
-      .subscribe((response: PaginationResponseI<LanguageI[]>) => {
-        this.languages.set(response.records);
-        this.selectedLanguage.setValue(this.languages()[0].lang);
-        this._changeDetectorRef.markForCheck();
-      });
-
-    this._ipUtils.getClientIp().subscribe({
-      next: (res) => {
-        this.ip = res;
-      },
+    effect(() => {
+      const languages = this.languages().records;
+      this.signInModel.update((prev) => ({ ...prev, selectedLanguage: languages[0].lang }));
     });
   }
-
-  // -----------------------------------------------------------------------------------------------------
-  // @ Lifecycle hooks
-  // -----------------------------------------------------------------------------------------------------
-
-  /**
-   * On init
-   */
-  ngOnInit(): void {
-    // Create the form
-    this.signInForm = this._formBuilder.group({
-      email: ['', [Validators.required, Validators.email]],
-      password: ['', Validators.required],
-    });
-  }
-
-  // -----------------------------------------------------------------------------------------------------
-  // @ Public methods
-  // -----------------------------------------------------------------------------------------------------
 
   /**
    * Sign in
    */
-  signIn(): void {
-    // Return if the form is invalid
-    if (this.signInForm.invalid) {
-      this.signInForm.markAllAsTouched();
-      return;
-    }
-
-    // Disable the form
-    this.signInForm.disable();
-
-    // Sign in
-    this._authService.signIn(this.signInForm.value, this.ip!).subscribe({
-      next: (response) => {
-        if (!response.message.includes('código de verificación')) {
-          // Store the access token in the local storage
-          this._authService.accessToken = response.message;
-          const redirectURL =
-            this._activatedRoute.snapshot.queryParamMap.get('redirectURL') || '/signed-in-redirect';
-
-          // Navigate to the redirect url
-          this._router.navigateByUrl(redirectURL);
-        } else {
-          // Navigate to the redirect url
-          this._router.navigateByUrl('/auth/confirmation-required', {
-            state: { email: this.signInForm.value.email },
+  async signIn(): Promise<void> {
+    try {
+      await submit(this.signInForm, async (field) => {
+        const response = await firstValueFrom(
+          this._authService
+            .signIn(field().value(), this.ip())
+            .pipe(takeUntilDestroyed(this._destroyRef)),
+        );
+        if (response.message.includes('código de verificación')) {
+          await this._router.navigateByUrl('/auth/confirmation-required', {
+            state: {
+              email: field().value().email,
+            },
           });
+          return;
         }
-      },
-      error: (err) => {
-        // Re-enable the form
-        this.signInForm.enable();
-        // Reset the form
-        this.signInNgForm.resetForm();
-        // Set the alert
-        this._toastrService.error(err.error.message, 'Aviso');
-      },
-    });
+        this._authService.accessToken = response.message;
+        const redirectURL =
+          this._activatedRoute.snapshot.queryParamMap.get('redirectURL') ?? '/signed-in-redirect';
+
+        await this._router.navigateByUrl(redirectURL);
+      });
+    } catch (err: any) {
+      this._toastrService.error(
+        err?.error?.message ?? 'Ocurrió un error al iniciar sesión',
+        'Aviso',
+      );
+    }
   }
 
   /**
    * Get value of auth background
    * @returns
    */
-  getLogo() {
-    if (this.parameters().length > 0) {
-      return getLogo('LOGO_PRIMARY', this.parameters());
-    } else {
-      return '';
-    }
+  getLogo(): string {
+    if (this.parameters().length > 0) return getLogo('LOGO_PRIMARY', this.parameters());
+    return '';
   }
 
   /**

@@ -50,10 +50,8 @@ export class SitieInformationComponent implements OnInit, AfterViewInit {
   validateFormControl = CmsValidators.validateFormControl;
   getErrorMessage = CmsValidators.getErrorMessage;
 
-  sitie = toSignal(this._sitieService.sitie$, { initialValue: null });
-  templates = toSignal(this._templateService.templates$, {
-    initialValue: { records: [], total: 0, page: 0, totalPage: 0 },
-  });
+  sitie = this._sitieService.sitie;
+  templates = this._templateService.templates;
 
   sitieForm!: UntypedFormGroup;
 
@@ -251,7 +249,7 @@ export class SitieInformationComponent implements OnInit, AfterViewInit {
    * @param template
    */
   loadTemplate(template: TemplateI) {
-    this._templateService.template = template;
+    this._templateService.template.set(template);
     // Eliminar CSS anterior
     this.styleElement?.remove();
 

@@ -49,3 +49,17 @@ export class StorageUtils {
     }
   }
 }
+
+/**
+ * Get encryptStorage for key
+ * @param key
+ * @returns
+ */
+export function getLocalStorage(key: string): string | undefined {
+  if (isProduction) {
+    const hash = encryptStorage.hash(key);
+    return encryptStorage.getItem(hash) || undefined;
+  } else {
+    return localStorage.getItem(key) ?? undefined;
+  }
+}

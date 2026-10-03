@@ -39,10 +39,8 @@ export class PagesDetail implements OnInit, OnDestroy {
   private readonly _microsityService = inject(MicrosityService);
   private readonly _router = inject(Router);
 
-  readonly page = toSignal(this._pageService.page$, {
-    initialValue: null,
-  });
-  readonly micrositie = toSignal(this._microsityService.micrositie$, { initialValue: null });
+  readonly page = this._pageService.page;
+  readonly micrositie = this._microsityService.micrositie;
 
   /**
    * Constructor

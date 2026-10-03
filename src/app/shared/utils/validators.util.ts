@@ -5,6 +5,7 @@ import {
   ValidationErrors,
   ValidatorFn,
 } from '@angular/forms';
+import { FieldTree } from '@angular/forms/signals';
 
 export class CmsValidators {
   /**
@@ -124,6 +125,15 @@ export class CmsValidators {
       strength,
     };
   }
+}
+
+/**
+ * Is valid field
+ * @param field
+ * @returns
+ */
+export function hasError<T>(field: FieldTree<T>): boolean {
+  return field().invalid() && field().touched();
 }
 
 const errorMessages: Record<string, string> = {

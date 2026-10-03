@@ -86,12 +86,10 @@ export class PagesCanvas implements AfterViewInit, OnDestroy {
   private readonly _languageService = inject(LanguageService);
   private readonly _canvasService = inject(CanvasService);
 
-  readonly page = toSignal(this._pageService.page$, { initialValue: null });
-  readonly parameters = toSignal(this._parameterService.parameter$, { initialValue: [] });
-  readonly micrositie = toSignal(this._microsityService.micrositie$, { initialValue: null });
-  readonly languages = toSignal(this._languageService.languages$, {
-    initialValue: { records: [], total: 0, page: 0, totalPage: 0 },
-  });
+  readonly page = this._pageService.page;
+  readonly parameters = this._parameterService.publicParameters;
+  readonly micrositie = this._microsityService.micrositie;
+  readonly languages = this._languageService.languages;
 
   readonly selectedItemsInGrid = this._canvasService.selectedItemsInGrid;
 
@@ -127,7 +125,7 @@ export class PagesCanvas implements AfterViewInit, OnDestroy {
    * Constructor
    */
   constructor() {
-    this._templateService.template = null;
+    this._templateService.template.set(null);
     interval(300_000)
       .pipe(
         filter(() => !this.previewMode()),
@@ -369,7 +367,7 @@ export class PagesCanvas implements AfterViewInit, OnDestroy {
    */
   goToBack() {
     const page = this.page();
-    this._pageService.page = null;
+    this._pageService.page.set(null);
     this._router.navigateByUrl('/admin/content/pages/detail', {
       state: {
         id: page === null ? 0 : page!.id,
@@ -414,7 +412,7 @@ export class PagesCanvas implements AfterViewInit, OnDestroy {
             data: structuredClone(page.draft!),
             draft: null!,
           };
-          this._pageService.page = structuredClone(draftPage);
+          this._pageService.page.set(structuredClone(draftPage));
         } else {
           this.deleteDraft();
         }
@@ -491,7 +489,7 @@ export class PagesCanvas implements AfterViewInit, OnDestroy {
             return;
           }
           this.deleteDraft();
-          this._pageService.page = structuredClone({ ...page, draft: null! });
+          this._pageService.page.set(structuredClone({ ...page, draft: null! }));
           this.updateSelectionItem({
             page: null,
             section: null,

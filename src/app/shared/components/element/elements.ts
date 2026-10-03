@@ -44,7 +44,7 @@ export class ElementsComponent implements AfterViewInit, OnDestroy {
   private readonly parameterService = inject(ParameterService);
   private readonly pluginLoader = inject(PluginLoaderService);
 
-  readonly parameters = this.parameterService.parameters;
+  readonly parameters = this.parameterService.publicParameters;
 
   private destroyed = false;
   private initialized = false;

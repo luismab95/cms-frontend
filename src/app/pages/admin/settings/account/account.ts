@@ -32,7 +32,7 @@ export class SettingsAccountComponent implements OnInit {
   private readonly _toastrService = inject(ToastrService);
   private readonly _formBuilder = inject(UntypedFormBuilder);
 
-  readonly role = toSignal(this._userService.role$, { initialValue: null });
+  readonly role = this._userService.role;
 
   /**
    * Constructor

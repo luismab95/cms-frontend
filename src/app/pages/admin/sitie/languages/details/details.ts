@@ -65,8 +65,8 @@ export class SitieLanguagesDetailsComponent implements OnInit, OnDestroy {
   private _formBuilder = inject(UntypedFormBuilder);
   private _dialogService = inject(DialogService);
 
-  readonly parameters = toSignal(this._parameterService.parameter$, { initialValue: [] });
-  readonly sitie = toSignal(this._sitieService.sitie$, { initialValue: null });
+  readonly parameters = this._parameterService.publicParameters;
+  readonly sitie = this._sitieService.sitie;
 
   /**
    * Constructor

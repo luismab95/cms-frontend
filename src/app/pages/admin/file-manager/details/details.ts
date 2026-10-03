@@ -70,7 +70,7 @@ export class FileManagerDetailsComponent implements OnInit, OnDestroy {
   private _fileManagerService = inject(FileManagerService);
   private _parameterService = inject(ParameterService);
 
-  readonly parameters = toSignal(this._parameterService.parameter$, { initialValue: [] });
+  readonly parameters = this._parameterService.publicParameters;
 
   readonly selectedFileMimeType = computed(() => this.selectedFile()!.type.toLowerCase());
 

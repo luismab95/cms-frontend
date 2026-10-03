@@ -25,7 +25,6 @@ export class AuthSignOut implements OnInit, OnDestroy {
     '=1': '# second',
     other: '# seconds',
   };
-  parameters = signal<ParameterI[]>([]);
 
   progressPercentage = computed(() => {
     return (this.countdown() / 10) * 100;
@@ -38,17 +37,12 @@ export class AuthSignOut implements OnInit, OnDestroy {
   private _router = inject(Router);
   private _changeDetectorRef = inject(ChangeDetectorRef);
 
+  readonly parameters = this._parameterService.publicParameters;
+
   /**
    * Constructor
    */
-  constructor() {
-    this._parameterService.parameter$
-      .pipe(takeUntil(this._unsubscribeAll))
-      .subscribe((parameters: ParameterI[]) => {
-        this.parameters.set(parameters);
-        this._changeDetectorRef.markForCheck();
-      });
-  }
+  constructor() {}
 
   // -----------------------------------------------------------------------------------------------------
   // @ Lifecycle hooks

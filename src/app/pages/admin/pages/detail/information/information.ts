@@ -40,11 +40,9 @@ export class PagesInformationComponent implements OnInit, OnDestroy {
   validateFormControl = CmsValidators.validateFormControl;
   getErrorMessage = CmsValidators.getErrorMessage;
 
-  sitie = toSignal(this._sitieService.sitie$, { initialValue: null });
-  micrositie = toSignal(this._microsityService.micrositie$, { initialValue: null });
-  page = toSignal(this._pageService.page$, {
-    initialValue: null,
-  });
+  sitie = this._sitieService.sitie;
+  micrositie = this._microsityService.micrositie;
+  page = this._pageService.page;
 
   pageForm!: UntypedFormGroup;
 

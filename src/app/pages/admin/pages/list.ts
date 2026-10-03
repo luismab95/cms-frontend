@@ -16,7 +16,14 @@ import { Subject, debounceTime, takeUntil } from 'rxjs';
 @Component({
   selector: 'pages',
   templateUrl: './list.html',
-  imports: [FormsModule, ReactiveFormsModule, PaginationComponent, PermissionComponent, NgClass, TitleHeaderComponent],
+  imports: [
+    FormsModule,
+    ReactiveFormsModule,
+    PaginationComponent,
+    PermissionComponent,
+    NgClass,
+    TitleHeaderComponent,
+  ],
 })
 export class PagesList implements OnInit, OnDestroy {
   limit = signal<number>(10);
@@ -35,10 +42,8 @@ export class PagesList implements OnInit, OnDestroy {
   private readonly _router = inject(Router);
   private readonly _toastrService = inject(ToastrService);
 
-  readonly pages = toSignal(this._pageService.pages$, {
-    initialValue: { records: [], total: 0, page: 0, totalPage: 0 },
-  });
-  readonly micrositie = toSignal(this._microsityService.micrositie$, { initialValue: null });
+  readonly pages = this._pageService.pages;
+  readonly micrositie = this._microsityService.micrositie;
 
   readonly totalPage = computed(() => this.pages().total);
 
@@ -114,7 +119,7 @@ export class PagesList implements OnInit, OnDestroy {
    * @param data
    */
   openDetailsModal(page: PageI | null): void {
-    this._pageService.page = null;
+    this._pageService.page.set(null);
     this._router.navigateByUrl('/admin/content/pages/detail', {
       state: {
         id: page === null ? 0 : page.id,

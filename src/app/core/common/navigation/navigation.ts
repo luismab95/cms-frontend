@@ -1,4 +1,4 @@
-import { Component, inject, computed, DestroyRef } from '@angular/core';
+import { Component, inject, computed, DestroyRef, effect } from '@angular/core';
 import { NgClass } from '@angular/common';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { NavigationEnd, Router, RouterLink } from '@angular/router';
@@ -34,9 +34,13 @@ export class VerticalNavigation {
     },
   );
 
-  readonly currrentNavigation = computed(() => {
-    return this._navigationService.getCurrentNavigation(this.navigation(), this.currentPath());
-  });
+  readonly currentNavigation = computed(() =>
+    this._navigationService.getCurrentNavigation(
+      this._navigationService.navigation(),
+      this.currentPath(),
+    ),
+  );
+
   readonly previewType = computed(() => {
     const { deviceType } = this._deviceDetectorService.deviceInfo();
     switch (deviceType) {
@@ -55,12 +59,7 @@ export class VerticalNavigation {
    * Constructor
    */
   constructor() {
-    const { deviceType } = this._deviceDetectorService.deviceInfo();
-    if (deviceType === DeviceType.Desktop) {
-      this._navigationService.isOpenNavigation.set(true);
-    } else {
-      this._navigationService.isOpenNavigation.set(false);
-    }
+    this._navigationService.isOpenNavigation.set(this.previewType() === 'desktop');
   }
 
   /**

@@ -32,7 +32,7 @@ export class MicrositiesDetail implements OnInit, OnDestroy {
   private readonly _microsityService = inject(MicrosityService);
   private readonly _router = inject(Router);
 
-  readonly micrositie = toSignal(this._microsityService.micrositie$, { initialValue: null });
+  readonly micrositie = this._microsityService.micrositie;
 
   /**
    * Constructor

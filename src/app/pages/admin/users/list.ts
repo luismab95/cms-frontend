@@ -45,13 +45,9 @@ export class UsersList implements OnInit, OnDestroy {
   private readonly _roleService = inject(RoleService);
   private readonly _toastrService = inject(ToastrService);
 
-  readonly users = toSignal(this._userService.users$, {
-    initialValue: { records: [], total: 0, page: 0, totalPage: 0 },
-  });
+  readonly users = this._userService.users;
 
-  readonly roles = toSignal(this._roleService.roles$, {
-    initialValue: [],
-  });
+  readonly roles = this._roleService.roles;
 
   readonly totalUser = computed(() => this.users().total);
 

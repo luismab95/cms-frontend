@@ -361,12 +361,15 @@ ngx-otp-input {
   --ng-select-disabled-bg: var(--color-white);
 }
 
-#canvas .ng-select-container {
-  border: unset !important;
+
+.ng-arrow-wrapper {
+  display: none !important;
 }
 
-#canvas .ng-arrow-wrapper {
-  display: none !important;
+.ng-select-container {
+  border: unset !important;
+  background-color: transparent !important;
+  padding: unset;
 }
 
 #canvas .bg-dot-grid {
@@ -374,11 +377,7 @@ ngx-otp-input {
   background-image: radial-gradient(circle, #cbd5e1 1.2px, transparent 1.2px);
 }
 
-.ng-select-container {
-  background-color: transparent !important;
-  padding: unset;
 
-}
 
 /* images */
 .bg-transparency-grid {

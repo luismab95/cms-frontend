@@ -26,7 +26,6 @@ export class AuthForgotPassword implements OnInit {
   @ViewChild('forgotPasswordNgForm') forgotPasswordNgForm!: NgForm;
 
   forgotPasswordForm!: UntypedFormGroup;
-  parameters = signal<ParameterI[]>([]);
   validateFormControl = CmsValidators.validateFormControl;
   getErrorMessage = CmsValidators.getErrorMessage;
   private _unsubscribeAll: Subject<any> = new Subject<any>();
@@ -36,18 +35,12 @@ export class AuthForgotPassword implements OnInit {
   private _formBuilder = inject(UntypedFormBuilder);
   private _toastrService = inject(ToastrService);
   private _changeDetectorRef = inject(ChangeDetectorRef);
+  readonly parameters = this._parameterService.publicParameters;
 
   /**
    * Constructor
    */
-  constructor() {
-    this._parameterService.parameter$
-      .pipe(takeUntil(this._unsubscribeAll))
-      .subscribe((parameters: ParameterI[]) => {
-        this.parameters.set(parameters);
-        this._changeDetectorRef.markForCheck();
-      });
-  }
+  constructor() {}
 
   // -----------------------------------------------------------------------------------------------------
   // @ Lifecycle hooks

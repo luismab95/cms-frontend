@@ -1,5 +1,13 @@
 import { NgClass } from '@angular/common';
-import { ChangeDetectorRef, Component, OnInit, ViewChild, inject, signal } from '@angular/core';
+import {
+  ChangeDetectorRef,
+  Component,
+  OnInit,
+  ViewChild,
+  effect,
+  inject,
+  signal,
+} from '@angular/core';
 import {
   FormsModule,
   NgForm,
@@ -28,7 +36,6 @@ export class AuthResetPassword implements OnInit {
   @ViewChild('resetPasswordNgForm') resetPasswordNgForm!: NgForm;
 
   resetPasswordForm!: UntypedFormGroup;
-  parameters = signal<ParameterI[]>([]);
   token: string;
   longPwd = signal<number>(6);
   mayusPwd = signal<boolean>(false);
@@ -58,6 +65,7 @@ export class AuthResetPassword implements OnInit {
   private _activatedRoute = inject(ActivatedRoute);
   private _changeDetectorRef = inject(ChangeDetectorRef);
   private _toastrService = inject(ToastrService);
+  readonly parameters = this._parameterService.publicParameters;
 
   /**
    * Constructor
@@ -80,14 +88,11 @@ export class AuthResetPassword implements OnInit {
       },
     );
 
-    this._parameterService.parameter$
-      .pipe(takeUntil(this._unsubscribeAll))
-      .subscribe((parameters: ParameterI[]) => {
-        this.parameters.set(parameters);
-        this.getParameters();
-        this.longPwdRegex = new RegExp('.{' + this.longPwd() + ',}$');
-        this._changeDetectorRef.markForCheck();
-      });
+    effect(() => {
+      this.parameters();
+      this.getParameters();
+      this.longPwdRegex = new RegExp('.{' + this.longPwd() + ',}$');
+    });
   }
 
   // -----------------------------------------------------------------------------------------------------

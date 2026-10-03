@@ -41,9 +41,7 @@ export class FileManagerList implements OnInit, OnDestroy {
   private readonly _fileManagerService = inject(FileManagerService);
   private readonly _toastrService = inject(ToastrService);
 
-  readonly files = toSignal(this._fileManagerService.files$, {
-    initialValue: { records: [], total: 0, page: 0, totalPage: 0 },
-  });
+  readonly files = this._fileManagerService.files;
 
   readonly totalFiles = computed(() => this.files().total);
 

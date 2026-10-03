@@ -54,8 +54,8 @@ export class TemplatesInformationComponent implements OnInit, AfterViewInit, OnD
   validateFormControl = CmsValidators.validateFormControl;
   getErrorMessage = CmsValidators.getErrorMessage;
 
-  template = toSignal(this._templateService.template$, { initialValue: null });
-  sitie = toSignal(this._sitieService.sitie$, { initialValue: null });
+  template = this._templateService.template;
+  sitie = this._sitieService.sitie;
 
   templateForm!: UntypedFormGroup;
 

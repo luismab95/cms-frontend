@@ -31,10 +31,7 @@ export class TemplatesDetail implements OnInit, OnDestroy {
   private readonly _templateService = inject(TemplateService);
   private readonly _router = inject(Router);
 
-  readonly template = toSignal(this._templateService.template$, {
-    initialValue: null,
-  });
-
+  readonly template = this._templateService.template;
   /**
    * Constructor
    */

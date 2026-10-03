@@ -88,12 +88,10 @@ export class TemplatesCanvas implements AfterViewInit, OnDestroy {
   private readonly _languageService = inject(LanguageService);
   private readonly _canvasService = inject(CanvasService);
 
-  readonly template = toSignal(this._templateService.template$, { initialValue: null });
-  readonly parameters = toSignal(this._parameterService.parameter$, { initialValue: [] });
-  readonly micrositie = toSignal(this._microsityService.micrositie$, { initialValue: null });
-  readonly languages = toSignal(this._languageService.languages$, {
-    initialValue: { records: [], total: 0, page: 0, totalPage: 0 },
-  });
+  readonly template = this._templateService.template;
+  readonly parameters = this._parameterService.publicParameters;
+  readonly micrositie = this._microsityService.micrositie;
+  readonly languages = this._languageService.languages;
 
   readonly selectedItemsInGrid = this._canvasService.selectedItemsInGrid;
 
@@ -151,7 +149,7 @@ export class TemplatesCanvas implements AfterViewInit, OnDestroy {
    * Constructor
    */
   constructor() {
-    this._pageService.page = null;
+    this._pageService.page.set(null);
     interval(300_000)
       .pipe(
         filter(() => !this.previewMode()),
@@ -456,7 +454,7 @@ export class TemplatesCanvas implements AfterViewInit, OnDestroy {
             data: structuredClone(template.draft!),
             draft: null!,
           };
-          this._templateService.template = structuredClone(draftTemplate);
+          this._templateService.template.set(structuredClone(draftTemplate));
         } else {
           this.deleteDraft();
         }
@@ -533,7 +531,7 @@ export class TemplatesCanvas implements AfterViewInit, OnDestroy {
             return;
           }
           this.deleteDraft();
-          this._templateService.template = structuredClone({ ...template, draft: null! });
+          this._templateService.template.set(structuredClone({ ...template, draft: null! }));
           this.updateSelectionItem({
             page: null,
             section: null,

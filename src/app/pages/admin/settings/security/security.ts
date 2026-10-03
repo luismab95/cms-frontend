@@ -52,7 +52,7 @@ export class SettingsSecurityComponent implements OnInit {
   private _formBuilder = inject(UntypedFormBuilder);
   private _toastrService = inject(ToastrService);
 
-  readonly parameters = toSignal(this._parameterService.parameter$, { initialValue: [] });
+  readonly parameters = this._parameterService.publicParameters;
 
   /**
    * Constructor

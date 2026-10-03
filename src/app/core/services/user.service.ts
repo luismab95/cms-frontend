@@ -50,15 +50,11 @@ export class UserService {
         tap((response) => {
           this.userLogin.set(response.message.user);
           this.role.set(response.message.role);
-          this._navigationService.navigation.set(response.message.navigation);
+          this._navigationService.setNavigation(response.message.navigation);
           this.permission.set(response.message.permission);
           this._storageUtils.saveLocalStorage(
             'actions',
             JSON.stringify(response.message.permission.scope[0].action),
-          );
-          this._storageUtils.saveLocalStorage(
-            'navigation',
-            JSON.stringify(response.message.navigation),
           );
         }),
       );

@@ -22,8 +22,8 @@ import { Subject, takeUntil } from 'rxjs';
     ParametersCompanyComponent,
     PermissionComponent,
     DrawerComponent,
-    TitleHeaderComponent
-],
+    TitleHeaderComponent,
+  ],
 })
 export class Parameters implements OnInit, OnDestroy {
   permission = PermissionCode;
@@ -34,7 +34,7 @@ export class Parameters implements OnInit, OnDestroy {
 
   private readonly _parameterService = inject(ParameterService);
 
-  readonly parameters = toSignal(this._parameterService.parameters$, { initialValue: [] });
+  readonly parameters = this._parameterService.parameters;
 
   /**
    * Constructor

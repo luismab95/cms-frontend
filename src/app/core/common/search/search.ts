@@ -39,10 +39,10 @@ export class Search implements OnDestroy {
 
   private _overlayRef!: OverlayRef;
 
-  private _destroyRef = inject(DestroyRef);
-  private _overlay = inject(Overlay);
-  private _viewContainerRef = inject(ViewContainerRef);
-  private _navigationService = inject(NavigationService);
+  private readonly _destroyRef = inject(DestroyRef);
+  private readonly _overlay = inject(Overlay);
+  private readonly _viewContainerRef = inject(ViewContainerRef);
+  private readonly _navigationService = inject(NavigationService);
 
   readonly navigation = this._navigationService.navigation;
 
@@ -149,7 +149,7 @@ export class Search implements OnDestroy {
     const query = term.trim();
 
     if (!query) {
-      this.navigation.set([]);
+      this.navigationSearch.set([]);
       return;
     }
 

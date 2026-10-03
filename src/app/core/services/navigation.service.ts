@@ -1,10 +1,22 @@
-import { Injectable, signal } from '@angular/core';
+import { inject, Injectable, signal } from '@angular/core';
 import { NavigationI } from '@core/interfaces';
+import { StorageUtils } from '@shared/utils';
 
 @Injectable({ providedIn: 'root' })
 export class NavigationService {
   navigation = signal<NavigationI[]>([]);
   isOpenNavigation = signal<boolean>(false);
+
+  private readonly _storageUtils = inject(StorageUtils);
+
+  /**
+   * Set navigation
+   * @param navigation 
+   */
+  setNavigation(navigation: NavigationI[]): void {
+    this.navigation.set(navigation);
+    this._storageUtils.saveLocalStorage('navigation', JSON.stringify(navigation));
+  }
 
   /**
    * Get current link

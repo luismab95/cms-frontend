@@ -56,11 +56,9 @@ export class MicrositieInformationComponent implements OnInit, AfterViewInit {
   validateFormControl = CmsValidators.validateFormControl;
   getErrorMessage = CmsValidators.getErrorMessage;
 
-  sitie = toSignal(this._sitieService.sitie$, { initialValue: null });
-  micrositie = toSignal(this._microsityService.micrositie$, { initialValue: null });
-  templates = toSignal(this._templateService.templates$, {
-    initialValue: { records: [], total: 0, page: 0, totalPage: 0 },
-  });
+  sitie = this._sitieService.sitie;
+  micrositie = this._microsityService.micrositie;
+  templates = this._templateService.templates;
 
   micrositieForm!: UntypedFormGroup;
 
@@ -302,7 +300,7 @@ export class MicrositieInformationComponent implements OnInit, AfterViewInit {
    * @param template
    */
   loadTemplate(template: TemplateI) {
-    this._templateService.template = template;
+    this._templateService.template.set(template);
 
     // Eliminar CSS anterior
     this.styleElement?.remove();

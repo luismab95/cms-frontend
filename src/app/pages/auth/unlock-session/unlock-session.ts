@@ -30,7 +30,6 @@ export class AuthUnlockSession implements OnInit {
   name!: string;
   unlockSessionForm!: UntypedFormGroup;
   passwordVisible = signal<boolean>(false);
-  parameters = signal<ParameterI[]>([]);
   ip: string | undefined;
   validateFormControl = CmsValidators.validateFormControl;
   getErrorMessage = CmsValidators.getErrorMessage;
@@ -47,6 +46,8 @@ export class AuthUnlockSession implements OnInit {
   private _changeDetectorRef = inject(ChangeDetectorRef);
   private _toastrService = inject(ToastrService);
 
+  readonly parameters = this._parameterService.publicParameters;
+
   /**
    * Constructor
    */
@@ -58,15 +59,6 @@ export class AuthUnlockSession implements OnInit {
         this._router.navigateByUrl('/auth/sign-in');
       }
     });
-
-    this._parameterService.parameter$
-      .pipe(takeUntil(this._unsubscribeAll))
-      .subscribe((parameters: ParameterI[]) => {
-        this.parameters.set(parameters);
-
-        // Mark for check
-        this._changeDetectorRef.markForCheck();
-      });
 
     this._ipUtils.getClientIp().subscribe({
       next: (res) => {

@@ -40,9 +40,7 @@ export class MicrositieList implements OnInit, OnDestroy {
   private readonly _toastrService = inject(ToastrService);
   private readonly _router = inject(Router);
 
-  readonly microsities = toSignal(this._microsityService.microsities$, {
-    initialValue: { records: [], total: 0, page: 0, totalPage: 0 },
-  });
+  readonly microsities =this._microsityService.microsities;
 
   readonly totalMicrosities = computed(() => this.microsities().total);
 

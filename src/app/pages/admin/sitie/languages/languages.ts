@@ -44,12 +44,8 @@ export class SitieLanguagesComponent implements OnInit {
   private _languageService = inject(LanguageService);
   private _toastrService = inject(ToastrService);
 
-  readonly parameters = toSignal(this._parameterService.parameter$, {
-    initialValue: [],
-  });
-  readonly languages = toSignal(this._languageService.languages$, {
-    initialValue: { records: [], total: 0, page: 0, totalPage: 0 },
-  });
+  readonly parameters = this._parameterService.publicParameters;
+  readonly languages = this._languageService.languages;
 
   readonly totalLanguage = computed(() => this.languages().total);
 

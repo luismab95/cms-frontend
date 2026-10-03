@@ -40,7 +40,7 @@ export class UsersDetailsComponent implements OnInit, OnDestroy {
   private _formBuilder = inject(UntypedFormBuilder);
   private _dialogService = inject(DialogService);
 
-  readonly roles = toSignal(this._roleService.roles$, { initialValue: [] });
+  readonly roles =this._roleService.roles;
 
   readonly isOpen = signal(false);
 

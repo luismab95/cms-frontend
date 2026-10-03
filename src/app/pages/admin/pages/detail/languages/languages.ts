@@ -50,23 +50,10 @@ export class PagesLangugesComponent implements OnDestroy {
   private readonly _toastrService = inject(ToastrService);
   private readonly _formBuilder = inject(FormBuilder);
 
-  readonly micrositie = toSignal(this._microsityService.micrositie$, {
-    initialValue: null,
-  });
-  readonly page = toSignal(this._pageService.page$, {
-    initialValue: null,
-  });
-  readonly languages = toSignal(this._languageService.languages$, {
-    initialValue: {
-      records: [],
-      total: 0,
-      page: 0,
-      totalPage: 0,
-    },
-  });
-  readonly parameters = toSignal(this._parameterService.parameter$, {
-    initialValue: [],
-  });
+  readonly micrositie = this._microsityService.micrositie;
+  readonly page = this._pageService.page;
+  readonly languages = this._languageService.languages;
+  readonly parameters = this._parameterService.publicParameters;
   readonly selectedLanguageForm = computed(
     () => this.languagesFormArray.at(this.selectedLanguage()) as UntypedFormGroup,
   );

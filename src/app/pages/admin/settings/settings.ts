@@ -30,9 +30,7 @@ export class Settings implements OnInit, OnDestroy {
 
   private readonly _userService = inject(UserService);
 
-  readonly user = toSignal(this._userService.userLogin$, {
-    initialValue: null,
-  });
+  readonly user =this._userService.userLogin;
 
   /**
    * Constructor

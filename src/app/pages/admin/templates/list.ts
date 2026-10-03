@@ -39,9 +39,7 @@ export class TemplatesList implements OnInit, OnDestroy {
   private readonly _toastrService = inject(ToastrService);
   private readonly _router = inject(Router);
 
-  readonly templates = toSignal(this._templateService.templates$, {
-    initialValue: { records: [], total: 0, page: 0, totalPage: 0 },
-  });
+  readonly templates = this._templateService.templates;
 
   readonly totalTemplates = computed(() => this.templates().total);
 
@@ -117,7 +115,7 @@ export class TemplatesList implements OnInit, OnDestroy {
    */
 
   openDetailsModal(template: TemplateI | null): void {
-    this._templateService.template = null;
+    this._templateService.template.set(null);
     this._router.navigateByUrl('/admin/content/templates/detail', {
       state: {
         id: template === null ? 0 : template.id,

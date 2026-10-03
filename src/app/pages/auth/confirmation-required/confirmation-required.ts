@@ -3,6 +3,7 @@ import {
   Component,
   ViewChild,
   ViewEncapsulation,
+  effect,
   inject,
   signal,
 } from '@angular/core';
@@ -38,7 +39,6 @@ export class AuthConfirmationRequired {
   @ViewChild('OtpComponent') otpComponent!: OtpComponent;
 
   signInForm!: UntypedFormGroup;
-  parameters = signal<ParameterI[]>([]);
   countdown = signal<number>(300);
   countdownMapping: any = {
     '=1': '# second',
@@ -60,6 +60,7 @@ export class AuthConfirmationRequired {
   private readonly _activatedRoute = inject(ActivatedRoute);
   private readonly _changeDetectorRef = inject(ChangeDetectorRef);
   private readonly _toastrService = inject(ToastrService);
+  readonly parameters = this._parameterService.publicParameters;
 
   /**
    * Constructor
@@ -68,15 +69,10 @@ export class AuthConfirmationRequired {
     this.email = this._router.currentNavigation()?.extras?.state?.['email'];
     if (this.email === undefined) this._router.navigateByUrl('/auth/sign-in');
 
-    this._parameterService.parameter$
-      .pipe(takeUntil(this._unsubscribeAll))
-      .subscribe((parameters: ParameterI[]) => {
-        this.parameters.set(parameters);
-        this.countdown.set(
-          Number(findParameter('OTP_TIME_RESEND', this.parameters())?.value ?? 300),
-        );
-        this._changeDetectorRef.markForCheck();
-      });
+    effect(() => {
+      this.parameters();
+      this.countdown.set(Number(findParameter('OTP_TIME_RESEND', this.parameters())?.value ?? 300));
+    });
 
     this._ipUtils.getClientIp().subscribe({
       next: (res) => {

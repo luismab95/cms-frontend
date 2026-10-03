@@ -18,7 +18,7 @@ import { TitleHeaderComponent } from 'app/shared/components/title-header/title-h
     SitieInformationComponent,
     SitieLanguagesComponent,
     PermissionComponent,
-    TitleHeaderComponent
+    TitleHeaderComponent,
   ],
 })
 export class Sitie implements OnInit, OnDestroy {
@@ -30,10 +30,7 @@ export class Sitie implements OnInit, OnDestroy {
 
   private readonly _sitieService = inject(SitieService);
 
-  readonly sitie = toSignal(this._sitieService.sitie$, {
-    initialValue: null,
-  });
-
+  readonly sitie = this._sitieService.sitie;
   /**
    * Constructor
    */

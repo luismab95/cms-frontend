@@ -11,7 +11,7 @@ import {
   distributionOrigen,
   Top10PagesI,
   weekVisit,
-  yearVisit
+  yearVisit,
 } from 'app/core/interfaces/home.interface';
 import { HomeService } from 'app/core/services/home.service';
 import { UserService } from 'app/core/services/user.service';
@@ -56,34 +56,16 @@ export class Home {
 
   readonly permission = PermissionCode;
 
-  readonly parameters = toSignal(this._parameterService.parameter$, {
-    initialValue: null,
-  });
+  readonly parameters = this._parameterService.publicParameters;
 
-  readonly user = toSignal(this._userService.userLogin$, {
-    initialValue: null,
-  });
-  readonly countElements = toSignal(this._homeService.countElements$, {
-    initialValue: null,
-  });
-  readonly dataServiceWeek = toSignal(this._homeService.weekVisit$, {
-    initialValue: null,
-  });
-  readonly dataServiceYear = toSignal(this._homeService.yearVisit$, {
-    initialValue: null,
-  });
-  readonly visitVsPages = toSignal(this._homeService.visitVsPages$, {
-    initialValue: null,
-  });
-  readonly dataServiceTop10 = toSignal(this._homeService.top10Pages$, {
-    initialValue: [],
-  });
-  readonly notifications = toSignal(this._notificationsService.notifications$, {
-    initialValue: [],
-  });
-  readonly sitie = toSignal(this._sitieService.sitie$, {
-    initialValue: null,
-  });
+  readonly user = this._userService.userLogin;
+  readonly countElements = this._homeService.countElements;
+  readonly dataServiceWeek = this._homeService.weekVisit;
+  readonly dataServiceYear = this._homeService.yearVisit;
+  readonly visitVsPages = this._homeService.visitVsPages;
+  readonly dataServiceTop10 = this._homeService.top10Pages;
+  readonly notifications = this._notificationsService.notifications;
+  readonly sitie = this._sitieService.sitie;
 
   readonly top3Pages = computed(() => {
     return [...this.dataServiceTop10()]
