@@ -17,11 +17,9 @@
     class="flex-1 flex flex-col justify-between px-6 py-10 sm:px-12 md:px-16 lg:px-16 xl:px-24 bg-white h-screen"
   >
     <div class="mx-auto w-full max-w-120 sm:mx-0 sm:w-120">
-      <!-- Logo -->
       <div class="w-auto">
         <img [src]="getLogo()" class="w-42" alt="logo" />
       </div>
-      <!-- Icon & Header Group -->
       <div class="mb-8 my-12">
         <div
           class="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-blue-50 text-blue-600 ring-8 ring-blue-50/50 mb-5 shadow-sm"
@@ -47,13 +45,10 @@
           Ingresa tu contraseña para continuar donde lo dejaste.
         </p>
       </div>
-
-      <!-- Authentication Form -->
-      <form class="space-y-5" [formGroup]="unlockSessionForm" #signInNgForm="ngForm">
-        <!-- name Input -->
+      <form class="space-y-5" (submit)="signIn($event)">
         <div>
           <label
-            [class.text-red-500!]="validateFormControl(unlockSessionForm, 'name')"
+            [class.text-red-500!]="hasError(unlockSessionForm.name)"
             class="block text-xs font-semibold uppercase tracking-wider text-slate-700 mb-1.5"
             for="name"
           >
@@ -64,36 +59,32 @@
               class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400"
             >
               <i
-                class="fa-regular fa-user"
-                [class.text-red-500!]="validateFormControl(unlockSessionForm, 'name')"
+                class="fa-regular fa-envelope"
+                [class.text-red-500!]="hasError(unlockSessionForm.name)"
               ></i>
             </div>
             <input
-              formControlName="name"
-              class="block w-full pl-10 pr-3.5 py-2.5 sm:py-3 text-sm text-slate-900 placeholder-slate-400 bg-slate-50/50 border border-slate-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-600 focus:bg-white transition-colors disabled:bg-slate-200"
-              [class.border-red-500!.text-red-500!]="validateFormControl(unlockSessionForm, 'name')"
-              [class.text-red-500!]="validateFormControl(unlockSessionForm, 'name')"
-              [class.placeholder:text-red-500!]="validateFormControl(unlockSessionForm, 'name')"
+              [formField]="unlockSessionForm.name"
+              class="block w-full pl-10 pr-3.5 py-2.5 sm:py-3 text-sm text-slate-900 placeholder-slate-400 bg-slate-50/50 border border-slate-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-600 focus:bg-white transition-colors disabled:bg-slate-100"
+              [ngClass]="{
+                'border-red-500! text-red-500! placeholder:text-red-500! focus:ring-red-500!':
+                  hasError(unlockSessionForm.name),
+              }"
               id="name"
-              name="name"
-              required=""
               type="text"
             />
           </div>
-
-          <!-- Errores -->
-          @if (getErrorMessage(unlockSessionForm, 'name') !== '') {
+          @if (hasError(unlockSessionForm.name)) {
             <p class="mt-1.5 flex items-center gap-1 text-sm text-red-600">
               <i class="fa-solid fa-circle-exclamation"></i>
-              <span>{{ getErrorMessage(unlockSessionForm, 'name') }}</span>
+              {{ unlockSessionForm.name().errors()[0].message }}
             </p>
           }
         </div>
-        <!-- Password Input -->
         <div>
           <div class="flex items-center justify-between mb-1.5">
             <label
-              [class.text-red-500!]="validateFormControl(unlockSessionForm, 'password')"
+              [class.text-red-500!]="hasError(unlockSessionForm.password)"
               class="block text-xs font-semibold uppercase tracking-wider text-slate-700"
               for="password"
             >
@@ -106,25 +97,20 @@
             >
               <i
                 class="fa-regular fa-keyboard"
-                [class.text-red-500!]="
-                  unlockSessionForm.get('password')?.invalid &&
-                  unlockSessionForm.get('password')?.touched
-                "
+                [class.text-red-500!]="hasError(unlockSessionForm.password)"
               ></i>
             </div>
             <input
-              formControlName="password"
+              [formField]="unlockSessionForm.password"
               class="block w-full pl-10 pr-3.5 py-2.5 sm:py-3 text-sm text-slate-900 placeholder-slate-400 bg-slate-50/50 border border-slate-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-600 focus:bg-white transition-colors"
-              [class.border-red-500!]="validateFormControl(unlockSessionForm, 'password')"
-              [class.text-red-500!]="validateFormControl(unlockSessionForm, 'password')"
-              [class.placeholder:text-red-500!]="validateFormControl(unlockSessionForm, 'password')"
+              [ngClass]="{
+                'border-red-500! text-red-500! placeholder:text-red-500! focus:ring-red-500!':
+                  hasError(unlockSessionForm.password),
+              }"
               id="password"
-              name="password"
               placeholder="••••••••••••"
-              required=""
               [type]="passwordVisible() ? 'text' : 'password'"
             />
-            <!-- Password toggle button -->
             <button
               aria-label="Alternar visibilidad de contraseña"
               class="cursor-pointer absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-400 hover:text-slate-600 focus:outline-none focus:text-slate-800"
@@ -132,60 +118,43 @@
               type="button"
               (click)="togglePasswordVisibility()"
             >
-              @if (!passwordVisible()) {
-                <!-- Eye icon (show) -->
-                <i
-                  class="fa-regular fa-eye"
-                  [class.text-red-500!]="
-                    unlockSessionForm.get('password')?.invalid &&
-                    unlockSessionForm.get('password')?.touched
-                  "
-                ></i>
-              } @else {
-                <!-- Eye-off icon (hide) -->
-                <i
-                  class="fa-regular fa-eye-slash"
-                  [class.text-red-500!]="
-                    unlockSessionForm.get('password')?.invalid &&
-                    unlockSessionForm.get('password')?.touched
-                  "
-                ></i>
-              }
+              <i
+                [ngClass]="{
+                  'text-red-500!': hasError(unlockSessionForm.password),
+                  'fa-eye-slash': passwordVisible(),
+                  'fa-eye': !passwordVisible(),
+                }"
+                class="fa-regular"
+              ></i>
             </button>
           </div>
-          <!-- Errores -->
-          @if (getErrorMessage(unlockSessionForm, 'password') !== '') {
+          @if (hasError(unlockSessionForm.password)) {
             <p class="mt-1.5 flex items-center gap-1 text-sm text-red-600">
               <i class="fa-solid fa-circle-exclamation"></i>
-              <span>{{ getErrorMessage(unlockSessionForm, 'password') }}</span>
+              {{ unlockSessionForm.password().errors()[0].message }}
             </p>
           }
         </div>
-
-        <!-- Submit Button -->
         <div class="pt-2">
           <button
             class="cursor-pointer w-full flex justify-center items-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-semibold text-white bg-indigo-500 hover:bg-indigo-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 active:transform active:scale-[0.99] transition duration-150 ease-in-out disabled:cursor-not-allowed disabled:bg-indigo-300"
             type="submit"
-            [disabled]="unlockSessionForm.disabled"
-            (click)="signIn()"
+            [disabled]="unlockSessionForm().invalid() || unlockSessionForm().submitting()"
           >
             <span class="flex items-center justify-center gap-2">
-              @if (!unlockSessionForm.disabled) {
-                <i class="fa-solid fa-right-to-bracket"></i>
-              } @else {
+              @if (unlockSessionForm().submitting()) {
                 <i class="fa-solid fa-spinner fa-spin text-white"></i>
+              } @else {
+                <i class="fa-solid fa-right-to-bracket"></i>
               }
               <span> Desbloquear y continuar</span>
             </span>
           </button>
         </div>
-
-        <!-- Alternate Switch Account Link -->
         <div
           class="text-center text-sm pt-2 text-slate-500 flex flex-row items-center justify-center gap-2"
         >
-          ¿No eres {{ name }}?,
+          ¿No eres {{ unlockSessionModel().name }}?,
           <a
             class="inline-flex items-center gap-2 font-semibold text-indigo-600 hover:text-indigo-700 transition group"
             [routerLink]="['/auth/sign-in']"
@@ -194,8 +163,6 @@
         </div>
       </form>
     </div>
-
-    <!-- Bottom footer -->
     <div
       class="pt-6 border-t border-slate-100 text-center sm:text-left"
       data-purpose="recovery-footer"

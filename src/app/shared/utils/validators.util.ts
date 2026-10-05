@@ -132,7 +132,7 @@ export class CmsValidators {
  * @param field
  * @returns
  */
-export function hasError<T>(field: FieldTree<T>): boolean {
+export function hasErrorFormField<T>(field: FieldTree<T>): boolean {
   return field().invalid() && field().touched();
 }
 

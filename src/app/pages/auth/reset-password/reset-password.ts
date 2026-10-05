@@ -1,52 +1,55 @@
-import { NgClass } from '@angular/common';
-import {
-  ChangeDetectorRef,
-  Component,
-  OnInit,
-  ViewChild,
-  effect,
-  inject,
-  signal,
-} from '@angular/core';
-import {
-  FormsModule,
-  NgForm,
-  ReactiveFormsModule,
-  UntypedFormBuilder,
-  UntypedFormGroup,
-  Validators,
-} from '@angular/forms';
-import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { Component, DestroyRef, effect, inject, signal } from '@angular/core';
+import { form, required, submit, pattern, FormField, validate } from '@angular/forms/signals';
+import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
+import { RouterLink, Router, ActivatedRoute } from '@angular/router';
 import { ToastrService } from '@iqx-limited/ngx-toastr';
-import { ParameterI } from 'app/core/interfaces/parameter.interface';
-import { AuthService } from 'app/core/services/auth.service';
-import { ParameterService } from 'app/core/services/parameter.service';
-import { AuthComponent } from 'app/shared/components/auth/auth';
-import { AuthUtils } from 'app/shared/utils/auth.utils';
-import { findParameter, getLogo } from 'app/shared/utils/parameter.utils';
-import { CmsValidators } from 'app/shared/utils/validators.util';
-import { Subject, finalize, takeUntil } from 'rxjs';
+import { NgClass } from '@angular/common';
+import { ParameterService, AuthService } from '@core/services';
+import { CmsValidators, AuthUtils, getLogo, findParameter, hasErrorFormField } from '@shared/utils';
+import { AuthComponent } from '@shared/components';
+import { firstValueFrom } from 'rxjs';
 
 @Component({
   selector: 'auth-reset-password',
   templateUrl: './reset-password.html',
-  imports: [FormsModule, ReactiveFormsModule, RouterLink, AuthComponent, NgClass],
+  imports: [RouterLink, AuthComponent, NgClass, FormField],
 })
-export class AuthResetPassword implements OnInit {
-  @ViewChild('resetPasswordNgForm') resetPasswordNgForm!: NgForm;
-
-  resetPasswordForm!: UntypedFormGroup;
-  token: string;
+export class AuthResetPassword {
   longPwd = signal<number>(6);
   mayusPwd = signal<boolean>(false);
   specialPwd = signal<boolean>(false);
   numberPwd = signal<boolean>(false);
   passwordVisible = signal<boolean>(false);
+  token = signal<string>('');
   evaluatePasswordSecurityResult = signal<{ score: number; strength: string }>({
     score: 0,
     strength: '',
   });
   passwordConfirmedVisible = signal<boolean>(false);
+  resetPasswordModel = signal<{ passwordConfirm: string; password: string }>({
+    password: '',
+    passwordConfirm: '',
+  });
+
+  resetPasswordForm = form(this.resetPasswordModel, (schemaPath) => {
+    required(schemaPath.password, { message: 'Nueva Contraseña es obligatorio.' });
+    required(schemaPath.passwordConfirm, { message: 'Confirmar nueva contraseña es obligatorio.' });
+    pattern(schemaPath.password, () => this.validatePassword(), {
+      message: 'La nueva contraseña no cumple con los requisitos de seguridad.',
+    });
+    validate(schemaPath.passwordConfirm, (ctx) => {
+      const password = ctx.valueOf(schemaPath.password);
+      const confirmation = ctx.value();
+      if (password !== confirmation) {
+        return {
+          kind: 'mismatch',
+          message: 'Las contraseñas no coinciden',
+        };
+      }
+      return null;
+    });
+  });
+
   mayusPwdRegex: RegExp = new RegExp('(?=.*[A-Z])');
   specialPwdRegex: RegExp = new RegExp('(?=.*[@#$%^&+=])');
   numberPwdRegex: RegExp = new RegExp('(?=.*\\d)');
@@ -56,113 +59,69 @@ export class AuthResetPassword implements OnInit {
   getErrorMessage = CmsValidators.getErrorMessage;
   evaluatePasswordSecurity = CmsValidators.evaluatePasswordSecurity;
 
-  private _unsubscribeAll: Subject<any> = new Subject<any>();
+  private readonly _parameterService = inject(ParameterService);
+  private readonly _authService = inject(AuthService);
+  private readonly _toastrService = inject(ToastrService);
+  private readonly _router = inject(Router);
+  private readonly _activatedRoute = inject(ActivatedRoute);
+  private readonly _destroyRef = inject(DestroyRef);
 
-  private _parameterService = inject(ParameterService);
-  private _authService = inject(AuthService);
-  private _formBuilder = inject(UntypedFormBuilder);
-  private _router = inject(Router);
-  private _activatedRoute = inject(ActivatedRoute);
-  private _changeDetectorRef = inject(ChangeDetectorRef);
-  private _toastrService = inject(ToastrService);
+  readonly hasError = hasErrorFormField;
   readonly parameters = this._parameterService.publicParameters;
 
   /**
    * Constructor
    */
   constructor() {
-    this.token = this._activatedRoute.snapshot.queryParamMap.get('token') ?? '';
-    if (this.token === undefined) this._router.navigateByUrl('/auth/sign-in');
-    if (AuthUtils.isTokenExpired(this.token)) {
-      this._router.navigateByUrl('/auth/sign-in');
-    }
+    const token = this._activatedRoute.snapshot.queryParamMap.get('token') ?? '';
+    if (!token) this._router.navigateByUrl('/auth/sign-in');
+    if (AuthUtils.isTokenExpired(token)) this._router.navigateByUrl('/auth/sign-in');
 
-    // Create the form
-    this.resetPasswordForm = this._formBuilder.group(
-      {
-        password: ['', Validators.required],
-        passwordConfirm: ['', Validators.required],
-      },
-      {
-        validators: CmsValidators.mustMatch('password', 'passwordConfirm'),
-      },
-    );
+    this.token.set(token);
 
     effect(() => {
       this.parameters();
       this.getParameters();
       this.longPwdRegex = new RegExp('.{' + this.longPwd() + ',}$');
     });
+
+    toObservable(this.resetPasswordModel)
+      .pipe(takeUntilDestroyed(this._destroyRef))
+      .subscribe((res) => {
+        this.evaluatePasswordSecurityResult.set(this.evaluatePasswordSecurity(res.password));
+      });
   }
-
-  // -----------------------------------------------------------------------------------------------------
-  // @ Lifecycle hooks
-  // -----------------------------------------------------------------------------------------------------
-
-  /**
-   * On init
-   */
-  ngOnInit(): void {
-    this.resetPasswordForm.valueChanges.subscribe((res) => {
-      this.evaluatePasswordSecurityResult.set(this.evaluatePasswordSecurity(res.password));
-    });
-  }
-
-  // -----------------------------------------------------------------------------------------------------
-  // @ Public methods
-  // -----------------------------------------------------------------------------------------------------
 
   /**
    * Reset password
    */
-  resetPassword(): void {
-    // Return if the form is invalid
-    if (this.resetPasswordForm.invalid) {
-      this.resetPasswordForm.markAllAsTouched();
-      return;
-    }
-
-    // Disable the form
-    this.resetPasswordForm.disable();
-
-    // Send the request to the server
-    this._authService
-      .resetPassword(this.resetPasswordForm.get('password')?.value, this.token)
-      .pipe(
-        finalize(() => {
-          // Re-enable the form
-          this.resetPasswordForm.enable();
-
-          // Reset the form
-          this.resetPasswordNgForm.resetForm();
-        }),
-      )
-      .subscribe({
-        next: (response) => {
-          // Set the alert
-          this._toastrService.success(response.message, 'Aviso');
-
-          setTimeout(() => {
-            this._router.navigateByUrl('auth/sign-in');
-          }, 300);
-        },
-        error: (err) => {
-          // Set the alert
-          this._toastrService.error(err.error.message, 'Aviso');
-        },
+  async resetPassword(event: SubmitEvent): Promise<void> {
+    try {
+      event.preventDefault();
+      await submit(this.resetPasswordForm, async (field) => {
+        const response = await firstValueFrom(
+          this._authService
+            .resetPassword(field().value().password, this.token())
+            .pipe(takeUntilDestroyed(this._destroyRef)),
+        );
+        this._toastrService.success(response.message, 'Aviso');
+        this._router.navigateByUrl('auth/sign-in');
       });
+    } catch (err: any) {
+      this._toastrService.error(
+        err?.error?.message ?? 'Ocurrió un error al restablecer contraseña.',
+        'Aviso',
+      );
+    }
   }
 
   /**
    * Get value of auth background
    * @returns
    */
-  getLogo() {
-    if (this.parameters().length > 0) {
-      return getLogo('LOGO_PRIMARY', this.parameters());
-    } else {
-      return '';
-    }
+  getLogo(): string {
+    if (this.parameters().length > 0) return getLogo('LOGO_PRIMARY', this.parameters());
+    return '';
   }
 
   /**
@@ -173,17 +132,6 @@ export class AuthResetPassword implements OnInit {
     this.mayusPwd.set(findParameter('APP_PWD_MAYUS', this.parameters())?.value === 'true');
     this.specialPwd.set(findParameter('APP_PWD_SPECIAL', this.parameters())?.value === 'true');
     this.numberPwd.set(findParameter('APP_PWD_NUMBER', this.parameters())?.value === 'true');
-    this.setParameters();
-  }
-
-  /**
-   * Set value to parameters PWD
-   */
-  setParameters() {
-    this.resetPasswordForm
-      .get('password')
-      ?.addValidators(Validators.pattern(this.validatePassword()));
-    this.resetPasswordForm.updateValueAndValidity();
   }
 
   /**

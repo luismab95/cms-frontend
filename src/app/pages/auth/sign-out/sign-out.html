@@ -18,7 +18,6 @@
     data-purpose="logout-action-panel"
   >
     <div class="w-full max-w-md mx-auto flex flex-col items-center text-center">
-      <!-- CMS Stylized Monogram / Logotype -->
       <div class="mb-8" data-purpose="cms-slate-logo">
         <div class="relative inline-flex items-center justify-center">
           <div class="w-auto">
@@ -26,7 +25,6 @@
           </div>
         </div>
       </div>
-      <!-- Success Confirmation Icon with Pulse Ring -->
       <div class="relative mb-6">
         <div
           class="w-16 h-16 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center border-2 border-emerald-100 shadow-sm"
@@ -37,7 +35,6 @@
           class="absolute inset-0 rounded-full border-2 border-emerald-300/40 animate-ping pointer-events-none"
         ></div>
       </div>
-      <!-- Main Title & Description -->
       <h2 class="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight mb-3">
         ¡Has cerrado sesión!
       </h2>
@@ -48,7 +45,6 @@
         <br />
         Tu espacio de trabajo ha sido sincronizado.
       </p>
-      <!-- Dynamic Countdown & Auto-Redirect Indicator -->
       <div
         class="w-full bg-slate-50 p-4 rounded-xl border border-slate-200 mb-6 shadow-xs"
         data-purpose="auto-redirect-box"
@@ -63,14 +59,12 @@
             >&nbsp;s</span
           >
         </div>
-        <!-- Countdown Progress Bar -->
         <div class="w-full h-1.5 bg-slate-200 rounded-full overflow-hidden mb-3">
           <div
             class="h-full bg-indigo-600 rounded-full transition-all duration-1000 ease-linear"
             [style.width.%]="progressPercentage()"
           ></div>
         </div>
-        <!-- Pause / Cancel Redirect Controls -->
         <div class="flex items-center justify-between text-[11px] text-slate-400">
           <span>¿Deseas quedarte en esta página?</span>
           <button
@@ -82,9 +76,7 @@
           </button>
         </div>
       </div>
-      <!-- Main Action Buttons -->
       <div class="w-full space-y-3" data-purpose="navigation-actions">
-        <!-- Primary Re-Authentication Button -->
         <button
           class="cursor-pointer w-full flex justify-center gap-2 items-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-semibold text-white bg-indigo-500 hover:bg-indigo-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 active:transform active:scale-[0.99] transition duration-150 ease-in-out disabled:cursor-not-allowed disabled:bg-indigo-300"
           [routerLink]="['/auth/sign-in']"
@@ -93,7 +85,6 @@
           Volver al inicio de sesión
         </button>
       </div>
-      <!-- Shared Device Security Notice -->
       <div
         class="mt-10 p-3.5 bg-amber-50/70 border border-amber-200/80 rounded-xl text-left flex items-start space-x-3 w-full"
         data-purpose="security-warning"

@@ -1,97 +1,60 @@
-import { ChangeDetectorRef, Component, OnInit, ViewChild, inject, signal } from '@angular/core';
-import {
-  FormsModule,
-  NgForm,
-  ReactiveFormsModule,
-  UntypedFormBuilder,
-  UntypedFormGroup,
-  Validators,
-} from '@angular/forms';
-import { RouterLink } from '@angular/router';
+import { Component, DestroyRef, inject, signal } from '@angular/core';
+import { email, form, FormField, required, submit } from '@angular/forms/signals';
+import { NgClass } from '@angular/common';
+import { Router, RouterLink } from '@angular/router';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ToastrService } from '@iqx-limited/ngx-toastr';
-import { ParameterI } from 'app/core/interfaces/parameter.interface';
-import { AuthService } from 'app/core/services/auth.service';
-import { ParameterService } from 'app/core/services/parameter.service';
-import { AuthComponent } from 'app/shared/components/auth/auth';
-import { getLogo } from 'app/shared/utils/parameter.utils';
-import { CmsValidators } from 'app/shared/utils/validators.util';
-import { Subject, finalize, takeUntil } from 'rxjs';
+import { ParameterService, AuthService } from '@core/services';
+import { AuthComponent } from '@shared/components';
+import { getLogo, hasErrorFormField } from '@shared/utils';
+import { firstValueFrom } from 'rxjs';
 
 @Component({
   selector: 'auth-forgot-password',
   templateUrl: './forgot-password.html',
-  imports: [FormsModule, ReactiveFormsModule, RouterLink, AuthComponent],
+  imports: [RouterLink, AuthComponent, FormField, NgClass],
 })
-export class AuthForgotPassword implements OnInit {
-  @ViewChild('forgotPasswordNgForm') forgotPasswordNgForm!: NgForm;
+export class AuthForgotPassword {
+  forgotPasswordModel = signal<{ email: string }>({
+    email: '',
+  });
 
-  forgotPasswordForm!: UntypedFormGroup;
-  validateFormControl = CmsValidators.validateFormControl;
-  getErrorMessage = CmsValidators.getErrorMessage;
-  private _unsubscribeAll: Subject<any> = new Subject<any>();
+  forgotPasswordForm = form(this.forgotPasswordModel, (schemaPath) => {
+    required(schemaPath.email, { message: 'Dirección de correo electrónico es obligatorio.' });
+    email(schemaPath.email, { message: 'Dirección de correo electrónico no válido.' });
+  });
 
-  private _parameterService = inject(ParameterService);
-  private _authService = inject(AuthService);
-  private _formBuilder = inject(UntypedFormBuilder);
-  private _toastrService = inject(ToastrService);
-  private _changeDetectorRef = inject(ChangeDetectorRef);
+  private readonly _parameterService = inject(ParameterService);
+  private readonly _authService = inject(AuthService);
+  private readonly _toastrService = inject(ToastrService);
+  private readonly _router = inject(Router);
+  private readonly _destroyRef = inject(DestroyRef);
+
+  readonly hasError = hasErrorFormField;
   readonly parameters = this._parameterService.publicParameters;
-
-  /**
-   * Constructor
-   */
-  constructor() {}
-
-  // -----------------------------------------------------------------------------------------------------
-  // @ Lifecycle hooks
-  // -----------------------------------------------------------------------------------------------------
-
-  /**
-   * On init
-   */
-  ngOnInit(): void {
-    // Create the form
-    this.forgotPasswordForm = this._formBuilder.group({
-      email: ['', [Validators.required, Validators.email]],
-    });
-  }
-
-  // -----------------------------------------------------------------------------------------------------
-  // @ Public methods
-  // -----------------------------------------------------------------------------------------------------
 
   /**
    * Send the reset link
    */
-  sendResetLink(): void {
-    // Return if the form is invalid
-    if (this.forgotPasswordForm.invalid) {
-      return;
-    }
-
-    // Disable the form
-    this.forgotPasswordForm.disable();
-
-    // Forgot password
-    this._authService
-      .forgotPassword(this.forgotPasswordForm.get('email')?.value)
-      .pipe(
-        finalize(() => {
-          // Re-enable the form
-          this.forgotPasswordForm.enable();
-          // Reset the form
-          this.forgotPasswordNgForm.resetForm();
-        }),
-      )
-      .subscribe({
-        next: (response) => {
-          this._toastrService.success(response.message, 'Aviso');
-        },
-        error: (err) => {
-          // Set the alert
-          this._toastrService.error(err.error.message, 'Aviso');
-        },
+  async sendResetLink(event: SubmitEvent): Promise<void> {
+    try {
+      event.preventDefault();
+      await submit(this.forgotPasswordForm, async (field) => {
+        const response = await firstValueFrom(
+          this._authService
+            .forgotPassword(field().value().email)
+            .pipe(takeUntilDestroyed(this._destroyRef)),
+        );
+        this._toastrService.success(response.message, 'Aviso');
+        this._router.navigateByUrl('/auth/sign-in');
       });
+    } catch (err: any) {
+      this._toastrService.error(
+        err?.error?.message ??
+          'Ocurrió un error al enviar correo de restablecimiento de contraseña.',
+        'Aviso',
+      );
+    }
   }
 
   /**
@@ -99,10 +62,7 @@ export class AuthForgotPassword implements OnInit {
    * @returns
    */
   getLogo() {
-    if (this.parameters().length > 0) {
-      return getLogo('LOGO_PRIMARY', this.parameters());
-    } else {
-      return '';
-    }
+    if (this.parameters().length > 0) return getLogo('LOGO_PRIMARY', this.parameters());
+    return '';
   }
 }

@@ -10,7 +10,7 @@ import {
 } from '@ng-select/ng-select';
 import { ToastrService } from '@iqx-limited/ngx-toastr';
 import { AuthService, ParameterService } from '@core/services';
-import { IpUtils, getLogo, hasError } from '@shared/utils';
+import { IpUtils, getLogo, hasErrorFormField } from '@shared/utils';
 import { LanguageService } from '@shared/services';
 import { AuthComponent } from '@shared/components';
 import { firstValueFrom } from 'rxjs';
@@ -53,7 +53,7 @@ export class AuthSignIn {
   private readonly _activatedRoute = inject(ActivatedRoute);
   private readonly _ipUtils = inject(IpUtils);
 
-  readonly hasError = hasError;
+  readonly hasError = hasErrorFormField;
   readonly parameters = this._parameterService.publicParameters;
   readonly languages = this._languageService.languages;
 
@@ -72,8 +72,9 @@ export class AuthSignIn {
   /**
    * Sign in
    */
-  async signIn(): Promise<void> {
+  async signIn(event: SubmitEvent): Promise<void> {
     try {
+      event.preventDefault();
       await submit(this.signInForm, async (field) => {
         const response = await firstValueFrom(
           this._authService
@@ -91,12 +92,11 @@ export class AuthSignIn {
         this._authService.accessToken = response.message;
         const redirectURL =
           this._activatedRoute.snapshot.queryParamMap.get('redirectURL') ?? '/signed-in-redirect';
-
         await this._router.navigateByUrl(redirectURL);
       });
     } catch (err: any) {
       this._toastrService.error(
-        err?.error?.message ?? 'Ocurrió un error al iniciar sesión',
+        err?.error?.message ?? 'Ocurrió un error al iniciar sesión.',
         'Aviso',
       );
     }

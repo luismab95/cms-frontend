@@ -1,150 +1,96 @@
-import { ChangeDetectorRef, Component, OnInit, ViewChild, inject, signal } from '@angular/core';
-import {
-  FormsModule,
-  NgForm,
-  ReactiveFormsModule,
-  UntypedFormBuilder,
-  UntypedFormGroup,
-  Validators,
-} from '@angular/forms';
+import { Component, DestroyRef, effect, inject, signal } from '@angular/core';
+import { form, required, email, submit, FormField, disabled } from '@angular/forms/signals';
+import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { RouterLink, ActivatedRoute, Router } from '@angular/router';
+import { NgClass } from '@angular/common';
 import { ToastrService } from '@iqx-limited/ngx-toastr';
-import { ParameterI } from 'app/core/interfaces/parameter.interface';
-import { AuthService } from 'app/core/services/auth.service';
-import { ParameterService } from 'app/core/services/parameter.service';
-import { AuthComponent } from 'app/shared/components/auth/auth';
-import { IpUtils } from 'app/shared/utils/ip.utils';
-import { getLogo } from 'app/shared/utils/parameter.utils';
-import { CmsValidators } from 'app/shared/utils/validators.util';
-import { Subject, takeUntil } from 'rxjs';
+import { ParameterService, AuthService } from '@core/services';
+import { IpUtils, getLogo, hasErrorFormField } from '@shared/utils';
+import { AuthComponent } from '@shared/components';
+import { firstValueFrom } from 'rxjs';
 
 @Component({
   selector: 'auth-unlock-session',
   templateUrl: './unlock-session.html',
-  imports: [FormsModule, ReactiveFormsModule, RouterLink, AuthComponent],
+  imports: [RouterLink, AuthComponent, FormField, NgClass],
   providers: [IpUtils],
 })
-export class AuthUnlockSession implements OnInit {
-  @ViewChild('unlockSessionNgForm') unlockSessionNgForm!: NgForm;
-
-  name!: string;
-  unlockSessionForm!: UntypedFormGroup;
+export class AuthUnlockSession {
   passwordVisible = signal<boolean>(false);
-  ip: string | undefined;
-  validateFormControl = CmsValidators.validateFormControl;
-  getErrorMessage = CmsValidators.getErrorMessage;
+  unlockSessionModel = signal<{ name: string; password: string; email: string }>({
+    name: '',
+    password: '',
+    email: '',
+  });
 
-  private email!: string;
-  private _unsubscribeAll: Subject<any> = new Subject<any>();
+  unlockSessionForm = form(this.unlockSessionModel, (schemaPath) => {
+    required(schemaPath.email, { message: 'Dirección de correo electrónico es obligatorio.' });
+    email(schemaPath.email, { message: 'Dirección de correo electrónico no válido.' });
+    required(schemaPath.name, { message: 'Nombre es obligatorio.' });
+    required(schemaPath.password, { message: 'Contraseña es obligatorio.' });
+    disabled(schemaPath.name);
+  });
 
-  private _ipUtils = inject(IpUtils);
-  private _parameterService = inject(ParameterService);
-  private _activatedRoute = inject(ActivatedRoute);
-  private _authService = inject(AuthService);
-  private _formBuilder = inject(UntypedFormBuilder);
-  private _router = inject(Router);
-  private _changeDetectorRef = inject(ChangeDetectorRef);
-  private _toastrService = inject(ToastrService);
+  private readonly _parameterService = inject(ParameterService);
+  private readonly _authService = inject(AuthService);
+  private readonly _toastrService = inject(ToastrService);
+  private readonly _ipUtils = inject(IpUtils);
+  private readonly _router = inject(Router);
+  private readonly _activatedRoute = inject(ActivatedRoute);
+  private readonly _destroyRef = inject(DestroyRef);
 
+  readonly hasError = hasErrorFormField;
   readonly parameters = this._parameterService.publicParameters;
+  readonly ip = toSignal(this._ipUtils.getClientIp(), { initialValue: '' });
+  readonly params = toSignal(this._activatedRoute.params);
 
   /**
    * Constructor
    */
   constructor() {
-    this._activatedRoute.params.subscribe((params) => {
-      this.email = params['email'];
-      this.name = params['name'];
-      if (this.email === undefined || this.name === undefined) {
-        this._router.navigateByUrl('/auth/sign-in');
-      }
-    });
+    effect(() => {
+      const params = this.params();
+      if (!params) return;
 
-    this._ipUtils.getClientIp().subscribe({
-      next: (res) => {
-        this.ip = res;
-      },
+      const { name, email } = params as any;
+      if (!email || !name) this._router.navigateByUrl('/auth/sign-in');
+
+      this.unlockSessionModel.update((prev) => ({ ...prev, name, email }));
     });
   }
-
-  // -----------------------------------------------------------------------------------------------------
-  // @ Lifecycle hooks
-  // -----------------------------------------------------------------------------------------------------
-
-  /**
-   * On init
-   */
-  ngOnInit(): void {
-    // Create the form
-    this.unlockSessionForm = this._formBuilder.group({
-      name: [
-        {
-          value: this.name,
-          disabled: true,
-        },
-      ],
-      password: ['', Validators.required],
-    });
-  }
-
-  // -----------------------------------------------------------------------------------------------------
-  // @ Public methods
-  // -----------------------------------------------------------------------------------------------------
 
   /**
    * Sign in
    */
-  signIn(): void {
-    // Return if the form is invalid
-    if (this.unlockSessionForm.invalid) {
-      return;
-    }
+  async signIn(event: SubmitEvent): Promise<void> {
+    try {
+      event.preventDefault();
+      await submit(this.unlockSessionForm, async (field) => {
+        const response = await firstValueFrom(
+          this._authService
+            .signIn(field().value(), this.ip())
+            .pipe(takeUntilDestroyed(this._destroyRef)),
+        );
 
-    // Disable the form
-    this.unlockSessionForm.disable();
-
-    // Sign in
-    this._authService
-      .signIn(
-        {
-          email: this.email ?? '',
-          password: this.unlockSessionForm.get('password')?.value,
-        },
-        this.ip!,
-      )
-      .subscribe({
-        next: (response) => {
-          if (!response.message.includes('código de verificación')) {
-            // Store the access token in the local storage
-            this._authService.accessToken = response.message;
-
-            const redirectURL =
-              this._activatedRoute.snapshot.queryParamMap.get('redirectURL') ||
-              '/signed-in-redirect';
-
-            // Navigate to the redirect url
-            this._router.navigateByUrl(redirectURL);
-          } else {
-            // Navigate to the redirect url
-            this._router.navigateByUrl('/auth/confirmation-required', {
-              state: { email: this.email },
-            });
-          }
-        },
-        error: (err) => {
-          // Re-enable the form
-          this.unlockSessionForm.enable();
-          // Reset the form
-          this.unlockSessionNgForm.resetForm({
-            name: {
-              value: this.name,
-              disabled: true,
+        if (response.message.includes('código de verificación')) {
+          await this._router.navigateByUrl('/auth/confirmation-required', {
+            state: {
+              email: field().value().email,
             },
           });
-          // Set the alert
-          this._toastrService.error(err.error.message, 'Aviso');
-        },
+          return;
+        }
+        this._authService.accessToken = response.message;
+        const redirectURL =
+          this._activatedRoute.snapshot.queryParamMap.get('redirectURL') ?? '/signed-in-redirect';
+        await this._router.navigateByUrl(redirectURL);
       });
+    } catch (err: any) {
+      this._toastrService.error(
+        err?.error?.message ?? 'Ocurrió un error al iniciar sesión.',
+        'Aviso',
+      );
+    }
   }
 
   /**
@@ -152,11 +98,8 @@ export class AuthUnlockSession implements OnInit {
    * @returns
    */
   getLogo() {
-    if (this.parameters().length > 0) {
-      return getLogo('LOGO_PRIMARY', this.parameters());
-    } else {
-      return '';
-    }
+    if (this.parameters().length > 0) return getLogo('LOGO_PRIMARY', this.parameters());
+    return '';
   }
 
   /**
