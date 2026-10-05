@@ -1,14 +1,10 @@
-import { Component, OnDestroy, OnInit, inject, signal } from '@angular/core';
-import { toSignal } from '@angular/core/rxjs-interop';
-import { SitieService } from 'app/core/services/sitie.service';
-import { PermissionCode, validAction } from 'app/shared/utils/permission.utils';
-import { DrawerI } from 'app/shared/interfaces/drawer.interface';
-import { DrawerComponent } from 'app/shared/components/drawer/drawer';
+import { Component, inject, signal } from '@angular/core';
+import { SitieService } from '@core/services';
+import { DrawerComponent, PermissionComponent, TitleHeaderComponent } from '@shared/components';
+import { DrawerI } from '@shared/interfaces';
+import { PermissionCode, validAction } from '@shared/utils';
 import { SitieInformationComponent } from './information/information';
 import { SitieLanguagesComponent } from './languages/languages';
-import { PermissionComponent } from 'app/shared/components/permission/permission';
-import { Subject } from 'rxjs';
-import { TitleHeaderComponent } from 'app/shared/components/title-header/title-header';
 
 @Component({
   selector: 'sitie',
@@ -21,30 +17,20 @@ import { TitleHeaderComponent } from 'app/shared/components/title-header/title-h
     TitleHeaderComponent,
   ],
 })
-export class Sitie implements OnInit, OnDestroy {
-  permission = PermissionCode;
+export class Sitie {
   panels = signal<DrawerI[]>([]);
   selectedPanel = signal<string>('');
-
-  private _unsubscribeAll: Subject<any> = new Subject<any>();
 
   private readonly _sitieService = inject(SitieService);
 
   readonly sitie = this._sitieService.sitie;
+
+  readonly permission = PermissionCode;
+
   /**
    * Constructor
    */
-  constructor() {}
-
-  // -----------------------------------------------------------------------------------------------------
-  // @ Lifecycle hooks
-  // -----------------------------------------------------------------------------------------------------
-
-  /**
-   * On init
-   */
-  ngOnInit(): void {
-    // Setup available panels
+  constructor() {
     this.panels.set([
       {
         id: 'information',
@@ -64,21 +50,7 @@ export class Sitie implements OnInit, OnDestroy {
   }
 
   /**
-   * On destroy
-   */
-  ngOnDestroy(): void {
-    // Unsubscribe from all subscriptions
-    this._unsubscribeAll.next(null);
-    this._unsubscribeAll.complete();
-  }
-
-  // -----------------------------------------------------------------------------------------------------
-  // @ Public methods
-  // -----------------------------------------------------------------------------------------------------
-
-  /**
    * Navigate to the panel
-   *
    * @param panel
    */
   goToPanel(panel: string): void {
@@ -87,6 +59,7 @@ export class Sitie implements OnInit, OnDestroy {
 
   /**
    * Valid render permission
+   * @returns
    */
   validPermission(code: string) {
     return validAction(code);

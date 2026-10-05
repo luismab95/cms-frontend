@@ -1,238 +1,190 @@
 import {
   Component,
-  OnDestroy,
-  OnInit,
   computed,
+  DestroyRef,
+  effect,
   inject,
   input,
   output,
   signal,
 } from '@angular/core';
-import { toSignal } from '@angular/core/rxjs-interop';
-import {
-  FormsModule,
-  ReactiveFormsModule,
-  UntypedFormBuilder,
-  UntypedFormGroup,
-  Validators,
-} from '@angular/forms';
+import { NgClass } from '@angular/common';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { form, submit, FormField, required } from '@angular/forms/signals';
 import { ToastrService } from '@iqx-limited/ngx-toastr';
-import { DialogService } from 'app/core/services/dialog.service';
-import { FileService } from 'app/core/services/file.service';
-import { ParameterService } from 'app/core/services/parameter.service';
-import { SitieService } from 'app/core/services/sitie.service';
-import { ModalComponent } from 'app/shared/components/modal/modal';
-import { PermissionComponent } from 'app/shared/components/permission/permission';
-import { LanguageI } from 'app/shared/interfaces/language.interfaces';
-import { LanguageService } from 'app/shared/services/language.service';
-import { findParameter } from 'app/shared/utils/parameter.utils';
-import { PermissionCode, validAction } from 'app/shared/utils/permission.utils';
-import { CmsValidators } from 'app/shared/utils/validators.util';
-import { switchMap, takeUntil } from 'rxjs/operators';
-import { Subject, of } from 'rxjs';
-import { FileUploadI } from 'app/core/interfaces/file.interface';
-import { ResponseI } from 'app/shared/interfaces/response.interface';
+import { FileUploadI } from '@core/interfaces';
+import { ParameterService, FileService, DialogService } from '@core/services';
+import { PermissionComponent, ModalComponent } from '@shared/components';
+import { LanguageI, ResponseI } from '@shared/interfaces';
+import { LanguageService } from '@shared/services';
+import { PermissionCode, findParameter, hasErrorFormField, validAction } from '@shared/utils';
+import { firstValueFrom, of, switchMap, timeout } from 'rxjs';
 
 @Component({
   selector: 'sitie-languages-details',
   templateUrl: './details.html',
-  imports: [FormsModule, ReactiveFormsModule, PermissionComponent, ModalComponent],
+  imports: [PermissionComponent, ModalComponent, FormField, NgClass],
 })
-export class SitieLanguagesDetailsComponent implements OnInit, OnDestroy {
+export class SitieLanguagesDetailsComponent {
   language = input<LanguageI | null>(null);
   closeModalEvent = output<boolean>();
 
   urlStatics = signal<string>('');
   selectedFile = signal<File | null>(null);
+  languageModel = signal<LanguageI>({
+    icon: '',
+    lang: '',
+    name: '',
+    sitieId: 0,
+  });
 
-  languageForm!: UntypedFormGroup;
-  permission = PermissionCode;
-  validateFormControl = CmsValidators.validateFormControl;
-  getErrorMessage = CmsValidators.getErrorMessage;
+  languageForm = form(this.languageModel, (schemaPath) => {
+    required(schemaPath.icon, { message: 'Icono es obligatorio.' });
+    required(schemaPath.lang, { message: 'Código es obligatorio.' });
+    required(schemaPath.name, { message: 'Nombre es obligatorio.' });
+    required(schemaPath.sitieId, { message: 'Sitio es obligatorio.' });
+  });
 
-  imageUrl = computed(() => {
+  private readonly _languageService = inject(LanguageService);
+  private readonly _fileService = inject(FileService);
+  private readonly _parameterService = inject(ParameterService);
+  private readonly _dialogService = inject(DialogService);
+  private readonly _toastrService = inject(ToastrService);
+  private readonly _destroyRef = inject(DestroyRef);
+
+  readonly hasError = hasErrorFormField;
+  readonly permission = PermissionCode;
+  readonly parameters = this._parameterService.publicParameters;
+
+  readonly imageUrl = computed(() => {
     const file = this.selectedFile();
     return file ? URL.createObjectURL(file) : null;
   });
-
-  private _unsubscribeAll: Subject<any> = new Subject<any>();
-
-  private _parameterService = inject(ParameterService);
-  private _fileService = inject(FileService);
-  private _languageService = inject(LanguageService);
-  private _sitieService = inject(SitieService);
-  private _toastrService = inject(ToastrService);
-  private _formBuilder = inject(UntypedFormBuilder);
-  private _dialogService = inject(DialogService);
-
-  readonly parameters = this._parameterService.publicParameters;
-  readonly sitie = this._sitieService.sitie;
 
   /**
    * Constructor
    */
   constructor() {
     this.urlStatics.set(findParameter('APP_STATICS_URL', this.parameters())?.value!);
+
+    effect(() => {
+      const language = this.language();
+      if (!language) return;
+
+      this.languageModel.set(language);
+    });
   }
 
-  // -----------------------------------------------------------------------------------------------------
-  // @ Lifecycle hooks
-  // -----------------------------------------------------------------------------------------------------
-
   /**
-   * On init
+   * Save event
+   * @param event
    */
-  ngOnInit(): void {
-    // Create the language form
-    this.languageForm = this._formBuilder.group({
-      name: ['', [Validators.required]],
-      lang: ['', [Validators.required]],
-      icon: ['', [Validators.required]],
-      sitieId: ['', [Validators.required]],
-    });
-    if (this.language() !== null) {
-      this.languageForm.patchValue({ ...this.language() });
+  async save(event: SubmitEvent): Promise<void> {
+    if (this.language()) {
+      await this.update(event);
     } else {
-      this.languageForm.get('sitieId')?.setValue(this.sitie()!.id);
+      await this.create(event);
     }
   }
-
-  /**
-   * On destroy
-   */
-  ngOnDestroy(): void {
-    // Unsubscribe from all subscriptions
-    this._unsubscribeAll.next(null);
-    this._unsubscribeAll.complete();
-  }
-
-  // -----------------------------------------------------------------------------------------------------
-  // @ Public methods
-  // -----------------------------------------------------------------------------------------------------
 
   /**
    * Add language
    */
-  create() {
-    // Return if the form is invalid
-    if (this.languageForm.invalid) {
-      this.languageForm.markAllAsTouched();
-      return;
-    }
+  async create(event: SubmitEvent): Promise<void> {
+    try {
+      event.preventDefault();
+      await submit(this.languageForm, async (field) => {
+        const file = this.selectedFile();
+        const upload$ =
+          file !== null
+            ? this._fileService.uploadFile(file)
+            : of<ResponseI<FileUploadI> | null>(null);
 
-    const file = this.selectedFile();
+        await firstValueFrom(
+          upload$.pipe(
+            timeout(10000),
+            switchMap((response) => {
+              if (response?.message?.path) {
+                this.languageModel.update((prev) => ({ ...prev, icon: response.message.path }));
+              }
+              return this._languageService.create(field().value());
+            }),
+            takeUntilDestroyed(this._destroyRef),
+          ),
+        );
 
-    this.languageForm.disable();
-
-    const upload$ =
-      file !== null ? this._fileService.uploadFile(file) : of<ResponseI<FileUploadI> | null>(null);
-
-    upload$
-      .pipe(
-        switchMap((response) => {
-          if (response?.message?.path) {
-            this.languageForm.get('icon')?.setValue(response.message.path);
-          }
-          return this._languageService.create(this.languageForm.value);
-        }),
-        takeUntil(this._unsubscribeAll),
-      )
-      .subscribe({
-        next: () => {
-          this.languageForm.enable();
-          this._toastrService.success('El idioma se creó correctamente.', 'Idioma creado');
-          this.closeModal(true);
-        },
-        error: (response) => {
-          this.languageForm.enable();
-          this._toastrService.error(
-            response.error?.message || 'No fue posible crear el idioma.',
-            'Error al crear',
-          );
-        },
+        this._toastrService.success('El idioma se creó correctamente.', 'Idioma creado');
+        this.closeModal(true);
       });
+    } catch (err: any) {
+      this._toastrService.error(
+        err.error?.message || 'No fue posible crear el idioma.',
+        'Error al crear',
+      );
+    }
   }
 
   /**
    * Update language
    */
-  update() {
-    // Return if the form is invalid
-    if (this.languageForm.invalid) {
-      this.languageForm.markAllAsTouched();
-      return;
-    }
+  async update(event: SubmitEvent): Promise<void> {
+    try {
+      event.preventDefault();
+      await submit(this.languageForm, async (field) => {
+        const file = this.selectedFile();
+        const upload$ =
+          file !== null
+            ? this._fileService.uploadFile(file)
+            : of<ResponseI<FileUploadI> | null>(null);
 
-    const file = this.selectedFile();
-
-    // Disable the form
-    this.languageForm.disable();
-
-    const upload$ =
-      file !== null ? this._fileService.uploadFile(file) : of<ResponseI<FileUploadI> | null>(null);
-
-    upload$
-      .pipe(
-        switchMap((response) => {
-          if (response?.message?.path) {
-            this.languageForm.get('icon')?.setValue(response.message.path);
-          }
-          return this._languageService.update(this.language()!.id!, this.languageForm.value);
-        }),
-        takeUntil(this._unsubscribeAll),
-      )
-      .subscribe({
-        next: () => {
-          this.languageForm.enable();
-
-          this._toastrService.success(
-            'El idioma se actualizó correctamente.',
-            'Idioma actualizado',
-          );
-          this.closeModal(true);
-        },
-        error: (response) => {
-          this.languageForm.enable();
-          this._toastrService.error(
-            response.error?.message || 'No fue posible actualizar el idioma.',
-            'Error al actualizar',
-          );
-        },
+        await firstValueFrom(
+          upload$.pipe(
+            switchMap((response) => {
+              if (response?.message?.path) {
+                this.languageModel.update((prev) => ({ ...prev, icon: response.message.path }));
+              }
+              return this._languageService.update(this.languageModel().id!, field().value());
+            }),
+            takeUntilDestroyed(this._destroyRef),
+          ),
+        );
+        this._toastrService.success('El idioma se actualizó correctamente.', 'Idioma actualizado');
+        this.closeModal(true);
       });
+    } catch (err: any) {
+      this._toastrService.error(
+        err.error?.message || 'No fue posible actualizar el idioma.',
+        'Error al actualizar',
+      );
+    }
   }
 
   /**
-   * Delete language
+   * Toggle Status language
    */
-  delete() {
+  async toggleStatus(): Promise<void> {
     const language = this.language();
-    if (language === null) return;
-
-    // Disable the form
-    this.languageForm.disable();
-
-    this._languageService
-      .delete(this.language()!.id!)
-      .pipe(takeUntil(this._unsubscribeAll))
-      .subscribe({
-        next: () => {
-          this.languageForm.enable();
-          this.closeModal(true);
-          this._toastrService.success(
-            `El idioma se ${language.status ? 'inactivo' : 'activo'}  correctamente.`,
-            `Idioma  ${language.status ? 'inactivo' : 'activo'}`,
-          );
-        },
-        error: (response) => {
-          this.languageForm.enable();
-
-          this._toastrService.error(
-            response.error?.message ||
-              `No fue posible ${language.status ? 'inactivar' : 'activar'} el idioma.`,
-            `Error al ${language.status ? 'inactivar' : 'activar'}`,
-          );
-        },
+    if (!language) return;
+    try {
+      await submit(this.languageForm, async () => {
+        await firstValueFrom(
+          this._languageService
+            .delete(this.languageModel().id!)
+            .pipe(takeUntilDestroyed(this._destroyRef)),
+        );
+        this.closeModal(true);
+        this._toastrService.success(
+          `El idioma se ${language.status ? 'inactivo' : 'activo'}  correctamente.`,
+          `Idioma  ${language.status ? 'inactivo' : 'activo'}`,
+        );
       });
+    } catch (err: any) {
+      this._toastrService.error(
+        err.error?.message ||
+          `No fue posible ${language.status ? 'inactivar' : 'activar'} el idioma.`,
+        `Error al ${language.status ? 'inactivar' : 'activar'}`,
+      );
+    }
   }
 
   /**
@@ -240,7 +192,7 @@ export class SitieLanguagesDetailsComponent implements OnInit, OnDestroy {
    */
   toggleLanguage(): void {
     const language = this.language();
-    if (language === null) return;
+    if (!language) return;
 
     this._dialogService.setDialogData({
       type: 'warning',
@@ -249,15 +201,14 @@ export class SitieLanguagesDetailsComponent implements OnInit, OnDestroy {
       confirmButton: `Si, ${language.status ? 'Inactivar' : 'Activar'}`,
       cancelButton: 'Cancelar',
     });
-
     this._dialogService.toggleDialog();
-
-    // Subscribe to the confirmation dialog closed action
-    this._dialogService.actionClick$.pipe(takeUntil(this._unsubscribeAll)).subscribe((result) => {
-      if (result) {
-        this.delete();
-      }
-    });
+    this._dialogService.actionClick$
+      .pipe(takeUntilDestroyed(this._destroyRef))
+      .subscribe(async (result) => {
+        if (result) {
+          await this.toggleStatus();
+        }
+      });
   }
 
   /**
@@ -283,7 +234,7 @@ export class SitieLanguagesDetailsComponent implements OnInit, OnDestroy {
     const file: File = event.target.files[0];
     if (!file) return;
     this.selectedFile.set(file);
-    this.languageForm.get('icon')?.setValue('preview');
+    this.languageModel.update((prev) => ({ ...prev, icon: 'preview' }));
   }
 
   /**

@@ -1,95 +1,87 @@
 import {
   AfterViewInit,
   Component,
+  DestroyRef,
+  effect,
   ElementRef,
-  OnInit,
   inject,
   signal,
+  untracked,
   viewChild,
 } from '@angular/core';
-import { toSignal } from '@angular/core/rxjs-interop';
-import {
-  FormsModule,
-  ReactiveFormsModule,
-  UntypedFormBuilder,
-  UntypedFormGroup,
-  Validators,
-} from '@angular/forms';
+import { NgClass } from '@angular/common';
+import { form, FormField, maxLength, pattern, required, submit } from '@angular/forms/signals';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ToastrService } from '@iqx-limited/ngx-toastr';
-import { TemplateI } from 'app/core/interfaces/template.interface';
-import { SitieService } from 'app/core/services/sitie.service';
-import { TemplateService } from 'app/core/services/templates.service';
-import { PermissionComponent } from 'app/shared/components/permission/permission';
-import { PermissionCode, validAction } from 'app/shared/utils/permission.utils';
-import { GridComponent } from 'app/shared/components/grid/grid';
-import { CmsValidators } from 'app/shared/utils/validators.util';
-import { TooltipDirective } from 'app/shared/directives/tooltip.directive';
-import { Subject, takeUntil } from 'rxjs';
+import { SitieI, TemplateI } from '@core/interfaces';
+import { DynamicStyleService, SitieService, TemplateService } from '@core/services';
+import { PermissionComponent, GridComponent } from '@shared/components';
+import { TooltipDirective } from '@shared/directives';
+import { hasErrorFormField, PermissionCode, validAction } from '@shared/utils';
+import { firstValueFrom } from 'rxjs';
 
 @Component({
   selector: 'sitie-information',
   templateUrl: './information.html',
-  imports: [FormsModule, ReactiveFormsModule, PermissionComponent, GridComponent, TooltipDirective],
+  imports: [PermissionComponent, GridComponent, TooltipDirective, FormField, NgClass],
 })
-export class SitieInformationComponent implements OnInit, AfterViewInit {
+export class SitieInformationComponent implements AfterViewInit {
   private readonly previewContainer =
     viewChild.required<ElementRef<HTMLElement>>('previewContainer');
 
-  previewScale = signal(1);
-  selectedTemplate = signal(0);
+  previewScale = signal<number>(1);
+  selectedTemplate = signal<number>(0);
+  sitieModel = signal<SitieI>({
+    name: '',
+    domain: '',
+    description: '',
+    status: false,
+    maintenance: false,
+    templateId: 0,
+  });
 
-  private readonly _formBuilder = inject(UntypedFormBuilder);
+  sitieForm = form(this.sitieModel, (schemaPath) => {
+    required(schemaPath.name, { message: 'Nombre es obligatorio.' });
+    required(schemaPath.domain, { message: 'Dominio es obligatorio.' });
+    pattern(schemaPath.domain, /^https?:\/\/[a-zA-Z0-9.-]+(:\d+)?(\/.*)?$/, {
+      message: 'Dominio debe ser una URL válida.',
+    });
+    required(schemaPath.description, { message: 'Descripción es obligatorio.' });
+    maxLength(schemaPath.description, 255, {
+      message: 'Descripción no puede superar los 255 caracteres.',
+    });
+    required(schemaPath.templateId, { message: 'Plantilla es obligatorio.' });
+  });
+
   private readonly _sitieService = inject(SitieService);
   private readonly _templateService = inject(TemplateService);
+  private readonly _dynamicStyleService = inject(DynamicStyleService);
   private readonly _toastrService = inject(ToastrService);
+  private readonly _destroyRef = inject(DestroyRef);
 
-  private _unsubscribeAll: Subject<any> = new Subject<any>();
-  private styleElement?: HTMLStyleElement;
-
-  permission = PermissionCode;
-  validateFormControl = CmsValidators.validateFormControl;
-  getErrorMessage = CmsValidators.getErrorMessage;
-
-  sitie = this._sitieService.sitie;
-  templates = this._templateService.templates;
-
-  sitieForm!: UntypedFormGroup;
+  readonly permission = PermissionCode;
+  readonly hasError = hasErrorFormField;
+  readonly sitie = this._sitieService.sitie;
+  readonly templates = this._templateService.templates;
 
   /**
    * Constructor
    */
-  constructor() {}
-
-  // -----------------------------------------------------------------------------------------------------
-  // @ Lifecycle hooks
-  // -----------------------------------------------------------------------------------------------------
-
-  /**
-   * OnInit
-   */
-  ngOnInit(): void {
-    this.sitieForm = this._formBuilder.group({
-      name: ['', Validators.required],
-      domain: [
-        '',
-        [Validators.required, Validators.pattern(/^https?:\/\/[a-zA-Z0-9.-]+(:\d+)?(\/.*)?$/)],
-      ],
-      description: ['', [Validators.required, Validators.maxLength(255)]],
-      status: [],
-      maintenance: [],
-      templateId: ['', Validators.required],
+  constructor() {
+    effect(() => {
+      const sitie = this.sitie();
+      if (!sitie) return;
+      this.sitieModel.set(sitie);
+      untracked(() => {
+        const index = this.templates().records.findIndex(
+          (template) => template.id === sitie.templateId,
+        );
+        this.selectedTemplate.set(index);
+        const findTemplate = this.currentTemplate;
+        if (!findTemplate) return;
+        this.loadTemplate(findTemplate);
+      });
     });
-
-    const sitie = this.sitie();
-
-    if (sitie) {
-      this.sitieForm.patchValue(sitie);
-      const index = this.templates().records.findIndex((template) => template.id === 1);
-      this.selectedTemplate.set(index);
-      const findTemplate = this.currentTemplate;
-      if (findTemplate === null) return;
-      this.loadTemplate(findTemplate);
-    }
   }
 
   /**
@@ -105,63 +97,37 @@ export class SitieInformationComponent implements OnInit, AfterViewInit {
   }
 
   /**
-   * On destroy
-   */
-  ngOnDestroy(): void {
-    // Unsubscribe from all subscriptions
-    this._unsubscribeAll.next(null);
-    this._unsubscribeAll.complete();
-  }
-
-  // -----------------------------------------------------------------------------------------------------
-  // @ Public methods
-  // -----------------------------------------------------------------------------------------------------
-
-  /**
    * Go to Sitie
    */
   visit(): void {
     const domain = this.sitie()?.domain;
-
-    if (domain) {
-      window.open(domain, '_blank');
-    }
+    if (domain) window.open(domain, '_blank');
   }
 
   /**
    * Save Changes
    * @returns
    */
-  save(): void {
-    if (this.sitieForm.invalid) {
-      this.sitieForm.markAllAsTouched();
-      return;
-    }
+  async save(event: SubmitEvent): Promise<void> {
+    try {
+      const sitie = this.sitie();
+      if (!sitie) return;
 
-    const sitie = this.sitie();
-
-    if (!sitie) {
-      return;
-    }
-
-    this.sitieForm.disable();
-
-    this._sitieService
-      .update(sitie.id!, this.sitieForm.getRawValue())
-      .pipe(takeUntil(this._unsubscribeAll))
-      .subscribe({
-        next: () => {
-          this.sitieForm.enable();
-          this._toastrService.success('El sitio se actualizó correctamente.', 'Sitio actualizado');
-        },
-        error: (response) => {
-          this.sitieForm.enable();
-          this._toastrService.error(
-            response.error?.message || 'No fue posible actualizar la configuración del sitio.',
-            'Error al actualizar',
-          );
-        },
+      event.preventDefault();
+      await submit(this.sitieForm, async (field) => {
+        await firstValueFrom(
+          this._sitieService
+            .update(sitie.id!, field().value())
+            .pipe(takeUntilDestroyed(this._destroyRef)),
+        );
+        this._toastrService.success('El sitio se actualizó correctamente.', 'Sitio actualizado');
       });
+    } catch (err: any) {
+      this._toastrService.error(
+        err.error?.message || 'No fue posible actualizar la configuración del sitio.',
+        'Error al actualizar',
+      );
+    }
   }
 
   /**
@@ -169,12 +135,9 @@ export class SitieInformationComponent implements OnInit, AfterViewInit {
    */
   cancel(): void {
     const sitie = this.sitie();
+    if (!sitie) return;
 
-    this.sitieForm.reset();
-
-    if (sitie) {
-      this.sitieForm.patchValue(sitie);
-    }
+    this.sitieModel.set(sitie);
   }
 
   /**
@@ -194,7 +157,7 @@ export class SitieInformationComponent implements OnInit, AfterViewInit {
       index === this.templates().records.length - 1 ? 0 : index + 1,
     );
     const template = this.currentTemplate;
-    if (template === null) return;
+    if (!template) return;
     this.loadTemplate(template);
   }
 
@@ -206,7 +169,8 @@ export class SitieInformationComponent implements OnInit, AfterViewInit {
       index === 0 ? this.templates().records.length - 1 : index - 1,
     );
     const template = this.currentTemplate;
-    if (template === null) return;
+    if (!template) return;
+
     this.loadTemplate(template);
   }
 
@@ -230,18 +194,19 @@ export class SitieInformationComponent implements OnInit, AfterViewInit {
   }
 
   /**
-   * Change template in siite
+   * Change template in sitie
    * @param templateId
    * @param event
    */
   onSelectTemplate(templateId: number, event: Event): void {
     const checked = (event.target as HTMLInputElement).checked;
-    if (checked) {
-      this.sitieForm.get('templateId')?.setValue(templateId);
-      const template = this.templates().records.find((template) => template.id === templateId)!;
-      if (template === null) return;
-      this.loadTemplate(template);
-    }
+    if (!checked) return;
+
+    this.sitieModel.update((prev) => ({ ...prev, templateId }));
+    const template = this.templates().records.find((template) => template.id === templateId)!;
+    if (!template) return;
+
+    this.loadTemplate(template);
   }
 
   /**
@@ -249,12 +214,9 @@ export class SitieInformationComponent implements OnInit, AfterViewInit {
    * @param template
    */
   loadTemplate(template: TemplateI) {
+    this._dynamicStyleService.remove('preview-template');
+    const css = ` ${template.data?.header.css ?? ''} ${template.data?.footer.css ?? ''}`;
+    this._dynamicStyleService.set('preview-template', css);
     this._templateService.template.set(template);
-    // Eliminar CSS anterior
-    this.styleElement?.remove();
-
-    this.styleElement = document.createElement('style');
-    this.styleElement.textContent = ` ${template.data?.header.css ?? ''} ${template.data?.footer.css ?? ''}`;
-    document.head.appendChild(this.styleElement);
   }
 }

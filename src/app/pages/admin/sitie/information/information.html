@@ -1,6 +1,5 @@
-<form [formGroup]="sitieForm">
+<form (submit)="save($event)">
   <div class="flex flex-col gap-8 lg:p-4 p-0" data-aos="fade-left" data-aos-duration="1000">
-    <!-- Section 1: General sitie Information -->
     <section class="rounded-2xl border border-slate-200/80 bg-white shadow-sm overflow-hidden">
       <div class="border-b border-slate-100 bg-white px-6 py-5">
         <div class="flex items-center justify-between">
@@ -15,10 +14,9 @@
         </div>
       </div>
       <div class="p-6 space-y-6">
-        <!-- Nombre -->
         <div>
           <label
-            [class.text-red-500!]="validateFormControl(sitieForm, 'name')"
+            [class.text-red-500!]="hasError(sitieForm.name)"
             class="block text-xs font-semibold uppercase tracking-wider text-slate-700 mb-1.5"
             for="name"
           >
@@ -28,36 +26,29 @@
             <div
               class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400"
             >
-              <i
-                class="fa-solid fa-heading"
-                [class.text-red-500!]="validateFormControl(sitieForm, 'name')"
-              ></i>
+              <i class="fa-solid fa-heading" [class.text-red-500!]="hasError(sitieForm.name)"></i>
             </div>
             <input
-              formControlName="name"
+              [formField]="sitieForm.name"
               class="h-10 block w-full pl-10 pr-3.5 py-2.5 sm:py-3 text-sm text-slate-900 placeholder-slate-400 bg-slate-50/50 border border-slate-300 rounded-lg focus:outline-none focus:ring-0.5 focus:ring-indigo-600 focus:border-indigo-600 focus:bg-white transition-colors"
-              [class.border-red-500!.text-red-500!]="validateFormControl(sitieForm, 'name')"
-              [class.text-red-500!]="validateFormControl(sitieForm, 'name')"
-              [class.placeholder:text-red-500!]="validateFormControl(sitieForm, 'name')"
+              [ngClass]="{
+                'border-red-500! text-red-500! placeholder:text-red-500! focus:ring-red-500!':
+                  hasError(sitieForm.name),
+              }"
               id="name"
-              name="name"
-              required=""
               type="text"
             />
           </div>
-
-          <!-- Errores -->
-          @if (getErrorMessage(sitieForm, 'name') !== '') {
+          @if (hasError(sitieForm.name)) {
             <p class="mt-1.5 flex items-center gap-1 text-sm text-red-600">
               <i class="fa-solid fa-circle-exclamation"></i>
-              <span>{{ getErrorMessage(sitieForm, 'name') }}</span>
+              {{ sitieForm.name().errors()[0].message }}
             </p>
           }
         </div>
-        <!-- Dominio -->
         <div>
           <label
-            [class.text-red-500!]="validateFormControl(sitieForm, 'domain')"
+            [class.text-red-500!]="hasError(sitieForm.domain)"
             class="block text-xs font-semibold uppercase tracking-wider text-slate-700 mb-1.5"
             for="domain"
           >
@@ -67,40 +58,37 @@
             <div
               class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400"
             >
-              <i
-                class="fa-solid fa-globe"
-                [class.text-red-500!]="validateFormControl(sitieForm, 'domain')"
-              ></i>
+              <i class="fa-solid fa-globe" [class.text-red-500!]="hasError(sitieForm.domain)"></i>
             </div>
             <input
-              formControlName="domain"
+              [formField]="sitieForm.domain"
               class="h-10 block w-full pl-10 pr-3.5 py-2.5 sm:py-3 text-sm text-slate-900 placeholder-slate-400 bg-slate-50/50 border border-slate-300 rounded-lg focus:outline-none focus:ring-0.5 focus:ring-indigo-600 focus:border-indigo-600 focus:bg-white transition-colors"
-              [class.border-red-500!.text-red-500!]="validateFormControl(sitieForm, 'domain')"
-              [class.text-red-500!]="validateFormControl(sitieForm, 'domain')"
-              [class.placeholder:text-red-500!]="validateFormControl(sitieForm, 'domain')"
+              [ngClass]="{
+                'border-red-500! text-red-500! placeholder:text-red-500! focus:ring-red-500!':
+                  hasError(sitieForm.domain),
+              }"
               id="domain"
-              name="domain"
-              required=""
               type="text"
             />
           </div>
-
-          <!-- Errores -->
-          @if (getErrorMessage(sitieForm, 'domain') !== '') {
+          @if (hasError(sitieForm.domain)) {
             <p class="mt-1.5 flex items-center gap-1 text-sm text-red-600">
               <i class="fa-solid fa-circle-exclamation"></i>
-              <span>{{ getErrorMessage(sitieForm, 'domain') }}</span>
+              {{ sitieForm.domain().errors()[0].message }}
             </p>
           }
         </div>
-        <!-- Descripción -->
         <div>
           <label
-            [class.text-red-500!]="validateFormControl(sitieForm, 'description')"
-            class="block text-xs font-semibold uppercase tracking-wider text-slate-700 mb-1.5"
+            [class.text-red-500!]="hasError(sitieForm.description)"
+            class="text-xs font-semibold uppercase tracking-wider text-slate-700 mb-1.5 flex flex-row justify-between items-center"
             for="description"
           >
-            Descripción <span class="text-rose-500 font-bold">*</span>
+            <span>
+              Descripción
+              <span class="text-rose-500 font-bold">*</span>
+            </span>
+            <span class="font-normal"> {{ this.sitieModel().description.length }}/255 </span>
           </label>
           <div class="relative rounded-lg">
             <div
@@ -108,27 +96,24 @@
             >
               <i
                 class="fa-solid fa-align-justify"
-                [class.text-red-500!]="validateFormControl(sitieForm, 'description')"
+                [class.text-red-500!]="hasError(sitieForm.description)"
               ></i>
             </div>
             <textarea
-              formControlName="description"
+              [formField]="sitieForm.description"
               class="block w-full pl-10 pr-3.5 py-2.5 sm:py-3 text-sm text-slate-900 placeholder-slate-400 bg-slate-50/50 border border-slate-300 rounded-lg focus:outline-none focus:ring-0.5 focus:ring-indigo-600 focus:border-indigo-600 focus:bg-white transition-colors"
-              [class.border-red-500!.text-red-500!]="validateFormControl(sitieForm, 'description')"
-              [class.text-red-500!]="validateFormControl(sitieForm, 'description')"
-              [class.placeholder:text-red-500!]="validateFormControl(sitieForm, 'description')"
+              [ngClass]="{
+                'border-red-500! text-red-500! placeholder:text-red-500! focus:ring-red-500!':
+                  hasError(sitieForm.description),
+              }"
               id="description"
-              name="description"
-              required=""
               rows="5"
             ></textarea>
           </div>
-
-          <!-- Errores -->
-          @if (getErrorMessage(sitieForm, 'description') !== '') {
+          @if (hasError(sitieForm.description)) {
             <p class="mt-1.5 flex items-center gap-1 text-sm text-red-600">
               <i class="fa-solid fa-circle-exclamation"></i>
-              <span>{{ getErrorMessage(sitieForm, 'description') }}</span>
+              {{ sitieForm.description().errors()[0].message }}
             </p>
           }
           <p class="text-xs text-slate-400 mt-1">
@@ -137,8 +122,6 @@
         </div>
       </div>
     </section>
-
-    <!-- Section 2: Diseño -->
     <section class="rounded-2xl border border-slate-200/80 bg-white shadow-sm overflow-hidden">
       <div class="border-b border-slate-100 bg-white px-6 py-5">
         <div class="flex items-center justify-between">
@@ -152,15 +135,12 @@
         </div>
       </div>
       <div class="p-6 space-y-6">
-        <!-- Template -->
         <div class="relative w-full">
-          <!-- Carousel -->
           <div class="overflow-hidden rounded-2xl">
             @let template = currentTemplate;
             <div
               class="group w-full rounded-2xl border border-gray-200 bg-white shadow-sm transition-all duration-300 hover:shadow-md"
             >
-              <!-- Preview -->
               <div
                 #previewContainer
                 class="relative w-full overflow-hidden border-b border-slate-200"
@@ -178,41 +158,29 @@
                     [preview]="true"
                     [previewType]="'desktop'"
                   />
-
-                  <!-- CONTENT -->
                   <div
                     class="flex w-full min-h-120 flex-col items-center justify-center gap-6 border-t border-b border-slate-200 bg-gray-200 py-10"
                   >
-                    <!-- Icon -->
                     <div
                       class="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-gray-100 text-indigo-600 shadow-sm"
                     >
                       <i class="fa-solid fa-layer-group text-3xl"></i>
                     </div>
-
-                    <!-- Content -->
                     <div class="flex max-w-xl flex-col items-center gap-2 text-center">
-                      <!-- Badge -->
                       <span
                         class="rounded-full bg-indigo-50 px-3 py-1 text-xs font-semibold uppercase tracking-widest text-indigo-700"
                       >
                         Espacio Reservado de Contenido
                       </span>
-
-                      <!-- Title -->
                       <h3 class="text-2xl font-bold tracking-tight text-gray-900">
                         Área Dinámica del Page Builder
                       </h3>
-
-                      <!-- Description -->
                       <p class="text-sm leading-6 text-gray-500">
                         Aquí se renderiza el contenido particular de cada página preservando Header
                         y Footer unificados.
                       </p>
                     </div>
                   </div>
-
-                  <!-- FOOTER -->
                   <grid
                     class="block w-full"
                     [gridType]="'footer'"
@@ -223,8 +191,7 @@
                   />
                 </div>
 
-                <!-- STATUS -->
-                @if (sitieForm.get('templateId')?.value === template.id) {
+                @if (sitieModel().templateId === template.id) {
                   <span
                     class="absolute left-6 top-6 z-50 inline-flex items-center gap-1.5 rounded-lg bg-emerald-600 px-2.5 py-1 text-xs font-semibold text-white shadow-sm"
                   >
@@ -240,9 +207,8 @@
                   </span>
                 }
               </div>
-              <!-- Header -->
               <div class="mt-4 flex items-center justify-start gap-3 px-6">
-                @if (sitieForm.get('templateId')?.value === template?.id) {
+                @if (sitieModel().templateId === template?.id) {
                   <i class="fa-solid fa-circle-check shrink-0 text-indigo-600"></i>
                 } @else {
                   <div class="flex gap-2 items-center cursor-pointer justify-center">
@@ -259,7 +225,6 @@
                   {{ template.name }}
                 </h4>
               </div>
-              <!-- Description -->
               <p class="mt-1 line-clamp-2 min-h-10 text-sm leading-5 text-gray-500 px-6 mb-6">
                 {{ template.description }}
               </p>
@@ -267,7 +232,6 @@
           </div>
 
           @if (templates().records.length > 1) {
-            <!-- Previous -->
             <button
               type="button"
               [disabled]="this.selectedTemplate() === 0"
@@ -277,7 +241,6 @@
             >
               <i class="fa-solid fa-chevron-left"></i>
             </button>
-            <!-- Next -->
             <button
               type="button"
               [disabled]="this.selectedTemplate() === this.templates().records.length - 1"
@@ -287,7 +250,6 @@
             >
               <i class="fa-solid fa-chevron-right"></i>
             </button>
-            <!-- Dots -->
             <div class="mt-4 flex items-center justify-center gap-2">
               @for (item of templates().records; track item.id; let i = $index) {
                 <button
@@ -306,8 +268,6 @@
         </div>
       </div>
     </section>
-
-    <!-- Section 3: Zona de peligro -->
     <section class="rounded-2xl border-2 border-red-500 bg-white shadow-sm overflow-hidden">
       <div class="border-b border-slate-100 bg-white px-6 py-5">
         <div class="flex items-center justify-between">
@@ -323,21 +283,18 @@
         </div>
       </div>
       <div class="p-6 space-y-6">
-        <!--Desactivar -->
         <div class="px-1 lg:px-6 transition hover:bg-slate-50/60">
-          @let status = sitieForm.get('status')?.value;
+          @let status = sitieModel().status;
           <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div class="space-y-1.5 max-w-xl">
               <div class="flex items-center gap-2.5 flex-wrap">
                 <h3 class="text-sm font-bold text-slate-900">Activar/Inactivar el sitio</h3>
                 <span
-                  [class.bg-slate-100]="!status"
-                  [class.bg-emerald-100]="status"
-                  [class.text-slate-600]="!status"
-                  [class.text-emerald-600]="status"
-                  [class.ring-slate-200]="!status"
-                  [class.ring-emerald-200]="status"
-                  class="inline-flex items-center rounded-md bg-slate-100 px-2 py-0.5 text-[11px] font-semibold ring-1 ring-inset"
+                  [ngClass]="{
+                    'bg-slate-100 text-slate-600 ring-slate-200': !status,
+                    'bg-emerald-100 text-emerald-600 ring-emerald-200': status,
+                  }"
+                  class="inline-flex items-center rounded-md px-2 py-0.5 text-[11px] font-semibold ring-1 ring-inset"
                 >
                   <span
                     [class.bg-slate-400]="!status"
@@ -362,17 +319,14 @@
                 <span>Activar este switch desactivará el sitio y todas sus páginas.</span>
               </div>
             </div>
-            <!-- Switch Toggle Anatomy: OFF (slate-200) -->
             <button
-              (click)="sitieForm.get('status')?.setValue(!status)"
-              aria-checked="false"
+              (click)="sitieForm.status().value.set(!this.sitieModel().status)"
               [class.bg-indigo-600]="status"
               [class.bg-slate-200]="!status"
               class="relative inline-flex h-7 w-14 shrink-0 cursor-pointer rounded-full border-2 border-transparent p-0.5 transition-colors duration-200 ease-in-out focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:ring-offset-2 self-start sm:self-center"
               role="switch"
               type="button"
             >
-              <!-- Thumb -->
               <span
                 [class.translate-x-7]="status"
                 [class.translate-x-0]="!status"
@@ -388,9 +342,8 @@
           </div>
         </div>
         <div class="border-b border-slate-100"></div>
-        <!--Mantenimiento -->
         <div class="px-1 lg:px-6 transition hover:bg-slate-50/60">
-          @let maintenance = sitieForm.get('maintenance')?.value;
+          @let maintenance = sitieModel().maintenance;
           <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div class="space-y-1.5 max-w-xl">
               <div class="flex items-center gap-2.5 flex-wrap">
@@ -398,13 +351,11 @@
                   Modo Mantenimiento de la Plataforma
                 </h3>
                 <span
-                  [class.bg-slate-100]="!maintenance"
-                  [class.bg-emerald-100]="maintenance"
-                  [class.text-slate-600]="!maintenance"
-                  [class.text-emerald-600]="maintenance"
-                  [class.ring-slate-200]="!maintenance"
-                  [class.ring-emerald-200]="maintenance"
-                  class="inline-flex items-center rounded-md bg-slate-100 px-2 py-0.5 text-[11px] font-semibold ring-1 ring-inset"
+                  [ngClass]="{
+                    'bg-slate-100 text-slate-600 ring-slate-200': !maintenance,
+                    'bg-emerald-100 text-emerald-600 ring-emerald-200': maintenance,
+                  }"
+                  class="inline-flex items-center rounded-md px-2 py-0.5 text-[11px] font-semibold ring-1 ring-inset"
                 >
                   <span
                     [class.bg-slate-400]="!maintenance"
@@ -429,17 +380,14 @@
                 <span>Activar este switch suspenderá el tráfico de las páginas.</span>
               </div>
             </div>
-            <!-- Switch Toggle Anatomy: OFF (slate-200) -->
             <button
-              (click)="sitieForm.get('maintenance')?.setValue(!maintenance)"
-              aria-checked="false"
+              (click)="sitieForm.maintenance().value.set(!this.sitieModel().maintenance)"
               [class.bg-indigo-600]="maintenance"
               [class.bg-slate-200]="!maintenance"
               class="relative inline-flex h-7 w-14 shrink-0 cursor-pointer rounded-full border-2 border-transparent p-0.5 transition-colors duration-200 ease-in-out focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:ring-offset-2 self-start sm:self-center"
               role="switch"
               type="button"
             >
-              <!-- Thumb -->
               <span
                 [class.translate-x-7]="maintenance"
                 [class.translate-x-0]="!maintenance"
@@ -456,8 +404,6 @@
         </div>
       </div>
     </section>
-
-    <!-- Bottom Action Bar (Fixed feel) -->
     @if (validPermission(permission.editSitie)) {
       <div class="flex items-center justify-between flex-col md:flex-row w-full">
         <div class="flex items-center justify-start w-full">
@@ -483,15 +429,14 @@
 
           <button
             class="cursor-pointer h-10 w-full md:w-auto flex justify-center items-center py-3 px-4 border border-transparent rounded-lg text-sm font-semibold text-white bg-indigo-500 hover:bg-indigo-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 active:transform active:scale-[0.99] transition duration-150 ease-in-out disabled:cursor-not-allowed disabled:bg-indigo-300"
-            type="button"
-            [disabled]="sitieForm.disabled"
-            (click)="save()"
+            type="submit"
+            [disabled]="sitieForm().invalid() || sitieForm().submitting()"
           >
             <span class="flex items-center justify-center gap-2">
-              @if (!sitieForm.disabled) {
-                <i class="fa-solid fa-floppy-disk"></i>
-              } @else {
+              @if (sitieForm().submitting()) {
                 <i class="fa-solid fa-spinner fa-spin text-white"></i>
+              } @else {
+                <i class="fa-solid fa-floppy-disk"></i>
               }
               <span>Guardar</span>
             </span>

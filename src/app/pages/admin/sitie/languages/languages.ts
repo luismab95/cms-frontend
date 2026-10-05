@@ -1,49 +1,47 @@
+import { Component, DestroyRef, computed, effect, inject, signal } from '@angular/core';
+import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
 import { TitleCasePipe, UpperCasePipe, NgClass } from '@angular/common';
-import { Component, OnInit, computed, inject, signal } from '@angular/core';
-import { toSignal } from '@angular/core/rxjs-interop';
-import { FormControl, FormsModule, ReactiveFormsModule, UntypedFormControl } from '@angular/forms';
+import { form, FormField } from '@angular/forms/signals';
 import { ToastrService } from '@iqx-limited/ngx-toastr';
-import { ParameterService } from 'app/core/services/parameter.service';
-import { PaginationComponent } from 'app/shared/components/pagination/pagination';
-import { PermissionComponent } from 'app/shared/components/permission/permission';
-import { LanguageI } from 'app/shared/interfaces/language.interfaces';
-import { PaginationResquestI } from 'app/shared/interfaces/response.interface';
-import { LanguageService } from 'app/shared/services/language.service';
-import { findParameter } from 'app/shared/utils/parameter.utils';
-import { PermissionCode, validAction } from 'app/shared/utils/permission.utils';
-import { debounceTime, Subject, takeUntil } from 'rxjs';
+import { ParameterService } from '@core/services';
+import { PermissionComponent, PaginationComponent } from '@shared/components';
+import { LanguageI, PaginationResquestI, TableSearchI } from '@shared/interfaces';
+import { LanguageService } from '@shared/services';
+import { PermissionCode, findParameter, validAction } from '@shared/utils';
 import { SitieLanguagesDetailsComponent } from './details/details';
+import { debounceTime } from 'rxjs';
 
 @Component({
   selector: 'sitie-languages',
   templateUrl: './languages.html',
   imports: [
-    FormsModule,
-    ReactiveFormsModule,
     TitleCasePipe,
     UpperCasePipe,
     PermissionComponent,
     PaginationComponent,
     SitieLanguagesDetailsComponent,
     NgClass,
+    FormField,
   ],
 })
-export class SitieLanguagesComponent implements OnInit {
-  permission = PermissionCode;
-  searchInputControl: UntypedFormControl = new UntypedFormControl();
-  statusControl: FormControl<boolean | null> = new FormControl(null);
-
+export class SitieLanguagesComponent {
   urlStatics = signal<string>('');
   limit = signal<number>(10);
   showDetails = signal<boolean>(false);
   selectedLanguage = signal<LanguageI | null>(null);
+  tableSearchModel = signal<TableSearchI>({
+    search: '',
+    status: null,
+  });
 
-  private _unsubscribeAll: Subject<any> = new Subject<any>();
+  tableSearchForm = form(this.tableSearchModel);
 
-  private _parameterService = inject(ParameterService);
-  private _languageService = inject(LanguageService);
-  private _toastrService = inject(ToastrService);
+  private readonly _parameterService = inject(ParameterService);
+  private readonly _languageService = inject(LanguageService);
+  private readonly _toastrService = inject(ToastrService);
+  private readonly _destroyRef = inject(DestroyRef);
 
+  readonly permission = PermissionCode;
   readonly parameters = this._parameterService.publicParameters;
   readonly languages = this._languageService.languages;
 
@@ -52,49 +50,28 @@ export class SitieLanguagesComponent implements OnInit {
   /**
    * Constructor
    */
-  constructor() {}
+  constructor() {
+    effect(() => {
+      const parameters = this.parameters();
+      this.urlStatics.set(findParameter('APP_STATICS_URL', parameters)!.value);
+    });
 
-  // -----------------------------------------------------------------------------------------------------
-  // @ Lifecycle hooks
-  // -----------------------------------------------------------------------------------------------------
-
-  /**
-   * On init
-   */
-  ngOnInit(): void {
-    // Get the languages
-    this.urlStatics.set(findParameter('APP_STATICS_URL', this.parameters())!.value);
-
-    // Subscribe to search input field value changes
-    this.searchInputControl.valueChanges
-      .pipe(debounceTime(700), takeUntil(this._unsubscribeAll))
-      .subscribe((search: string) => {
-        if (search) this.getAll(1, search === '' ? null : search, this.statusControl.value);
+    toObservable(this.tableSearchForm.search().value)
+      .pipe(debounceTime(600), takeUntilDestroyed(this._destroyRef))
+      .subscribe((search) => {
+        if (search) this.getAll(1, search === '' ? null : search, this.tableSearchModel().status);
       });
 
-    this.statusControl.valueChanges
-      .pipe(takeUntil(this._unsubscribeAll))
-      .subscribe((status: boolean | null) => {
+    toObservable(this.tableSearchForm.status().value)
+      .pipe(takeUntilDestroyed(this._destroyRef))
+      .subscribe((status) => {
         this.getAll(
           1,
-          this.searchInputControl.value === '' ? null : this.searchInputControl.value,
+          this.tableSearchModel().search === '' ? null : this.tableSearchModel().search,
           status,
         );
       });
   }
-
-  /**
-   * On destroy
-   */
-  ngOnDestroy(): void {
-    // Unsubscribe from all subscriptions
-    this._unsubscribeAll.next(null);
-    this._unsubscribeAll.complete();
-  }
-
-  // -----------------------------------------------------------------------------------------------------
-  // @ Public methods
-  // -----------------------------------------------------------------------------------------------------
 
   /**
    * Get all
@@ -109,7 +86,7 @@ export class SitieLanguagesComponent implements OnInit {
     };
     this._languageService
       .getAll(params)
-      .pipe(takeUntil(this._unsubscribeAll))
+      .pipe(takeUntilDestroyed(this._destroyRef))
       .subscribe({
         error: (response) => {
           this._toastrService.error(response.error.message, 'Aviso');
@@ -119,7 +96,6 @@ export class SitieLanguagesComponent implements OnInit {
 
   /**
    * Open modal laguanges detail
-   *
    * @param data
    */
   openDetailsModal(language: LanguageI | null): void {
@@ -146,8 +122,8 @@ export class SitieLanguagesComponent implements OnInit {
    * Clear input search
    */
   clearSearch() {
-    this.searchInputControl.reset();
-    this.getAll(1, null, this.statusControl.value);
+    this.tableSearchModel.update((prev) => ({ ...prev, search: '' }));
+    this.getAll(1, null, this.tableSearchModel().status);
   }
 
   /**
@@ -157,8 +133,8 @@ export class SitieLanguagesComponent implements OnInit {
   onPageChange(page: number): void {
     this.getAll(
       page,
-      this.searchInputControl.value === '' ? null : this.searchInputControl.value,
-      this.statusControl.value,
+      this.tableSearchModel().search === '' ? null : this.tableSearchModel().search,
+      this.tableSearchModel().status,
     );
   }
 
@@ -170,8 +146,8 @@ export class SitieLanguagesComponent implements OnInit {
     this.limit.set(limit);
     this.getAll(
       1,
-      this.searchInputControl.value === '' ? null : this.searchInputControl.value,
-      this.statusControl.value,
+      this.tableSearchModel().search === '' ? null : this.tableSearchModel().search,
+      this.tableSearchModel().status,
     );
   }
 
@@ -189,6 +165,7 @@ export class SitieLanguagesComponent implements OnInit {
    * @param status
    */
   onChangeStatus(status: boolean | null) {
-    this.statusControl.setValue(status);
+    this.tableSearchModel.update((prev) => ({ ...prev, status }));
+    this.onPageChange(1);
   }
 }

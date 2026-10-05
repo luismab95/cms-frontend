@@ -17,3 +17,8 @@ export interface PaginationResquestI {
   search: string | null;
   status: boolean | null;
 }
+
+export interface TableSearchI {
+  search: string;
+  status: boolean | null;
+}

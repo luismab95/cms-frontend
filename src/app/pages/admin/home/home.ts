@@ -1,30 +1,29 @@
-import { DomSanitizer } from '@angular/platform-browser';
-import { ClipboardModule } from '@angular/cdk/clipboard';
-import { DecimalPipe, NgClass } from '@angular/common';
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, computed, DestroyRef, inject, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { DecimalPipe, formatNumber, NgClass } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
-import { toSignal } from '@angular/core/rxjs-interop';
+import { ClipboardModule } from '@angular/cdk/clipboard';
+import { DomSanitizer } from '@angular/platform-browser';
 import { ApexOptions, NgApexchartsModule } from 'ng-apexcharts';
-import { PermissionCode, validAction } from 'app/shared/utils/permission.utils';
+import { ToastrService } from '@iqx-limited/ngx-toastr';
 import {
   ApexOptionsI,
-  distributionOrigen,
-  Top10PagesI,
   weekVisit,
   yearVisit,
-} from 'app/core/interfaces/home.interface';
-import { HomeService } from 'app/core/services/home.service';
-import { UserService } from 'app/core/services/user.service';
-import { NotificationsService } from 'app/core/services/notifications.service';
-import { PermissionComponent } from 'app/shared/components/permission/permission';
-import { ToastrService } from '@iqx-limited/ngx-toastr';
-import { ParameterService } from 'app/core/services/parameter.service';
-import { findParameter } from 'app/shared/utils/parameter.utils';
-import { SitieService } from 'app/core/services/sitie.service';
-import { formatNumber } from 'app/shared/utils/number.utils';
-import { TooltipDirective } from 'app/shared/directives/tooltip.directive';
+  distributionOrigen,
+  Top10PagesI,
+} from '@core/interfaces';
+import {
+  NotificationsService,
+  ParameterService,
+  SitieService,
+  HomeService,
+  UserService,
+} from '@core/services';
+import { PermissionComponent } from '@shared/components';
+import { TooltipDirective } from '@shared/directives';
+import { PermissionCode, validAction, findParameter } from '@shared/utils';
 import { forkJoin } from 'rxjs';
-
 @Component({
   selector: 'home',
   templateUrl: './home.html',
@@ -43,8 +42,6 @@ export class Home {
   yearVisitButton = signal<'lastYear' | 'thisYear'>('thisYear');
   visitButton = signal<'year' | 'week'>('week');
 
-  formatNumberUtil = formatNumber;
-
   private readonly _notificationsService = inject(NotificationsService);
   private readonly _parameterService = inject(ParameterService);
   private readonly _sitieService = inject(SitieService);
@@ -53,11 +50,12 @@ export class Home {
   private readonly _toastrService = inject(ToastrService);
   private readonly _domSanitizer = inject(DomSanitizer);
   private readonly _router = inject(Router);
+  private readonly _destroyRef = inject(DestroyRef);
 
   readonly permission = PermissionCode;
+  readonly formatNumberUtil = formatNumber;
 
   readonly parameters = this._parameterService.publicParameters;
-
   readonly user = this._userService.userLogin;
   readonly countElements = this._homeService.countElements;
   readonly dataServiceWeek = this._homeService.weekVisit;
@@ -78,7 +76,6 @@ export class Home {
         ),
       }));
   });
-
   readonly top10Pages = computed(() => {
     return [...this.dataServiceTop10()]
       .sort((a, b) => b.visits - a.visits)
@@ -87,33 +84,24 @@ export class Home {
         url: `${this.getDomain()}/${item.lang}${item.path}`,
       }));
   });
-
   readonly unreadNotify = computed(() => this.notifications().length);
-
   readonly weekVisit = computed<ApexOptionsI>(() => {
     const data = this.dataServiceWeek();
     return data ? weekVisit(data) : {};
   });
-
   readonly yearVisit = computed<ApexOptionsI>(() => {
     const data = this.dataServiceYear();
     return data ? yearVisit(data) : {};
   });
-
   readonly distributionOrigen = computed<ApexOptions>(() => {
     const data = this.visitVsPages();
     return data ? distributionOrigen(data) : {};
   });
-
   readonly totalVisitWeek = computed(() => {
     const dataServiceWeek = this.dataServiceWeek()!['thisWeek'];
     const total = dataServiceWeek.micrositie + dataServiceWeek.page + dataServiceWeek.sitie;
     return total > 0 ? total : 1;
   });
-
-  // --------------------------------------------------------------------------
-  // Public methods
-  // --------------------------------------------------------------------------
 
   /**
    * Validate permission
@@ -170,6 +158,8 @@ export class Home {
       yearVisit: this._homeService.getYearVisit(),
       visitVsPages: this._homeService.getVisitVsPages(),
       countElements: this._homeService.getCountElements(),
-    }).subscribe();
+    })
+      .pipe(takeUntilDestroyed(this._destroyRef))
+      .subscribe();
   }
 }
