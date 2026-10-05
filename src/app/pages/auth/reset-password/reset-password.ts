@@ -43,7 +43,7 @@ export class AuthResetPassword {
       if (password !== confirmation) {
         return {
           kind: 'mismatch',
-          message: 'Las contraseñas no coinciden',
+          message: 'Las contraseñas no coinciden.',
         };
       }
       return null;
