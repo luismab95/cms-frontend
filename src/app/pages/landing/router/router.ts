@@ -1,10 +1,10 @@
-import { Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
-import { NavigationEnd, Router } from '@angular/router';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { Component, DestroyRef, computed, effect, inject, signal } from '@angular/core';
+import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { Meta, Title } from '@angular/platform-browser';
-import { DeviceDetectorService, DeviceType } from 'ngx-device-detector';
+import { NavigationEnd, Router } from '@angular/router';
+import { DeviceDetectorService } from 'ngx-device-detector';
 import { PageService, TemplateService } from '@core/services';
-import { TemplateI, PageI, PageDetailReferenceI } from '@core/interfaces';
+import { PageI, PageDetailReferenceI, PageRenderI } from '@core/interfaces';
 import { GridComponent } from '@shared/components';
 import { distinctUntilChanged, filter } from 'rxjs';
 
@@ -13,62 +13,52 @@ import { distinctUntilChanged, filter } from 'rxjs';
   templateUrl: './router.html',
   imports: [GridComponent],
 })
-export class LandingRouterComponent implements OnInit {
-  loading = signal<boolean>(true);
+export class LandingRouterComponent {
+  initializate = signal<boolean>(false);
   previousLangValue = signal<string>(window.location.pathname.split('/')[1]);
+  languageId = signal<number>(0);
+  lang = signal<string>('');
+  page = signal<string>('');
+  micrositie = signal<string>('');
 
-  languageId = signal<number | undefined>(undefined);
-  lang = signal<string | undefined>(undefined);
-  page = signal<string | null>(null);
-  micrositie = signal<string | null>(null);
-
-  private readonly _deviceDetectorService = inject(DeviceDetectorService);
   private readonly _pageService = inject(PageService);
   private readonly _templateService = inject(TemplateService);
-  private readonly _destroyRef = inject(DestroyRef);
-  private readonly _router = inject(Router);
+  private readonly _deviceDetectorService = inject(DeviceDetectorService);
   private readonly _metaService = inject(Meta);
   private readonly _titleService = inject(Title);
+  private readonly _router = inject(Router);
+  private readonly _destroyRef = inject(DestroyRef);
 
   readonly previewType = computed(() => {
     const { deviceType } = this._deviceDetectorService.deviceInfo();
-    switch (deviceType) {
-      case DeviceType.Mobile:
-        return 'mobile';
-      case DeviceType.Tablet:
-        return 'tablet';
-      case DeviceType.Desktop:
-        return 'desktop';
-      default:
-        return 'desktop';
-    }
+    return deviceType;
   });
+
+  readonly routerEvents = toSignal(
+    this._router.events.pipe(
+      filter((event) => event instanceof NavigationEnd),
+      distinctUntilChanged(),
+      takeUntilDestroyed(this._destroyRef),
+    ),
+  );
 
   /**
    * Constructor
    */
   constructor() {
-    this._router.events
-      .pipe(
-        filter((event) => event instanceof NavigationEnd),
-        distinctUntilChanged(),
-      )
-      .subscribe((event: NavigationEnd) => {
-        const urlSplit = event.urlAfterRedirects.split('/');
-        const lang = urlSplit[1];
-        if (!this.loading() && lang !== this.previousLangValue()) {
-          this.previousLangValue.set(lang);
-          this._router
-            .navigateByUrl(`/${lang}/${urlSplit.slice(2).join('/')}`)
-            .then(() => this.getPage());
-        }
-      });
-  }
+    effect(() => {
+      const routerEvents = this.routerEvents();
+      if (!routerEvents) return;
 
-  /**
-   * On init
-   */
-  ngOnInit(): void {
+      const urlSplit = routerEvents.urlAfterRedirects.split('/');
+      const lang = urlSplit[1];
+      if (!this.initializate() && lang !== this.previousLangValue()) {
+        this.previousLangValue.set(lang);
+        this._router
+          .navigateByUrl(`/${lang}/${urlSplit.slice(2).join('/')}`)
+          .then(() => this.getPage());
+      }
+    });
     this.getPage();
   }
 
@@ -76,7 +66,37 @@ export class LandingRouterComponent implements OnInit {
    * Get page
    */
   getPage() {
-    this.loading.set(true);
+    const preview = this.loadParamsUrl();
+    this._pageService
+      .getPage({
+        lang: this.lang()!,
+        page: this.page()!,
+        micrositie: this.micrositie()!,
+        preview,
+      })
+      .pipe(takeUntilDestroyed(this._destroyRef))
+      .subscribe({
+        next: (res) => {
+          this.languageId.set(res.message.languageId);
+          this.updateMetaTags(this.languageId()!, res.message.details!);
+          this.loadData(res.message);
+          this.initializate.set(true);
+        },
+        error: (err) => {
+          if (err.status === 503) {
+            this._router.navigateByUrl('/error/maintenance');
+          } else if (err.status === 404) {
+            this._router.navigateByUrl('/error/404');
+          } else this._router.navigateByUrl('/error/500');
+        },
+      });
+  }
+
+  /**
+   * Load info params for get page
+   * @returns
+   */
+  loadParamsUrl(): boolean {
     let preview = false;
     const url = window.location.pathname;
     const urlSplit = url.split('/');
@@ -100,30 +120,7 @@ export class LandingRouterComponent implements OnInit {
         this.micrositie.set(urlSplit[2]);
     }
 
-    this._pageService
-      .getPage({
-        lang: this.lang()!,
-        page: this.page()!,
-        micrositie: this.micrositie()!,
-        preview,
-      })
-      .pipe(takeUntilDestroyed(this._destroyRef))
-      .subscribe({
-        next: (res) => {
-          this.languageId.set(res.message.languageId);
-          this.updateMetaTags(this.languageId()!, res.message.details!);
-          this.loadData(res.message.template, 'template');
-          this.loadData(res.message, 'page');
-          this.loading.set(false);
-        },
-        error: (err) => {
-          if (err.status === 503) {
-            this._router.navigateByUrl('/error/maintenance');
-          } else if (err.status === 404) {
-            this._router.navigateByUrl('/error/404');
-          } else this._router.navigateByUrl('/error/500');
-        },
-      });
+    return preview;
   }
 
   /**
@@ -131,9 +128,9 @@ export class LandingRouterComponent implements OnInit {
    * @param data
    * @param item
    */
-  loadData(data: TemplateI | PageI, item: 'template' | 'page') {
-    if (item === 'page') this._pageService.page.set(data as PageI);
-    if (item === 'template') this._templateService.template.set(data as TemplateI);
+  loadData(page: PageRenderI) {
+    this._pageService.page.set(page as PageI);
+    this._templateService.template.set(page.template);
   }
 
   /**
