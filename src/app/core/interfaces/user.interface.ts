@@ -8,7 +8,7 @@ export interface UserI {
   bloqued?: boolean;
   status?: boolean;
   twoFactorAuth?: boolean;
-  roleId?: number;
+  roleId: number;
   password?: string;
 }
 
