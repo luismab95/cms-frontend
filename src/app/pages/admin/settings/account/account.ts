@@ -1,117 +1,86 @@
-import { Component, OnInit, inject, input } from '@angular/core';
-import { toSignal } from '@angular/core/rxjs-interop';
-import {
-  FormsModule,
-  ReactiveFormsModule,
-  UntypedFormBuilder,
-  UntypedFormGroup,
-  Validators,
-} from '@angular/forms';
+import { Component, DestroyRef, effect, inject, input, signal } from '@angular/core';
+import { email, form, FormField, required, submit } from '@angular/forms/signals';
+import { NgClass } from '@angular/common';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ToastrService } from '@iqx-limited/ngx-toastr';
-import { UserService } from 'app/core/services/user.service';
-import { CmsValidators } from 'app/shared/utils/validators.util';
-import { Subject, takeUntil } from 'rxjs';
-import { UserI } from 'app/core/interfaces/user.interface';
+import { UserI } from '@core/interfaces';
+import { UserService } from '@core/services';
+import { hasErrorFormField } from '@shared/utils';
+import { firstValueFrom } from 'rxjs';
 
 @Component({
   selector: 'settings-account',
   templateUrl: './account.html',
-  imports: [FormsModule, ReactiveFormsModule],
+  imports: [FormField, NgClass],
 })
-export class SettingsAccountComponent implements OnInit {
+export class SettingsAccountComponent {
   user = input.required<UserI>();
   edit = input.required<boolean>();
 
-  accountForm!: UntypedFormGroup;
-  validateFormControl = CmsValidators.validateFormControl;
-  getErrorMessage = CmsValidators.getErrorMessage;
+  accountModel = signal<UserI>({
+    email: '',
+    firstname: '',
+    lastname: '',
+    roleId: 0,
+  });
 
-  private _unsubscribeAll: Subject<any> = new Subject<any>();
+  accountForm = form(this.accountModel, (schemaPath) => {
+    required(schemaPath.email, { message: 'Dirección de correo electrónico es obligatorio.' });
+    email(schemaPath.email, { message: 'Dirección de correo electrónico no válido.' });
+    required(schemaPath.firstname, { message: 'Nombres es obligatorio.' });
+    required(schemaPath.lastname, { message: 'Apellidos es obligatorio.' });
+    required(schemaPath.roleId, { message: 'Rol asignado es obligatorio.' });
+  });
 
   private readonly _userService = inject(UserService);
   private readonly _toastrService = inject(ToastrService);
-  private readonly _formBuilder = inject(UntypedFormBuilder);
+  private readonly _destroyRef = inject(DestroyRef);
 
+  readonly hasError = hasErrorFormField;
   readonly role = this._userService.role;
 
   /**
    * Constructor
    */
-  constructor() {}
+  constructor() {
+    effect(() => {
+      const user = this.user();
+      if (!user) return;
 
-  // -----------------------------------------------------------------------------------------------------
-  // @ Lifecycle hooks
-  // -----------------------------------------------------------------------------------------------------
-
-  /**
-   * On init
-   */
-  ngOnInit(): void {
-    // Create the form
-    this.accountForm = this._formBuilder.group({
-      firstname: ['', Validators.required],
-      lastname: ['', Validators.required],
-      email: ['', [Validators.required, Validators.email]],
-      roleId: ['', Validators.required],
+      this.accountModel.set({ ...user, roleId: this.role()!.id });
     });
-
-    this.accountForm.patchValue({ ...this.user(), roleId: this.role()!.id });
-    if (!this.edit()) this.accountForm.disable();
   }
 
   /**
-   * On destroy
+   * Update profile
+   * @param event
    */
-  ngOnDestroy(): void {
-    // Unsubscribe from all subscriptions
-    this._unsubscribeAll.next(null);
-    this._unsubscribeAll.complete();
-  }
-
-  // -----------------------------------------------------------------------------------------------------
-  // @ Public methods
-  // -----------------------------------------------------------------------------------------------------
-
-  /**
-   * Save action
-   */
-  save() {
-    // Return if the form is invalid
-    if (this.accountForm.invalid) {
-      this.accountForm.markAllAsTouched();
-      return;
-    }
-
-    // Disable the form
-    this.accountForm.disable();
-
-    this._userService
-      .update(this.user().id!, this.accountForm.value)
-      .pipe(takeUntil(this._unsubscribeAll))
-      .subscribe({
-        next: () => {
-          this.accountForm.enable();
-          this._toastrService.success(
-            'El perfil se actualizó correctamente.',
-            'Perfil actualizado',
-          );
-        },
-        error: (response) => {
-          this.accountForm.enable();
-          this.accountForm.reset();
-          this._toastrService.error(
-            response.error?.message || 'No fue posible actualizar la configuración del perfil.',
-            'Error al actualizar',
-          );
-        },
+  async save(event: SubmitEvent): Promise<void> {
+    try {
+      event.preventDefault();
+      await submit(this.accountForm, async (field) => {
+        await firstValueFrom(
+          this._userService
+            .update(this.accountModel().id!, field().value())
+            .pipe(takeUntilDestroyed(this._destroyRef)),
+        );
+        this._userService.getSession().subscribe();
+        this._toastrService.success('El perfil se actualizó correctamente.', 'Perfil actualizado');
       });
+    } catch (err: any) {
+      this._toastrService.error(
+        err.error?.message || 'No fue posible actualizar la configuración del perfil.',
+        'Error al actualizar',
+      );
+    }
   }
 
   /**
    * Cancel action
    */
   cancel() {
-    this.accountForm.reset();
-    this.accountForm.patchValue({ ...this.user(), roleId: this.role()!.id });
+    const user = this.user();
+    if (!user) return;
+    this.accountModel.set({ ...user, roleId: this.role()!.id });
   }
 }

@@ -1,34 +1,29 @@
 import { NgClass } from '@angular/common';
-import { Component, OnInit, inject, input, signal } from '@angular/core';
-import { toSignal } from '@angular/core/rxjs-interop';
+import { Component, DestroyRef, effect, inject, input, signal } from '@angular/core';
+import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
 import {
-  FormsModule,
-  ReactiveFormsModule,
-  UntypedFormBuilder,
-  UntypedFormGroup,
-  Validators,
-} from '@angular/forms';
+  email,
+  form,
+  FormField,
+  pattern,
+  required,
+  submit,
+  validate,
+} from '@angular/forms/signals';
 import { ToastrService } from '@iqx-limited/ngx-toastr';
-import { UserI } from 'app/core/interfaces/user.interface';
-import { ParameterService } from 'app/core/services/parameter.service';
-import { UserService } from 'app/core/services/user.service';
-import { findParameter } from 'app/shared/utils/parameter.utils';
-import { CmsValidators } from 'app/shared/utils/validators.util';
-import { Subject, takeUntil } from 'rxjs';
+import { UserI } from '@core/interfaces';
+import { UserService, ParameterService } from '@core/services';
+import { CmsValidators, findParameter, hasErrorFormField } from '@shared/utils';
+import { firstValueFrom } from 'rxjs';
 
 @Component({
   selector: 'settings-security',
   templateUrl: './security.html',
-  imports: [FormsModule, ReactiveFormsModule, NgClass],
+  imports: [FormField, NgClass],
 })
-export class SettingsSecurityComponent implements OnInit {
+export class SettingsSecurityComponent {
   user = input.required<UserI>();
   edit = input.required<boolean>();
-
-  securityForm!: UntypedFormGroup;
-  validateFormControl = CmsValidators.validateFormControl;
-  getErrorMessage = CmsValidators.getErrorMessage;
-  evaluatePasswordSecurity = CmsValidators.evaluatePasswordSecurity;
 
   longPwd = signal<number>(6);
   mayusPwd = signal<boolean>(false);
@@ -40,62 +35,74 @@ export class SettingsSecurityComponent implements OnInit {
     strength: '',
   });
   passwordConfirmedVisible = signal<boolean>(false);
+  securityModel = signal<UserI>({
+    email: '',
+    firstname: '',
+    lastname: '',
+    roleId: 0,
+    password: '',
+    passwordConfirm: '',
+    twoFactorAuth: false,
+  });
+
+  securityForm = form(this.securityModel, (schemaPath) => {
+    required(schemaPath.email, { message: 'Dirección de correo electrónico es obligatorio.' });
+    email(schemaPath.email, { message: 'Dirección de correo electrónico no válido.' });
+    required(schemaPath.firstname, { message: 'Nombres es obligatorio.' });
+    required(schemaPath.lastname, { message: 'Apellidos es obligatorio.' });
+    pattern(schemaPath.password!, () => this.validatePassword(), {
+      message: 'La nueva contraseña no cumple con los requisitos de seguridad.',
+    });
+    validate(schemaPath.passwordConfirm!, (ctx) => {
+      const password = ctx.valueOf(schemaPath.password!);
+      const confirmation = ctx.value();
+      if (password !== confirmation) {
+        return {
+          kind: 'mismatch',
+          message: 'Las contraseñas no coinciden.',
+        };
+      }
+      return null;
+    });
+  });
+
   mayusPwdRegex: RegExp = new RegExp('(?=.*[A-Z])');
   specialPwdRegex: RegExp = new RegExp('(?=.*[@#$%^&+=])');
   numberPwdRegex: RegExp = new RegExp('(?=.*\\d)');
   longPwdRegex: RegExp = new RegExp('.{' + this.longPwd() + ',}$');
 
-  private _unsubscribeAll: Subject<any> = new Subject<any>();
-
   private _userService = inject(UserService);
   private _parameterService = inject(ParameterService);
-  private _formBuilder = inject(UntypedFormBuilder);
   private _toastrService = inject(ToastrService);
+  private readonly _destroyRef = inject(DestroyRef);
 
+  readonly evaluatePasswordSecurity = CmsValidators.evaluatePasswordSecurity;
+  readonly hasError = hasErrorFormField;
   readonly parameters = this._parameterService.publicParameters;
 
   /**
    * Constructor
    */
-  constructor() {}
+  constructor() {
+    effect(() => {
+      const user = this.user();
+      if (!user) return;
 
-  // -----------------------------------------------------------------------------------------------------
-  // @ Lifecycle hooks
-  // -----------------------------------------------------------------------------------------------------
-
-  /**
-   * On init
-   */
-  ngOnInit(): void {
-    // Create the form
-    this.securityForm = this._formBuilder.group(
-      {
-        firstname: ['', Validators.required],
-        lastname: ['', Validators.required],
-        email: ['', [Validators.required, Validators.email]],
-        twoFactorAuth: [true],
-        password: [''],
-        passwordConfirm: [''],
-      },
-      {
-        validators: CmsValidators.mustMatch('password', 'passwordConfirm'),
-      },
-    );
-
-    this.securityForm.valueChanges.subscribe((res) => {
-      this.evaluatePasswordSecurityResult.set(this.evaluatePasswordSecurity(res.password));
+      this.securityModel.set({ ...user, password: '', passwordConfirm: '' });
     });
-    this.longPwdRegex = new RegExp('.{' + this.longPwd() + ',}$');
 
-    this.securityForm.patchValue({ ...this.user() });
-    if (!this.edit()) this.securityForm.disable();
+    effect(() => {
+      this.parameters();
+      this.getParameters();
+      this.longPwdRegex = new RegExp('.{' + this.longPwd() + ',}$');
+    });
 
-    this.getParameters();
+    toObservable(this.securityModel)
+      .pipe(takeUntilDestroyed(this._destroyRef))
+      .subscribe((res) => {
+        this.evaluatePasswordSecurityResult.set(this.evaluatePasswordSecurity(res.password!));
+      });
   }
-
-  // -----------------------------------------------------------------------------------------------------
-  // @ Public methods
-  // -----------------------------------------------------------------------------------------------------
 
   /**
    * Change value of visibility of password
@@ -119,15 +126,6 @@ export class SettingsSecurityComponent implements OnInit {
     this.mayusPwd.set(findParameter('APP_PWD_MAYUS', this.parameters())?.value === 'true');
     this.specialPwd.set(findParameter('APP_PWD_SPECIAL', this.parameters())?.value === 'true');
     this.numberPwd.set(findParameter('APP_PWD_NUMBER', this.parameters())?.value === 'true');
-    this.setParameters();
-  }
-
-  /**
-   * Set value to parameters PWD
-   */
-  setParameters() {
-    this.securityForm.get('password')?.addValidators(Validators.pattern(this.validatePassword()));
-    this.securityForm.updateValueAndValidity();
   }
 
   /**
@@ -144,52 +142,43 @@ export class SettingsSecurityComponent implements OnInit {
   }
 
   /**
-   * Save action
+   * Update profile
+   * @param event
    */
-  save() {
-    // Return if the form is invalid
-    if (this.securityForm.invalid) {
-      this.securityForm.markAllAsTouched();
-      return;
-    }
+  async save(event: SubmitEvent): Promise<void> {
+    try {
+      event.preventDefault();
+      await submit(this.securityForm, async (field) => {
+        const value = { ...field().value() };
+        if (value.password == '') delete value.password;
+        delete value.passwordConfirm;
 
-    // Disable the form
-    this.securityForm.disable();
-
-    if (this.securityForm.value.password == '') {
-      delete this.securityForm.value.password;
-    }
-
-    delete this.securityForm.value.passwordConfirm;
-
-    this._userService
-      .update(this.user().id!, this.securityForm.value)
-      .pipe(takeUntil(this._unsubscribeAll))
-      .subscribe({
-        next: () => {
-          this.securityForm.enable();
-          this._toastrService.success(
-            'La configuración de seguridad se actualizó correctamente.',
-            'Configuración de seguridad actualizada',
-          );
-        },
-        error: (response) => {
-          this.securityForm.enable();
-          this.securityForm.reset();
-          this._toastrService.error(
-            response.error?.message || 'No fue posible actualizar la configuración de seguridad.',
-            'Error al actualizar',
-          );
-        },
+        await firstValueFrom(
+          this._userService
+            .update(this.securityModel().id!, value)
+            .pipe(takeUntilDestroyed(this._destroyRef)),
+        );
+        this._userService.getSession().subscribe();
+        this._toastrService.success(
+          'La configuración de seguridad se actualizó correctamente.',
+          'Configuración de seguridad actualizada',
+        );
       });
+    } catch (err: any) {
+      this._toastrService.error(
+        err.error?.message || 'No fue posible actualizar la configuración de seguridad.',
+        'Error al actualizar',
+      );
+    }
   }
 
   /**
    * Cancel action
    */
   cancel() {
-    this.securityForm.reset();
-    this.securityForm.patchValue({ ...this.user() });
+    const user = this.user();
+    if (!user) return;
+    this.securityModel.set({ ...user, password: '', passwordConfirm: '' });
   }
 
   /**

@@ -10,6 +10,7 @@ export interface UserI {
   twoFactorAuth?: boolean;
   roleId: number;
   password?: string;
+  passwordConfirm?: string;
 }
 
 export interface SessionUserI {

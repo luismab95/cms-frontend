@@ -55,10 +55,6 @@ export class AuthResetPassword {
   numberPwdRegex: RegExp = new RegExp('(?=.*\\d)');
   longPwdRegex: RegExp = new RegExp('.{' + this.longPwd() + ',}$');
 
-  validateFormControl = CmsValidators.validateFormControl;
-  getErrorMessage = CmsValidators.getErrorMessage;
-  evaluatePasswordSecurity = CmsValidators.evaluatePasswordSecurity;
-
   private readonly _parameterService = inject(ParameterService);
   private readonly _authService = inject(AuthService);
   private readonly _toastrService = inject(ToastrService);
@@ -66,6 +62,7 @@ export class AuthResetPassword {
   private readonly _activatedRoute = inject(ActivatedRoute);
   private readonly _destroyRef = inject(DestroyRef);
 
+  readonly evaluatePasswordSecurity = CmsValidators.evaluatePasswordSecurity;
   readonly hasError = hasErrorFormField;
   readonly parameters = this._parameterService.publicParameters;
 
