@@ -2,13 +2,13 @@ import { PaginationResquestI } from '@shared/interfaces';
 
 export interface FileI {
   id?: number;
-  name?: string;
+  name: string;
   description: string;
-  mimeType?: string;
-  size?: number;
-  filename?: string;
+  mimeType: string;
+  size: number;
+  filename: string;
   status?: boolean;
-  path?: string;
+  path: string;
   url?: string;
 }
 

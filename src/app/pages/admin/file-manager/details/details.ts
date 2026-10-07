@@ -2,244 +2,192 @@ import { ClipboardModule } from '@angular/cdk/clipboard';
 import { NgClass } from '@angular/common';
 import {
   Component,
-  OnDestroy,
-  OnInit,
   computed,
+  DestroyRef,
+  effect,
   inject,
   input,
   output,
   signal,
 } from '@angular/core';
-import { toSignal } from '@angular/core/rxjs-interop';
-import {
-  FormsModule,
-  ReactiveFormsModule,
-  UntypedFormBuilder,
-  UntypedFormGroup,
-  Validators,
-} from '@angular/forms';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { form, FormField, maxLength, required, submit } from '@angular/forms/signals';
 import { ToastrService } from '@iqx-limited/ngx-toastr';
-import { FileI, FileUploadI } from 'app/core/interfaces/file.interface';
-import { DialogService } from 'app/core/services/dialog.service';
-import { FileManagerService } from 'app/core/services/file-manager.service';
-import { FileService } from 'app/core/services/file.service';
-import { ParameterService } from 'app/core/services/parameter.service';
-import { ModalComponent } from 'app/shared/components/modal/modal';
-import { PermissionComponent } from 'app/shared/components/permission/permission';
-import { ResponseI } from 'app/shared/interfaces/response.interface';
-import { findParameter } from 'app/shared/utils/parameter.utils';
-import { PermissionCode, validAction } from 'app/shared/utils/permission.utils';
-import { CmsValidators } from 'app/shared/utils/validators.util';
-import { of, Subject, switchMap, takeUntil } from 'rxjs';
+import { FileI, FileUploadI } from '@core/interfaces';
+import { DialogService, FileService, FileManagerService, ParameterService } from '@core/services';
+import { ModalComponent, PermissionComponent } from '@shared/components';
+import { ResponseI } from '@shared/interfaces';
+import { PermissionCode, findParameter, hasErrorFormField, validAction } from '@shared/utils';
+import { firstValueFrom, of, switchMap } from 'rxjs';
 
 @Component({
   selector: 'files-details',
   templateUrl: './details.html',
-  imports: [
-    FormsModule,
-    ReactiveFormsModule,
-    ModalComponent,
-    PermissionComponent,
-    NgClass,
-    ClipboardModule,
-  ],
+  imports: [ModalComponent, PermissionComponent, NgClass, FormField, ClipboardModule],
 })
-export class FileManagerDetailsComponent implements OnInit, OnDestroy {
+export class FileManagerDetailsComponent {
   file = input<FileI | null>(null);
   closeModalEvent = output<boolean>();
 
   selectedFile = signal<File | null>(null);
-  urlStatics = signal<string>('');
+  fileModel = signal<FileI>({
+    name: '',
+    description: '',
+    path: '',
+    mimeType: '',
+    filename: '',
+    size: 0,
+  });
 
-  fileForm!: UntypedFormGroup;
-  validateFormControl = CmsValidators.validateFormControl;
-  getErrorMessage = CmsValidators.getErrorMessage;
-  permission = PermissionCode;
+  fileForm = form(this.fileModel, (schemaPath) => {
+    required(schemaPath.name!, { message: 'Nombre es obligatorio.' });
+    required(schemaPath.description, { message: 'Descripción es obligatorio.' });
+    maxLength(schemaPath.description, 255, {
+      message: 'Descripción no puede superar los 255 caracteres.',
+    });
+    required(schemaPath.path, { message: 'Imagen es obligatorio.' });
+  });
 
-  imageUrl = computed(() => {
+  private _fileManagerService = inject(FileManagerService);
+  private _parameterService = inject(ParameterService);
+  private _fileService = inject(FileService);
+  private _toastrService = inject(ToastrService);
+  private _dialogService = inject(DialogService);
+  private readonly _destroyRef = inject(DestroyRef);
+
+  readonly parameters = this._parameterService.publicParameters;
+  readonly permission = PermissionCode;
+  readonly hasError = hasErrorFormField;
+
+  readonly selectedFileMimeType = computed(() => this.selectedFile()!.type.toLowerCase());
+  readonly imageUrl = computed(() => {
     const file = this.selectedFile();
     return file ? URL.createObjectURL(file) : null;
   });
-
-  private _unsubscribeAll: Subject<any> = new Subject<any>();
-
-  private _toastrService = inject(ToastrService);
-  private _formBuilder = inject(UntypedFormBuilder);
-  private _dialogService = inject(DialogService);
-  private _fileService = inject(FileService);
-  private _fileManagerService = inject(FileManagerService);
-  private _parameterService = inject(ParameterService);
-
-  readonly parameters = this._parameterService.publicParameters;
-
-  readonly selectedFileMimeType = computed(() => this.selectedFile()!.type.toLowerCase());
+  readonly urlStatics = computed(() => {
+    return findParameter('APP_STATICS_URL', this.parameters())?.value!;
+  });
 
   /**
    * Constructor
    */
   constructor() {
-    this.urlStatics.set(findParameter('APP_STATICS_URL', this.parameters())?.value!);
+    effect(() => {
+      const file = this.file();
+      if (!file) return;
+
+      this.fileModel.set(file);
+    });
   }
 
-  // -----------------------------------------------------------------------------------------------------
-  // @ Lifecycle hooks
-  // -----------------------------------------------------------------------------------------------------
-
   /**
-   * On init
+   * Save event
+   * @param event
    */
-  ngOnInit(): void {
-    // Create the user form
-    this.fileForm = this._formBuilder.group({
-      name: ['', [Validators.required]],
-      description: ['', [Validators.required, Validators.maxLength(255)]],
-      path: ['', [Validators.required]],
-      mimeType: ['', [Validators.required]],
-      filename: ['', [Validators.required]],
-      size: ['', [Validators.required]],
-    });
-
-    if (this.file() !== null) {
-      this.fileForm.patchValue({ ...this.file() });
+  async save(event: SubmitEvent): Promise<void> {
+    if (this.file()) {
+      await this.update(event);
+    } else {
+      await this.create(event);
     }
   }
-
-  /**
-   * On destroy
-   */
-  ngOnDestroy(): void {
-    // Unsubscribe from all subscriptions
-    this._unsubscribeAll.next(null);
-    this._unsubscribeAll.complete();
-  }
-
-  // -----------------------------------------------------------------------------------------------------
-  // @ Public methods
-  // -----------------------------------------------------------------------------------------------------
 
   /**
    * Add file
+   * @param event
    */
-  new() {
-    // Return if the form is invalid
-    if (this.fileForm.invalid) {
-      this.fileForm.markAllAsTouched();
-      return;
-    }
+  async create(event: SubmitEvent): Promise<void> {
+    try {
+      event.preventDefault();
+      await submit(this.fileForm, async (field) => {
+        const file = this.selectedFile();
+        const upload$ =
+          file !== null
+            ? this._fileService.uploadFile(file, false)
+            : of<ResponseI<FileUploadI> | null>(null);
 
-    // Disable the form
-    this.fileForm.disable();
-
-    const file = this.selectedFile();
-
-    const upload$ =
-      file !== null
-        ? this._fileService.uploadFile(file, false)
-        : of<ResponseI<FileUploadI> | null>(null);
-
-    upload$
-      .pipe(
-        switchMap((response) => {
-          if (response?.message?.path) {
-            this.fileForm.get('path')?.setValue(response.message.path);
-            this.fileForm.get('filename')?.setValue(response.message.filename);
-            this.fileForm.get('size')?.setValue(response.message.size);
-            this.fileForm.get('mimeType')?.setValue(response.message.mimetype);
-          }
-          return this._fileManagerService.create(this.fileForm.value);
-        }),
-        takeUntil(this._unsubscribeAll),
-      )
-      .subscribe({
-        next: () => {
-          this.fileForm.enable();
-          this._toastrService.success('El archivo se creó correctamente.', 'Archivo creado');
-          this.closeModal(true);
-        },
-        error: (response) => {
-          this.fileForm.enable();
-          this._toastrService.error(
-            response.error?.message || 'No fue posible cargar el archivo.',
-            'Error al cargar',
-          );
-        },
+        await firstValueFrom(
+          upload$.pipe(
+            switchMap((response) => {
+              if (response?.message?.path) {
+                const { path, filename, size, mimetype } = response.message;
+                this.fileModel.update((prev) => ({ ...prev, path, filename, size, mimetype }));
+              }
+              return this._fileManagerService.create(field().value());
+            }),
+            takeUntilDestroyed(this._destroyRef),
+          ),
+        );
+        this._toastrService.success('El archivo se creó correctamente.', 'Archivo creado');
+        this.closeModal(true);
       });
+    } catch (err: any) {
+      this._toastrService.error(
+        err.error?.message || 'No fue posible cargar el archivo.',
+        'Error al cargar',
+      );
+    }
   }
 
   /**
    * Update file
+   * @param event
    */
-  update() {
-    // Return if the form is invalid
-    if (this.fileForm.invalid) {
-      this.fileForm.markAllAsTouched();
-      return;
-    }
-
-    // Disable the form
-    this.fileForm.disable();
-
-    this._fileManagerService
-      .update(this.file()?.id!, this.fileForm.value)
-      .pipe(takeUntil(this._unsubscribeAll))
-      .subscribe({
-        next: () => {
-          this.fileForm.enable();
-          // Set the alert
-          this._toastrService.success(
-            'El archivo se actualizó correctamente.',
-            'Archivo actualizado',
-          );
-          this.closeModal(true);
-        },
-        error: (response) => {
-          this.fileForm.enable();
-          this._toastrService.error(
-            response.error?.message || 'No fue posible actualizar el archivo.',
-            'Error al actualizar',
-          );
-        },
+  async update(event: SubmitEvent): Promise<void> {
+    try {
+      event.preventDefault();
+      await submit(this.fileForm, async (field) => {
+        await firstValueFrom(
+          this._fileManagerService
+            .update(this.fileModel().id!, field().value())
+            .pipe(takeUntilDestroyed(this._destroyRef)),
+        );
+        this._toastrService.success(
+          'El archivo se actualizó correctamente.',
+          'Archivo actualizado',
+        );
+        this.closeModal(true);
       });
+    } catch (err: any) {
+      this._toastrService.error(
+        err.error?.message || 'No fue posible actualizar el archivo.',
+        'Error al actualizar',
+      );
+    }
   }
 
   /**
-   * Delete file
+   * Toggle status file
    */
-  delete() {
+  async toggleStatus(): Promise<void> {
     const file = this.file();
     if (file === null) return;
 
-    // Disable the form
-    this.fileForm.disable();
-
-    this._fileManagerService
-      .delete(this.file()?.id!)
-      .pipe(takeUntil(this._unsubscribeAll))
-      .subscribe({
-        next: () => {
-          // Re-enable the form
-          this.fileForm.enable();
-          this.closeModal(true);
-          this._toastrService.success(
-            `El archivo se ${file.status ? 'inactivo' : 'activo'}  correctamente.`,
-            `Archivo  ${file.status ? 'inactivo' : 'activo'}`,
-          );
-        },
-        error: (response) => {
-          this.fileForm.enable();
-          this._toastrService.error(
-            response.error?.message ||
-              `No fue posible ${file.status ? 'inactivar' : 'activar'} el archivo.`,
-            `Error al ${file.status ? 'inactivar' : 'activar'}`,
-          );
-        },
+    try {
+      await submit(this.fileForm, async () => {
+        await firstValueFrom(
+          this._fileManagerService
+            .delete(this.fileModel().id!)
+            .pipe(takeUntilDestroyed(this._destroyRef)),
+        );
+        this.closeModal(true);
+        this._toastrService.success(
+          `El archivo se ${file.status ? 'inactivo' : 'activo'}  correctamente.`,
+          `Archivo  ${file.status ? 'inactivo' : 'activo'}`,
+        );
       });
+    } catch (err: any) {
+      this._toastrService.error(
+        err.error?.message || `No fue posible ${file.status ? 'inactivar' : 'activar'} el archivo.`,
+        `Error al ${file.status ? 'inactivar' : 'activar'}`,
+      );
+    }
   }
 
   /**
    * Toggle the file
    */
-  toggle(): void {
+  toggleFile(): void {
     const file = this.file();
     if (file === null) return;
 
@@ -250,19 +198,19 @@ export class FileManagerDetailsComponent implements OnInit, OnDestroy {
       confirmButton: `Si, ${file.status ? 'Inactivar' : 'Activar'}`,
       cancelButton: 'Cancelar',
     });
-
     this._dialogService.toggleDialog();
-
-    // Subscribe to the confirmation dialog closed action
-    this._dialogService.actionClick$.pipe(takeUntil(this._unsubscribeAll)).subscribe((result) => {
-      if (result) {
-        this.delete();
-      }
-    });
+    this._dialogService.actionClick$
+      .pipe(takeUntilDestroyed(this._destroyRef))
+      .subscribe((result) => {
+        if (result) {
+          this.toggleStatus();
+        }
+      });
   }
 
   /**
    * Valid render permission
+   * @returns
    */
   validPermission(code: string) {
     return validAction(code);
@@ -270,6 +218,7 @@ export class FileManagerDetailsComponent implements OnInit, OnDestroy {
 
   /**
    * Close Modal
+   * @param load
    */
   closeModal(load: boolean) {
     this.closeModalEvent.emit(load);
@@ -282,11 +231,15 @@ export class FileManagerDetailsComponent implements OnInit, OnDestroy {
   setFile(event: any) {
     const file: File = event.target.files[0];
     if (!file) return;
+
     this.selectedFile.set(file);
-    this.fileForm.get('path')?.setValue('preview');
-    this.fileForm.get('filename')?.setValue('preview');
-    this.fileForm.get('size')?.setValue('preview');
-    this.fileForm.get('mimeType')?.setValue('preview');
+    this.fileModel.update((prev) => ({
+      ...prev,
+      path: 'preview',
+      filename: 'preview',
+      size: 0,
+      mimeType: 'preview',
+    }));
   }
 
   /**
@@ -301,20 +254,23 @@ export class FileManagerDetailsComponent implements OnInit, OnDestroy {
    * Download file
    */
   downloadFile() {
-    this._fileService.downloadFile(this.file()?.url!).subscribe({
-      next: (response) => {
-        const link = document.createElement('a');
-        link.href = window.URL.createObjectURL(response);
-        link.download = this.file()?.filename!;
-        link.click();
-      },
-      error: (response) => {
-        this._toastrService.error(
-          response.error?.message || `No fue posible descargar el archivo.`,
-          'Error al descargar',
-        );
-      },
-    });
+    this._fileService
+      .downloadFile(this.file()?.url!)
+      .pipe(takeUntilDestroyed(this._destroyRef))
+      .subscribe({
+        next: (response) => {
+          const link = document.createElement('a');
+          link.href = window.URL.createObjectURL(response);
+          link.download = this.file()?.filename!;
+          link.click();
+        },
+        error: (response) => {
+          this._toastrService.error(
+            response.error?.message || `No fue posible descargar el archivo.`,
+            'Error al descargar',
+          );
+        },
+      });
   }
 
   /**

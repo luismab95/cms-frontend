@@ -191,6 +191,7 @@ export class UsersDetailsComponent {
 
   /**
    * Close Modal
+   * @param load
    */
   closeModal(load: boolean) {
     this.closeModalEvent.emit(load);
