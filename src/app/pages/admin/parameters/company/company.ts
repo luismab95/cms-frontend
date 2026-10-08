@@ -1,96 +1,99 @@
-import { Component, OnInit, inject, input, isDevMode, output } from '@angular/core';
 import {
-  FormsModule,
-  ReactiveFormsModule,
-  UntypedFormBuilder,
-  UntypedFormGroup,
-  Validators,
-} from '@angular/forms';
+  Component,
+  DestroyRef,
+  effect,
+  inject,
+  input,
+  isDevMode,
+  output,
+  signal,
+} from '@angular/core';
+import { NgClass } from '@angular/common';
+import {
+  email,
+  form,
+  FormField,
+  maxLength,
+  required,
+  submit,
+  validate,
+} from '@angular/forms/signals';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ToastrService } from '@iqx-limited/ngx-toastr';
-import { ParameterI } from 'app/core/interfaces/parameter.interface';
-import { ParameterService } from 'app/core/services/parameter.service';
-import { findParameter } from 'app/shared/utils/parameter.utils';
-import { CmsValidators } from 'app/shared/utils/validators.util';
-import { Subject, takeUntil } from 'rxjs';
+import { CompanyParameterFormI, ParameterI } from '@core/interfaces';
+import { ParameterService } from '@core/services';
+import { findParameter, hasErrorFormField } from '@shared/utils';
+import { firstValueFrom } from 'rxjs';
 
 @Component({
   selector: 'parameters-company',
   templateUrl: './company.html',
-  imports: [FormsModule, ReactiveFormsModule],
+  imports: [FormField, NgClass],
 })
-export class ParametersCompanyComponent implements OnInit {
+export class ParametersCompanyComponent {
   parameters = input.required<ParameterI[]>();
   edit = input.required<boolean>();
   refreshParameters = output<boolean>();
 
-  companyForm!: UntypedFormGroup;
-  validateFormControl = CmsValidators.validateFormControl;
-  getErrorMessage = CmsValidators.getErrorMessage;
+  companyModel = signal<CompanyParameterFormI>({
+    name: '',
+    country: '',
+    description: '',
+    email: '',
+    urlStatics: '',
+    phone: '',
+    website: '',
+  });
 
-  private _unsubscribeAll: Subject<any> = new Subject<any>();
+  companyForm = form(this.companyModel, (schemaPath) => {
+    required(schemaPath.name, { message: 'Nombre es obligatorio.' });
+    required(schemaPath.country, { message: 'País es obligatorio.' });
+    required(schemaPath.description, { message: 'Descripción es obligatorio.' });
+    maxLength(schemaPath.description, 255, {
+      message: 'Descripción no puede superar los 255 caracteres.',
+    });
+    required(schemaPath.email, { message: 'Dirección de correo electrónico es obligatorio.' });
+    email(schemaPath.email, { message: 'Dirección de correo electrónico no válido.' });
+    required(schemaPath.urlStatics, { message: 'Dirección de estáticos es obligatorio.' });
+    required(schemaPath.phone, { message: 'Teléfono es obligatorio.' });
+    required(schemaPath.website, { message: 'Sitio web es obligatorio.' });
+    validate(schemaPath.website, ({ value }) => {
+      if (isDevMode()) return;
 
-  private _parameterService = inject(ParameterService);
+      const regex = /^(https?:\/\/)?([\da-z.-]+)\.([a-z.]{2,6})([/\w .-]*)*\/?$/;
+      if (!regex.test(value())) {
+        return {
+          kind: 'pattern',
+          message: 'Sitio web no válido',
+        };
+      }
+      return;
+    });
+  });
+
+  private readonly _parameterService = inject(ParameterService);
   private readonly _toastrService = inject(ToastrService);
-  private readonly _formBuilder = inject(UntypedFormBuilder);
+  private readonly _destroyRef = inject(DestroyRef);
+
+  readonly hasError = hasErrorFormField;
 
   /**
    * Constructor
    */
-  constructor() {}
-
-  // -----------------------------------------------------------------------------------------------------
-  // @ Lifecycle hooks
-  // -----------------------------------------------------------------------------------------------------
-
-  /**
-   * On init
-   */
-  ngOnInit(): void {
-    const websitePatternValidator = Validators.pattern(
-      /^(https?:\/\/)?([\da-z.-]+)\.([a-z.]{2,6})([/\w .-]*)*\/?$/,
-    );
-
-    // Create the form
-    this.companyForm = this._formBuilder.group({
-      name: ['', Validators.required],
-      description: ['', Validators.required],
-      urlStatics: ['', [Validators.required]],
-      website: ['', [Validators.required, websitePatternValidator]],
-      email: ['', [Validators.required, Validators.email]],
-      phone: ['', Validators.required],
-      country: ['', Validators.required],
+  constructor() {
+    effect(() => {
+      this.parameters();
+      const companyParameters = this.getCompanyParameters();
+      this.companyModel.set(companyParameters);
     });
-
-    if (isDevMode()) {
-      this.companyForm.controls['website'].removeValidators(websitePatternValidator);
-    }
-
-    this.companyForm.patchValue({ ...this.getCompanyParameters() });
-    if (!this.edit()) this.companyForm.disable();
   }
-
-  /**
-   * On destroy
-   */
-  ngOnDestroy(): void {
-    // Unsubscribe from all subscriptions
-    this._unsubscribeAll.next(null);
-    this._unsubscribeAll.complete();
-  }
-
-  // -----------------------------------------------------------------------------------------------------
-  // @ Public methods
-  // -----------------------------------------------------------------------------------------------------
 
   /**
    * Get parameter
    * @param code
    */
-  getParameter(code: string) {    
-    if (this.parameters().length > 0) {
-      return findParameter(code, this.parameters())!.value;
-    }
-
+  getParameter(code: string) {
+    if (this.parameters().length > 0) return findParameter(code, this.parameters())!.value;
     return '';
   }
 
@@ -98,7 +101,7 @@ export class ParametersCompanyComponent implements OnInit {
    * Get parameters
    * @returns
    */
-  getCompanyParameters() {
+  getCompanyParameters(): CompanyParameterFormI {
     return {
       name: this.getParameter('COMPANY_NAME'),
       description: this.getParameter('COMPANY_DESCRIPTION'),
@@ -111,38 +114,30 @@ export class ParametersCompanyComponent implements OnInit {
   }
 
   /**
-   * Save action
+   * Update company parameters
+   * @param event
    */
-  save() {
-    // Return if the form is invalid
-    if (this.companyForm.invalid) {
-      this.companyForm.markAllAsTouched();
-      return;
-    }
-
-    // Disable the form
-    this.companyForm.disable();
-
-    this._parameterService
-      .updateMultiple(this.getValueCompanyForm())
-      .pipe(takeUntil(this._unsubscribeAll))
-      .subscribe({
-        next: () => {
-          this.companyForm.enable();
-          this._toastrService.success(
-            'Los parámetros se actualizaron correctamente.',
-            'Parámetros actualizados',
-          );
-          this.refreshParameters.emit(true);
-        },
-        error: (response) => {
-          this.companyForm.enable();
-          this._toastrService.error(
-            response.error?.message || 'No fue posible actualizar los parámetros.',
-            'Error al actualizar',
-          );
-        },
+  async save(event: SubmitEvent): Promise<void> {
+    try {
+      event.preventDefault();
+      await submit(this.companyForm, async () => {
+        await firstValueFrom(
+          this._parameterService
+            .updateMultiple(this.getValueCompanyForm())
+            .pipe(takeUntilDestroyed(this._destroyRef)),
+        );
+        this._toastrService.success(
+          'Los parámetros se actualizaron correctamente.',
+          'Parámetros actualizados',
+        );
+        this.refreshParameters.emit(true);
       });
+    } catch (err: any) {
+      this._toastrService.error(
+        err.error?.message || 'No fue posible actualizar los parámetros.',
+        'Error al actualizar',
+      );
+    }
   }
 
   /**
@@ -163,13 +158,14 @@ export class ParametersCompanyComponent implements OnInit {
   /**
    * Return parameter
    * @param code
-   * @param value
+   * @param key
    * @returns
    */
-  getObjectParameter(code: string, value: string): ParameterI {
+  getObjectParameter(code: string, key: keyof CompanyParameterFormI): ParameterI {
+    const companyModel = this.companyModel();
     return {
       code,
-      value: this.companyForm.get(value)?.value,
+      value: companyModel[key],
     };
   }
 
@@ -177,7 +173,7 @@ export class ParametersCompanyComponent implements OnInit {
    * Cancel action
    */
   cancel() {
-    this.companyForm.reset();
-    this.companyForm.patchValue({ ...this.getCompanyParameters() });
+    const parameters = this.getCompanyParameters();
+    this.companyModel.set(parameters);
   }
 }

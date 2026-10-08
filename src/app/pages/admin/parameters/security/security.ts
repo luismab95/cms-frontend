@@ -1,91 +1,91 @@
-import { Component, OnInit, inject, input, output } from '@angular/core';
-import {
-  FormsModule,
-  ReactiveFormsModule,
-  UntypedFormBuilder,
-  UntypedFormGroup,
-  Validators,
-} from '@angular/forms';
-import { ToastrService } from '@iqx-limited/ngx-toastr';
+import { Component, DestroyRef, effect, inject, input, output, signal } from '@angular/core';
+import { NgClass } from '@angular/common';
+import { form, FormField, pattern, required, submit } from '@angular/forms/signals';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { NgLabelTemplateDirective, NgSelectComponent } from '@ng-select/ng-select';
-import { ParameterI } from 'app/core/interfaces/parameter.interface';
-import { ParameterService } from 'app/core/services/parameter.service';
-import { findParameter } from 'app/shared/utils/parameter.utils';
-import { CmsValidators } from 'app/shared/utils/validators.util';
-import { Subject, takeUntil } from 'rxjs';
+import { ToastrService } from '@iqx-limited/ngx-toastr';
+import { ParameterI, SecurityParameterFormI } from '@core/interfaces';
+import { ParameterService } from '@core/services';
+import { findParameter, hasErrorFormField } from '@shared/utils';
+import { firstValueFrom } from 'rxjs';
 
 @Component({
   selector: 'parameters-security',
   templateUrl: './security.html',
-  imports: [FormsModule, ReactiveFormsModule, NgSelectComponent, NgLabelTemplateDirective],
+  imports: [NgSelectComponent, NgLabelTemplateDirective, FormField, NgClass],
 })
-export class ParametersSecurityComponent implements OnInit {
+export class ParametersSecurityComponent {
   parameters = input.required<ParameterI[]>();
   edit = input.required<boolean>();
   refreshParameters = output<boolean>();
 
-  securityForm!: UntypedFormGroup;
-  validateFormControl = CmsValidators.validateFormControl;
-  getErrorMessage = CmsValidators.getErrorMessage;
+  securityModel = signal<SecurityParameterFormI>({
+    inactivity: '',
+    attemps: '',
+    pwdLong: '',
+    optTime: '',
+    otpLong: '',
+    otpType: '',
+    pwdNumber: false,
+    pwdMayus: false,
+    pwdSpecial: false,
+  });
 
-  private _unsubscribeAll: Subject<any> = new Subject<any>();
+  securityForm = form(this.securityModel, (schemaPath) => {
+    required(schemaPath.inactivity, {
+      message: 'Tiempo cierre de sesión por inactividad es obligatorio.',
+    });
+    required(schemaPath.attemps, {
+      message: 'Números de intentos para inicio de sesión es obligatorio.',
+    });
+    required(schemaPath.pwdLong, { message: 'Longitud mínima de contraseñas es obligatorio.' });
+    required(schemaPath.optTime, {
+      message: 'Tiempo para validar reenvío de código OTP es obligatorio.',
+    });
+    required(schemaPath.otpLong, {
+      message: 'Longitud de código de verificación OTP es obligatorio.',
+    });
+    required(schemaPath.otpType, { message: 'Tipo de caracteres es obligatorio.' });
+    pattern(schemaPath.inactivity, /^-?[0-9]+$/, {
+      message: 'Tiempo cierre de sesión por inactividad no válido.',
+    });
+    pattern(schemaPath.attemps, /^-?[0-9]+$/, {
+      message: 'Números de intentos para inicio de sesión no válido.',
+    });
+    pattern(schemaPath.pwdLong, /^-?[0-9]+$/, {
+      message: 'Longitud mínima de contraseñas no válido.',
+    });
+    pattern(schemaPath.optTime, /^-?[0-9]+$/, {
+      message: 'Tiempo para validar reenvío de código OTP no válido.',
+    });
+    pattern(schemaPath.otpLong, /^-?[0-9]+$/, {
+      message: 'Longitud de código de verificación OTP no válido.',
+    });
+  });
 
-  private _parameterService = inject(ParameterService);
+  private readonly _parameterService = inject(ParameterService);
   private readonly _toastrService = inject(ToastrService);
-  private readonly _formBuilder = inject(UntypedFormBuilder);
+  private readonly _destroyRef = inject(DestroyRef);
+
+  readonly hasError = hasErrorFormField;
 
   /**
    * Constructor
    */
-  constructor() {}
-
-  // -----------------------------------------------------------------------------------------------------
-  // @ Lifecycle hooks
-  // -----------------------------------------------------------------------------------------------------
-
-  /**
-   * On init
-   */
-  ngOnInit(): void {
-    // Create the form
-    this.securityForm = this._formBuilder.group({
-      inactivity: ['', [Validators.required, Validators.pattern('^-?[0-9]+$')]],
-      attemps: ['', [Validators.required, Validators.pattern('^-?[0-9]+$')]],
-      pwdLong: ['', [Validators.required, Validators.pattern('^-?[0-9]+$')]],
-      pwdNumber: [],
-      pwdMayus: [],
-      pwdSpecial: [],
-      optTime: ['', [Validators.required, Validators.pattern('^-?[0-9]+$')]],
-      otpLong: ['', [Validators.required, Validators.pattern('^-?[0-9]+$')]],
-      otpType: ['', Validators.required],
+  constructor() {
+    effect(() => {
+      this.parameters();
+      const securityParameters = this.getSecurityParameters();
+      this.securityModel.set(securityParameters);
     });
-
-    this.securityForm.patchValue({ ...this.getSecurityParameters() });
-    if (!this.edit()) this.securityForm.disable();
   }
-
-  /**
-   * On destroy
-   */
-  ngOnDestroy(): void {
-    // Unsubscribe from all subscriptions
-    this._unsubscribeAll.next(null);
-    this._unsubscribeAll.complete();
-  }
-
-  // -----------------------------------------------------------------------------------------------------
-  // @ Public methods
-  // -----------------------------------------------------------------------------------------------------
 
   /**
    * Get parameter
    * @param code
    */
   getParameter(code: string) {
-    if (this.parameters().length > 0) {
-      return findParameter(code, this.parameters())!.value;
-    }
-
+    if (this.parameters().length > 0) return findParameter(code, this.parameters())!.value;
     return '';
   }
 
@@ -111,43 +111,35 @@ export class ParametersSecurityComponent implements OnInit {
    * Cancel action
    */
   cancel() {
-    this.securityForm.reset();
-    this.securityForm.patchValue({ ...this.getSecurityParameters() });
+    const securityParameters = this.getSecurityParameters();
+    this.securityModel.set(securityParameters);
   }
 
   /**
-   * Save action
+   * Update email parameters
+   * @param event
    */
-  save() {
-    // Return if the form is invalid
-    if (this.securityForm.invalid) {
-      this.securityForm.markAllAsTouched();
-      return;
-    }
-
-    // Disable the form
-    this.securityForm.disable();
-
-    this._parameterService
-      .updateMultiple(this.getValueSecurityForm())
-      .pipe(takeUntil(this._unsubscribeAll))
-      .subscribe({
-        next: () => {
-          this.securityForm.enable();
-          this._toastrService.success(
-            'Los parámetros se actualizaron correctamente.',
-            'Parámetros actualizados',
-          );
-          this.refreshParameters.emit(true);
-        },
-        error: (response) => {
-          this.securityForm.enable();
-          this._toastrService.error(
-            response.error?.message || 'No fue posible actualizar los parámetros.',
-            'Error al actualizar',
-          );
-        },
+  async save(event: SubmitEvent): Promise<void> {
+    try {
+      event.preventDefault();
+      await submit(this.securityForm, async () => {
+        await firstValueFrom(
+          this._parameterService
+            .updateMultiple(this.getValueSecurityForm())
+            .pipe(takeUntilDestroyed(this._destroyRef)),
+        );
+        this._toastrService.success(
+          'Los parámetros se actualizaron correctamente.',
+          'Parámetros actualizados',
+        );
+        this.refreshParameters.emit(true);
       });
+    } catch (err: any) {
+      this._toastrService.error(
+        err.error?.message || 'No fue posible actualizar los parámetros.',
+        'Error al actualizar',
+      );
+    }
   }
 
   /**
@@ -170,13 +162,14 @@ export class ParametersSecurityComponent implements OnInit {
   /**
    * Return parameter
    * @param code
-   * @param value
+   * @param key
    * @returns
    */
-  getObjectParameter(code: string, value: string): ParameterI {
+  getObjectParameter(code: string, key: keyof SecurityParameterFormI): ParameterI {
+    const securityModel = this.securityModel();
     return {
       code,
-      value: String(this.securityForm.get(value)?.value),
+      value: securityModel[key].toString(),
     };
   }
 }

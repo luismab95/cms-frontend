@@ -1,16 +1,13 @@
-import { Component, OnDestroy, OnInit, inject, signal } from '@angular/core';
-import { toSignal } from '@angular/core/rxjs-interop';
-import { PermissionComponent } from 'app/shared/components/permission/permission';
-import { PermissionCode, validAction } from 'app/shared/utils/permission.utils';
+import { Component, DestroyRef, inject, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { ParameterService } from '@core/services';
+import { DrawerComponent, PermissionComponent, TitleHeaderComponent } from '@shared/components';
+import { DrawerI } from '@shared/interfaces';
+import { PermissionCode, validAction } from '@shared/utils';
 import { ParametersCompanyComponent } from './company/company';
-import { DrawerI } from 'app/shared/interfaces/drawer.interface';
-import { ParameterService } from 'app/core/services/parameter.service';
-import { DrawerComponent } from 'app/shared/components/drawer/drawer';
-import { TitleHeaderComponent } from 'app/shared/components/title-header/title-header';
 import { ParametersEmailComponent } from './email/email';
-import { ParametersSecurityComponent } from './security/security';
 import { ParametersLogosComponent } from './logos/logos';
-import { Subject, takeUntil } from 'rxjs';
+import { ParametersSecurityComponent } from './security/security';
 
 @Component({
   selector: 'parameters',
@@ -25,34 +22,20 @@ import { Subject, takeUntil } from 'rxjs';
     TitleHeaderComponent,
   ],
 })
-export class Parameters implements OnInit, OnDestroy {
-  permission = PermissionCode;
+export class Parameters {
   panels = signal<DrawerI[]>([]);
   selectedPanel = signal<string>('');
 
-  private _unsubscribeAll: Subject<any> = new Subject<any>();
-
   private readonly _parameterService = inject(ParameterService);
+  private readonly _destroyRef = inject(DestroyRef);
 
+  readonly permission = PermissionCode;
   readonly parameters = this._parameterService.parameters;
 
   /**
    * Constructor
    */
   constructor() {
-    //Get parameters
-    this.getAllParameters();
-  }
-
-  // -----------------------------------------------------------------------------------------------------
-  // @ Lifecycle hooks
-  // -----------------------------------------------------------------------------------------------------
-
-  /**
-   * On init
-   */
-  ngOnInit(): void {
-    // Setup available panels
     this.panels.set([
       {
         id: 'company',
@@ -81,26 +64,14 @@ export class Parameters implements OnInit, OnDestroy {
     ]);
 
     this.selectedPanel.set(this.panels()[0].id);
+    this.getAllParameters();
   }
-
-  /**
-   * On destroy
-   */
-  ngOnDestroy(): void {
-    // Unsubscribe from all subscriptions
-    this._unsubscribeAll.next(null);
-    this._unsubscribeAll.complete();
-  }
-
-  // -----------------------------------------------------------------------------------------------------
-  // @ Public methods
-  // -----------------------------------------------------------------------------------------------------
 
   /**
    * Get parameters
    */
   getAllParameters() {
-    this._parameterService.getAll().pipe(takeUntil(this._unsubscribeAll)).subscribe();
+    this._parameterService.getAll().pipe(takeUntilDestroyed(this._destroyRef)).subscribe();
   }
 
   /**

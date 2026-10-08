@@ -142,7 +142,7 @@ export class SettingsSecurityComponent {
   }
 
   /**
-   * Update profile
+   * Update security profile
    * @param event
    */
   async save(event: SubmitEvent): Promise<void> {

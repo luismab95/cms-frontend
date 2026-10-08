@@ -1,95 +1,70 @@
-import { Component, OnInit, inject, input, output, signal } from '@angular/core';
-import {
-  FormControl,
-  FormsModule,
-  ReactiveFormsModule,
-  UntypedFormBuilder,
-  UntypedFormGroup,
-  Validators,
-} from '@angular/forms';
+import { Component, DestroyRef, effect, inject, input, output, signal } from '@angular/core';
+import { NgClass } from '@angular/common';
+import { email, form, FormField, pattern, required, submit } from '@angular/forms/signals';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ToastrService } from '@iqx-limited/ngx-toastr';
-import { ParameterI } from 'app/core/interfaces/parameter.interface';
-import { ParameterService } from 'app/core/services/parameter.service';
-import { findParameter } from 'app/shared/utils/parameter.utils';
-import { CmsValidators } from 'app/shared/utils/validators.util';
-import { Subject, takeUntil } from 'rxjs';
+import { EmailParameterFormI, ParameterI } from '@core/interfaces';
+import { ParameterService } from '@core/services';
+import { hasErrorFormField, findParameter } from '@shared/utils';
+import { firstValueFrom } from 'rxjs';
 
 @Component({
   selector: 'parameters-email',
   templateUrl: './email.html',
-  imports: [FormsModule, ReactiveFormsModule],
+  imports: [FormField, NgClass],
 })
-export class ParametersEmailComponent implements OnInit {
+export class ParametersEmailComponent {
   parameters = input.required<ParameterI[]>();
   edit = input.required<boolean>();
   refreshParameters = output<boolean>();
 
   passwordVisible = signal<boolean>(false);
+  emailModel = signal<EmailParameterFormI>({
+    host: '',
+    port: '',
+    email: '',
+    username: '',
+    password: '',
+    testEmail: '',
+    secure: false,
+  });
 
-  emailForm!: UntypedFormGroup;
-  emailTestControl!: FormControl;
-  validateFormControl = CmsValidators.validateFormControl;
-  validateOnlyFormControl = CmsValidators.validateOnlyFormControl;
-  getErrorMessage = CmsValidators.getErrorMessage;
-  getErrorMessageFormControl = CmsValidators.getErrorMessageFormControl;
-
-  private _unsubscribeAll: Subject<any> = new Subject<any>();
+  emailForm = form(this.emailModel, (schemaPath) => {
+    required(schemaPath.email, { message: 'Dirección de correo para envíos es obligatorio.' });
+    email(schemaPath.email, { message: 'Dirección de correo para envíos no válido.' });
+    email(schemaPath.testEmail, {
+      message: 'Dirección de correo electrónico para prueba no válido.',
+    });
+    required(schemaPath.host, { message: 'Host es obligatorio.' });
+    required(schemaPath.port, { message: 'Puerto es obligatorio.' });
+    pattern(schemaPath.port, /^-?[0-9]+$/, { message: 'Puerto no valido.' });
+    required(schemaPath.username, { message: 'Usuario es obligatorio.' });
+    required(schemaPath.password, { message: 'Contraseña es obligatorio.' });
+  });
 
   private _parameterService = inject(ParameterService);
   private readonly _toastrService = inject(ToastrService);
-  private readonly _formBuilder = inject(UntypedFormBuilder);
+  private readonly _destroyRef = inject(DestroyRef);
+
+  readonly hasError = hasErrorFormField;
 
   /**
    * Constructor
    */
-  constructor() {}
-
-  // -----------------------------------------------------------------------------------------------------
-  // @ Lifecycle hooks
-  // -----------------------------------------------------------------------------------------------------
-
-  /**
-   * On init
-   */
-  ngOnInit(): void {
-    // Create the form
-    this.emailForm = this._formBuilder.group({
-      host: ['', Validators.required],
-      port: ['', [Validators.required, Validators.pattern('^-?[0-9]+$')]],
-      username: ['', Validators.required],
-      password: ['', Validators.required],
-      email: ['', [Validators.email, Validators.required]],
-      secure: [''],
+  constructor() {
+    effect(() => {
+      this.parameters();
+      const emailParameters = this.getEmailParameters();
+      this.emailModel.set(emailParameters);
     });
-
-    this.emailTestControl = new FormControl('', [Validators.email, Validators.required]);
-
-    this.emailForm.patchValue({ ...this.getEmailParameters() });
-    if (!this.edit()) this.emailForm.disable();
   }
-
-  /**
-   * On destroy
-   */
-  ngOnDestroy(): void {
-    // Unsubscribe from all subscriptions
-    this._unsubscribeAll.next(null);
-    this._unsubscribeAll.complete();
-  }
-
-  // -----------------------------------------------------------------------------------------------------
-  // @ Public methods
-  // -----------------------------------------------------------------------------------------------------
 
   /**
    * Get parameter
    * @param code
    */
   getParameter(code: string) {
-    if (this.parameters().length > 0) {
-      return findParameter(code, this.parameters())!.value;
-    }
-
+    if (this.parameters().length > 0) return findParameter(code, this.parameters())!.value;
     return '';
   }
 
@@ -97,7 +72,7 @@ export class ParametersEmailComponent implements OnInit {
    * Get parameters
    * @returns
    */
-  getEmailParameters() {
+  getEmailParameters(): EmailParameterFormI {
     return {
       host: this.getParameter('MAILER_HOST'),
       port: this.getParameter('MAILER_PORT'),
@@ -105,6 +80,7 @@ export class ParametersEmailComponent implements OnInit {
       password: this.getParameter('MAILER_PASSWORD'),
       email: this.getParameter('MAILER_FROM'),
       secure: this.getParameter('MAILER_SECURE') === 'true',
+      testEmail: '',
     };
   }
 
@@ -112,78 +88,60 @@ export class ParametersEmailComponent implements OnInit {
    * Cancel action
    */
   cancel() {
-    this.emailForm.reset();
-    this.emailForm.patchValue({ ...this.getEmailParameters() });
+    const emailParameters = this.getEmailParameters();
+    this.emailModel.set(emailParameters);
   }
 
   /**
-   * Save action
+   * Update email parameters
+   * @param event
    */
-  save() {
-    // Return if the form is invalid
-    if (this.emailForm.invalid) {
-      this.emailForm.markAllAsTouched();
-      return;
-    }
-
-    // Disable the form
-    this.emailForm.disable();
-
-    this._parameterService
-      .updateMultiple(this.getValueEmailForm())
-      .pipe(takeUntil(this._unsubscribeAll))
-      .subscribe({
-        next: () => {
-          this.emailForm.enable();
-          this._toastrService.success(
-            'Los parámetros se actualizaron correctamente.',
-            'Parámetros actualizados',
-          );
-          this.refreshParameters.emit(true);
-        },
-        error: (response) => {
-          this.emailForm.enable();
-          this._toastrService.error(
-            response.error?.message || 'No fue posible actualizar los parámetros.',
-            'Error al actualizar',
-          );
-        },
+  async save(event: SubmitEvent): Promise<void> {
+    try {
+      event.preventDefault();
+      await submit(this.emailForm, async () => {
+        await firstValueFrom(
+          this._parameterService
+            .updateMultiple(this.getValueEmailForm())
+            .pipe(takeUntilDestroyed(this._destroyRef)),
+        );
+        this._toastrService.success(
+          'Los parámetros se actualizaron correctamente.',
+          'Parámetros actualizados',
+        );
+        this.refreshParameters.emit(true);
       });
+    } catch (err: any) {
+      this._toastrService.error(
+        err.error?.message || 'No fue posible actualizar los parámetros.',
+        'Error al actualizar',
+      );
+    }
   }
 
   /**
    * Test email
-   * @returns
    */
-  testEmail() {
-    // Return if the form is invalid
-    if (this.emailTestControl.invalid) {
-      this.emailTestControl.markAllAsTouched();
-      return;
-    }
-
-    // Disable the form
-    this.emailTestControl.disable();
-
-    this._parameterService
-      .testEmail(this.emailTestControl.value)
-      .pipe(takeUntil(this._unsubscribeAll))
-      .subscribe({
-        next: () => {
-          this.emailTestControl.enable();
-          this._toastrService.success(
-            'Se ha enviado el correo electrónico, revisa tu bandeja de entrada o spam.',
-            'Correo enviado',
-          );
-        },
-        error: (response) => {
-          this.emailTestControl.enable();
-          this._toastrService.error(
-            response.error?.message || 'No fue posible enviar el correo electrónico.',
-            'Error enviar correo',
-          );
-        },
+  async testEmail(): Promise<void> {
+    try {
+      await submit(this.emailForm, async (field) => {
+        await firstValueFrom(
+          this._parameterService
+            .testEmail(field().value().testEmail)
+            .pipe(takeUntilDestroyed(this._destroyRef)),
+        );
+        this.emailModel.update((prev) => ({ ...prev, testEmail: '' }));
+        this._toastrService.success(
+          'Se ha enviado el correo electrónico, revisa tu bandeja de entrada o spam.',
+          'Correo enviado',
+        );
       });
+    } catch (err: any) {
+      this._toastrService.error(
+        err.error?.message || 'No fue posible enviar el correo electrónico.',
+        'Error enviar correo',
+      );
+    }
   }
 
   /**
@@ -203,13 +161,14 @@ export class ParametersEmailComponent implements OnInit {
   /**
    * Return parameter
    * @param code
-   * @param value
+   * @param key
    * @returns
    */
-  getObjectParameter(code: string, value: string): ParameterI {
+  getObjectParameter(code: string, key: keyof EmailParameterFormI): ParameterI {
+    const emailModel = this.emailModel();
     return {
       code,
-      value: String(this.emailForm.get(value)?.value),
+      value: emailModel[key].toString(),
     };
   }
 

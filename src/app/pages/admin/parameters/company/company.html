@@ -1,6 +1,5 @@
-<form [formGroup]="companyForm">
+<form (submit)="save($event)">
   <div class="flex flex-col gap-8 lg:p-4 p-0" data-aos="fade-left" data-aos-duration="1000">
-    <!-- Section 1: General Company Information -->
     <section class="rounded-2xl border border-slate-200/80 bg-white shadow-sm overflow-hidden">
       <div class="border-b border-slate-100 bg-white px-6 py-5">
         <div class="flex items-center justify-between">
@@ -15,10 +14,9 @@
         </div>
       </div>
       <div class="p-6 space-y-6">
-        <!-- Nombre -->
         <div>
           <label
-            [class.text-red-500!]="validateFormControl(companyForm, 'name')"
+            [class.text-red-500!]="hasError(companyForm.name)"
             class="block text-xs font-semibold uppercase tracking-wider text-slate-700 mb-1.5"
             for="name"
           >
@@ -30,34 +28,30 @@
             >
               <i
                 class="fa-solid fa-align-right"
-                [class.text-red-500!]="validateFormControl(companyForm, 'name')"
+                [class.text-red-500!]="hasError(companyForm.name)"
               ></i>
             </div>
             <input
-              formControlName="name"
+              [formField]="companyForm.name"
               class="h-10 block w-full pl-10 pr-3.5 py-2.5 sm:py-3 text-sm text-slate-900 placeholder-slate-400 bg-slate-50/50 border border-slate-300 rounded-lg focus:outline-none focus:ring-0.5 focus:ring-indigo-600 focus:border-indigo-600 focus:bg-white transition-colors"
-              [class.border-red-500!.text-red-500!]="validateFormControl(companyForm, 'name')"
-              [class.text-red-500!]="validateFormControl(companyForm, 'name')"
-              [class.placeholder:text-red-500!]="validateFormControl(companyForm, 'name')"
+              [ngClass]="{
+                'border-red-500! text-red-500! placeholder:text-red-500! focus:ring-red-500!':
+                  hasError(companyForm.name),
+              }"
               id="name"
-              name="name"
-              required=""
               type="text"
             />
           </div>
-
-          <!-- Errores -->
-          @if (getErrorMessage(companyForm, 'name') !== '') {
+          @if (hasError(companyForm.name)) {
             <p class="mt-1.5 flex items-center gap-1 text-sm text-red-600">
               <i class="fa-solid fa-circle-exclamation"></i>
-              <span>{{ getErrorMessage(companyForm, 'name') }}</span>
+              {{ companyForm.name().errors()[0].message }}
             </p>
           }
         </div>
-        <!-- Url -->
         <div>
           <label
-            [class.text-red-500!]="validateFormControl(companyForm, 'urlStatics')"
+            [class.text-red-500!]="hasError(companyForm.urlStatics)"
             class="block text-xs font-semibold uppercase tracking-wider text-slate-700 mb-1.5"
             for="urlStatics"
           >
@@ -69,38 +63,38 @@
             >
               <i
                 class="fa-solid fa-link"
-                [class.text-red-500!]="validateFormControl(companyForm, 'urlStatics')"
+                [class.text-red-500!]="hasError(companyForm.urlStatics)"
               ></i>
             </div>
             <input
-              formControlName="urlStatics"
+              [formField]="companyForm.urlStatics"
               class="h-10 block w-full pl-10 pr-3.5 py-2.5 sm:py-3 text-sm text-slate-900 placeholder-slate-400 bg-slate-50/50 border border-slate-300 rounded-lg focus:outline-none focus:ring-0.5 focus:ring-indigo-600 focus:border-indigo-600 focus:bg-white transition-colors"
-              [class.border-red-500!.text-red-500!]="validateFormControl(companyForm, 'urlStatics')"
-              [class.text-red-500!]="validateFormControl(companyForm, 'urlStatics')"
-              [class.placeholder:text-red-500!]="validateFormControl(companyForm, 'urlStatics')"
+              [ngClass]="{
+                'border-red-500! text-red-500! placeholder:text-red-500! focus:ring-red-500!':
+                  hasError(companyForm.urlStatics),
+              }"
               id="urlStatics"
-              name="urlStatics"
-              required=""
               type="text"
             />
           </div>
-
-          <!-- Errores -->
-          @if (getErrorMessage(companyForm, 'urlStatics') !== '') {
+          @if (hasError(companyForm.urlStatics)) {
             <p class="mt-1.5 flex items-center gap-1 text-sm text-red-600">
               <i class="fa-solid fa-circle-exclamation"></i>
-              <span>{{ getErrorMessage(companyForm, 'urlStatics') }}</span>
+              {{ companyForm.urlStatics().errors()[0].message }}
             </p>
           }
         </div>
-        <!-- Description -->
         <div>
           <label
-            [class.text-red-500!]="validateFormControl(companyForm, 'description')"
-            class="block text-xs font-semibold uppercase tracking-wider text-slate-700 mb-1.5"
+            [class.text-red-500!]="hasError(companyForm.description)"
+            class="text-xs font-semibold uppercase tracking-wider text-slate-700 mb-1.5 flex flex-row justify-between items-center"
             for="description"
           >
-            Descripción <span class="text-rose-500 font-bold">*</span>
+            <span>
+              Descripción
+              <span class="text-rose-500 font-bold">*</span>
+            </span>
+            <span class="font-normal"> {{ this.companyModel().description.length }}/255 </span>
           </label>
           <div class="relative rounded-lg">
             <div
@@ -108,36 +102,30 @@
             >
               <i
                 class="fa-solid fa-align-justify"
-                [class.text-red-500!]="validateFormControl(companyForm, 'description')"
+                [class.text-red-500!]="hasError(companyForm.description)"
               ></i>
             </div>
             <textarea
-              formControlName="description"
+              [formField]="companyForm.description"
               class="block w-full pl-10 pr-3.5 py-2.5 sm:py-3 text-sm text-slate-900 placeholder-slate-400 bg-slate-50/50 border border-slate-300 rounded-lg focus:outline-none focus:ring-0.5 focus:ring-indigo-600 focus:border-indigo-600 focus:bg-white transition-colors"
-              [class.border-red-500!.text-red-500!]="
-                validateFormControl(companyForm, 'description')
-              "
-              [class.text-red-500!]="validateFormControl(companyForm, 'description')"
-              [class.placeholder:text-red-500!]="validateFormControl(companyForm, 'description')"
+              [ngClass]="{
+                'border-red-500! text-red-500! placeholder:text-red-500! focus:ring-red-500!':
+                  hasError(companyForm.description),
+              }"
               id="description"
-              name="description"
-              required=""
               rows="5"
             ></textarea>
           </div>
-
-          <!-- Errores -->
-          @if (getErrorMessage(companyForm, 'description') !== '') {
+          @if (hasError(companyForm.description)) {
             <p class="mt-1.5 flex items-center gap-1 text-sm text-red-600">
               <i class="fa-solid fa-circle-exclamation"></i>
-              <span>{{ getErrorMessage(companyForm, 'description') }}</span>
+              {{ companyForm.description().errors()[0].message }}
             </p>
           }
         </div>
       </div>
     </section>
 
-    <!-- Section 2: Contacto -->
     <section class="rounded-2xl border border-slate-200/80 bg-white shadow-sm overflow-hidden">
       <div class="border-b border-slate-100 bg-white px-6 py-5">
         <div class="flex items-center justify-between">
@@ -151,10 +139,9 @@
         </div>
       </div>
       <div class="p-6 space-y-6">
-        <!-- Email -->
         <div>
           <label
-            [class.text-red-500!]="validateFormControl(companyForm, 'email')"
+            [class.text-red-500!]="hasError(companyForm.email)"
             class="block text-xs font-semibold uppercase tracking-wider text-slate-700 mb-1.5"
             for="email"
           >
@@ -166,34 +153,30 @@
             >
               <i
                 class="fa-solid fa-envelope"
-                [class.text-red-500!]="validateFormControl(companyForm, 'email')"
+                [class.text-red-500!]="hasError(companyForm.email)"
               ></i>
             </div>
             <input
-              formControlName="email"
+              [formField]="companyForm.email"
               class="h-10 block w-full pl-10 pr-3.5 py-2.5 sm:py-3 text-sm text-slate-900 placeholder-slate-400 bg-slate-50/50 border border-slate-300 rounded-lg focus:outline-none focus:ring-0.5 focus:ring-indigo-600 focus:border-indigo-600 focus:bg-white transition-colors"
-              [class.border-red-500!.text-red-500!]="validateFormControl(companyForm, 'email')"
-              [class.text-red-500!]="validateFormControl(companyForm, 'email')"
-              [class.placeholder:text-red-500!]="validateFormControl(companyForm, 'email')"
+              [ngClass]="{
+                'border-red-500! text-red-500! placeholder:text-red-500! focus:ring-red-500!':
+                  hasError(companyForm.email),
+              }"
               id="email"
-              name="email"
-              required=""
               type="email"
             />
           </div>
-
-          <!-- Errores -->
-          @if (getErrorMessage(companyForm, 'email') !== '') {
+          @if (hasError(companyForm.email)) {
             <p class="mt-1.5 flex items-center gap-1 text-sm text-red-600">
               <i class="fa-solid fa-circle-exclamation"></i>
-              <span>{{ getErrorMessage(companyForm, 'email') }}</span>
+              {{ companyForm.email().errors()[0].message }}
             </p>
           }
         </div>
-        <!-- Phone -->
         <div>
           <label
-            [class.text-red-500!]="validateFormControl(companyForm, 'phone')"
+            [class.text-red-500!]="hasError(companyForm.phone)"
             class="block text-xs font-semibold uppercase tracking-wider text-slate-700 mb-1.5"
             for="phone"
           >
@@ -205,34 +188,30 @@
             >
               <i
                 class="fa-solid fa-phone-volume"
-                [class.text-red-500!]="validateFormControl(companyForm, 'phone')"
+                [class.text-red-500!]="hasError(companyForm.phone)"
               ></i>
             </div>
             <input
-              formControlName="phone"
+              [formField]="companyForm.phone"
               class="h-10 block w-full pl-10 pr-3.5 py-2.5 sm:py-3 text-sm text-slate-900 placeholder-slate-400 bg-slate-50/50 border border-slate-300 rounded-lg focus:outline-none focus:ring-0.5 focus:ring-indigo-600 focus:border-indigo-600 focus:bg-white transition-colors"
-              [class.border-red-500!.text-red-500!]="validateFormControl(companyForm, 'phone')"
-              [class.text-red-500!]="validateFormControl(companyForm, 'phone')"
-              [class.placeholder:text-red-500!]="validateFormControl(companyForm, 'phone')"
+              [ngClass]="{
+                'border-red-500! text-red-500! placeholder:text-red-500! focus:ring-red-500!':
+                  hasError(companyForm.phone),
+              }"
               id="phone"
-              name="phone"
-              required=""
               type="text"
             />
           </div>
-
-          <!-- Errores -->
-          @if (getErrorMessage(companyForm, 'phone') !== '') {
+          @if (hasError(companyForm.phone)) {
             <p class="mt-1.5 flex items-center gap-1 text-sm text-red-600">
               <i class="fa-solid fa-circle-exclamation"></i>
-              <span>{{ getErrorMessage(companyForm, 'phone') }}</span>
+              {{ companyForm.phone().errors()[0].message }}
             </p>
           }
         </div>
-        <!-- Country -->
         <div>
           <label
-            [class.text-red-500!]="validateFormControl(companyForm, 'country')"
+            [class.text-red-500!]="hasError(companyForm.country)"
             class="block text-xs font-semibold uppercase tracking-wider text-slate-700 mb-1.5"
             for="country"
           >
@@ -244,34 +223,30 @@
             >
               <i
                 class="fa-solid fa-globe"
-                [class.text-red-500!]="validateFormControl(companyForm, 'country')"
+                [class.text-red-500!]="hasError(companyForm.country)"
               ></i>
             </div>
             <input
-              formControlName="country"
+              [formField]="companyForm.country"
               class="h-10 block w-full pl-10 pr-3.5 py-2.5 sm:py-3 text-sm text-slate-900 placeholder-slate-400 bg-slate-50/50 border border-slate-300 rounded-lg focus:outline-none focus:ring-0.5 focus:ring-indigo-600 focus:border-indigo-600 focus:bg-white transition-colors"
-              [class.border-red-500!.text-red-500!]="validateFormControl(companyForm, 'country')"
-              [class.text-red-500!]="validateFormControl(companyForm, 'country')"
-              [class.placeholder:text-red-500!]="validateFormControl(companyForm, 'country')"
+              [ngClass]="{
+                'border-red-500! text-red-500! placeholder:text-red-500! focus:ring-red-500!':
+                  hasError(companyForm.country),
+              }"
               id="country"
-              name="country"
-              required=""
               type="text"
             />
           </div>
-
-          <!-- Errores -->
-          @if (getErrorMessage(companyForm, 'country') !== '') {
+          @if (hasError(companyForm.country)) {
             <p class="mt-1.5 flex items-center gap-1 text-sm text-red-600">
               <i class="fa-solid fa-circle-exclamation"></i>
-              <span>{{ getErrorMessage(companyForm, 'country') }}</span>
+              {{ companyForm.country().errors()[0].message }}
             </p>
           }
         </div>
-        <!-- Website -->
         <div>
           <label
-            [class.text-red-500!]="validateFormControl(companyForm, 'website')"
+            [class.text-red-500!]="hasError(companyForm.website)"
             class="block text-xs font-semibold uppercase tracking-wider text-slate-700 mb-1.5"
             for="website"
           >
@@ -283,34 +258,30 @@
             >
               <i
                 class="fa-solid fa-desktop"
-                [class.text-red-500!]="validateFormControl(companyForm, 'website')"
+                [class.text-red-500!]="hasError(companyForm.website)"
               ></i>
             </div>
             <input
-              formControlName="website"
+              [formField]="companyForm.website"
               class="h-10 block w-full pl-10 pr-3.5 py-2.5 sm:py-3 text-sm text-slate-900 placeholder-slate-400 bg-slate-50/50 border border-slate-300 rounded-lg focus:outline-none focus:ring-0.5 focus:ring-indigo-600 focus:border-indigo-600 focus:bg-white transition-colors"
-              [class.border-red-500!.text-red-500!]="validateFormControl(companyForm, 'website')"
-              [class.text-red-500!]="validateFormControl(companyForm, 'website')"
-              [class.placeholder:text-red-500!]="validateFormControl(companyForm, 'website')"
+              [ngClass]="{
+                'border-red-500! text-red-500! placeholder:text-red-500! focus:ring-red-500!':
+                  hasError(companyForm.website),
+              }"
               id="website"
-              name="website"
-              required=""
               type="text"
             />
           </div>
-
-          <!-- Errores -->
-          @if (getErrorMessage(companyForm, 'website') !== '') {
+          @if (hasError(companyForm.website)) {
             <p class="mt-1.5 flex items-center gap-1 text-sm text-red-600">
               <i class="fa-solid fa-circle-exclamation"></i>
-              <span>{{ getErrorMessage(companyForm, 'website') }}</span>
+              {{ companyForm.website().errors()[0].message }}
             </p>
           }
         </div>
       </div>
     </section>
 
-    <!-- Bottom Action Bar (Fixed feel) -->
     @if (edit()) {
       <div class="flex items-center justify-between flex-col md:flex-row w-full">
         <div class="flex items-center justify-end gap-3 pt-2 flex-col md:flex-row w-full">
@@ -324,15 +295,14 @@
 
           <button
             class="cursor-pointer h-10 w-full md:w-auto flex justify-center items-center py-3 px-4 border border-transparent rounded-lg text-sm font-semibold text-white bg-indigo-500 hover:bg-indigo-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 active:transform active:scale-[0.99] transition duration-150 ease-in-out disabled:cursor-not-allowed disabled:bg-indigo-300"
-            type="button"
-            [disabled]="companyForm.disabled"
-            (click)="save()"
+            type="submit"
+            [disabled]="companyForm().invalid() || companyForm().submitting()"
           >
             <span class="flex items-center justify-center gap-2">
-              @if (!companyForm.disabled) {
-                <i class="fa-solid fa-floppy-disk"></i>
-              } @else {
+              @if (companyForm().submitting()) {
                 <i class="fa-solid fa-spinner fa-spin text-white"></i>
+              } @else {
+                <i class="fa-solid fa-floppy-disk"></i>
               }
               <span>Guardar</span>
             </span>
