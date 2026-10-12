@@ -1,27 +1,28 @@
-@if (initializate()) {
-  <div class="w-screen h-auto">
-    <grid
-      class="sticky z-99"
-      [gridType]="'header'"
-      [pageElementsConfig]="{ css: '', config: {} }"
-      [languageId]="languageId()"
-      [preview]="true"
-      [previewType]="previewType()"
-    />
+<div class="w-screen h-auto">
+  <grid
+    class="sticky z-99"
+    [gridType]="'header'"
+    [pageElementsConfig]="{ css: '', config: {} }"
+    [languageId]="languageId()"
+    [preview]="true"
+    [render]="true"
+    [previewType]="previewType()"
+  />
 
-    <grid
-      [gridType]="'page'"
-      [pageElementsConfig]="{ css: '', config: {} }"
-      [languageId]="languageId()"
-      [preview]="true"
-      [previewType]="previewType()"
-    />
-    <grid
-      [gridType]="'footer'"
-      [pageElementsConfig]="{ css: '', config: {} }"
-      [languageId]="languageId()"
-      [preview]="true"
-      [previewType]="previewType()"
-    />
-  </div>
-}
+  <grid
+    [gridType]="'page'"
+    [pageElementsConfig]="{ css: '', config: {} }"
+    [languageId]="languageId()"
+    [preview]="true"
+    [render]="true"
+    [previewType]="previewType()"
+  />
+  <grid
+    [gridType]="'footer'"
+    [pageElementsConfig]="{ css: '', config: {} }"
+    [languageId]="languageId()"
+    [preview]="true"
+    [render]="true"
+    [previewType]="previewType()"
+  />
+</div>

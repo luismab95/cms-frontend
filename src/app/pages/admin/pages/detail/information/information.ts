@@ -48,9 +48,13 @@ export class PagesInformationComponent {
 
   readonly previewPage = computed(() => {
     const page = this.page();
-    return this._domSanitizer.bypassSecurityTrustResourceUrl(
-      `${this.sitie()?.domain}/preview/${page?.path}`,
-    );
+    const micrositie = this.micrositie();
+
+    const url = !micrositie
+      ? `${this.sitie()?.domain}/preview/${page?.path}`
+      : `${this.sitie()!.domain}/preview/${micrositie.path}/`;
+
+    return this._domSanitizer.bypassSecurityTrustResourceUrl(url);
   });
 
   /**
@@ -70,7 +74,13 @@ export class PagesInformationComponent {
    * Go to Sitie
    */
   visit(): void {
-    window.open(`${this.sitie()?.domain}/${this.page()?.path}`, '_blank');
+    const page = this.page();
+    const micrositie = this.micrositie();
+
+    const url = !micrositie
+      ? `${this.sitie()?.domain}/${page?.path}`
+      : `${this.sitie()!.domain}/${micrositie.path}/`;
+    window.open(url, '_blank');
   }
 
   /**
@@ -79,8 +89,8 @@ export class PagesInformationComponent {
   goToCanvas(): void {
     this._router.navigateByUrl('/admin/content/pages/canvas', {
       state: {
-        id: this.page() ? 0 : this.page()!.id,
-        micrositieId: this.micrositie() ? this.micrositie()!.id : 0,
+        id: this.page() === null ? 0 : this.page()!.id!,
+        micrositieId: this.micrositie() !== null ? this.micrositie()!.id! : 0,
       },
     });
   }
@@ -90,7 +100,7 @@ export class PagesInformationComponent {
    * @returns
    */
   getDomain() {
-    if (this.micrositie()) {
+    if (this.micrositie() !== null) {
       const micrositiePath = this.micrositie()?.path!.split('/')[0];
       return `${this.sitie()!.domain}/preview/${micrositiePath}/`;
     }

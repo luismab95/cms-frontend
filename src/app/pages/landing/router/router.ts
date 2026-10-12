@@ -14,7 +14,6 @@ import { distinctUntilChanged, filter } from 'rxjs';
   imports: [GridComponent],
 })
 export class LandingRouterComponent {
-  initializate = signal<boolean>(false);
   previousLangValue = signal<string>(window.location.pathname.split('/')[1]);
   languageId = signal<number>(0);
   lang = signal<string>('');
@@ -52,7 +51,7 @@ export class LandingRouterComponent {
 
       const urlSplit = routerEvents.urlAfterRedirects.split('/');
       const lang = urlSplit[1];
-      if (!this.initializate() && lang !== this.previousLangValue()) {
+      if (lang !== this.previousLangValue()) {
         this.previousLangValue.set(lang);
         this._router
           .navigateByUrl(`/${lang}/${urlSplit.slice(2).join('/')}`)
@@ -80,7 +79,6 @@ export class LandingRouterComponent {
           this.languageId.set(res.message.languageId);
           this.updateMetaTags(this.languageId()!, res.message.details!);
           this.loadData(res.message);
-          this.initializate.set(true);
         },
         error: (err) => {
           if (err.status === 503) {

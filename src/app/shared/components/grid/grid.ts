@@ -54,6 +54,7 @@ export class GridComponent implements OnDestroy {
   gridType = input.required<CanvasT>();
   gridStyles = input<any>({});
   pageElementsConfig = input.required<PageElementsConfigI>();
+  render = input<boolean>(false);
   preview = input<boolean>(false);
   editContent = input<boolean>(false);
   editDesign = input<boolean>(false);
@@ -137,7 +138,10 @@ export class GridComponent implements OnDestroy {
         }
       }
     }
-    const uniqueCss = css.join('\n').replaceAll('@container', '@media');
+    let uniqueCss = css.join('\n');
+    if (this.render()) {
+      uniqueCss = uniqueCss.replaceAll('@container', '@media');
+    }
     this._dynamicStyleService.set(styleId, uniqueCss);
   }
 

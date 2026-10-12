@@ -42,6 +42,7 @@ export class PagesList {
    * Constructor
    */
   constructor() {
+    this._pageService.page.set(null);
     toObservable(this.tableSearchForm.search().value)
       .pipe(debounceTime(600), takeUntilDestroyed(this._destroyRef))
       .subscribe((search) => {
@@ -69,7 +70,7 @@ export class PagesList {
     const params: PagePaginationResquestI = {
       page,
       limit: this.limit(),
-      micrositieId: null,
+      micrositieId: this.micrositie() === null ? null : this.micrositie()!.id!,
       search,
       status,
     };
@@ -85,7 +86,6 @@ export class PagesList {
 
   /**
    * Open modal laguanges detail
-   *
    * @param data
    */
   openDetailsModal(page: PageI | null): void {
@@ -93,7 +93,7 @@ export class PagesList {
     this._router.navigateByUrl('/admin/content/pages/detail', {
       state: {
         id: page === null ? 0 : page.id,
-        micrositieId: this.micrositie() === null ? 0 : this.micrositie()!.id,
+        micrositieId: this.micrositie() === null ? 0 : this.micrositie()!.id!,
       },
     });
   }
