@@ -1,15 +1,11 @@
-import { Component, inject, OnDestroy, OnInit, signal, effect } from '@angular/core';
-import { toSignal } from '@angular/core/rxjs-interop';
+import { Component, inject, signal, effect } from '@angular/core';
 import { Router } from '@angular/router';
-import { MicrosityService } from 'app/core/services/micrositie.service';
-import { PageService } from 'app/core/services/pages.service';
-import { DrawerComponent } from 'app/shared/components/drawer/drawer';
-import { PermissionComponent } from 'app/shared/components/permission/permission';
-import { DrawerI } from 'app/shared/interfaces/drawer.interface';
-import { PermissionCode, validAction } from 'app/shared/utils/permission.utils';
+import { PageService, MicrosityService } from '@core/services';
+import { DrawerComponent, PermissionComponent } from '@shared/components';
+import { DrawerI } from '@shared/interfaces';
+import { PermissionCode, validAction } from '@shared/utils';
 import { PagesInformationComponent } from './information/information';
 import { PagesLangugesComponent } from './languages/languages';
-import { Subject } from 'rxjs';
 
 @Component({
   selector: 'pages-detail',
@@ -21,8 +17,7 @@ import { Subject } from 'rxjs';
     PagesLangugesComponent,
   ],
 })
-export class PagesDetail implements OnInit, OnDestroy {
-  permission = PermissionCode;
+export class PagesDetail {
   panels = signal<DrawerI[]>([
     {
       id: 'information',
@@ -31,14 +26,13 @@ export class PagesDetail implements OnInit, OnDestroy {
       description: 'Gestiona la información de tu página.',
     },
   ]);
-  selectedPanel = signal<string>('');
-
-  private _unsubscribeAll: Subject<any> = new Subject<any>();
+  selectedPanel = signal<string>('information');
 
   private readonly _pageService = inject(PageService);
   private readonly _microsityService = inject(MicrosityService);
   private readonly _router = inject(Router);
 
+  readonly permission = PermissionCode;
   readonly page = this._pageService.page;
   readonly micrositie = this._microsityService.micrositie;
 
@@ -48,7 +42,7 @@ export class PagesDetail implements OnInit, OnDestroy {
   constructor() {
     effect(() => {
       const page = this.page();
-      if (page != null && this.panels().length === 1) {
+      if (page && this.panels().length === 1) {
         this.panels.update((prev) => [
           ...prev,
           {
@@ -63,33 +57,8 @@ export class PagesDetail implements OnInit, OnDestroy {
     });
   }
 
-  // -----------------------------------------------------------------------------------------------------
-  // @ Lifecycle hooks
-  // -----------------------------------------------------------------------------------------------------
-
-  /**
-   * On init
-   */
-  ngOnInit(): void {
-    this.selectedPanel.set(this.panels()[0].id);
-  }
-
-  /**
-   * On destroy
-   */
-  ngOnDestroy(): void {
-    // Unsubscribe from all subscriptions
-    this._unsubscribeAll.next(null);
-    this._unsubscribeAll.complete();
-  }
-
-  // -----------------------------------------------------------------------------------------------------
-  // @ Public methods
-  // -----------------------------------------------------------------------------------------------------
-
   /**
    * Navigate to the panel
-   *
    * @param panel
    */
   goToPanel(panel: string): void {
@@ -98,6 +67,7 @@ export class PagesDetail implements OnInit, OnDestroy {
 
   /**
    * Valid render permission
+   * @returns
    */
   validPermission(code: string) {
     return validAction(code);

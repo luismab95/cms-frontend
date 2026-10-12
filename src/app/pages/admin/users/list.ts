@@ -94,7 +94,6 @@ export class UsersList {
 
   /**
    * Open modal laguanges detail
-   *
    * @param data
    */
   openDetailsModal(user: UserI | null): void {

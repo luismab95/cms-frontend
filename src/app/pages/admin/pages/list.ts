@@ -1,47 +1,38 @@
+import { Component, computed, DestroyRef, inject, signal } from '@angular/core';
 import { NgClass } from '@angular/common';
-import { Component, computed, inject, OnDestroy, OnInit, signal } from '@angular/core';
-import { toSignal } from '@angular/core/rxjs-interop';
-import { FormControl, FormsModule, ReactiveFormsModule, UntypedFormControl } from '@angular/forms';
+import { toObservable, takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { form, FormField } from '@angular/forms/signals';
 import { Router } from '@angular/router';
 import { ToastrService } from '@iqx-limited/ngx-toastr';
-import { PageI, PagePaginationResquestI } from 'app/core/interfaces/page.interface';
-import { MicrosityService } from 'app/core/services/micrositie.service';
-import { PageService } from 'app/core/services/pages.service';
-import { PaginationComponent } from 'app/shared/components/pagination/pagination';
-import { PermissionComponent } from 'app/shared/components/permission/permission';
-import { PermissionCode, validAction } from 'app/shared/utils/permission.utils';
-import { TitleHeaderComponent } from 'app/shared/components/title-header/title-header';
-import { Subject, debounceTime, takeUntil } from 'rxjs';
+import { PagePaginationResquestI, PageI } from '@core/interfaces';
+import { PageService, MicrosityService } from '@core/services';
+import { PaginationComponent, PermissionComponent, TitleHeaderComponent } from '@shared/components';
+import { TableSearchI } from '@shared/interfaces';
+import { PermissionCode, validAction } from '@shared/utils';
+import { debounceTime } from 'rxjs';
 
 @Component({
   selector: 'pages',
   templateUrl: './list.html',
-  imports: [
-    FormsModule,
-    ReactiveFormsModule,
-    PaginationComponent,
-    PermissionComponent,
-    NgClass,
-    TitleHeaderComponent,
-  ],
+  imports: [PaginationComponent, PermissionComponent, NgClass, TitleHeaderComponent, FormField],
 })
-export class PagesList implements OnInit, OnDestroy {
+export class PagesList {
   limit = signal<number>(10);
-  showDetails = signal<boolean>(false);
-  selectedUser = signal<PageI | null>(null);
 
-  searchInputControl: UntypedFormControl = new UntypedFormControl();
-  statusControl: FormControl<boolean | null> = new FormControl(null);
+  tableSearchModel = signal<TableSearchI>({
+    search: '',
+    status: null,
+  });
 
-  permission = PermissionCode;
-
-  private _unsubscribeAll: Subject<any> = new Subject<any>();
+  tableSearchForm = form(this.tableSearchModel);
 
   private readonly _pageService = inject(PageService);
   private readonly _microsityService = inject(MicrosityService);
-  private readonly _router = inject(Router);
   private readonly _toastrService = inject(ToastrService);
+  private readonly _router = inject(Router);
+  private readonly _destroyRef = inject(DestroyRef);
 
+  readonly permission = PermissionCode;
   readonly pages = this._pageService.pages;
   readonly micrositie = this._microsityService.micrositie;
 
@@ -50,50 +41,29 @@ export class PagesList implements OnInit, OnDestroy {
   /**
    * Constructor
    */
-  constructor() {}
-
-  // -----------------------------------------------------------------------------------------------------
-  // @ Lifecycle hooks
-  // -----------------------------------------------------------------------------------------------------
-
-  /**
-   * On init
-   */
-  ngOnInit(): void {
-    // Subscribe to search input field value changes
-    this.searchInputControl.valueChanges
-      .pipe(debounceTime(700), takeUntil(this._unsubscribeAll))
-      .subscribe((search: string) => {
-        if (search) this.getAll(1, search === '' ? null : search, this.statusControl.value);
+  constructor() {
+    toObservable(this.tableSearchForm.search().value)
+      .pipe(debounceTime(600), takeUntilDestroyed(this._destroyRef))
+      .subscribe((search) => {
+        if (search) this.getAll(1, search === '' ? null : search, this.tableSearchModel().status);
       });
 
-    this.statusControl.valueChanges
-      .pipe(takeUntil(this._unsubscribeAll))
-      .subscribe((status: boolean | null) => {
+    toObservable(this.tableSearchForm.status().value)
+      .pipe(takeUntilDestroyed(this._destroyRef))
+      .subscribe((status) => {
         this.getAll(
           1,
-          this.searchInputControl.value === '' ? null : this.searchInputControl.value,
+          this.tableSearchModel().search === '' ? null : this.tableSearchModel().search,
           status,
         );
       });
   }
 
   /**
-   * On destroy
-   */
-  ngOnDestroy(): void {
-    // Unsubscribe from all subscriptions
-    this._unsubscribeAll.next(null);
-    this._unsubscribeAll.complete();
-  }
-
-  // -----------------------------------------------------------------------------------------------------
-  // @ Public methods
-  // -----------------------------------------------------------------------------------------------------
-
-  /**
    * Get all
    * @param page
+   * @param search
+   * @param status
    */
   getAll(page: number, search: string | null = null, status: boolean | null = null) {
     const params: PagePaginationResquestI = {
@@ -105,7 +75,7 @@ export class PagesList implements OnInit, OnDestroy {
     };
     this._pageService
       .getAll(params)
-      .pipe(takeUntil(this._unsubscribeAll))
+      .pipe(takeUntilDestroyed(this._destroyRef))
       .subscribe({
         error: (response) => {
           this._toastrService.error(response.error.message, 'Aviso');
@@ -130,8 +100,9 @@ export class PagesList implements OnInit, OnDestroy {
 
   /**
    * Valid render permission
+   * @returns
    */
-  validPermission(code: string) {
+  validPermission(code: string): boolean {
     return validAction(code);
   }
 
@@ -142,8 +113,8 @@ export class PagesList implements OnInit, OnDestroy {
   onPageChange(page: number): void {
     this.getAll(
       page,
-      this.searchInputControl.value === '' ? null : this.searchInputControl.value,
-      this.statusControl.value,
+      this.tableSearchModel().search === '' ? null : this.tableSearchModel().search,
+      this.tableSearchModel().status,
     );
   }
 
@@ -155,8 +126,8 @@ export class PagesList implements OnInit, OnDestroy {
     this.limit.set(limit);
     this.getAll(
       1,
-      this.searchInputControl.value === '' ? null : this.searchInputControl.value,
-      this.statusControl.value,
+      this.tableSearchModel().search === '' ? null : this.tableSearchModel().search,
+      this.tableSearchModel().status,
     );
   }
 
@@ -164,8 +135,8 @@ export class PagesList implements OnInit, OnDestroy {
    * Clear input search
    */
   clearSearch() {
-    this.searchInputControl.reset();
-    this.getAll(1, null, this.statusControl.value);
+    this.tableSearchModel.update((prev) => ({ ...prev, search: '' }));
+    this.getAll(1, null, this.tableSearchModel().status);
   }
 
   /**
@@ -173,6 +144,7 @@ export class PagesList implements OnInit, OnDestroy {
    * @param status
    */
   onChangeStatus(status: boolean | null) {
-    this.statusControl.setValue(status);
+    this.tableSearchModel.update((prev) => ({ ...prev, status }));
+    this.onPageChange(1);
   }
 }

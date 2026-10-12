@@ -1,68 +1,78 @@
 import {
   AfterViewInit,
   Component,
+  DestroyRef,
   ElementRef,
-  OnInit,
   computed,
+  effect,
   inject,
   signal,
+  untracked,
   viewChild,
 } from '@angular/core';
-import { toSignal } from '@angular/core/rxjs-interop';
-import {
-  FormsModule,
-  ReactiveFormsModule,
-  UntypedFormBuilder,
-  UntypedFormGroup,
-  Validators,
-} from '@angular/forms';
+import { NgClass } from '@angular/common';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { form, required, maxLength, submit, FormField } from '@angular/forms/signals';
 import { DomSanitizer } from '@angular/platform-browser';
+import { Router } from '@angular/router';
 import { ToastrService } from '@iqx-limited/ngx-toastr';
-import { TemplateI } from 'app/core/interfaces/template.interface';
-import { MicrosityService } from 'app/core/services/micrositie.service';
-import { PageService } from 'app/core/services/pages.service';
-import { SitieService } from 'app/core/services/sitie.service';
-import { TemplateService } from 'app/core/services/templates.service';
-import { PermissionCode, validAction } from 'app/shared/utils/permission.utils';
-import { CmsValidators } from 'app/shared/utils/validators.util';
-import { GridComponent } from 'app/shared/components/grid/grid';
-import { TooltipDirective } from 'app/shared/directives/tooltip.directive';
-import { Subject, takeUntil } from 'rxjs';
+import { MicrositieI, TemplateI } from '@core/interfaces';
+import {
+  SitieService,
+  MicrosityService,
+  TemplateService,
+  DynamicStyleService,
+} from '@core/services';
+import { GridComponent } from '@shared/components';
+import { TooltipDirective } from '@shared/directives';
+import { PermissionCode, hasErrorFormField, validAction } from '@shared/utils';
+import { firstValueFrom } from 'rxjs';
 
 @Component({
   selector: 'microsities-information',
   templateUrl: './information.html',
-  imports: [FormsModule, ReactiveFormsModule, GridComponent, TooltipDirective],
+  imports: [GridComponent, TooltipDirective, NgClass, FormField],
 })
-export class MicrositieInformationComponent implements OnInit, AfterViewInit {
+export class MicrositieInformationComponent implements AfterViewInit {
   private readonly previewContainer =
     viewChild.required<ElementRef<HTMLElement>>('previewContainer');
 
-  previewScale = signal(1);
-  selectedTemplate = signal(0);
+  previewScale = signal<number>(1);
+  selectedTemplate = signal<number>(0);
+  micrositieModel = signal<MicrositieI>({
+    name: '',
+    description: '',
+    status: false,
+    templateId: 0,
+    sitieId: 0,
+  });
 
-  private readonly _formBuilder = inject(UntypedFormBuilder);
+  micrositieForm = form(this.micrositieModel, (schemaPath) => {
+    required(schemaPath.name, { message: 'Nombre es obligatorio.' });
+    required(schemaPath.description, { message: 'Descripción es obligatorio.' });
+    maxLength(schemaPath.description, 255, {
+      message: 'Descripción no puede superar los 255 caracteres.',
+    });
+    required(schemaPath.sitieId, { message: 'Sitio es obligatorio.' });
+    required(schemaPath.templateId, { message: 'Plantilla es obligatorio.' });
+  });
+
   private readonly _sitieService = inject(SitieService);
   private readonly _microsityService = inject(MicrosityService);
   private readonly _toastrService = inject(ToastrService);
   private readonly _domSanitizer = inject(DomSanitizer);
-  private readonly _pageService = inject(PageService);
   private readonly _templateService = inject(TemplateService);
+  private readonly _dynamicStyleService = inject(DynamicStyleService);
+  private readonly _destroyRef = inject(DestroyRef);
+  private readonly _router = inject(Router);
 
-  private _unsubscribeAll: Subject<any> = new Subject<any>();
-  private styleElement?: HTMLStyleElement;
+  readonly permission = PermissionCode;
+  readonly hasError = hasErrorFormField;
+  readonly sitie = this._sitieService.sitie;
+  readonly micrositie = this._microsityService.micrositie;
+  readonly templates = this._templateService.templates;
 
-  permission = PermissionCode;
-  validateFormControl = CmsValidators.validateFormControl;
-  getErrorMessage = CmsValidators.getErrorMessage;
-
-  sitie = this._sitieService.sitie;
-  micrositie = this._microsityService.micrositie;
-  templates = this._templateService.templates;
-
-  micrositieForm!: UntypedFormGroup;
-
-  previewDefaultPage = computed(() => {
+  readonly previewDefaultPage = computed(() => {
     const micrositie = this.micrositie();
     return this._domSanitizer.bypassSecurityTrustResourceUrl(
       `${this.sitie()?.domain}/preview/${micrositie?.path}`,
@@ -72,36 +82,30 @@ export class MicrositieInformationComponent implements OnInit, AfterViewInit {
   /**
    * Constructor
    */
-  constructor() {}
-
-  // -----------------------------------------------------------------------------------------------------
-  // @ Lifecycle hooks
-  // -----------------------------------------------------------------------------------------------------
-
-  /**
-   * OnInit
-   */
-  ngOnInit(): void {
-    this.micrositieForm = this._formBuilder.group({
-      name: ['', Validators.required],
-      description: ['', [Validators.required, Validators.maxLength(255)]],
-      sitieId: ['', Validators.required],
-      templateId: [Validators.required],
-      status: [],
+  constructor() {
+    effect(() => {
+      const micrositie = this.micrositie();
+      untracked(() => {
+        if (!micrositie) {
+          this.micrositieModel.update((prev) => ({
+            ...prev,
+            templateId: this.templates().records[0].id!,
+          }));
+          const findTemplate = this.currentTemplate;
+          if (!findTemplate) return;
+          this.loadTemplate(findTemplate);
+          return;
+        }
+        this.micrositieModel.set(micrositie);
+        const index = this.templates().records.findIndex(
+          (template) => template.id === micrositie.templateId,
+        );
+        this.selectedTemplate.set(index);
+        const findTemplate = this.currentTemplate;
+        if (!findTemplate) return;
+        this.loadTemplate(findTemplate);
+      });
     });
-
-    const micrositie = this.micrositie();
-
-    if (micrositie) {
-      this.micrositieForm.patchValue({ ...micrositie });
-      const index = this.templates().records.findIndex((template) => template.id === 1);
-      this.selectedTemplate.set(index);
-    } else {
-      this.selectedTemplate.set(0);
-    }
-    const findTemplate = this.currentTemplate;
-    if (findTemplate === null) return;
-    this.loadTemplate(findTemplate);
   }
 
   /**
@@ -117,102 +121,83 @@ export class MicrositieInformationComponent implements OnInit, AfterViewInit {
   }
 
   /**
-   * On destroy
-   */
-  ngOnDestroy(): void {
-    // Unsubscribe from all subscriptions
-    this._unsubscribeAll.next(null);
-    this._unsubscribeAll.complete();
-  }
-
-  // -----------------------------------------------------------------------------------------------------
-  // @ Public methods
-  // -----------------------------------------------------------------------------------------------------
-
-  /**
    * Go to Sitie
    */
   visit(): void {
     const domain = `${this.sitie()?.domain}/${this.micrositie()?.path}`;
+    window.open(domain, '_blank');
+  }
 
-    if (domain) {
-      window.open(domain, '_blank');
+  /**
+   * Save event
+   * @param event
+   */
+  async save(event: SubmitEvent): Promise<void> {
+    if (this.micrositie()) {
+      await this.update(event);
+    } else {
+      await this.create(event);
     }
   }
 
   /**
-   * Add micrositie
+   * Add page
+   * @param event
    * @returns
    */
-  create(): void {
-    if (this.micrositieForm.invalid) {
-      this.micrositieForm.markAllAsTouched();
-      return;
-    }
-
-    this.micrositieForm.disable();
-
-    // ADD data
-
-    if (this.sitie() !== null) {
-      this.micrositieForm.value['sitieId'] = this.sitie()!.id;
-    }
-
-    this._microsityService
-      .create(this.micrositieForm.value)
-      .pipe(takeUntil(this._unsubscribeAll))
-      .subscribe({
-        next: () => {
-          this.micrositieForm.enable();
-          this._toastrService.success('El micrositio se creó correctamente.', 'Micrositio creado');
-        },
-        error: (response) => {
-          this.micrositieForm.enable();
-          this._toastrService.error(
-            response.error?.message || 'No fue posible crear el micrositio.',
-            'Error al crear',
-          );
-        },
+  async create(event: SubmitEvent): Promise<void> {
+    try {
+      event.preventDefault();
+      await submit(this.micrositieForm, async (field) => {
+        const sitie = this.sitie();
+        if (!sitie) return;
+        const newMicrositie = { ...field().value(), sitieId: sitie.id! };
+        await firstValueFrom(
+          this._microsityService.create(newMicrositie).pipe(takeUntilDestroyed(this._destroyRef)),
+        );
+        this._toastrService.success('El micrositio se creó correctamente.', 'Micrositio creado');
+        this._router.navigateByUrl('/admin/content/microsities');
       });
+    } catch (err: any) {
+      this._toastrService.error(
+        err.error?.message || 'No fue posible crear el micrositio.',
+        'Error al crear',
+      );
+    }
   }
 
   /**
-   * Update micrositie
+   * Update page
+   * @param event
+   * @returns
    */
-  update() {
-    // Return if the form is invalid
-    if (this.micrositieForm.invalid) {
-      this.micrositieForm.markAllAsTouched();
-      return;
-    }
+  async update(event: SubmitEvent): Promise<void> {
+    try {
+      event.preventDefault();
+      await submit(this.micrositieForm, async (field) => {
+        const micrositie = this.micrositie();
+        if (!micrositie) return;
 
-    const micrositie = this.micrositie();
+        const updateMicrositie = { ...field().value() };
+        delete updateMicrositie.path;
+        delete updateMicrositie.pathPage,
 
-    if (!micrositie === null) return;
-
-    // Disable the form
-    this.micrositieForm.disable();
-
-    this._microsityService
-      .update(micrositie?.id!, this.micrositieForm.value)
-      .pipe(takeUntil(this._unsubscribeAll))
-      .subscribe({
-        next: () => {
-          this.micrositieForm.enable();
-          this._toastrService.success(
-            'La informacion del micrositio se actualizó correctamente.',
-            'Micrositio actualizado',
-          );
-        },
-        error: (response) => {
-          this.micrositieForm.enable();
-          // Set the alert
-          this._toastrService.error(
-            response.error?.message || 'No fue posible actualizar la informacion del micrositio.',
-            'Error al actualizar',
-          );
-        },
+        await firstValueFrom(
+          this._microsityService
+            .update(micrositie.id!, updateMicrositie)
+            .pipe(takeUntilDestroyed(this._destroyRef)),
+        );
+        this._toastrService.success(
+          'La informacion del micrositio se actualizó correctamente.',
+          'Micrositio actualizado',
+        );
       });
+    } catch (err: any) {
+      this._toastrService.error(
+        err.error?.message || 'No fue posible actualizar la informacion del micrositio.',
+        'Error al actualizar',
+      );
+    }
   }
 
   /**
@@ -220,12 +205,9 @@ export class MicrositieInformationComponent implements OnInit, AfterViewInit {
    */
   cancel(): void {
     const micrositie = this.micrositie();
+    if (!micrositie) return;
 
-    this.micrositieForm.reset();
-
-    if (micrositie) {
-      this.micrositieForm.patchValue(micrositie);
-    }
+    this.micrositieModel.set(micrositie);
   }
 
   /**
@@ -245,7 +227,7 @@ export class MicrositieInformationComponent implements OnInit, AfterViewInit {
       index === this.templates().records.length - 1 ? 0 : index + 1,
     );
     const template = this.currentTemplate;
-    if (template === null) return;
+    if (!template) return;
     this.loadTemplate(template);
   }
 
@@ -257,7 +239,7 @@ export class MicrositieInformationComponent implements OnInit, AfterViewInit {
       index === 0 ? this.templates().records.length - 1 : index - 1,
     );
     const template = this.currentTemplate;
-    if (template === null) return;
+    if (!template) return;
     this.loadTemplate(template);
   }
 
@@ -269,28 +251,29 @@ export class MicrositieInformationComponent implements OnInit, AfterViewInit {
   selectTemplate(id: number): void {
     this.selectedTemplate.set(id);
     const template = this.currentTemplate;
-    if (template === null) return;
+    if (!template) return;
     this.loadTemplate(template);
   }
 
   /**
    * Get index of current template
+   * @returns
    */
   get currentTemplate(): TemplateI {
     return this.templates().records[this.selectedTemplate()] ?? null;
   }
 
   /**
-   * Change template in siite
+   * Change template for micrositie
    * @param templateId
    * @param event
    */
   onSelectTemplate(templateId: number, event: Event): void {
     const checked = (event.target as HTMLInputElement).checked;
     if (checked) {
-      this.micrositieForm.get('templateId')?.setValue(templateId);
+      this.micrositieModel.update((prev) => ({ ...prev, templateId }));
       const template = this.templates().records.find((template) => template.id === templateId)!;
-      if (template === null) return;
+      if (!template) return;
       this.loadTemplate(template);
     }
   }
@@ -300,13 +283,9 @@ export class MicrositieInformationComponent implements OnInit, AfterViewInit {
    * @param template
    */
   loadTemplate(template: TemplateI) {
+    this._dynamicStyleService.remove('preview-template');
+    const css = ` ${template.data?.header.css ?? ''} ${template.data?.footer.css ?? ''}`;
+    this._dynamicStyleService.set('preview-template', css);
     this._templateService.template.set(template);
-
-    // Eliminar CSS anterior
-    this.styleElement?.remove();
-
-    this.styleElement = document.createElement('style');
-    this.styleElement.textContent = ` ${template.data?.header.css ?? ''} ${template.data?.footer.css ?? ''}`;
-    document.head.appendChild(this.styleElement);
   }
 }

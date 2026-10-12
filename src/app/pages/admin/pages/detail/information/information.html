@@ -1,4 +1,4 @@
-<form [formGroup]="pageForm">
+<form (submit)="save($event)">
   @let edit = page();
   @let isEditing = edit !== null;
   @let canEdit = validPermission(permission.editPage);
@@ -6,7 +6,6 @@
   @let canSave = isEditing ? canEdit : canCreate;
 
   <div class="flex flex-col gap-8 lg:p-4 p-0" data-aos="fade-left" data-aos-duration="1000">
-    <!-- Section 1: General sitie Information -->
     <section class="rounded-2xl border border-slate-200/80 bg-white shadow-sm overflow-hidden">
       <div class="border-b border-slate-100 bg-white px-6 py-5">
         <div class="flex items-center justify-between">
@@ -22,7 +21,7 @@
         <!-- Nombre -->
         <div>
           <label
-            [class.text-red-500!]="validateFormControl(pageForm, 'name')"
+            [class.text-red-500!]="hasError(pageForm.name)"
             class="block text-xs font-semibold uppercase tracking-wider text-slate-700 mb-1.5"
             for="name"
           >
@@ -32,36 +31,29 @@
             <div
               class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400"
             >
-              <i
-                class="fa-solid fa-heading"
-                [class.text-red-500!]="validateFormControl(pageForm, 'name')"
-              ></i>
+              <i class="fa-solid fa-heading" [class.text-red-500!]="hasError(pageForm.name)"></i>
             </div>
             <input
-              formControlName="name"
+              [formField]="pageForm.name"
               class="h-10 block w-full pl-10 pr-3.5 py-2.5 sm:py-3 text-sm text-slate-900 placeholder-slate-400 bg-slate-50/50 border border-slate-300 rounded-lg focus:outline-none focus:ring-0.5 focus:ring-indigo-600 focus:border-indigo-600 focus:bg-white transition-colors"
-              [class.border-red-500!.text-red-500!]="validateFormControl(pageForm, 'name')"
-              [class.text-red-500!]="validateFormControl(pageForm, 'name')"
-              [class.placeholder:text-red-500!]="validateFormControl(pageForm, 'name')"
+              [ngClass]="{
+                'border-red-500! text-red-500! placeholder:text-red-500! focus:ring-red-500!':
+                  hasError(pageForm.name),
+              }"
               id="name"
-              name="name"
-              required=""
               type="text"
             />
           </div>
-
-          <!-- Errores -->
-          @if (getErrorMessage(pageForm, 'name') !== '') {
+          @if (hasError(pageForm.name)) {
             <p class="mt-1.5 flex items-center gap-1 text-sm text-red-600">
               <i class="fa-solid fa-circle-exclamation"></i>
-              <span>{{ getErrorMessage(pageForm, 'name') }}</span>
+              {{ pageForm.name().errors()[0].message }}
             </p>
           }
         </div>
-        <!-- url -->
         <div>
           <label
-            [class.text-red-500!]="validateFormControl(pageForm, 'path')"
+            [class.text-red-500!]="hasError(pageForm.path)"
             class="block text-xs font-semibold uppercase tracking-wider text-slate-700 mb-1.5"
             for="path"
           >
@@ -70,6 +62,7 @@
 
           <div class="relative rounded-lg">
             <div
+              [appTooltip]="removePreviewPath()"
               class="bg-slate-300/20 absolute text-sm inset-y-0 left-0 pl-3.5 w-12 lg:w-48 border-e border-slate-200 flex items-center pointer-events-none text-slate-600"
             >
               <span class="hidden lg:block min-w-0 w-full truncate">
@@ -78,28 +71,24 @@
               <span class="block lg:hidden"> <i class="fa-solid fa-tag"></i></span>
             </div>
             <input
-              formControlName="path"
+              [formField]="pageForm.path"
               class="h-10 block w-full pl-14 lg:pl-50 pr-3.5 py-2.5 sm:py-3 text-sm text-slate-900 placeholder-slate-400 bg-slate-50/50 border border-slate-300 rounded-lg focus:outline-none focus:ring-0.5 focus:ring-indigo-600 focus:border-indigo-600 focus:bg-white transition-colors"
-              [class.border-red-500!.text-red-500!]="validateFormControl(pageForm, 'path')"
-              [class.text-red-500!]="validateFormControl(pageForm, 'path')"
-              [class.placeholder:text-red-500!]="validateFormControl(pageForm, 'path')"
+              [ngClass]="{
+                'border-red-500! text-red-500! placeholder:text-red-500! focus:ring-red-500!':
+                  hasError(pageForm.path),
+              }"
               id="path"
-              name="path"
-              required=""
               type="text"
             />
           </div>
-
-          <!-- Errores -->
-          @if (getErrorMessage(pageForm, 'path') !== '') {
+          @if (hasError(pageForm.path)) {
             <p class="mt-1.5 flex items-center gap-1 text-sm text-red-600">
               <i class="fa-solid fa-circle-exclamation"></i>
-              <span>{{ getErrorMessage(pageForm, 'path') }}</span>
+              {{ pageForm.path().errors()[0].message }}
             </p>
           }
         </div>
 
-        <!-- preview -->
         @if (isEditing) {
           <div>
             <span
@@ -111,7 +100,6 @@
             <div
               class="bg-white rounded-xl border border-slate-300 shadow-lg overflow-hidden flex flex-col"
             >
-              <!-- Browser Address Bar Chrome -->
               <div
                 class="bg-slate-100 px-4 py-2.5 border-b border-slate-200 flex items-center space-x-3 select-none"
               >
@@ -131,11 +119,9 @@
                   <span class="text-[10px] text-slate-400 bg-slate-100 px-1 rounded">200 OK</span>
                 </div>
               </div>
-              <!-- Canvas Preview Inner Content (Matches image elements: Flag, CMS logo, Personalizar button, Bienvenido headline) -->
               <div
                 class="relative bg-slate-300 min-h-60 h-60 lg:min-h-125 lg:h-125 flex flex-col items-center justify-center text-center overflow-hidden group backdrop-blur-2xl"
               >
-                <!-- Quick Edit Overlay Helper -->
                 <div
                   class="absolute top-4 right-4 z-20 opacity-0 group-hover:opacity-100 transition-opacity duration-200"
                 >
@@ -145,7 +131,6 @@
                     Previsualización interactiva
                   </span>
                 </div>
-                <!-- Interactive Floating 'Personalizar' Button from image -->
                 <div
                   class="absolute w-full h-full flex items-center justify-center bg-transparent z-20"
                 >
@@ -160,7 +145,6 @@
                     <span>Personalizar</span>
                   </button>
                 </div>
-                <!-- Page Canvas Content Box -->
                 <div
                   #previewContainer
                   class="w-full h-full relative flex flex-col items-center z-10 bg-white/20 opacity-50"
@@ -173,7 +157,6 @@
                   ></iframe>
                 </div>
               </div>
-              <!-- Bottom Preview Bar with Quick Actions -->
               <div
                 class="bg-white p-3 border-t border-slate-200 flex flex-wrap items-center justify-between gap-2 text-xs"
               >
@@ -189,7 +172,6 @@
     </section>
 
     @if (isEditing) {
-      <!-- Section 2: Zona de peligro -->
       <section class="rounded-2xl border-2 border-red-500 bg-white shadow-sm overflow-hidden">
         <div class="border-b border-slate-100 bg-white px-6 py-5">
           <div class="flex items-center justify-between">
@@ -208,18 +190,16 @@
         <div class="p-6 space-y-6">
           <!--Desactivar -->
           <div class="px-2 lg:px-6 transition hover:bg-slate-50/60">
-            @let status = pageForm.get('status')?.value;
+            @let status = pageModel().status;
             <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div class="space-y-1.5 max-w-xl">
                 <div class="flex items-center gap-2.5 flex-wrap">
                   <h3 class="text-sm font-bold text-slate-900">Deshabilita/Habilita la página</h3>
                   <span
-                    [class.bg-slate-100]="!status"
-                    [class.bg-emerald-100]="status"
-                    [class.text-slate-600]="!status"
-                    [class.text-emerald-600]="status"
-                    [class.ring-slate-200]="!status"
-                    [class.ring-emerald-200]="status"
+                    [ngClass]="{
+                      'bg-slate-100 text-slate-600 ring-slate-200': !status,
+                      'bg-emerald-100 text-emerald-600 ring-emerald-200': status,
+                    }"
                     class="inline-flex items-center rounded-md bg-slate-100 px-2 py-0.5 text-[11px] font-semibold ring-1 ring-inset"
                   >
                     <span
@@ -246,17 +226,14 @@
                   <span>Activar este switch desactivará la página y toda su contenido.</span>
                 </div>
               </div>
-              <!-- Switch Toggle Anatomy: OFF (slate-200) -->
               <button
-                (click)="pageForm.get('status')?.setValue(!status)"
-                aria-checked="false"
+                (click)="pageModel.update((prev) => ({ ...prev, status: !status }))"
                 [class.bg-indigo-600]="status"
                 [class.bg-slate-200]="!status"
                 class="relative inline-flex h-7 w-14 shrink-0 cursor-pointer rounded-full border-2 border-transparent p-0.5 transition-colors duration-200 ease-in-out focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:ring-offset-2 self-start sm:self-center"
                 role="switch"
                 type="button"
               >
-                <!-- Thumb -->
                 <span
                   [class.translate-x-7]="status"
                   [class.translate-x-0]="!status"
@@ -277,7 +254,6 @@
 
     @if (canSave) {
       <div class="flex w-full flex-col items-center justify-between gap-3 md:flex-row">
-        <!-- Left actions -->
         <div class="flex w-full items-center justify-start">
           @if (isEditing) {
             <button
@@ -293,50 +269,21 @@
           }
         </div>
 
-        <!-- Right actions -->
         <div class="flex w-full flex-col items-center justify-end gap-3 md:flex-row">
-          @if (isEditing) {
-            <button
-              type="button"
-              (click)="cancel()"
-              class="cursor-pointer h-10 w-full md:w-auto flex justify-center items-center py-3 px-4 border border-slate-300 rounded-lg text-sm font-semibold text-slate-700 bg-white hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-50 active:transform active:scale-[0.99] transition duration-150 ease-in-out"
-            >
-              Descartar
-            </button>
-            <!-- Save -->
-            <button
-              type="button"
-              (click)="update()"
-              [disabled]="pageForm.disabled"
-              class="cursor-pointer h-10 w-full md:w-auto flex justify-center items-center py-3 px-4 border border-transparent rounded-lg text-sm font-semibold text-white bg-indigo-500 hover:bg-indigo-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 active:transform active:scale-[0.99] transition duration-150 ease-in-out disabled:cursor-not-allowed disabled:bg-indigo-300"
-            >
-              <span class="flex items-center justify-center gap-2">
-                @if (pageForm.disabled) {
-                  <i class="fa-solid fa-spinner fa-spin text-white"></i>
-                } @else {
-                  <i class="fa-solid fa-floppy-disk"></i>
-                }
-                <span>Guardar</span>
-              </span>
-            </button>
-          } @else {
-            <!-- Save -->
-            <button
-              type="button"
-              (click)="create()"
-              [disabled]="pageForm.disabled"
-              class="cursor-pointer h-10 w-full md:w-auto flex justify-center items-center py-3 px-4 border border-transparent rounded-lg text-sm font-semibold text-white bg-indigo-500 hover:bg-indigo-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 active:transform active:scale-[0.99] transition duration-150 ease-in-out disabled:cursor-not-allowed disabled:bg-indigo-300"
-            >
-              <span class="flex items-center justify-center gap-2">
-                @if (pageForm.disabled) {
-                  <i class="fa-solid fa-spinner fa-spin text-white"></i>
-                } @else {
-                  <i class="fa-solid fa-floppy-disk"></i>
-                }
-                <span>Guardar</span>
-              </span>
-            </button>
-          }
+          <button
+            class="cursor-pointer h-10 w-full md:w-auto flex justify-center items-center py-3 px-4 border border-transparent rounded-lg text-sm font-semibold text-white bg-indigo-500 hover:bg-indigo-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 active:transform active:scale-[0.99] transition duration-150 ease-in-out disabled:cursor-not-allowed disabled:bg-indigo-300"
+            type="submit"
+            [disabled]="pageForm().invalid() || pageForm().submitting()"
+          >
+            <span class="flex items-center justify-center gap-2">
+              @if (pageForm().submitting()) {
+                <i class="fa-solid fa-spinner fa-spin text-white"></i>
+              } @else {
+                <i class="fa-solid fa-floppy-disk"></i>
+              }
+              <span>Guardar</span>
+            </span>
+          </button>
         </div>
       </div>
       <div class="h-1 block lg:hidden"></div>

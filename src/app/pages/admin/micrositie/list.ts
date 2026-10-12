@@ -1,96 +1,66 @@
-import { Component, computed, inject, OnDestroy, OnInit, signal } from '@angular/core';
+import { Component, computed, DestroyRef, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { NgClass } from '@angular/common';
-import { FormControl, FormsModule, ReactiveFormsModule, UntypedFormControl } from '@angular/forms';
-import { toSignal } from '@angular/core/rxjs-interop';
+import { toObservable, takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { form, FormField } from '@angular/forms/signals';
 import { ToastrService } from '@iqx-limited/ngx-toastr';
-import { PaginationComponent } from 'app/shared/components/pagination/pagination';
-import { PermissionComponent } from 'app/shared/components/permission/permission';
-import { PaginationResquestI } from 'app/shared/interfaces/response.interface';
-import { PermissionCode, validAction } from 'app/shared/utils/permission.utils';
-import { MicrositieI } from 'app/core/interfaces/micrositie.interface';
-import { MicrosityService } from 'app/core/services/micrositie.service';
-import { TitleHeaderComponent } from 'app/shared/components/title-header/title-header';
-import { Subject, takeUntil, debounceTime } from 'rxjs';
+import { MicrositieI } from '@core/interfaces';
+import { MicrosityService } from '@core/services';
+import { PaginationComponent, PermissionComponent, TitleHeaderComponent } from '@shared/components';
+import { TableSearchI, PaginationResquestI } from '@shared/interfaces';
+import { PermissionCode, validAction } from '@shared/utils';
+import { debounceTime } from 'rxjs';
 
 @Component({
   selector: 'microsities-list',
   templateUrl: './list.html',
-  imports: [
-    FormsModule,
-    ReactiveFormsModule,
-    PaginationComponent,
-    PermissionComponent,
-    NgClass,
-    TitleHeaderComponent,
-  ],
+  imports: [PaginationComponent, PermissionComponent, NgClass, TitleHeaderComponent, FormField],
 })
-export class MicrositieList implements OnInit, OnDestroy {
+export class MicrositieList {
   limit = signal<number>(10);
-  selectedMicrositie = signal<MicrositieI | null>(null);
+  tableSearchModel = signal<TableSearchI>({
+    search: '',
+    status: null,
+  });
 
-  searchInputControl: UntypedFormControl = new UntypedFormControl();
-  statusControl: FormControl<boolean | null> = new FormControl(null);
-
-  permission = PermissionCode;
-
-  private _unsubscribeAll: Subject<any> = new Subject<any>();
+  tableSearchForm = form(this.tableSearchModel);
 
   private readonly _microsityService = inject(MicrosityService);
   private readonly _toastrService = inject(ToastrService);
   private readonly _router = inject(Router);
+  private readonly _destroyRef = inject(DestroyRef);
 
-  readonly microsities =this._microsityService.microsities;
+  readonly permission = PermissionCode;
+  readonly microsities = this._microsityService.microsities;
 
   readonly totalMicrosities = computed(() => this.microsities().total);
 
   /**
    * Constructor
    */
-  constructor() {}
-
-  // -----------------------------------------------------------------------------------------------------
-  // @ Lifecycle hooks
-  // -----------------------------------------------------------------------------------------------------
-
-  /**
-   * On init
-   */
-  ngOnInit(): void {
-    // Subscribe to search input field value changes
-    this.searchInputControl.valueChanges
-      .pipe(debounceTime(700), takeUntil(this._unsubscribeAll))
-      .subscribe((search: string) => {
-        if (search) this.getAll(1, search === '' ? null : search, this.statusControl.value);
+  constructor() {
+    toObservable(this.tableSearchForm.search().value)
+      .pipe(debounceTime(600), takeUntilDestroyed(this._destroyRef))
+      .subscribe((search) => {
+        if (search) this.getAll(1, search === '' ? null : search, this.tableSearchModel().status);
       });
 
-    this.statusControl.valueChanges
-      .pipe(takeUntil(this._unsubscribeAll))
-      .subscribe((status: boolean | null) => {
+    toObservable(this.tableSearchForm.status().value)
+      .pipe(takeUntilDestroyed(this._destroyRef))
+      .subscribe((status) => {
         this.getAll(
           1,
-          this.searchInputControl.value === '' ? null : this.searchInputControl.value,
+          this.tableSearchModel().search === '' ? null : this.tableSearchModel().search,
           status,
         );
       });
   }
 
   /**
-   * On destroy
-   */
-  ngOnDestroy(): void {
-    // Unsubscribe from all subscriptions
-    this._unsubscribeAll.next(null);
-    this._unsubscribeAll.complete();
-  }
-
-  // -----------------------------------------------------------------------------------------------------
-  // @ Public methods
-  // -----------------------------------------------------------------------------------------------------
-
-  /**
    * Get all
    * @param page
+   * @param search
+   * @param status
    */
   getAll(page: number, search: string | null = null, status: boolean | null = null) {
     const params: PaginationResquestI = {
@@ -101,7 +71,7 @@ export class MicrositieList implements OnInit, OnDestroy {
     };
     this._microsityService
       .getAll(params)
-      .pipe(takeUntil(this._unsubscribeAll))
+      .pipe(takeUntilDestroyed(this._destroyRef))
       .subscribe({
         error: (response) => {
           this._toastrService.error(response.error.message, 'Aviso');
@@ -111,7 +81,6 @@ export class MicrositieList implements OnInit, OnDestroy {
 
   /**
    * Open modal micrositie detail
-   *
    * @param data
    */
   openDetailsModal(micrositie: MicrositieI | null): void {
@@ -124,8 +93,9 @@ export class MicrositieList implements OnInit, OnDestroy {
 
   /**
    * Valid render permission
+   * @returns
    */
-  validPermission(code: string) {
+  validPermission(code: string): boolean {
     return validAction(code);
   }
 
@@ -136,8 +106,8 @@ export class MicrositieList implements OnInit, OnDestroy {
   onPageChange(page: number): void {
     this.getAll(
       page,
-      this.searchInputControl.value === '' ? null : this.searchInputControl.value,
-      this.statusControl.value,
+      this.tableSearchModel().search === '' ? null : this.tableSearchModel().search,
+      this.tableSearchModel().status,
     );
   }
 
@@ -149,8 +119,8 @@ export class MicrositieList implements OnInit, OnDestroy {
     this.limit.set(limit);
     this.getAll(
       1,
-      this.searchInputControl.value === '' ? null : this.searchInputControl.value,
-      this.statusControl.value,
+      this.tableSearchModel().search === '' ? null : this.tableSearchModel().search,
+      this.tableSearchModel().status,
     );
   }
 
@@ -158,16 +128,8 @@ export class MicrositieList implements OnInit, OnDestroy {
    * Clear input search
    */
   clearSearch() {
-    this.searchInputControl.reset();
-    this.getAll(1, null, this.statusControl.value);
-  }
-
-  /**
-   * Close modal
-   */
-  closeModal(load: boolean) {
-    this.selectedMicrositie.set(null);
-    if (load) this.onChangeStatus(null);
+    this.tableSearchModel.update((prev) => ({ ...prev, search: '' }));
+    this.getAll(1, null, this.tableSearchModel().status);
   }
 
   /**
@@ -175,6 +137,7 @@ export class MicrositieList implements OnInit, OnDestroy {
    * @param status
    */
   onChangeStatus(status: boolean | null) {
-    this.statusControl.setValue(status);
+    this.tableSearchModel.update((prev) => ({ ...prev, status }));
+    this.onPageChange(1);
   }
 }

@@ -36,7 +36,7 @@ export interface OnlyPageDetailReferenceI {
 export interface PageI {
   id?: number;
   name: string;
-  path?: string;
+  path: string;
   mongoId?: string;
   isHomePage?: boolean;
   sitieId?: number;

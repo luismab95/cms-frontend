@@ -246,6 +246,7 @@ export class PagesCanvas implements AfterViewInit, OnDestroy {
     this._pageService
       .saveDraft(page.id!, {
         name: page.name,
+        path: page.path,
         data,
       })
       .pipe(takeUntilDestroyed(this._destroyRef))
@@ -318,6 +319,7 @@ export class PagesCanvas implements AfterViewInit, OnDestroy {
     this._pageService
       .update(page.id!, {
         name: page.name,
+        path: page.path,
         data: {
           body: {
             data: page.data?.body.data!,

@@ -1,21 +1,17 @@
-import { Component, inject, OnDestroy, OnInit, signal } from '@angular/core';
-import { toSignal } from '@angular/core/rxjs-interop';
+import { Component, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
-import { TemplateService } from 'app/core/services/templates.service';
-import { DrawerComponent } from 'app/shared/components/drawer/drawer';
-import { PermissionComponent } from 'app/shared/components/permission/permission';
-import { DrawerI } from 'app/shared/interfaces/drawer.interface';
-import { PermissionCode, validAction } from 'app/shared/utils/permission.utils';
+import { TemplateService } from '@core/services';
+import { DrawerComponent, PermissionComponent } from '@shared/components';
+import { DrawerI } from '@shared/interfaces';
+import { PermissionCode, validAction } from '@shared/utils';
 import { TemplatesInformationComponent } from './information/information';
-import { Subject } from 'rxjs';
 
 @Component({
   selector: 'templates-detail',
   templateUrl: './detail.html',
   imports: [DrawerComponent, PermissionComponent, TemplatesInformationComponent],
 })
-export class TemplatesDetail implements OnInit, OnDestroy {
-  permission = PermissionCode;
+export class TemplatesDetail {
   panels = signal<DrawerI[]>([
     {
       id: 'information',
@@ -25,45 +21,22 @@ export class TemplatesDetail implements OnInit, OnDestroy {
     },
   ]);
   selectedPanel = signal<string>('');
-
-  private _unsubscribeAll: Subject<any> = new Subject<any>();
-
+  
   private readonly _templateService = inject(TemplateService);
   private readonly _router = inject(Router);
-
+  
+  readonly permission = PermissionCode;
   readonly template = this._templateService.template;
+
   /**
    * Constructor
    */
-  constructor() {}
-
-  // -----------------------------------------------------------------------------------------------------
-  // @ Lifecycle hooks
-  // -----------------------------------------------------------------------------------------------------
-
-  /**
-   * On init
-   */
-  ngOnInit(): void {
+  constructor() {
     this.selectedPanel.set(this.panels()[0].id);
   }
 
   /**
-   * On destroy
-   */
-  ngOnDestroy(): void {
-    // Unsubscribe from all subscriptions
-    this._unsubscribeAll.next(null);
-    this._unsubscribeAll.complete();
-  }
-
-  // -----------------------------------------------------------------------------------------------------
-  // @ Public methods
-  // -----------------------------------------------------------------------------------------------------
-
-  /**
    * Navigate to the panel
-   *
    * @param panel
    */
   goToPanel(panel: string): void {
@@ -72,6 +45,7 @@ export class TemplatesDetail implements OnInit, OnDestroy {
 
   /**
    * Valid render permission
+   * @returns
    */
   validPermission(code: string) {
     return validAction(code);

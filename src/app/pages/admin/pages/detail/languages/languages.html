@@ -1,210 +1,182 @@
-<form [formGroup]="languageForm">
-  <div class="flex flex-col gap-8 lg:p-4 p-0" data-aos="fade-left" data-aos-duration="1000">
+<form (submit)="update($event)">
+  <div class="flex flex-col gap-8 p-0 lg:p-4" data-aos="fade-left" data-aos-duration="1000">
     @let canEdit = validPermission(permission.editContentPage);
-    <!-- Información SEO -->
-    <section class="rounded-2xl border border-slate-200/80 bg-white shadow-sm overflow-hidden">
-      <!-- Header -->
+
+    <section class="overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-sm">
       <div class="border-b border-slate-100 bg-white px-6 py-5">
         <div class="flex items-center justify-between">
           <div>
             <h2 class="text-xl font-bold text-slate-900">Información SEO</h2>
-            <p class="text-xs text-slate-500 mt-0.5">
+
+            <p class="mt-1 text-xs text-slate-500">
               Información básica de SEO y meta tags en todos los idiomas activos de tu sitio web.
-              Comprende datos como alias, palabras clave y descripción.
+              Configura el alias, las palabras clave y la descripción de cada página.
             </p>
           </div>
         </div>
       </div>
-      <!-- Content -->
-      <div class="lg:p-6 p-2 space-y-6">
-        <!-- Language tabs -->
+
+      <div class="space-y-6 p-2 lg:p-6">
         <tabs-component [tabs]="tabs()" (selectedTabEvent)="selectLanguage($event)">
-          <!-- Language content -->
           <div class="grid grid-cols-1 gap-6">
-            <div formArrayName="languages" class="col-span-1 lg:col-span-12 space-y-6">
-              <!-- Warning -->
+            <div class="col-span-1 space-y-6 lg:col-span-12">
               <div
-                class="bg-amber-50/80 border border-amber-200 rounded-xl p-4 flex items-start gap-3 text-amber-900"
+                class="flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50/80 p-4 text-amber-900"
               >
-                <i class="fa-solid fa-triangle-exclamation text-amber-600 mt-0.5 shrink-0"></i>
+                <i class="fa-solid fa-triangle-exclamation mt-0.5 shrink-0 text-amber-600"></i>
+
                 <div class="text-xs sm:text-sm">
                   <span class="font-bold text-amber-900"> Visibilidad pública: </span>
-                  La información ingresada en esta sección se proyecta públicamente en los metadatos
-                  de las páginas generados por el CMS.
+                  La información ingresada en esta sección se utiliza para generar los metadatos
+                  públicos de las páginas administradas por el CMS.
                 </div>
               </div>
-              <!-- Selected language -->
-              @for (language of languages().records; track language.id; let i = $index) {
-                <div
-                  [formGroupName]="i"
-                  [class.hidden]="selectedLanguage() !== i"
-                  class="space-y-6"
-                >
-                  <!-- Alias -->
-                  <div>
-                    <label
-                      [class.text-red-500!]="validateFormControl(selectedLanguageForm(), 'alias')"
-                      class="block text-xs font-semibold uppercase tracking-wider text-slate-700 mb-1.5"
-                      for="alias"
-                    >
-                      Alias <span class="text-rose-500 font-bold"> * </span>
-                    </label>
 
-                    <div class="relative rounded-lg">
-                      <div
-                        class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400"
+              @for (language of languages().records; track language.id; let index = $index) {
+                @if (selectedLanguage() === index) {
+                  <div class="space-y-5">
+                    <div class="space-y-2">
+                      <label
+                        [class.text-red-500!]="hasError(languageForm.languages[index]['alias'])"
+                        [for]="'alias-' + language.id"
+                        class="flex items-center gap-1 text-sm font-semibold text-slate-700"
                       >
-                        <i
-                          class="fa-solid fa-align-right"
-                          [class.text-red-500!]="
-                            validateFormControl(selectedLanguageForm(), 'alias')
-                          "
-                        ></i>
-                      </div>
+                        Alias de la página
+                        <span class="text-rose-500">*</span>
+                      </label>
 
-                      <input
-                        formControlName="alias"
-                        class="h-10 block w-full pl-10 pr-3.5 py-2.5 sm:py-3 text-sm text-slate-900 placeholder-slate-400 bg-slate-50/50 border border-slate-300 rounded-lg focus:outline-none focus:ring-0.5 focus:ring-indigo-600 focus:border-indigo-600 focus:bg-white transition-colors"
-                        [class.border-red-500!.text-red-500!]="
-                          validateFormControl(selectedLanguageForm(), 'alias')
-                        "
-                        [class.text-red-500!]="validateFormControl(selectedLanguageForm(), 'alias')"
-                        [class.placeholder:text-red-500!]="
-                          validateFormControl(selectedLanguageForm(), 'alias')
-                        "
-                        id="alias"
-                        name="alias"
-                        type="text"
-                        required
-                      />
+                      <div class="relative rounded-lg">
+                        <div
+                          class="absolute top-4 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400"
+                        >
+                          <i
+                            class="fa-solid fa-align-right"
+                            [class.text-red-500!]="hasError(languageForm.languages[index]['alias'])"
+                          ></i>
+                        </div>
+
+                        <input
+                          [id]="'alias-' + language.id"
+                          type="text"
+                          [formField]="languageForm.languages[index]['alias']"
+                          placeholder="Ej. quienes-somos"
+                          class="block w-full pl-10 pr-3.5 py-2.5 sm:py-3 text-sm text-slate-900 placeholder-slate-400 bg-slate-50/50 border border-slate-300 rounded-lg focus:outline-none focus:ring-0.5 focus:ring-indigo-600 focus:border-indigo-600 focus:bg-white transition-colors"
+                          [ngClass]="{
+                            'border-red-500! text-red-500! placeholder:text-red-500! focus:ring-red-500!':
+                              hasError(languageForm.languages[index]['alias']),
+                          }"
+                        />
+                        @if (hasError(languageForm.languages[index]['alias'])) {
+                          <p class="mt-1.5 flex items-center gap-1 text-sm text-red-600">
+                            <i class="fa-solid fa-circle-exclamation"></i>
+                            {{ languageForm.languages[index]['alias']().errors()[0].message }}
+                          </p>
+                        }
+                        <p class="text-xs text-slate-400 mt-1">
+                          Identificador legible utilizado en la URL de la página.
+                        </p>
+                      </div>
                     </div>
 
-                    <!-- Errors -->
-
-                    @if (getErrorMessage(selectedLanguageForm(), 'alias') !== '') {
-                      <p class="mt-1.5 flex items-center gap-1 text-sm text-red-600">
-                        <i class="fa-solid fa-circle-exclamation"></i>
-
-                        <span>
-                          {{ getErrorMessage(selectedLanguageForm(), 'alias') }}
-                        </span>
-                      </p>
-                    }
-                  </div>
-                  <!-- Description -->
-                  <div>
-                    <label
-                      [class.text-red-500!]="
-                        validateFormControl(selectedLanguageForm(), 'description')
-                      "
-                      class="block text-xs font-semibold uppercase tracking-wider text-slate-700 mb-1.5"
-                      for="description"
-                    >
-                      Descripción
-
-                      <span class="text-rose-500 font-bold"> * </span>
-                    </label>
-
-                    <div class="relative rounded-lg">
-                      <div
-                        class="absolute left-0 top-4 pl-3.5 flex items-center pointer-events-none text-slate-400"
-                      >
-                        <i
-                          class="fa-solid fa-align-justify"
-                          [class.text-red-500!]="
-                            validateFormControl(selectedLanguageForm(), 'description')
-                          "
-                        ></i>
-                      </div>
-
-                      <textarea
-                        formControlName="description"
-                        class="block w-full pl-10 pr-3.5 py-2.5 sm:py-3 text-sm text-slate-900 placeholder-slate-400 bg-slate-50/50 border border-slate-300 rounded-lg focus:outline-none focus:ring-0.5 focus:ring-indigo-600 focus:border-indigo-600 focus:bg-white transition-colors"
-                        [class.border-red-500!.text-red-500!]="
-                          validateFormControl(selectedLanguageForm(), 'description')
-                        "
+                    <div class="space-y-2">
+                      <label
                         [class.text-red-500!]="
-                          validateFormControl(selectedLanguageForm(), 'description')
+                          hasError(languageForm.languages[index]['description'])
                         "
-                        [class.placeholder:text-red-500!]="
-                          validateFormControl(selectedLanguageForm(), 'description')
-                        "
-                        id="description"
-                        name="description"
-                        rows="5"
-                        required
-                      ></textarea>
-                    </div>
-
-                    <!-- Errors -->
-
-                    @if (getErrorMessage(selectedLanguageForm(), 'description') !== '') {
-                      <p class="mt-1.5 flex items-center gap-1 text-sm text-red-600">
-                        <i class="fa-solid fa-circle-exclamation"></i>
-
-                        <span>
-                          {{ getErrorMessage(selectedLanguageForm(), 'description') }}
-                        </span>
-                      </p>
-                    }
-                  </div>
-                  <!-- Keywords -->
-                  <div>
-                    <label
-                      [class.text-red-500!]="
-                        validateFormControl(selectedLanguageForm(), 'keywords')
-                      "
-                      class="block text-xs font-semibold uppercase tracking-wider text-slate-700 mb-1.5"
-                      for="keywords"
-                    >
-                      Palabras clave
-
-                      <span class="text-rose-500 font-bold"> * </span>
-                    </label>
-
-                    <div class="relative rounded-lg">
-                      <div
-                        class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400"
+                        class="text-xs font-semibold uppercase tracking-wider text-slate-700 mb-1.5 flex flex-row justify-between items-center"
+                        [for]="'description-' + language.id"
                       >
-                        <i
-                          class="fa-solid fa-align-right"
-                          [class.text-red-500!]="
-                            validateFormControl(selectedLanguageForm(), 'keywords')
-                          "
-                        ></i>
+                        <span>
+                          Meta descripción
+                          <span class="text-rose-500 font-bold">*</span>
+                        </span>
+                        <span class="font-normal">
+                          {{ languageForm.languages[index]['description']().value().length }}/255
+                        </span>
+                      </label>
+                      <div class="relative rounded-lg">
+                        <div
+                          class="absolute top-4 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400"
+                        >
+                          <i
+                            class="fa-solid fa-align-right"
+                            [class.text-red-500!]="
+                              hasError(languageForm.languages[index]['description'])
+                            "
+                          ></i>
+                        </div>
+                        <textarea
+                          [id]="'description-' + language.id"
+                          rows="4"
+                          [formField]="languageForm.languages[index]['description']"
+                          placeholder="Escribe una descripción breve y relevante para los motores de búsqueda..."
+                          class="block w-full pl-10 pr-3.5 py-2.5 sm:py-3 text-sm text-slate-900 placeholder-slate-400 bg-slate-50/50 border border-slate-300 rounded-lg focus:outline-none focus:ring-0.5 focus:ring-indigo-600 focus:border-indigo-600 focus:bg-white transition-colors"
+                          [ngClass]="{
+                            'border-red-500! text-red-500! placeholder:text-red-500! focus:ring-red-500!':
+                              hasError(languageForm.languages[index]['description']),
+                          }"
+                        ></textarea>
+                        @if (hasError(languageForm.languages[index]['description'])) {
+                          <p class="mt-1.5 flex items-center gap-1 text-sm text-red-600">
+                            <i class="fa-solid fa-circle-exclamation"></i>
+                            {{ languageForm.languages[index]['description']().errors()[0].message }}
+                          </p>
+                        }
+                        <p class="text-xs text-slate-400 mt-1">
+                          Resume el contenido principal de la página.
+                        </p>
                       </div>
-
-                      <input
-                        formControlName="keywords"
-                        class="h-10 block w-full pl-10 pr-3.5 py-2.5 sm:py-3 text-sm text-slate-900 placeholder-slate-400 bg-slate-50/50 border border-slate-300 rounded-lg focus:outline-none focus:ring-0.5 focus:ring-indigo-600 focus:border-indigo-600 focus:bg-white transition-colors"
-                        [class.border-red-500!.text-red-500!]="
-                          validateFormControl(selectedLanguageForm(), 'keywords')
-                        "
-                        [class.text-red-500!]="
-                          validateFormControl(selectedLanguageForm(), 'keywords')
-                        "
-                        [class.placeholder:text-red-500!]="
-                          validateFormControl(selectedLanguageForm(), 'keywords')
-                        "
-                        id="keywords"
-                        name="keywords"
-                        type="text"
-                        required
-                      />
                     </div>
 
-                    <!-- Errors -->
-                    @if (getErrorMessage(selectedLanguageForm(), 'keywords') !== '') {
-                      <p class="mt-1.5 flex items-center gap-1 text-sm text-red-600">
-                        <i class="fa-solid fa-circle-exclamation"></i>
-
+                    <div class="space-y-2">
+                      <label
+                        [class.text-red-500!]="hasError(languageForm.languages[index]['keywords'])"
+                        class="text-xs font-semibold uppercase tracking-wider text-slate-700 mb-1.5 flex flex-row justify-between items-center"
+                        [for]="'keywords-' + language.id"
+                      >
                         <span>
-                          {{ getErrorMessage(selectedLanguageForm(), 'keywords') }}
+                          Palabras clave SEO
+                          <span class="text-rose-500 font-bold">*</span>
                         </span>
-                      </p>
-                    }
+                        <span class="font-normal">
+                          {{ languageForm.languages[index]['keywords']().value().length }}/255
+                        </span>
+                      </label>
+                      <div class="relative rounded-lg">
+                        <div
+                          class="absolute top-4 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400"
+                        >
+                          <i
+                            class="fa-solid fa-align-right"
+                            [class.text-red-500!]="
+                              hasError(languageForm.languages[index]['keywords'])
+                            "
+                          ></i>
+                        </div>
+                        <textarea
+                          [id]="'keywords-' + language.id"
+                          rows="3"
+                          [formField]="languageForm.languages[index]['keywords']"
+                          placeholder="Ej. servicios, empresa, soluciones digitales"
+                          class="block w-full pl-10 pr-3.5 py-2.5 sm:py-3 text-sm text-slate-900 placeholder-slate-400 bg-slate-50/50 border border-slate-300 rounded-lg focus:outline-none focus:ring-0.5 focus:ring-indigo-600 focus:border-indigo-600 focus:bg-white transition-colors"
+                          [ngClass]="{
+                            'border-red-500! text-red-500! placeholder:text-red-500! focus:ring-red-500!':
+                              hasError(languageForm.languages[index]['keywords']),
+                          }"
+                        ></textarea>
+                        @if (hasError(languageForm.languages[index]['keywords'])) {
+                          <p class="mt-1.5 flex items-center gap-1 text-sm text-red-600">
+                            <i class="fa-solid fa-circle-exclamation"></i>
+                            {{ languageForm.languages[index]['keywords']().errors()[0].message }}
+                          </p>
+                        }
+                        <p class="text-xs text-slate-400 mt-1">
+                          Separa las palabras clave con comas.
+                        </p>
+                      </div>
+                    </div>
                   </div>
-                </div>
+                }
               }
             </div>
           </div>
@@ -212,40 +184,37 @@
       </div>
     </section>
 
-    <!-- Actions -->
     @if (canEdit) {
       <div class="flex w-full flex-col items-center justify-between gap-3 md:flex-row">
-        <!-- Left actions -->
-        <div class="flex w-full items-center justify-start"></div>
-        <!-- Right actions -->
+        <div class="w-full text-xs text-slate-500"></div>
         <div class="flex w-full flex-col items-center justify-end gap-3 md:flex-row">
-          <!-- Cancel -->
           <button
             type="button"
             (click)="cancel()"
-            class="cursor-pointer h-10 w-full md:w-auto flex justify-center items-center py-3 px-4 border border-slate-300 rounded-lg text-sm font-semibold text-slate-700 bg-white hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-50 active:transform active:scale-[0.99] transition duration-150 ease-in-out"
+            [disabled]="languageForm().submitting()"
+            class="flex h-10 w-full cursor-pointer items-center justify-center rounded-lg border border-slate-300 bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition duration-150 ease-in-out hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-slate-200 disabled:cursor-not-allowed disabled:opacity-50 md:w-auto"
           >
             Descartar
           </button>
-          <!-- Save -->
+
           <button
-            type="button"
-            (click)="update()"
-            [disabled]="languageForm.disabled"
-            class="cursor-pointer h-10 w-full md:w-auto flex justify-center items-center py-3 px-4 border border-transparent rounded-lg text-sm font-semibold text-white bg-indigo-500 hover:bg-indigo-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 active:transform active:scale-[0.99] transition duration-150 ease-in-out disabled:cursor-not-allowed disabled:bg-indigo-300"
+            type="submit"
+            [disabled]="languageForm().invalid() || languageForm().submitting()"
+            class="flex h-10 w-full cursor-pointer items-center justify-center rounded-lg border border-transparent bg-indigo-500 px-4 py-3 text-sm font-semibold text-white transition duration-150 ease-in-out hover:bg-indigo-600 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:bg-indigo-300 md:w-auto"
           >
             <span class="flex items-center justify-center gap-2">
-              @if (languageForm.disabled) {
-                <i class="fa-solid fa-spinner fa-spin text-white"></i>
+              @if (languageForm().submitting()) {
+                <i class="fa-solid fa-spinner fa-spin"></i>
               } @else {
                 <i class="fa-solid fa-floppy-disk"></i>
+                <span>Guardar</span>
               }
-              <span> Guardar </span>
             </span>
           </button>
         </div>
       </div>
-      <div class="h-1 block lg:hidden"></div>
+
+      <div class="block h-1 lg:hidden"></div>
     } @else {
       <permission-component [show]="false" />
     }

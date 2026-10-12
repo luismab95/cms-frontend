@@ -1,89 +1,73 @@
 import {
   AfterViewInit,
   Component,
+  DestroyRef,
+  effect,
   ElementRef,
   inject,
-  OnDestroy,
-  OnInit,
   signal,
+  untracked,
   viewChild,
 } from '@angular/core';
-import { toSignal } from '@angular/core/rxjs-interop';
-import {
-  FormsModule,
-  ReactiveFormsModule,
-  UntypedFormBuilder,
-  UntypedFormGroup,
-  Validators,
-} from '@angular/forms';
+import { NgClass } from '@angular/common';
 import { Router } from '@angular/router';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { form, FormField, maxLength, required, submit } from '@angular/forms/signals';
 import { ToastrService } from '@iqx-limited/ngx-toastr';
-import { TemplateDataMongoI, TemplateI } from 'app/core/interfaces/template.interface';
-import { TemplateService } from 'app/core/services/templates.service';
-import { PermissionComponent } from 'app/shared/components/permission/permission';
-import { PermissionCode, validAction } from 'app/shared/utils/permission.utils';
-import { CmsValidators } from 'app/shared/utils/validators.util';
-import { Subject, takeUntil } from 'rxjs';
-import { GridComponent } from 'app/shared/components/grid/grid';
-import { PageService } from 'app/core/services/pages.service';
-import { SitieService } from 'app/core/services/sitie.service';
-import { createPageConfig } from 'app/shared/utils/grid.utils';
+import { TemplateI } from '@core/interfaces';
+import { TemplateService, SitieService, DynamicStyleService } from '@core/services';
+import { PermissionComponent, GridComponent } from '@shared/components';
+import { PermissionCode, createPageConfig, validAction, hasErrorFormField } from '@shared/utils';
+import { firstValueFrom } from 'rxjs';
 
 @Component({
   selector: 'templates-information',
   templateUrl: './information.html',
-  imports: [FormsModule, ReactiveFormsModule, PermissionComponent, GridComponent],
+  imports: [PermissionComponent, GridComponent, FormField, NgClass],
 })
-export class TemplatesInformationComponent implements OnInit, AfterViewInit, OnDestroy {
+export class TemplatesInformationComponent implements AfterViewInit {
   private readonly previewContainer =
     viewChild.required<ElementRef<HTMLElement>>('previewContainer');
 
-  previewScale = signal(1);
+  previewScale = signal<number>(1);
+  templateModel = signal<TemplateI>({
+    name: '',
+    description: '',
+    status: false,
+  });
 
-  private readonly _formBuilder = inject(UntypedFormBuilder);
+  templateForm = form(this.templateModel, (schemaPath) => {
+    required(schemaPath.name, { message: 'Nombre es obligatorio.' });
+    required(schemaPath.description, { message: 'Descripción es obligatorio.' });
+    maxLength(schemaPath.description, 255, {
+      message: 'Descripción no puede superar los 255 caracteres.',
+    });
+  });
+
   private readonly _templateService = inject(TemplateService);
-  private readonly _toastrService = inject(ToastrService);
-  private readonly _pageService = inject(PageService);
   private readonly _sitieService = inject(SitieService);
+  private readonly _dynamicStyleService = inject(DynamicStyleService);
+  private readonly _toastrService = inject(ToastrService);
+  private readonly _destroyRef = inject(DestroyRef);
   private readonly _router = inject(Router);
 
-  private _unsubscribeAll: Subject<any> = new Subject<any>();
-  private styleElement?: HTMLStyleElement;
-
-  permission = PermissionCode;
-  validateFormControl = CmsValidators.validateFormControl;
-  getErrorMessage = CmsValidators.getErrorMessage;
-
-  template = this._templateService.template;
-  sitie = this._sitieService.sitie;
-
-  templateForm!: UntypedFormGroup;
+  readonly permission = PermissionCode;
+  readonly hasError = hasErrorFormField;
+  readonly template = this._templateService.template;
+  readonly sitie = this._sitieService.sitie;
 
   /**
    * Constructor
    */
-  constructor() {}
-
-  // -----------------------------------------------------------------------------------------------------
-  // @ Lifecycle hooks
-  // -----------------------------------------------------------------------------------------------------
-
-  /**
-   * OnInit
-   */
-  ngOnInit(): void {
-    this.templateForm = this._formBuilder.group({
-      name: ['', Validators.required],
-      description: ['', [Validators.required, Validators.maxLength(255)]],
-      status: [],
+  constructor() {
+    effect(() => {
+      const template = this.template();
+      if (!template) return;
+      this.templateModel.set(template);
+      untracked(() => {
+        this.loadTemplate(template);
+      });
     });
-
-    const template = this.template();
-
-    if (template) {
-      this.templateForm.patchValue({ ...template });
-      this.loadTemplate(template);
-    }
   }
 
   /**
@@ -99,19 +83,6 @@ export class TemplatesInformationComponent implements OnInit, AfterViewInit, OnD
   }
 
   /**
-   * On destroy
-   */
-  ngOnDestroy(): void {
-    // Unsubscribe from all subscriptions
-    this._unsubscribeAll.next(null);
-    this._unsubscribeAll.complete();
-  }
-
-  // -----------------------------------------------------------------------------------------------------
-  // @ Public methods
-  // -----------------------------------------------------------------------------------------------------
-
-  /**
    * Go to Canvas
    */
   goToCanvas(): void {
@@ -123,93 +94,93 @@ export class TemplatesInformationComponent implements OnInit, AfterViewInit, OnD
   }
 
   /**
+   * Save event
+   * @param event
+   */
+  async save(event: SubmitEvent): Promise<void> {
+    if (this.template()) {
+      await this.update(event);
+    } else {
+      await this.create(event);
+    }
+  }
+
+  /**
    * Add page
+   * @param event
    * @returns
    */
-  create(): void {
-    if (this.templateForm.invalid) {
-      this.templateForm.markAllAsTouched();
-      return;
-    }
+  async create(event: SubmitEvent): Promise<void> {
+    try {
+      event.preventDefault();
+      await submit(this.templateForm, async (field) => {
+        const newHeaderConfig = createPageConfig('header');
+        const newFooterConfig = createPageConfig('footer');
 
-    this.templateForm.disable();
+        const newTemplate = {
+          ...field().value(),
+          data: {
+            header: {
+              css: newHeaderConfig.css,
+              config: newHeaderConfig.config,
+              data: [],
+            },
+            footer: {
+              css: newFooterConfig.css,
+              config: newFooterConfig.config,
+              data: [],
+            },
+          },
+        };
 
-    const newHeaderConfig = createPageConfig('header');
-    const newFooterConfig = createPageConfig('footer');
-
-    // ADD data
-    this.templateForm.value.data = {
-      header: {
-        css: newHeaderConfig.css,
-        config: newHeaderConfig.config,
-        data: [],
-      },
-      footer: {
-        css: newFooterConfig.css,
-        config: newFooterConfig.config,
-        data: [],
-      },
-    } as TemplateDataMongoI;
-
-    //Delete status
-    delete this.templateForm.value.status;
-
-    this._templateService
-      .create(this.templateForm.value)
-      .pipe(takeUntil(this._unsubscribeAll))
-      .subscribe({
-        next: () => {
-          this.templateForm.enable();
-          this._toastrService.success('La plantilla se creó correctamente.', 'Plantilla creada');
-          this._router.navigateByUrl('/admin/content/templates');
-        },
-        error: (response) => {
-          this.templateForm.enable();
-          this._toastrService.error(
-            response.error?.message || 'No fue posible crear la plantilla.',
-            'Error al crear',
-          );
-        },
+        delete newTemplate.status;
+        await firstValueFrom(
+          this._templateService.create(newTemplate).pipe(takeUntilDestroyed(this._destroyRef)),
+        );
+        this._toastrService.success('La plantilla se creó correctamente.', 'Plantilla creada');
+        this._router.navigateByUrl('/admin/content/templates');
       });
+    } catch (err: any) {
+      this._toastrService.error(
+        err.error?.message || 'No fue posible crear la plantilla.',
+        'Error al crear',
+      );
+    }
   }
 
   /**
    * Update page
+   * @param event
+   * @returns
    */
-  update() {
-    // Return if the form is invalid
-    if (this.templateForm.invalid) {
-      this.templateForm.markAllAsTouched();
-      return;
-    }
+  async update(event: SubmitEvent): Promise<void> {
+    try {
+      event.preventDefault();
+      await submit(this.templateForm, async (field) => {
+        const template = this.template();
+        if (!template) return;
 
-    const template = this.template();
+        const updateTemplate = {
+          ...field().value(),
+          data: template.data,
+        };
 
-    if (!template === null) return;
-
-    // Disable the form
-    this.templateForm.disable();
-
-    this._templateService
-      .update(template?.id!, this.templateForm.value)
-      .pipe(takeUntil(this._unsubscribeAll))
-      .subscribe({
-        next: () => {
-          this.templateForm.enable();
-          this._toastrService.success(
-            'La informacion de la plantilla se actualizó correctamente.',
-            'Plantilla actualizada',
-          );
-        },
-        error: (response) => {
-          this.templateForm.enable();
-          // Set the alert
-          this._toastrService.error(
-            response.error?.message || 'No fue posible actualizar la informacion de la plantilla.',
-            'Error al actualizar',
-          );
-        },
+        await firstValueFrom(
+          this._templateService
+            .update(template.id!, updateTemplate)
+            .pipe(takeUntilDestroyed(this._destroyRef)),
+        );
+        this._toastrService.success(
+          'La informacion de la plantilla se actualizó correctamente.',
+          'Plantilla actualizada',
+        );
       });
+    } catch (err: any) {
+      this._toastrService.error(
+        err.error?.message || 'No fue posible actualizar la información de la plantilla.',
+        'Error al actualizar',
+      );
+    }
   }
 
   /**
@@ -217,12 +188,9 @@ export class TemplatesInformationComponent implements OnInit, AfterViewInit, OnD
    */
   cancel(): void {
     const template = this.template();
+    if (!template) return;
 
-    this.templateForm.reset();
-
-    if (template) {
-      this.templateForm.patchValue({ ...template });
-    }
+    this.templateModel.set(template);
   }
 
   /**
@@ -239,11 +207,9 @@ export class TemplatesInformationComponent implements OnInit, AfterViewInit, OnD
    * @param template
    */
   loadTemplate(template: TemplateI) {
-    // Eliminar CSS anterior
-    this.styleElement?.remove();
-
-    this.styleElement = document.createElement('style');
-    this.styleElement.textContent = ` ${template.data?.header.css ?? ''} ${template.data?.footer.css ?? ''}`;
-    document.head.appendChild(this.styleElement);
+    this._dynamicStyleService.remove('preview-template');
+    const css = ` ${template.data?.header.css ?? ''} ${template.data?.footer.css ?? ''}`;
+    this._dynamicStyleService.set('preview-template', css);
+    this._templateService.template.set(template);
   }
 }

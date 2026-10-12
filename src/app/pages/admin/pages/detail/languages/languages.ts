@@ -1,267 +1,232 @@
-import { Component, computed, effect, inject, OnDestroy, signal } from '@angular/core';
-import { toSignal } from '@angular/core/rxjs-interop';
-import {
-  FormArray,
-  FormBuilder,
-  FormsModule,
-  ReactiveFormsModule,
-  UntypedFormGroup,
-  Validators,
-} from '@angular/forms';
-import { MicrosityService } from 'app/core/services/micrositie.service';
-import { PageService } from 'app/core/services/pages.service';
-import { PermissionComponent } from 'app/shared/components/permission/permission';
-import { LanguageService } from 'app/shared/services/language.service';
-import {
-  OnlyPageDetailReferenceI,
-  PageDetailReferenceI,
-  PageI,
-} from 'app/core/interfaces/page.interface';
+import { NgClass } from '@angular/common';
+import { Component, computed, DestroyRef, effect, inject, signal, untracked } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { applyEach, form, FormField, maxLength, required, submit } from '@angular/forms/signals';
+import { PageDetailReferenceI, PageI } from '@core/interfaces';
+import { MicrosityService, PageService, ParameterService } from '@core/services';
 import { ToastrService } from '@iqx-limited/ngx-toastr';
-import { findParameter } from 'app/shared/utils/parameter.utils';
-import { ParameterService } from 'app/core/services/parameter.service';
-import { CmsValidators } from 'app/shared/utils/validators.util';
-import { PermissionCode, validAction } from 'app/shared/utils/permission.utils';
-import { TabsComponent } from 'app/shared/components/tabs/tabs';
-import { TabI } from 'app/shared/interfaces/drawer.interface';
-import { Subject, takeUntil } from 'rxjs';
+import { PermissionComponent, TabsComponent } from '@shared/components';
+import { LanguagesFormModel, TabI } from '@shared/interfaces';
+import { LanguageService } from '@shared/services';
+import { PermissionCode, findParameter, hasErrorFormField, validAction } from '@shared/utils';
+import { firstValueFrom } from 'rxjs';
 
 @Component({
   selector: 'pages-languages',
   templateUrl: './languages.html',
-  imports: [FormsModule, ReactiveFormsModule, PermissionComponent, TabsComponent],
+  imports: [PermissionComponent, TabsComponent, FormField, NgClass],
 })
-export class PagesLangugesComponent implements OnDestroy {
-  urlStatics = signal<string>('');
+export class PagesLangugesComponent {
   selectedLanguage = signal<number>(0);
   tabs = signal<TabI[]>([]);
+  languageModel = signal<LanguagesFormModel>({
+    languages: [],
+  });
 
-  languageForm!: UntypedFormGroup;
-  permission = PermissionCode;
-  validateFormControl = CmsValidators.validateFormControl;
-  getErrorMessage = CmsValidators.getErrorMessage;
-
-  private _unsubscribeAll: Subject<any> = new Subject<any>();
+  languageForm = form(this.languageModel, (path) => {
+    applyEach(path.languages, (language) => {
+      required(language['alias'], {
+        message: 'Alias es obligatorio.',
+      });
+      required(language['description'], {
+        message: 'Descripción es obligatoria.',
+      });
+      maxLength(language['description'], 255, {
+        message: 'Descripción no puede superar los 255 caracteres.',
+      });
+      required(language['keywords'], {
+        message: 'Palabras clave son obligatorias.',
+      });
+      maxLength(language['keywords'], 255, {
+        message: 'Palabras clave no puede superar los 255 caracteres.',
+      });
+    });
+  });
 
   private readonly _microsityService = inject(MicrosityService);
   private readonly _pageService = inject(PageService);
   private readonly _languageService = inject(LanguageService);
   private readonly _parameterService = inject(ParameterService);
   private readonly _toastrService = inject(ToastrService);
-  private readonly _formBuilder = inject(FormBuilder);
+  private readonly _destroyRef = inject(DestroyRef);
 
+  readonly permission = PermissionCode;
+  readonly hasError = hasErrorFormField;
   readonly micrositie = this._microsityService.micrositie;
   readonly page = this._pageService.page;
   readonly languages = this._languageService.languages;
   readonly parameters = this._parameterService.publicParameters;
-  readonly selectedLanguageForm = computed(
-    () => this.languagesFormArray.at(this.selectedLanguage()) as UntypedFormGroup,
-  );
+
+  readonly urlStatics = computed(() => findParameter('APP_STATICS_URL', this.parameters())?.value);
 
   constructor() {
-    this.languageForm = this._formBuilder.group({
-      languages: this._formBuilder.array([]),
-    });
-
     effect(() => {
       const languages = this.languages().records;
-      if (!languages.length) {
-        return;
-      }
 
-      if (this.languagesFormArray.length === 0) {
-        languages.forEach((language) => {
-          this.addLanguage(language.id);
-        });
-      }
+      if (languages.length === 0) return;
 
-      if (languages.length > 0) {
-        this.selectedLanguage.set(0);
-      }
+      this.languageModel.update((prev) => ({
+        ...prev,
+        languages: languages.map((lang) => {
+          const existing = prev.languages.find((item) => item.languageId === lang.id!.toString());
 
-      const tabs: TabI[] = languages.map(
-        (lang, index) =>
-          ({
-            id: index,
-            icon: this.getICon(lang.icon),
-            type: 'image',
-            title: lang.name,
-            description: lang.lang,
-          }) as TabI,
+          return (
+            existing ?? {
+              languageId: lang.id!.toString(),
+              alias: '',
+              description: '',
+              keywords: '',
+            }
+          );
+        }),
+      }));
+
+      this.selectedLanguage.set(0);
+
+      this.tabs.set(
+        languages.map(
+          (lang, index) =>
+            ({
+              id: index,
+              icon: this.getICon(lang.icon),
+              type: 'image',
+              title: lang.name,
+              description: lang.lang,
+            }) as TabI,
+        ),
       );
-
-      this.tabs.set(tabs);
     });
 
     effect(() => {
       const page = this.page();
-      if (page?.details) {
-        this.patchLanguagesWithData(page.details);
-      }
+      if (!page || !page.details) return;
+      untracked(() => {
+        this.patchLanguagesWithData(page.details!);
+      });
     });
-
-    effect(() => {
-      const parameters = this.parameters();
-      const parameter = findParameter('APP_STATICS_URL', parameters);
-      if (parameter) {
-        this.urlStatics.set(parameter.value);
-      }
-    });
-  }
-
-  ngOnDestroy(): void {
-    this._unsubscribeAll.next(null);
-    this._unsubscribeAll.complete();
   }
 
   /**
-   * FormArray de idiomas
+   * Add language to model
+   * @param languageId
    */
-  get languagesFormArray(): FormArray {
-    return this.languageForm.get('languages') as FormArray;
-  }
-
-  /**
-   * Agrega un idioma al FormArray
-   */
-  addLanguage(languageId?: number): void {
-    const newLanguageGroup = this._formBuilder.group({
-      alias: ['', Validators.required],
-      description: ['', [Validators.required, Validators.maxLength(255)]],
-      keywords: ['', Validators.required],
-      languageId: [languageId ?? '', Validators.required],
+  addLanguage(languageId: number): void {
+    const languages = this.languageModel().languages;
+    languages.push({
+      languageId: languageId.toString(),
+      alias: '',
+      description: '',
+      keywords: '',
     });
-    this.languagesFormArray.push(newLanguageGroup);
+    this.languageModel.update((prev) => ({ ...prev, languages }));
   }
 
   /**
-   * Selecciona un idioma por su INDEX.
+   * Select language
+   * @param index
    */
   selectLanguage(index: number): void {
     this.selectedLanguage.set(index);
   }
 
   /**
-   * Elimina un idioma
-   */
-  removeLanguage(index: number): void {
-    this.languagesFormArray.removeAt(index);
-    if (this.selectedLanguage() >= this.languagesFormArray.length) {
-      this.selectedLanguage.set(Math.max(0, this.languagesFormArray.length - 1));
-    }
-  }
-
-  /**
-   * Carga la información de la página
-   * dentro de los formularios de cada idioma.
+   * load language data
+   * @param data
    */
   patchLanguagesWithData(data: PageDetailReferenceI[]): void {
     data.forEach((language) => {
-      const index = this.languages().records.findIndex((item) => item.id === language.languageId);
-      if (index === -1) {
-        return;
-      }
+      this.languageModel.update((prev) => {
+        const languages = prev.languages;
+        const findLanguage = languages.find(
+          (lang) => lang.languageId === language.languageId.toString(),
+        );
 
-      const languageControl = this.languagesFormArray.at(index);
-      if (!languageControl) {
-        return;
-      }
+        if (!findLanguage) return prev;
 
-      languageControl.patchValue({
-        alias: language.alias?.text ?? '',
-        description: language.description?.text ?? '',
-        keywords: language.keywords?.text ?? '',
-        languageId: language.languageId ?? '',
+        const updateLanguage = {
+          ...findLanguage,
+          alias: language.alias?.text ?? '',
+          description: language.description?.text ?? '',
+          keywords: language.keywords?.text ?? '',
+        };
+
+        return {
+          ...prev,
+          languages: languages.map((lang) =>
+            lang.languageId === language.languageId.toString() ? updateLanguage : lang,
+          ),
+        };
       });
     });
   }
 
   /**
-   * Actualiza la página
+   * Update page
+   * @param event
+   * @returns
    */
-  update(): void {
-    if (this.languageForm.invalid) {
-      this.languageForm.markAllAsTouched();
+  async update(event: SubmitEvent): Promise<void> {
+    try {
+      event.preventDefault();
+      await submit(this.languageForm, async (field) => {
+        const page = this.page();
+        if (!page) return;
 
-      const invalidIndex = this.languagesFormArray.controls.findIndex((control) => control.invalid);
+        const updatePage: PageI = {
+          name: page.name,
+          path: page.path,
+          detail: [],
+        };
 
-      if (invalidIndex !== -1) {
-        this.selectedLanguage.set(invalidIndex);
-      }
-
-      return;
-    }
-
-    this.languageForm.disable();
-
-    const page = this.page();
-    if (page === null) {
-      this.languageForm.enable();
-      return;
-    }
-
-    const updatePage: PageI = {
-      name: page.name,
-      detail: [],
-    };
-
-    const languages = this.languageForm.getRawValue().languages as OnlyPageDetailReferenceI[];
-    languages.forEach((language) => {
-      updatePage.detail!.push({
-        lang: language.languageId,
-        references: [
-          {
-            ref: page.aliasRef!,
-            value: language.alias!,
-          },
-          {
-            ref: page.descriptionRef!,
-            value: language.description,
-          },
-          {
-            ref: page.seoKeywordsRef!,
-            value: language.keywords,
-          },
-        ],
+        const languages = field().value().languages;
+        languages.forEach((language) => {
+          updatePage.detail!.push({
+            lang: Number(language.languageId),
+            references: [
+              {
+                ref: page.aliasRef!,
+                value: language['alias'],
+              },
+              {
+                ref: page.descriptionRef!,
+                value: language['description'],
+              },
+              {
+                ref: page.seoKeywordsRef!,
+                value: language['keywords'],
+              },
+            ],
+          });
+        });
+        await firstValueFrom(
+          this._pageService.update(page.id!, updatePage).pipe(takeUntilDestroyed(this._destroyRef)),
+        );
+        this._toastrService.success(
+          'La informacion de idiomas de la página se actualizó correctamente.',
+          'Página actualizada',
+        );
       });
-    });
-
-    this._pageService
-      .update(page.id!, updatePage)
-      .pipe(takeUntil(this._unsubscribeAll))
-      .subscribe({
-        next: () => {
-          this.languageForm.enable();
-          this._toastrService.success(
-            'La informacion de idiomas de la página se actualizó correctamente.',
-            'Página actualizada',
-          );
-        },
-        error: (response) => {
-          this.languageForm.enable();
-          this._toastrService.error(
-            response.error?.message ||
-              'No fue posible actualizar la informacion de idiomas de la página.',
-            'Error al actualizar',
-          );
-        },
-      });
+    } catch (err: any) {
+      this._toastrService.error(
+        err.error?.message || 'No fue posible actualizar la informacion de idiomas de la página.',
+        'Error al actualizar',
+      );
+    }
   }
 
   /**
-   * Cancela los cambios
+   * cancel changes
    */
   cancel(): void {
     const page = this.page();
-    this.languageForm.reset();
 
-    if (page?.details) {
-      this.patchLanguagesWithData(page.details);
-    }
+    if (!page || !page.details) return;
+    this.patchLanguagesWithData(page.details);
   }
 
   /**
-   * Obtiene el nombre del idioma
+   * get language name
+   * @returns
    */
   getLanguageName(id: number): string {
     const language = this.languages().records.find((language) => language.id === id);
@@ -269,14 +234,17 @@ export class PagesLangugesComponent implements OnDestroy {
   }
 
   /**
-   * Permisos
+   * Valid Permission
+   * @param code
+   * @returns
    */
   validPermission(code: string): boolean {
     return validAction(code);
   }
 
   /**
-   * URL del icono
+   * get langauge icon
+   * @returns
    */
   getICon(icon: string): string {
     return `${this.urlStatics()}/${icon}`;

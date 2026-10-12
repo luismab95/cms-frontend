@@ -170,7 +170,6 @@ export class SitieInformationComponent implements AfterViewInit {
     );
     const template = this.currentTemplate;
     if (!template) return;
-
     this.loadTemplate(template);
   }
 
@@ -182,7 +181,7 @@ export class SitieInformationComponent implements AfterViewInit {
   selectTemplate(id: number): void {
     this.selectedTemplate.set(id);
     const template = this.currentTemplate;
-    if (template === null) return;
+    if (!template) return;
     this.loadTemplate(template);
   }
 
