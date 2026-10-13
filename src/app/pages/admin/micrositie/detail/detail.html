@@ -49,6 +49,11 @@
                 <pages />
               </div>
             }
+            @case ('roles') {
+              <div class="h-160">
+                <roles-permissions-component />
+              </div>
+            }
           }
         } @else {
           <permission-component />

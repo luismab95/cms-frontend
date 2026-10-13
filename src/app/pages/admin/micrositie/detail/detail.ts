@@ -1,16 +1,27 @@
 import { Component, signal, inject, effect } from '@angular/core';
 import { Router } from '@angular/router';
 import { MicrosityService } from '@core/services';
-import { DrawerComponent, PermissionComponent } from '@shared/components';
+import {
+  DrawerComponent,
+  PermissionComponent,
+  RolesPermissionsComponent,
+} from '@shared/components';
 import { DrawerI } from '@shared/interfaces';
 import { PermissionCode, validAction } from '@shared/utils';
-import { PagesList } from '../../pages/list';
 import { MicrositieInformationComponent } from './information/information';
+import { PagesList } from '../../pages/list';
 
 @Component({
   selector: 'microsities-detail',
   templateUrl: './detail.html',
-  imports: [DrawerComponent, PermissionComponent, MicrositieInformationComponent, PagesList],
+  imports: [
+    DrawerComponent,
+    PermissionComponent,
+    PagesList,
+    RolesPermissionsComponent,
+    RolesPermissionsComponent,
+    MicrositieInformationComponent,
+  ],
 })
 export class MicrositiesDetail {
   panels = signal<DrawerI[]>([
@@ -22,10 +33,10 @@ export class MicrositiesDetail {
     },
   ]);
   selectedPanel = signal<string>('');
-  
+
   private readonly _microsityService = inject(MicrosityService);
   private readonly _router = inject(Router);
-  
+
   readonly permission = PermissionCode;
   readonly micrositie = this._microsityService.micrositie;
 
@@ -43,6 +54,13 @@ export class MicrositiesDetail {
             icon: 'fa-solid fa-file-fragment',
             title: 'Páginas',
             description: 'Gestiona las páginas de tu micrositio.',
+          },
+          {
+            id: 'roles',
+            icon: 'fa-solid fa-user-shield',
+            title: 'Roles & Permisos',
+            description:
+              'Asigna los usuarios autorizados al micrositio, según su función designada (Revisores, Editores o Diseñadores).',
           },
         ]);
       }

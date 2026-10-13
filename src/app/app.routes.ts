@@ -126,6 +126,7 @@ export const routes: Routes = [
                   search: null,
                   status: true,
                 }),
+              roles: () => inject(RoleService).getAll(),
             },
           },
           {
@@ -156,6 +157,7 @@ export const routes: Routes = [
                     inject(MicrosityService).find(
                       inject(Router).currentNavigation()?.extras?.state!['micrositieId'],
                     ),
+                  roles: () => inject(RoleService).getAll(),
                   sitie: () => inject(SitieService).find(),
                   templates: () =>
                     inject(TemplateService).getAll({

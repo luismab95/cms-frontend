@@ -1,6 +1,6 @@
 import { Component, inject, signal } from '@angular/core';
 import { SitieService } from '@core/services';
-import { DrawerComponent, PermissionComponent, TitleHeaderComponent } from '@shared/components';
+import { DrawerComponent, PermissionComponent, RolesPermissionsComponent, TitleHeaderComponent } from '@shared/components';
 import { DrawerI } from '@shared/interfaces';
 import { PermissionCode, validAction } from '@shared/utils';
 import { SitieInformationComponent } from './information/information';
@@ -15,6 +15,7 @@ import { SitieLanguagesComponent } from './languages/languages';
     SitieLanguagesComponent,
     PermissionComponent,
     TitleHeaderComponent,
+    RolesPermissionsComponent
   ],
 })
 export class Sitie {
@@ -44,6 +45,13 @@ export class Sitie {
         title: 'Idiomas',
         description: 'Gestiona los idiomas disponibles del sitio.',
       },
+      {
+        id: 'roles',
+        icon: 'fa-solid fa-user-shield',
+        title: 'Roles & Permisos',
+        description:
+          'Asigna los usuarios autorizados al sitio, según su función designada (Revisores, Editores o Diseñadores).',
+      },
     ]);
 
     this.selectedPanel.set(this.panels()[0].id);
@@ -59,6 +67,7 @@ export class Sitie {
 
   /**
    * Valid render permission
+   * @param code
    * @returns
    */
   validPermission(code: string) {

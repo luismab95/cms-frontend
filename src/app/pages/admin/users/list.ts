@@ -9,6 +9,7 @@ import { PaginationComponent, PermissionComponent, TitleHeaderComponent } from '
 import { PaginationResquestI, TableSearchI } from '@shared/interfaces';
 import { RoleService } from '@shared/services';
 import { PermissionCode, validAction } from '@shared/utils';
+import { TooltipDirective } from '@shared/directives';
 import { UsersDetailsComponent } from './details/details';
 import { debounceTime } from 'rxjs';
 
@@ -23,6 +24,7 @@ import { debounceTime } from 'rxjs';
     TitleCasePipe,
     UpperCasePipe,
     TitleHeaderComponent,
+    TooltipDirective,
     FormField,
   ],
 })

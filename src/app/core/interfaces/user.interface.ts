@@ -26,6 +26,7 @@ export interface RoleI {
   description: string;
   status: boolean;
   permissionId: number;
+  code: string;
 }
 
 export interface PermissionI {
@@ -39,3 +40,5 @@ export interface ScopeInterface {
   effect: 'Allow' | 'Denny';
   action: string[];
 }
+
+export type RoleT = 'design' | 'review' | 'editor' | 'admin';

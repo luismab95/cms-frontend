@@ -1,3 +1,5 @@
+import { RoleT } from '@core/interfaces';
+
 export interface ResponseI<T> {
   message: T;
   statusCode: number;
@@ -21,4 +23,12 @@ export interface PaginationResquestI {
 export interface TableSearchI {
   search: string;
   status: boolean | null;
+}
+
+export interface TableRoleSearchI {
+  role: RoleT | null;
+  search: string;
+  filter: string;
+  asignRole: RoleT;
+  users: number[];
 }
