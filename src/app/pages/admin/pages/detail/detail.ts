@@ -6,6 +6,7 @@ import { DrawerI } from '@shared/interfaces';
 import { PermissionCode, validAction } from '@shared/utils';
 import { PagesInformationComponent } from './information/information';
 import { PagesLangugesComponent } from './languages/languages';
+import { TooltipDirective } from '@shared/directives';
 
 @Component({
   selector: 'pages-detail',
@@ -15,6 +16,7 @@ import { PagesLangugesComponent } from './languages/languages';
     PermissionComponent,
     PagesInformationComponent,
     PagesLangugesComponent,
+    TooltipDirective
   ],
 })
 export class PagesDetail {

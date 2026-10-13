@@ -159,7 +159,7 @@ export class PagesInformationComponent {
           this._pageService.create(newPage).pipe(takeUntilDestroyed(this._destroyRef)),
         );
         this._toastrService.success('La página se creó correctamente.', 'Página creada');
-        this._router.navigateByUrl('/admin/content/pages');
+        this.goToBack();
       });
     } catch (err: any) {
       this._toastrService.error(
@@ -216,5 +216,18 @@ export class PagesInformationComponent {
    */
   validPermission(code: string): boolean {
     return validAction(code);
+  }
+
+  /**
+   * Go to back
+   */
+  goToBack() {
+    if (this.micrositie()) {
+      this._router.navigateByUrl('/admin/content/microsities/detail', {
+        state: { micrositieId: this.micrositie()?.id },
+      });
+    } else {
+      this._router.navigateByUrl('/admin/content/pages');
+    }
   }
 }

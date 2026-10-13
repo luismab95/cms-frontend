@@ -24,14 +24,21 @@
             </div>
             <div>
               <h1
-                class="text-xl sm:text-2xl font-bold tracking-tight text-slate-900 flex items-center gap-2.5"
+                class="flex items-center gap-2.5 min-w-0 text-xl sm:text-2xl font-bold tracking-tight text-slate-900"
               >
-                {{ page() ? 'Página' : 'Nueva página' }}
+                <span class="shrink-0">
+                  {{ page() ? 'Página' : 'Nueva página' }}
+                </span>
+
                 @if (micrositie() !== null) {
                   <span
-                    class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-bold bg-indigo-50 text-indigo-700 border border-indigo-200"
+                    class="inline-flex min-w-0 max-w-48 items-center gap-1.5 rounded-full border border-indigo-200 bg-indigo-50 px-2 py-0.5 text-xs font-bold text-indigo-700"
+                    [appTooltip]="micrositie()?.name!"
                   >
-                    micrositio
+                    <i class="fa-solid fa-sitemap shrink-0"></i>
+                    <span class="min-w-0 truncate">
+                      {{ micrositie()?.name }}
+                    </span>
                   </span>
                 }
               </h1>
