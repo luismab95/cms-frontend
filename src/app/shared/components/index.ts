@@ -28,3 +28,5 @@ export * from './design/position/position';
 export * from './design/effect/effect';
 export * from './design/overflow/overflow';
 export * from './design/interaction/interaction';
+export * from './toolbar-canvas/toolbar-canvas'
+export * from './disabled-canvas/disabled-canvas'

@@ -11,54 +11,44 @@ import {
   viewChild,
 } from '@angular/core';
 import { Router } from '@angular/router';
-import { FormsModule } from '@angular/forms';
-import { NgClass, UpperCasePipe } from '@angular/common';
-import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
+import { NgClass } from '@angular/common';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ToastrService } from '@iqx-limited/ngx-toastr';
+import { PreviewModeT, PageI } from '@core/interfaces';
 import {
-  NgLabelTemplateDirective,
-  NgOptionTemplateDirective,
-  NgSelectComponent,
-} from '@ng-select/ng-select';
-import { PageI, PreviewModeT } from 'app/core/interfaces/page.interface';
-import { ElementCMSI } from 'app/shared/interfaces/element.interface';
-import { SelectedItemsInGridI } from 'app/shared/interfaces/grid.interface';
-import { DialogService } from 'app/core/services/dialog.service';
-import { MicrosityService } from 'app/core/services/micrositie.service';
-import { LanguageService } from 'app/shared/services/language.service';
-import { CanvasService } from 'app/core/services/canvas.service';
-import { PageService } from 'app/core/services/pages.service';
-import { ParameterService } from 'app/core/services/parameter.service';
-import { TemplateService } from 'app/core/services/templates.service';
-import { filterPath, validGrid } from 'app/shared/utils/grid.utils';
-import { findParameter } from 'app/shared/utils/parameter.utils';
-import { PermissionCode, validAction } from 'app/shared/utils/permission.utils';
-import { TooltipDirective } from 'app/shared/directives/tooltip.directive';
-import { PermissionComponent } from 'app/shared/components/permission/permission';
-import { GridComponent } from 'app/shared/components/grid/grid';
-import { LayerComponent } from 'app/shared/components/layer/layer';
-import { InspectorComponent } from 'app/shared/components/inspector/inspector';
+  ParameterService,
+  DialogService,
+  MicrosityService,
+  TemplateService,
+  PageService,
+  CanvasService,
+} from '@core/services';
+import {
+  PermissionComponent,
+  GridComponent,
+  LayerComponent,
+  InspectorComponent,
+  ToolbarCanvasComponent,
+  DisabledCanvasComponent,
+} from '@shared/components';
+import { SelectedItemsInGridI, ElementCMSI } from '@shared/interfaces';
+import { PermissionCode, findParameter, filterPath, validGrid, validAction } from '@shared/utils';
 import { filter, interval, take } from 'rxjs';
 
 @Component({
   selector: 'pages-canvas',
   templateUrl: './canvas.html',
   imports: [
-    FormsModule,
-    PermissionComponent,
     NgClass,
-    UpperCasePipe,
-    NgSelectComponent,
-    NgLabelTemplateDirective,
-    NgOptionTemplateDirective,
+    PermissionComponent,
     GridComponent,
-    TooltipDirective,
     LayerComponent,
     InspectorComponent,
+    ToolbarCanvasComponent,
+    DisabledCanvasComponent,
   ],
 })
 export class PagesCanvas implements AfterViewInit, OnDestroy {
-  private readonly languageSelect = viewChild.required<NgSelectComponent>('languageSelect');
   private readonly grid = viewChild.required<GridComponent>('grid');
   private readonly container = viewChild<ElementRef<HTMLElement>>('canvas');
   private readonly layer = viewChild.required<LayerComponent>('layer');
@@ -71,31 +61,27 @@ export class PagesCanvas implements AfterViewInit, OnDestroy {
   enabledCanvas = signal<boolean>(true);
   languageId = signal<number>(0);
   originPage = signal<PageI | null>(null);
+  initialized = signal<boolean>(false);
 
-  readonly permission = PermissionCode;
-  private initialized = false;
-
-  private readonly _destroyRef = inject(DestroyRef);
-  private readonly _router = inject(Router);
   private readonly _parameterService = inject(ParameterService);
-  private readonly _dialogService = inject(DialogService);
   private readonly _microsityService = inject(MicrosityService);
   private readonly _templateService = inject(TemplateService);
   private readonly _pageService = inject(PageService);
-  private readonly _toastrService = inject(ToastrService);
-  private readonly _languageService = inject(LanguageService);
   private readonly _canvasService = inject(CanvasService);
+  private readonly _dialogService = inject(DialogService);
+  private readonly _toastrService = inject(ToastrService);
+  private readonly _destroyRef = inject(DestroyRef);
+  private readonly _router = inject(Router);
 
+  readonly permission = PermissionCode;
   readonly page = this._pageService.page;
   readonly parameters = this._parameterService.publicParameters;
   readonly micrositie = this._microsityService.micrositie;
-  readonly languages = this._languageService.languages;
 
   readonly selectedItemsInGrid = this._canvasService.selectedItemsInGrid;
 
   readonly canRedo = computed(() => this._canvasService.canRedo());
   readonly canUndo = computed(() => this._canvasService.canUndo());
-  readonly activeLanguages = computed(() => this.languages().records.filter((lang) => lang.status));
   readonly urlStatics = computed(
     () => findParameter('APP_STATICS_URL', this.parameters())?.value ?? '',
   );
@@ -132,45 +118,27 @@ export class PagesCanvas implements AfterViewInit, OnDestroy {
         takeUntilDestroyed(this._destroyRef),
       )
       .subscribe(() => {
-        // this.updateDraft();
+        this.updateDraft();
       });
-
-    effect(() => {
-      const languages = this.activeLanguages();
-      if (this.languageId() === 0 && languages.length > 0) {
-        this.languageId.set(languages[0].id!);
-      }
-    });
 
     effect(() => {
       const page = this.page();
 
-      if (!page || this.initialized) {
+      if (!page || this.initialized()) {
         return;
       }
 
-      this.initialized = true;
-
-      if (this.originPage() === null) {
-        this.originPage.set(structuredClone(page));
-      }
+      this.initialized.set(true);
+      if (this.originPage() === null) this.originPage.set(structuredClone(page));
 
       this.reviewChanges.set(!!page.lastChangeReject);
 
-      if (page.review) {
-        this.previewMode.set(true);
-      }
+      if (page.review) this.previewMode.set(true);
 
-      if (page.draft !== null) {
-        this.confirmDraft();
-        return;
-      }
+      if (page.draft !== null) this.confirmDraft();
+      return;
     });
   }
-
-  // -----------------------------------------------------------------------------------------------------
-  // @ Lifecycle hooks
-  // -----------------------------------------------------------------------------------------------------
 
   /**
    * AfterViewInit
@@ -178,9 +146,8 @@ export class PagesCanvas implements AfterViewInit, OnDestroy {
    */
   ngAfterViewInit() {
     const element = this.container()?.nativeElement;
-    if (!element) {
-      return;
-    }
+    if (!element) return;
+
     const observer = new ResizeObserver((entries) => {
       const width = entries[0].contentRect.width;
       if (width < 1024) {
@@ -210,10 +177,6 @@ export class PagesCanvas implements AfterViewInit, OnDestroy {
     });
   }
 
-  // -----------------------------------------------------------------------------------------------------
-  // @ Public methods
-  // -----------------------------------------------------------------------------------------------------
-
   /**
    * Update draft page
    */
@@ -231,7 +194,6 @@ export class PagesCanvas implements AfterViewInit, OnDestroy {
       return;
     }
 
-    // Disable the save action
     this.saveAction.set(true);
     this.autosave.set(true);
 
@@ -274,7 +236,6 @@ export class PagesCanvas implements AfterViewInit, OnDestroy {
    *  Confirm update page
    */
   confirmUpdatePage() {
-    // Open the confirmation dialog
     this._dialogService.setDialogData({
       type: 'warning',
       title: `Editar página`,
@@ -284,8 +245,6 @@ export class PagesCanvas implements AfterViewInit, OnDestroy {
     });
 
     this._dialogService.toggleDialog();
-
-    // Subscribe to the confirmation dialog closed action
     this._dialogService.actionClick$
       .pipe(take(1), takeUntilDestroyed(this._destroyRef))
       .subscribe((result) => {
@@ -299,7 +258,6 @@ export class PagesCanvas implements AfterViewInit, OnDestroy {
    * Update page
    */
   updatePage() {
-    // Return if the grid is invalid
     if (!validGrid(this.page()?.data?.body.data!)) {
       this._toastrService.warning(
         'Hay elementos del contenido que aún no están configurados. Completa su configuración antes de continuar.',
@@ -308,7 +266,6 @@ export class PagesCanvas implements AfterViewInit, OnDestroy {
       return;
     }
 
-    // Disable the save action
     this.saveAction.set(true);
 
     const page = this.page();
@@ -380,6 +337,8 @@ export class PagesCanvas implements AfterViewInit, OnDestroy {
 
   /**
    * Valid render permission
+   * @param code
+   * @returns
    */
   validPermission(code: string) {
     return validAction(code);
@@ -389,7 +348,6 @@ export class PagesCanvas implements AfterViewInit, OnDestroy {
    *  Choose load data draft
    */
   confirmDraft() {
-    // Open the confirmation dialog
     this._dialogService.setDialogData({
       type: 'warning',
       title: `Cambios sin guardar`,
@@ -399,15 +357,12 @@ export class PagesCanvas implements AfterViewInit, OnDestroy {
     });
 
     this._dialogService.toggleDialog();
-
-    // Subscribe to the confirmation dialog closed action
     this._dialogService.actionClick$
       .pipe(take(1), takeUntilDestroyed(this._destroyRef))
       .subscribe((result) => {
         const page = this.page();
-        if (!page) {
-          return;
-        }
+        if (!page) return;
+
         if (result) {
           const draftPage: PageI = {
             ...page,
@@ -425,7 +380,6 @@ export class PagesCanvas implements AfterViewInit, OnDestroy {
    * Delete template draft
    */
   deleteDraft() {
-    // Disable the save action
     this.saveAction.set(true);
 
     const page = this.page();
@@ -458,19 +412,9 @@ export class PagesCanvas implements AfterViewInit, OnDestroy {
   }
 
   /**
-   * Open language select
-   * @param event
-   */
-  openLanguageSelect(event: MouseEvent): void {
-    event.stopPropagation();
-    this.languageSelect().open();
-  }
-
-  /**
    * revert changes
    */
   cancel() {
-    // Open the confirmation dialog
     this._dialogService.setDialogData({
       type: 'warning',
       title: `Descartar cambios`,
@@ -480,16 +424,13 @@ export class PagesCanvas implements AfterViewInit, OnDestroy {
     });
 
     this._dialogService.toggleDialog();
-
-    // Subscribe to the confirmation dialog closed action
     this._dialogService.actionClick$
       .pipe(take(1), takeUntilDestroyed(this._destroyRef))
       .subscribe((result) => {
         if (result) {
           const page = this.originPage();
-          if (!page) {
-            return;
-          }
+          if (!page) return;
+
           this.deleteDraft();
           this._pageService.page.set(structuredClone({ ...page, draft: null! }));
           this.updateSelectionItem({
