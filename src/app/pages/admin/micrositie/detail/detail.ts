@@ -64,8 +64,8 @@ export class MicrositiesDetail {
           },
         ]);
       }
-      this.selectedPanel.set(this.panels()[0].id);
     });
+    this.selectedPanel.set(this.panels()[0].id);
   }
 
   /**

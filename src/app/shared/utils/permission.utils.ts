@@ -44,6 +44,8 @@ export enum PermissionCode {
   listReviewPages = 'g6U5KJ1n',
   viewReviewPages = 'pHsaJvoS',
   toogleStatusReviewPage = 'SlzdPrIk',
+  assignUsersSite = 'AS23qw7F',
+  assignUsersMicrosite = 'lok98AS2',
 }
 
 /**

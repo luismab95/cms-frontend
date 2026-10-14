@@ -51,7 +51,11 @@
             }
             @case ('roles') {
               <div class="h-160">
-                <roles-permissions-component />
+                <roles-permissions-component
+                  [assignedUsers]="micrositie()?.permissionMicrositie!"
+                  [type]="'micrositie'"
+                  [id]="micrositie()?.id!"
+                />
               </div>
             }
           }

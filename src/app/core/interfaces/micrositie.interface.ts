@@ -1,3 +1,5 @@
+import { PermissionSitieI } from "@shared/interfaces";
+
 export interface MicrositieI {
   id?: number;
   name: string;
@@ -7,4 +9,5 @@ export interface MicrositieI {
   sitieId: number;
   templateId: number;
   status?: boolean;
+  permissionMicrositie?: PermissionSitieI[];
 }

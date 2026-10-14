@@ -28,7 +28,11 @@
             }
             @case ('roles') {
               <div class="h-160">
-                <roles-permissions-component />
+                <roles-permissions-component
+                  [assignedUsers]="sitie()?.permissionSitie!"
+                  [type]="'sitie'"
+                  [id]="sitie()?.id!"
+                />
               </div>
             }
           }

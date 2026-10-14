@@ -14,10 +14,6 @@ export class SitieService {
 
   private readonly _httpClient = inject(HttpClient);
 
-  // -----------------------------------------------------------------------------------------------------
-  // @ Public methods
-  // -----------------------------------------------------------------------------------------------------
-
   /**
    * Find the sitie
    * @returns
@@ -55,5 +51,31 @@ export class SitieService {
           this.sitie.set(response.message);
         }),
       );
+  }
+
+  /**
+   * Assing users to the sitie
+   * @param sitieId
+   * @param users
+   * @returns
+   */
+  assignUser(sitieId: number, users: number[]): Observable<ResponseI<string>> {
+    return this._httpClient.post<ResponseI<string>>(
+      `${this.url}/${this.prefix}/sitie/assign-users/${sitieId}`,
+      {
+        users,
+      },
+    );
+  }
+
+  /**
+   * Remove user assign to the sitie
+   * @param permissionId
+   * @returns
+   */
+  removeAssigUser(permissionId: number): Observable<ResponseI<string>> {
+    return this._httpClient.delete<ResponseI<string>>(
+      `${this.url}/${this.prefix}/sitie/remove-assign-users/${permissionId}`,
+    );
   }
 }

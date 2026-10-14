@@ -97,4 +97,30 @@ export class MicrosityService {
         }),
       );
   }
+
+  /**
+   * Assing users to the micrositie
+   * @param micrositieId
+   * @param users
+   * @returns
+   */
+  assignUser(micrositieId: number, users: number[]): Observable<ResponseI<string>> {
+    return this._httpClient.post<ResponseI<string>>(
+      `${this.url}/${this.prefix}/microsities/assign-users/${micrositieId}`,
+      {
+        users,
+      },
+    );
+  }
+
+  /**
+   * Remove user assign to the micrositie
+   * @param permissionId
+   * @returns
+   */
+  removeAssigUser(permissionId: number): Observable<ResponseI<string>> {
+    return this._httpClient.delete<ResponseI<string>>(
+      `${this.url}/${this.prefix}/microsities/remove-assign-users/${permissionId}`,
+    );
+  }
 }

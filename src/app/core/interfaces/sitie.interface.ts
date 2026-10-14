@@ -1,3 +1,4 @@
+import { PermissionSitieI } from '@shared/interfaces';
 import { RoleT } from './user.interface';
 
 export interface SitieI {
@@ -8,13 +9,7 @@ export interface SitieI {
   templateId: number;
   status: boolean;
   maintenance: boolean;
+  permissionSitie?: PermissionSitieI[];
 }
 
-export interface SitieRolesI {
-  id: number;
-  firstname: string;
-  lastname: string;
-  email: string;
-  role: RoleT;
-  roleName: string;
-}
+
