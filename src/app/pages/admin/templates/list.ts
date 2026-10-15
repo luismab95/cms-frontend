@@ -5,7 +5,7 @@ import { form, FormField } from '@angular/forms/signals';
 import { toObservable, takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ToastrService } from '@iqx-limited/ngx-toastr';
 import { TemplateI } from '@core/interfaces';
-import { TemplateService } from '@core/services';
+import { SitieService, TemplateService, UserService } from '@core/services';
 import { PaginationComponent, PermissionComponent, TitleHeaderComponent } from '@shared/components';
 import { PaginationResquestI, TableSearchI } from '@shared/interfaces';
 import { PermissionCode, validAction } from '@shared/utils';
@@ -26,14 +26,31 @@ export class TemplatesList {
   tableSearchForm = form(this.tableSearchModel);
 
   private readonly _templateService = inject(TemplateService);
+  private readonly _userService = inject(UserService);
+  private readonly _sitieService = inject(SitieService);
   private readonly _toastrService = inject(ToastrService);
   private readonly _router = inject(Router);
   private readonly _destroyRef = inject(DestroyRef);
 
   readonly permission = PermissionCode;
   readonly templates = this._templateService.templates;
+  readonly sitie = this._sitieService.sitie;
+  readonly userLogin = this._userService.userLogin;
 
   readonly totalTemplates = computed(() => this.templates().total);
+  readonly canCreate = computed(() => {
+    const sitie = this.sitie();
+    if (!sitie) return false;
+
+    const userLogin = this.userLogin();
+    if (!userLogin) return false;
+
+    const { id } = userLogin;
+    const findPermission = sitie?.permissionSitie?.find((permission) => permission.userId === id);
+    if (!findPermission) return false;
+
+    return true;
+  });
 
   /**
    * Constructor

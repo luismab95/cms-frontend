@@ -11,7 +11,7 @@ import {
   signal,
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { form, FormField, maxLength, required, submit } from '@angular/forms/signals';
+import { disabled, form, FormField, maxLength, required, submit } from '@angular/forms/signals';
 import { ToastrService } from '@iqx-limited/ngx-toastr';
 import { FileI, FileUploadI } from '@core/interfaces';
 import { DialogService, FileService, FileManagerService, ParameterService } from '@core/services';
@@ -46,6 +46,9 @@ export class FileManagerDetailsComponent {
       message: 'Descripción no puede superar los 255 caracteres.',
     });
     required(schemaPath.path, { message: 'Imagen es obligatorio.' });
+    disabled(schemaPath, {
+      when: () => !this.validPermission(this.permission.editFiles),
+    });
   });
 
   private _fileManagerService = inject(FileManagerService);

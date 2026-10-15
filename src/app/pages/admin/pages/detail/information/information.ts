@@ -1,13 +1,12 @@
 import { NgClass } from '@angular/common';
 import { Component, computed, DestroyRef, effect, inject, signal, untracked } from '@angular/core';
-import { form, FormField, pattern, required, submit } from '@angular/forms/signals';
+import { disabled, form, FormField, pattern, required, submit } from '@angular/forms/signals';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { DomSanitizer } from '@angular/platform-browser';
 import { Router } from '@angular/router';
 import { ToastrService } from '@iqx-limited/ngx-toastr';
 import { PageI } from '@core/interfaces';
 import { SitieService, PageService, MicrosityService } from '@core/services';
-import { PermissionComponent } from '@shared/components';
 import { PermissionCode, createPageConfig, hasErrorFormField, validAction } from '@shared/utils';
 import { firstValueFrom } from 'rxjs';
 import { TooltipDirective } from '@shared/directives';
@@ -15,7 +14,7 @@ import { TooltipDirective } from '@shared/directives';
 @Component({
   selector: 'pages-information',
   templateUrl: './information.html',
-  imports: [PermissionComponent, NgClass, FormField, TooltipDirective],
+  imports: [NgClass, FormField, TooltipDirective],
 })
 export class PagesInformationComponent {
   pageModel = signal<PageI>({
@@ -29,6 +28,9 @@ export class PagesInformationComponent {
     required(schemaPath.path, { message: 'Ruta es obligatorio.' });
     pattern(schemaPath.path, /^[a-z0-9]+(?:-[a-z0-9]+)*$/, {
       message: 'Ruta no válida.',
+    });
+    disabled(schemaPath, {
+      when: () => !this.validPermission(this.permission.editPage),
     });
   });
 

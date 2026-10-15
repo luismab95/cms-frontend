@@ -1,18 +1,19 @@
 <div class="flex flex-col gap-8 lg:p-4 p-0" data-aos="fade-left" data-aos-duration="1000">
-  @if (validPermission(permission.assignUsersSite)) {
-    <section class="rounded-2xl border border-slate-200/80 bg-white shadow-sm overflow-hidden">
-      <div class="border-b border-slate-100 bg-white px-6 py-5">
-        <div class="flex items-center justify-between">
-          <div>
-            <h2 class="text-xl font-bold text-slate-900">Asignar Usuarios</h2>
-            <p class="text-xs text-slate-500 mt-0.5">
-              Al incorporar un usuario a este sitio, adquirirá facultades inmediatas según su
-              función sin requerir configuración por sección o páginas individuales.
-            </p>
-          </div>
+  <section class="rounded-2xl border border-slate-200/80 bg-white shadow-sm overflow-hidden">
+    <div class="border-b border-slate-100 bg-white px-6 py-5">
+      <div class="flex items-center justify-between">
+        <div>
+          <h2 class="text-xl font-bold text-slate-900">Asignar Usuarios</h2>
+          <p class="text-xs text-slate-500 mt-0.5">
+            Al asignar un usuario a este {{ type() === 'sitie' ? 'sitio' : 'micrositio' }},
+            adquirirá facultades inmediatas según su función sin requerir configuración por sección
+            o páginas individuales.
+          </p>
         </div>
       </div>
-      <div class="p-6 space-y-6">
+    </div>
+    <div class="p-6 space-y-6">
+      @if (validPermission(permission.assignUsersSite)) {
         <div
           class="flex min-h-0 flex-col gap-5 rounded-xl border border-slate-200/70 bg-slate-50/70 p-4 sm:p-5"
         >
@@ -214,21 +215,26 @@
             </div>
           </div>
         </div>
-      </div>
-    </section>
-    <section class="rounded-2xl border border-slate-200/80 bg-white shadow-sm overflow-hidden">
-      <div class="border-b border-slate-100 bg-white px-6 py-5">
-        <div class="flex items-center justify-between">
-          <div>
-            <h2 class="text-xl font-bold text-slate-900">Usuarios Asignados</h2>
-            <p class="text-xs text-slate-500 mt-0.5">
-              El acceso otorgado aplica de forma integral a la totalidad del sitio sin granularidad
-              por secciones ni páginas de acuerdo a su función.
-            </p>
-          </div>
+      } @else {
+        <permission-component [style]="'minimal'" />
+      }
+    </div>
+  </section>
+  <section class="rounded-2xl border border-slate-200/80 bg-white shadow-sm overflow-hidden">
+    <div class="border-b border-slate-100 bg-white px-6 py-5">
+      <div class="flex items-center justify-between">
+        <div>
+          <h2 class="text-xl font-bold text-slate-900">Usuarios Asignados</h2>
+          <p class="text-xs text-slate-500 mt-0.5">
+            El acceso otorgado aplica de forma integral a la totalidad del
+            {{ type() === 'sitie' ? 'sitio' : 'micrositio' }} sin granularidad por secciones ni
+            páginas de acuerdo a su función.
+          </p>
         </div>
       </div>
-      <div class="p-6 space-y-6 min-h-0 overflow-hidden">
+    </div>
+    <div class="p-6 space-y-6 min-h-0 overflow-hidden">
+      @if (validPermission(permission.assignUsersSite)) {
         <div class="flex items-center flex-col lg:flex-row justify-between gap-2 lg:gap-6 w-full">
           <div class="relative w-full max-w-full lg:max-w-3xl text-sm">
             <span
@@ -442,13 +448,9 @@
             </div>
           </div>
         </div>
-      </div>
-    </section>
-  } @else {
-    <div
-      class="rounded-2xl border border-slate-200/80 bg-white shadow-sm overflow-hidden p-1 lg:p-6"
-    >
-      <permission-component [style]="'minimal'" />
+      } @else {
+        <permission-component [style]="'minimal'" />
+      }
     </div>
-  }
+  </section>
 </div>

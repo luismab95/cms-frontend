@@ -16,7 +16,7 @@
         />
 
         <div class="flex items-center justify-end gap-2">
-          @if (validPermission(permission.createMicrosite)) {
+          @if (validPermission(permission.createMicrosite) && canCreate()) {
             <button
               (click)="openDetailsModal(null)"
               type="button"

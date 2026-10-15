@@ -1,4 +1,5 @@
 <form (submit)="save($event)">
+  @let canEdit = validPermission(permission.editSitie);
   <div class="flex flex-col gap-8 lg:p-4 p-0" data-aos="fade-left" data-aos-duration="1000">
     <section class="rounded-2xl border border-slate-200/80 bg-white shadow-sm overflow-hidden">
       <div class="border-b border-slate-100 bg-white px-6 py-5">
@@ -138,99 +139,104 @@
         <div class="relative w-full">
           <div class="overflow-hidden rounded-2xl">
             @let template = currentTemplate;
-            <div
-              class="group w-full rounded-2xl border border-gray-200 bg-white shadow-sm transition-all duration-300 hover:shadow-md"
-            >
+            @if (template) {
               <div
-                #previewContainer
-                class="relative w-full overflow-hidden border-b border-slate-200"
-                [style.height.px]="700 * previewScale()"
+                class="group w-full rounded-2xl border border-gray-200 bg-white shadow-sm transition-all duration-300 hover:shadow-md"
               >
-                <div class="absolute w-full h-full flex items-center justify-center z-100"></div>
+                <div
+                  #previewContainer
+                  class="relative w-full overflow-hidden border-b border-slate-200"
+                  [style.height.px]="700 * previewScale()"
+                >
+                  <div class="absolute w-full h-full flex items-center justify-center z-100"></div>
 
-                <div class="preview-template" [style.transform]="'scale(' + previewScale() + ')'">
-                  <grid
-                    class="block w-full"
-                    [gridType]="'header'"
-                    [pageElementsConfig]="{ css: '', config: {} }"
-                    [languageId]="1"
-                    [preview]="true"
-                    [previewType]="'desktop'"
-                  />
-                  <div
-                    class="flex w-full min-h-120 flex-col items-center justify-center gap-6 border-t border-b border-slate-200 bg-gray-200 py-10"
-                  >
+                  <div class="preview-template" [style.transform]="'scale(' + previewScale() + ')'">
+                    <grid
+                      class="block w-full"
+                      [gridType]="'header'"
+                      [pageElementsConfig]="{ css: '', config: {} }"
+                      [languageId]="1"
+                      [preview]="true"
+                      [previewType]="'desktop'"
+                    />
                     <div
-                      class="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-gray-100 text-indigo-600 shadow-sm"
+                      class="flex w-full min-h-120 flex-col items-center justify-center gap-6 border-t border-b border-slate-200 bg-gray-200 py-10"
                     >
-                      <i class="fa-solid fa-layer-group text-3xl"></i>
-                    </div>
-                    <div class="flex max-w-xl flex-col items-center gap-2 text-center">
-                      <span
-                        class="rounded-full bg-indigo-50 px-3 py-1 text-xs font-semibold uppercase tracking-widest text-indigo-700"
+                      <div
+                        class="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-gray-100 text-indigo-600 shadow-sm"
                       >
-                        Espacio Reservado de Contenido
-                      </span>
-                      <h3 class="text-2xl font-bold tracking-tight text-gray-900">
-                        Área Dinámica del Page Builder
-                      </h3>
-                      <p class="text-sm leading-6 text-gray-500">
-                        Aquí se renderiza el contenido particular de cada página preservando Header
-                        y Footer unificados.
-                      </p>
+                        <i class="fa-solid fa-layer-group text-3xl"></i>
+                      </div>
+                      <div class="flex max-w-xl flex-col items-center gap-2 text-center">
+                        <span
+                          class="rounded-full bg-indigo-50 px-3 py-1 text-xs font-semibold uppercase tracking-widest text-indigo-700"
+                        >
+                          Espacio Reservado de Contenido
+                        </span>
+                        <h3 class="text-2xl font-bold tracking-tight text-gray-900">
+                          Área Dinámica del Page Builder
+                        </h3>
+                        <p class="text-sm leading-6 text-gray-500">
+                          Aquí se renderiza el contenido particular de cada página preservando
+                          Header y Footer unificados.
+                        </p>
+                      </div>
                     </div>
-                  </div>
-                  <grid
-                    class="block w-full"
-                    [gridType]="'footer'"
-                    [pageElementsConfig]="{ css: '', config: {} }"
-                    [languageId]="1"
-                    [preview]="true"
-                    [previewType]="'desktop'"
-                  />
-                </div>
-
-                @if (sitieModel().templateId === template.id) {
-                  <span
-                    class="absolute left-6 top-6 z-50 inline-flex items-center gap-1.5 rounded-lg bg-emerald-600 px-2.5 py-1 text-xs font-semibold text-white shadow-sm"
-                  >
-                    <span class="h-1.5 w-1.5 rounded-full bg-white"></span>
-                    Actualmente asignado
-                  </span>
-                } @else {
-                  <span
-                    class="absolute left-6 top-6 z-50 inline-flex items-center gap-1.5 rounded-lg bg-amber-600 px-2.5 py-1 text-xs font-semibold text-white shadow-sm"
-                  >
-                    <span class="h-1.5 w-1.5 rounded-full bg-white"></span>
-                    Disponible
-                  </span>
-                }
-              </div>
-              <div class="mt-4 flex items-center justify-start gap-3 px-6">
-                @if (sitieModel().templateId === template?.id) {
-                  <i class="fa-solid fa-circle-check shrink-0 text-indigo-600"></i>
-                } @else {
-                  <div class="flex gap-2 items-center cursor-pointer justify-center">
-                    <input
-                      id="template"
-                      appTooltip="Seleccionar"
-                      type="checkbox"
-                      class="h-5 w-5 cursor-pointer appearance-none rounded-full border-2 border-gray-300 bg-white checked:border-indigo-600 checked:bg-indigo-600 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1 transition-all duration-200"
-                      (change)="onSelectTemplate(template.id!, $event)"
+                    <grid
+                      class="block w-full"
+                      [gridType]="'footer'"
+                      [pageElementsConfig]="{ css: '', config: {} }"
+                      [languageId]="1"
+                      [preview]="true"
+                      [previewType]="'desktop'"
                     />
                   </div>
-                }
-                <h4 class="truncate text-lg font-bold text-gray-900">
-                  {{ template.name }}
-                </h4>
+
+                  @if (sitieModel().templateId === template.id) {
+                    <span
+                      class="absolute left-6 top-6 z-50 inline-flex items-center gap-1.5 rounded-lg bg-emerald-600 px-2.5 py-1 text-xs font-semibold text-white shadow-sm"
+                    >
+                      <span class="h-1.5 w-1.5 rounded-full bg-white"></span>
+                      Actualmente asignado
+                    </span>
+                  } @else {
+                    <span
+                      class="absolute left-6 top-6 z-50 inline-flex items-center gap-1.5 rounded-lg bg-amber-600 px-2.5 py-1 text-xs font-semibold text-white shadow-sm"
+                    >
+                      <span class="h-1.5 w-1.5 rounded-full bg-white"></span>
+                      Disponible
+                    </span>
+                  }
+                </div>
+                <div class="mt-4 flex items-center justify-start gap-3 px-6">
+                  @if (sitieModel().templateId === template?.id) {
+                    <i class="fa-solid fa-circle-check shrink-0 text-indigo-600"></i>
+                  } @else {
+                    <div class="flex gap-2 items-center cursor-pointer justify-center">
+                      <input
+                        id="template"
+                        appTooltip="Seleccionar"
+                        type="checkbox"
+                        [disabled]="!canEdit"
+                        class="h-5 w-5 cursor-pointer appearance-none rounded-full border-2 border-gray-300 bg-white checked:border-indigo-600 checked:bg-indigo-600 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1 transition-all duration-200"
+                        (change)="onSelectTemplate(template.id!, $event)"
+                      />
+                    </div>
+                  }
+                  <h4 class="truncate text-lg font-bold text-gray-900">
+                    {{ template.name }}
+                  </h4>
+                </div>
+                <p class="mt-1 line-clamp-2 min-h-10 text-sm leading-5 text-gray-500 px-6 mb-6">
+                  {{ template.description }}
+                </p>
               </div>
-              <p class="mt-1 line-clamp-2 min-h-10 text-sm leading-5 text-gray-500 px-6 mb-6">
-                {{ template.description }}
-              </p>
-            </div>
+            } @else {
+              <permission-component [style]="'minimal'" />
+            }
           </div>
 
-          @if (templates().records.length > 1) {
+          @if (templates().records.length > 1 && canEdit) {
             <button
               type="button"
               [disabled]="this.selectedTemplate() === 0"
@@ -322,6 +328,7 @@
               (click)="sitieForm.status().value.set(!this.sitieModel().status)"
               [class.bg-indigo-600]="status"
               [class.bg-slate-200]="!status"
+              [disabled]="!canEdit"
               class="relative inline-flex h-7 w-14 shrink-0 cursor-pointer rounded-full border-2 border-transparent p-0.5 transition-colors duration-200 ease-in-out focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:ring-offset-2 self-start sm:self-center"
               role="switch"
               type="button"
@@ -383,6 +390,7 @@
               (click)="sitieForm.maintenance().value.set(!this.sitieModel().maintenance)"
               [class.bg-indigo-600]="maintenance"
               [class.bg-slate-200]="!maintenance"
+              [disabled]="!canEdit"
               class="relative inline-flex h-7 w-14 shrink-0 cursor-pointer rounded-full border-2 border-transparent p-0.5 transition-colors duration-200 ease-in-out focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:ring-offset-2 self-start sm:self-center"
               role="switch"
               type="button"
@@ -403,7 +411,7 @@
         </div>
       </div>
     </section>
-    @if (validPermission(permission.editSitie)) {
+    @if (canEdit) {
       <div class="flex items-center justify-between flex-col md:flex-row w-full">
         <div class="flex items-center justify-start w-full">
           <button
@@ -442,8 +450,6 @@
           </button>
         </div>
       </div>
-    } @else {
-      <permission-component [show]="false" />
     }
   </div>
 </form>

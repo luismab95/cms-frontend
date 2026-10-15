@@ -1,11 +1,19 @@
 import { NgClass } from '@angular/common';
 import { Component, computed, DestroyRef, effect, inject, signal, untracked } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { applyEach, form, FormField, maxLength, required, submit } from '@angular/forms/signals';
+import {
+  applyEach,
+  disabled,
+  form,
+  FormField,
+  maxLength,
+  required,
+  submit,
+} from '@angular/forms/signals';
 import { PageDetailReferenceI, PageI } from '@core/interfaces';
 import { MicrosityService, PageService, ParameterService } from '@core/services';
 import { ToastrService } from '@iqx-limited/ngx-toastr';
-import { PermissionComponent, TabsComponent } from '@shared/components';
+import { TabsComponent } from '@shared/components';
 import { LanguagesFormModel, TabI } from '@shared/interfaces';
 import { LanguageService } from '@shared/services';
 import { PermissionCode, findParameter, hasErrorFormField, validAction } from '@shared/utils';
@@ -14,7 +22,7 @@ import { firstValueFrom } from 'rxjs';
 @Component({
   selector: 'pages-languages',
   templateUrl: './languages.html',
-  imports: [PermissionComponent, TabsComponent, FormField, NgClass],
+  imports: [TabsComponent, FormField, NgClass],
 })
 export class PagesLangugesComponent {
   selectedLanguage = signal<number>(0);
@@ -40,6 +48,9 @@ export class PagesLangugesComponent {
       maxLength(language['keywords'], 255, {
         message: 'Palabras clave no puede superar los 255 caracteres.',
       });
+    });
+    disabled(path, {
+      when: () => !this.validPermission(this.permission.editPage),
     });
   });
 

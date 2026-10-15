@@ -10,6 +10,7 @@ import {
 } from '@angular/core';
 import { NgClass } from '@angular/common';
 import {
+  disabled,
   email,
   form,
   FormField,
@@ -68,6 +69,9 @@ export class ParametersCompanyComponent {
         };
       }
       return;
+    });
+    disabled(schemaPath, {
+      when: () => !this.edit(),
     });
   });
 

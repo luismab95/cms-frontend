@@ -5,7 +5,7 @@ import { form, FormField } from '@angular/forms/signals';
 import { Router } from '@angular/router';
 import { ToastrService } from '@iqx-limited/ngx-toastr';
 import { PagePaginationResquestI, PageI } from '@core/interfaces';
-import { PageService, MicrosityService } from '@core/services';
+import { PageService, MicrosityService, SitieService, UserService } from '@core/services';
 import { PaginationComponent, PermissionComponent, TitleHeaderComponent } from '@shared/components';
 import { TableSearchI } from '@shared/interfaces';
 import { PermissionCode, validAction } from '@shared/utils';
@@ -26,6 +26,8 @@ export class PagesList {
 
   tableSearchForm = form(this.tableSearchModel);
 
+  private readonly _userService = inject(UserService);
+  private readonly _sitieService = inject(SitieService);
   private readonly _pageService = inject(PageService);
   private readonly _microsityService = inject(MicrosityService);
   private readonly _toastrService = inject(ToastrService);
@@ -35,8 +37,27 @@ export class PagesList {
   readonly permission = PermissionCode;
   readonly pages = this._pageService.pages;
   readonly micrositie = this._microsityService.micrositie;
+  readonly sitie = this._sitieService.sitie;
+  readonly userLogin = this._userService.userLogin;
 
   readonly totalPage = computed(() => this.pages().total);
+
+  readonly canCreate = computed(() => {
+    const micrositie = this.micrositie();
+    if (micrositie) return true;
+
+    const sitie = this.sitie();
+    if (!sitie) return false;
+
+    const userLogin = this.userLogin();
+    if (!userLogin) return false;
+
+    const { id } = userLogin;
+    const findPermission = sitie?.permissionSitie?.find((permission) => permission.userId === id);
+    if (!findPermission) return false;
+
+    return true;
+  });
 
   /**
    * Constructor

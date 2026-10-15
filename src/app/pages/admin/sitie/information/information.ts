@@ -10,7 +10,15 @@ import {
   viewChild,
 } from '@angular/core';
 import { NgClass } from '@angular/common';
-import { form, FormField, maxLength, pattern, required, submit } from '@angular/forms/signals';
+import {
+  disabled,
+  form,
+  FormField,
+  maxLength,
+  pattern,
+  required,
+  submit,
+} from '@angular/forms/signals';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ToastrService } from '@iqx-limited/ngx-toastr';
 import { SitieI, TemplateI } from '@core/interfaces';
@@ -27,7 +35,7 @@ import { firstValueFrom } from 'rxjs';
 })
 export class SitieInformationComponent implements AfterViewInit {
   private readonly previewContainer =
-    viewChild.required<ElementRef<HTMLElement>>('previewContainer');
+    viewChild<ElementRef<HTMLElement>>('previewContainer');
 
   previewScale = signal<number>(1);
   selectedTemplate = signal<number>(0);
@@ -51,6 +59,9 @@ export class SitieInformationComponent implements AfterViewInit {
       message: 'Descripción no puede superar los 255 caracteres.',
     });
     required(schemaPath.templateId, { message: 'Plantilla es obligatorio.' });
+    disabled(schemaPath, {
+      when: () => !this.validPermission(this.permission.editSitie),
+    });
   });
 
   private readonly _sitieService = inject(SitieService);
@@ -88,7 +99,8 @@ export class SitieInformationComponent implements AfterViewInit {
    * AfterViewInit
    */
   ngAfterViewInit(): void {
-    const element = this.previewContainer().nativeElement;
+    const element = this.previewContainer()?.nativeElement;
+    if(!element) return;
     const observer = new ResizeObserver(([entry]) => {
       const width = entry.contentRect.width;
       this.previewScale.set(width / 1440);

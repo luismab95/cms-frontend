@@ -1,5 +1,5 @@
 import { Component, DestroyRef, effect, inject, input, signal } from '@angular/core';
-import { email, form, FormField, required, submit } from '@angular/forms/signals';
+import { disabled, email, form, FormField, required, submit } from '@angular/forms/signals';
 import { NgClass } from '@angular/common';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ToastrService } from '@iqx-limited/ngx-toastr';
@@ -30,6 +30,9 @@ export class SettingsAccountComponent {
     required(schemaPath.firstname, { message: 'Nombres es obligatorio.' });
     required(schemaPath.lastname, { message: 'Apellidos es obligatorio.' });
     required(schemaPath.roleId, { message: 'Rol asignado es obligatorio.' });
+    disabled(schemaPath, {
+      when: () => !this.edit(),
+    });
   });
 
   private readonly _userService = inject(UserService);

@@ -325,6 +325,7 @@
               (click)="securityModel.update((prev) => ({ ...prev, twoFactorAuth: !status }))"
               [class.bg-indigo-600]="status"
               [class.bg-slate-200]="!status"
+              [disabled]="!edit()"
               class="relative inline-flex h-7 w-14 shrink-0 cursor-pointer rounded-full border-2 border-transparent p-0.5 transition-colors duration-200 ease-in-out focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:ring-offset-2 self-start sm:self-center"
               role="switch"
               type="button"

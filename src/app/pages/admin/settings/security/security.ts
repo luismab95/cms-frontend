@@ -2,6 +2,7 @@ import { NgClass } from '@angular/common';
 import { Component, DestroyRef, effect, inject, input, signal } from '@angular/core';
 import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
 import {
+  disabled,
   email,
   form,
   FormField,
@@ -63,6 +64,9 @@ export class SettingsSecurityComponent {
         };
       }
       return null;
+    });
+    disabled(schemaPath, {
+      when: () => !this.edit(),
     });
   });
 

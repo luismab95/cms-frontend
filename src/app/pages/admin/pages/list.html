@@ -15,7 +15,7 @@
           [info]="totalPage() > 1 ? 'páginas' : 'página'"
         />
         <div class="flex items-center justify-end gap-2">
-          @if (validPermission(permission.createPage)) {
+          @if (validPermission(permission.createPage) && canCreate()) {
             <button
               (click)="openDetailsModal(null)"
               type="button"

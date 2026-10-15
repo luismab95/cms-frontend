@@ -1,6 +1,6 @@
 import { Component, DestroyRef, effect, inject, input, output, signal } from '@angular/core';
 import { NgClass } from '@angular/common';
-import { form, FormField, pattern, required, submit } from '@angular/forms/signals';
+import { disabled, form, FormField, pattern, required, submit } from '@angular/forms/signals';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { NgLabelTemplateDirective, NgSelectComponent } from '@ng-select/ng-select';
 import { ToastrService } from '@iqx-limited/ngx-toastr';
@@ -60,6 +60,9 @@ export class ParametersSecurityComponent {
     });
     pattern(schemaPath.otpLong, /^-?[0-9]+$/, {
       message: 'Longitud de código de verificación OTP no válido.',
+    });
+    disabled(schemaPath, {
+      when: () => !this.edit(),
     });
   });
 

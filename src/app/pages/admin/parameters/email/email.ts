@@ -1,6 +1,14 @@
 import { Component, DestroyRef, effect, inject, input, output, signal } from '@angular/core';
 import { NgClass } from '@angular/common';
-import { email, form, FormField, pattern, required, submit } from '@angular/forms/signals';
+import {
+  disabled,
+  email,
+  form,
+  FormField,
+  pattern,
+  required,
+  submit,
+} from '@angular/forms/signals';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ToastrService } from '@iqx-limited/ngx-toastr';
 import { EmailParameterFormI, ParameterI } from '@core/interfaces';
@@ -40,6 +48,9 @@ export class ParametersEmailComponent {
     pattern(schemaPath.port, /^-?[0-9]+$/, { message: 'Puerto no valido.' });
     required(schemaPath.username, { message: 'Usuario es obligatorio.' });
     required(schemaPath.password, { message: 'Contraseña es obligatorio.' });
+    disabled(schemaPath, {
+      when: () => !this.edit(),
+    });
   });
 
   private _parameterService = inject(ParameterService);

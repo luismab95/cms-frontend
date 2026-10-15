@@ -60,6 +60,7 @@
                   #authBackgroundLogo
                   class="hidden"
                   accept="image/*"
+                  [disabled]="!edit()"
                   (change)="removeImage($event, 'authBackground')"
                   required=""
                   type="file"
@@ -114,6 +115,7 @@
                 #iconLogo
                 class="hidden"
                 accept=".ico,.png,.svg"
+                [disabled]="!edit()"
                 (change)="removeImage($event, 'icon')"
                 required=""
                 type="file"
@@ -217,6 +219,7 @@
                     #primaryLogo
                     class="hidden"
                     accept="image/svg+xml,image/png"
+                    [disabled]="!edit()"
                     (change)="removeImage($event, 'primary')"
                     required=""
                     type="file"
@@ -270,6 +273,7 @@
                     #emailLogo
                     class="hidden"
                     accept="image/png,image/jpeg"
+                    [disabled]="!edit()"
                     (change)="removeImage($event, 'email')"
                     required=""
                     type="file"

@@ -12,7 +12,7 @@ import {
 } from '@angular/core';
 import { NgClass } from '@angular/common';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { form, required, maxLength, submit, FormField } from '@angular/forms/signals';
+import { form, required, maxLength, submit, FormField, disabled } from '@angular/forms/signals';
 import { DomSanitizer } from '@angular/platform-browser';
 import { Router } from '@angular/router';
 import { ToastrService } from '@iqx-limited/ngx-toastr';
@@ -55,6 +55,9 @@ export class MicrositieInformationComponent implements AfterViewInit {
     });
     required(schemaPath.sitieId, { message: 'Sitio es obligatorio.' });
     required(schemaPath.templateId, { message: 'Plantilla es obligatorio.' });
+    disabled(schemaPath, {
+      when: () => !this.validPermission(this.permission.editMicrosite),
+    });
   });
 
   private readonly _sitieService = inject(SitieService);
@@ -180,13 +183,12 @@ export class MicrositieInformationComponent implements AfterViewInit {
 
         const updateMicrositie = { ...field().value() };
         delete updateMicrositie.path;
-        delete updateMicrositie.pathPage,
-
-        await firstValueFrom(
-          this._microsityService
-            .update(micrositie.id!, updateMicrositie)
-            .pipe(takeUntilDestroyed(this._destroyRef)),
-        );
+        (delete updateMicrositie.pathPage,
+          await firstValueFrom(
+            this._microsityService
+              .update(micrositie.id!, updateMicrositie)
+              .pipe(takeUntilDestroyed(this._destroyRef)),
+          ));
         this._toastrService.success(
           'La informacion del micrositio se actualizó correctamente.',
           'Micrositio actualizado',

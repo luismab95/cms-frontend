@@ -132,7 +132,8 @@ export class InspectorComponent {
     effect(() => {
       const selectedItemsInGrid = this.selectedItemsInGrid();
       if (selectedItemsInGrid) return;
-      this.selectedTab.set(0);
+
+      this.selectedTab.set(this.tabs()[0].id);
       this.sectionsInCanvas.set(this.currentSections);
     });
 

@@ -12,18 +12,18 @@ import {
 import { NgClass } from '@angular/common';
 import { Router } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { form, FormField, maxLength, required, submit } from '@angular/forms/signals';
+import { disabled, form, FormField, maxLength, required, submit } from '@angular/forms/signals';
 import { ToastrService } from '@iqx-limited/ngx-toastr';
 import { TemplateI } from '@core/interfaces';
 import { TemplateService, SitieService, DynamicStyleService } from '@core/services';
-import { PermissionComponent, GridComponent } from '@shared/components';
+import { GridComponent } from '@shared/components';
 import { PermissionCode, createPageConfig, validAction, hasErrorFormField } from '@shared/utils';
 import { firstValueFrom } from 'rxjs';
 
 @Component({
   selector: 'templates-information',
   templateUrl: './information.html',
-  imports: [PermissionComponent, GridComponent, FormField, NgClass],
+  imports: [GridComponent, FormField, NgClass],
 })
 export class TemplatesInformationComponent implements AfterViewInit {
   private readonly previewContainer =
@@ -41,6 +41,9 @@ export class TemplatesInformationComponent implements AfterViewInit {
     required(schemaPath.description, { message: 'Descripción es obligatorio.' });
     maxLength(schemaPath.description, 255, {
       message: 'Descripción no puede superar los 255 caracteres.',
+    });
+    disabled(schemaPath, {
+      when: () => !this.validPermission(this.permission.editTemplate),
     });
   });
 

@@ -3,22 +3,18 @@
   [class.w-14]="inspectorCollapsed()"
   class="z-20 flex h-full min-h-0 shrink-0 select-none flex-col border-l border-slate-200 bg-white"
 >
-  <!-- HEADER -->
   <div
     [class.px-2!]="inspectorCollapsed()"
     class="flex items-center justify-between border-b border-slate-200 px-4 py-2.5"
   >
     @if (!inspectorCollapsed()) {
       <div class="flex items-center gap-2">
-        <!-- Item icon -->
         <div
           [ngClass]="itemIconBackgroundClass()"
           class="flex size-10 items-center justify-center rounded-md shadow-sm"
         >
           <i [ngClass]="itemIconClass()" class="text-[11px] fa-lg"></i>
         </div>
-
-        <!-- Item information -->
         <div>
           <h3 class="flex flex-col text-xs font-bold leading-tight text-slate-900">
             @if (isEmpty()) {
@@ -27,7 +23,6 @@
               <span class="text-[10px] text-slate-400"> Sin selección activa </span>
             } @else {
               {{ itemTitle() }}
-
               @if (itemUuid()) {
                 <span class="text-[10px] text-slate-400"> #{{ itemUuid() }} </span>
               }
@@ -37,7 +32,6 @@
       </div>
     }
 
-    <!-- Collapse -->
     <button
       type="button"
       (click)="toggleInspector()"
@@ -51,9 +45,7 @@
     </button>
   </div>
 
-  <!-- EXPANDED -->
   @if (!inspectorCollapsed()) {
-    <!-- Empty state -->
     @if (isEmpty()) {
       <div class="flex flex-1 flex-col items-center justify-center bg-slate-50/50 p-5 text-center">
         <div
@@ -61,16 +53,13 @@
         >
           <i class="fa-solid fa-arrow-pointer text-indigo-500"></i>
         </div>
-
         <h4 class="mb-1 text-xs font-bold text-slate-800">Ningún elemento seleccionado</h4>
-
         <p class="max-w-60 text-[11px] leading-relaxed text-slate-500">
           Haz clic en cualquier sección, fila, columna o componente de la página para personalizar
           su diseño, configuración o traducciones.
         </p>
       </div>
     } @else {
-      <!-- TABS-->
       <div class="border-b border-slate-200 bg-white shadow-sm">
         <nav aria-label="Inspector Tabs" class="grid grid-cols-3 text-center">
           @for (tab of tabsComputed(); track tab.id) {
@@ -78,7 +67,7 @@
               type="button"
               (click)="selectTab(tab.id)"
               [appTooltip]="tab.description"
-              [class.border-b-2!]="tab.id === selectedTab()"
+              [class.border-b!]="tab.id === selectedTab()"
               [class.border-indigo-600!]="tab.id === selectedTab()"
               [class.font-bold!]="tab.id === selectedTab()"
               [class.text-indigo-600!]="tab.id === selectedTab()"
@@ -107,10 +96,8 @@
         </nav>
       </div>
 
-      <!-- CONTENT -->
       <div class="flex-1 divide-y divide-slate-100 overflow-y-auto text-xs transition-all">
         @switch (selectedTab()) {
-          <!-- DESIGN -->
           @case (0) {
             @if (canEditDesign()) {
               <design-inspector-component [gridType]="gridType()" />
@@ -118,7 +105,6 @@
               <permission-component [style]="'minimal'" />
             }
           }
-          <!-- PROPERTIES -->
           @case (1) {
             @if (canEditContent()) {
               <properties-inspector-component [gridType]="gridType()" />
@@ -126,7 +112,6 @@
               <permission-component [style]="'minimal'" />
             }
           }
-          <!-- LANGUAGES -->
           @case (2) {
             @if (canEditContent()) {
               <languages-inspector-component
@@ -141,7 +126,6 @@
         }
       </div>
 
-      <!-- STATUS-->
       <div
         class="flex items-center justify-between border-t border-indigo-100 bg-indigo-50/70 px-3 py-2 text-[10px] text-indigo-950"
       >
@@ -164,8 +148,7 @@
         </div>
       </div>
 
-      <!-- FOOTER  -->
-      @if (typeItem() !== 'page') {
+      @if (typeItem() !== 'page' && canEditDesign()) {
         <div class="flex items-center justify-end border-t border-slate-200 bg-slate-50 p-3">
           <button
             type="button"
@@ -183,17 +166,14 @@
       }
     }
   }
-  <!--  COLLAPSED-->
   @else {
     <div class="flex min-h-0 flex-1 flex-col overflow-x-hidden overflow-y-auto p-1 text-xs">
-      <!-- Header -->
       <div
         class="flex items-center justify-center p-2 text-[10px] font-bold uppercase tracking-wider text-slate-400"
       >
         <span>ITEM</span>
       </div>
 
-      <!-- Current item -->
       <button
         type="button"
         (click)="toggleInspector()"

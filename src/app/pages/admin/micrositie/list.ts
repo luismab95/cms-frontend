@@ -5,7 +5,7 @@ import { toObservable, takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { form, FormField } from '@angular/forms/signals';
 import { ToastrService } from '@iqx-limited/ngx-toastr';
 import { MicrositieI } from '@core/interfaces';
-import { MicrosityService } from '@core/services';
+import { MicrosityService, SitieService, UserService } from '@core/services';
 import { PaginationComponent, PermissionComponent, TitleHeaderComponent } from '@shared/components';
 import { TableSearchI, PaginationResquestI } from '@shared/interfaces';
 import { PermissionCode, validAction } from '@shared/utils';
@@ -27,13 +27,30 @@ export class MicrositieList {
 
   private readonly _microsityService = inject(MicrosityService);
   private readonly _toastrService = inject(ToastrService);
+  private readonly _userService = inject(UserService);
+  private readonly _sitieService = inject(SitieService);
   private readonly _router = inject(Router);
   private readonly _destroyRef = inject(DestroyRef);
 
   readonly permission = PermissionCode;
   readonly microsities = this._microsityService.microsities;
+  readonly sitie = this._sitieService.sitie;
+  readonly userLogin = this._userService.userLogin;
 
   readonly totalMicrosities = computed(() => this.microsities().total);
+  readonly canCreate = computed(() => {
+    const sitie = this.sitie();
+    if (!sitie) return false;
+
+    const userLogin = this.userLogin();
+    if (!userLogin) return false;
+
+    const { id } = userLogin;
+    const findPermission = sitie?.permissionSitie?.find((permission) => permission.userId === id);
+    if (!findPermission) return false;
+
+    return true;
+  });
 
   /**
    * Constructor

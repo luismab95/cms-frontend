@@ -5,10 +5,6 @@
   class="page-preview relative border-2 border-dashed border-gray-300 hover:border-gray-400 rounded-xl p-2 transition-all container-editor"
 >
   @if (!preview()) {
-    <!-- ========================================================= -->
-    <!-- BODY EDITOR -->
-    <!-- ========================================================= -->
-
     <div
       class="container-title absolute -top-3 left-4 bg-gray-700 text-white hidden text-[10px] font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wider items-center gap-1.5 shadow-sm z-50"
     >
@@ -26,7 +22,6 @@
       </span>
     </div>
 
-    <!-- Body toolbar -->
     <div
       class="container-toolbar absolute -top-3.5 right-4 hidden items-center bg-white border border-slate-200 rounded-md shadow-sm divide-x divide-slate-100 text-slate-600 text-xs z-50"
     >
@@ -39,7 +34,6 @@
           <i class="fa-solid fa-object-group text-indigo-600"></i>
         </button>
       }
-
       <button
         (click)="selectPageConfig()"
         class="cursor-pointer px-2 py-1 hover:text-slate-600 hover:bg-slate-50 flex items-center gap-1"
@@ -64,10 +58,7 @@
     [class.max-h-full!]="!preview()"
     class="grid"
   >
-    <!-- ========================================================= -->
-    <!-- SECTIONS DROP LIST -->
-    <!-- ========================================================= -->
-
+  
     <div
       class="sections"
       cdkDropList
@@ -75,10 +66,7 @@
       (cdkDropListDropped)="drop($event, sectionsInCanvas())"
     >
       @for (section of sectionsInCanvas(); track section.uuid; let i = $index) {
-        <!-- ===================================================== -->
-        <!-- SECTION EDITOR WRAPPER -->
-        <!-- ===================================================== -->
-
+       
         <div
           class="relative section-editor my-2"
           cdkDrag
@@ -89,18 +77,14 @@
           }"
         >
           @if (!preview()) {
-            <!-- Section badge -->
             <div
               class="section-badge absolute -top-3.5 left-4 hidden items-center gap-1.5 bg-indigo-600 text-white text-xs font-semibold px-2.5 py-0.5 rounded shadow-sm z-50"
             >
               <i cdkDragHandle class="fa-solid fa-grip-vertical text-indigo-200 cursor-grab"></i>
-
               <span> Sección {{ i + 1 }} </span>
-
               <span class="text-[10px] font-normal opacity-80"> ({{ section.uuid }}) </span>
             </div>
 
-            <!-- Section toolbar -->
             <div
               class="section-toolbar absolute -top-3.5 right-4 hidden items-center bg-white border border-slate-200 rounded-md shadow-sm divide-x divide-slate-100 text-slate-600 text-xs z-50"
             >
@@ -124,10 +108,6 @@
             </div>
           }
 
-          <!-- =================================================== -->
-          <!-- SECTION REAL -->
-          <!-- =================================================== -->
-
           @if (!preview() && selectedItemsInGrid()?.section?.uuid === section.uuid) {
             <div
               class="absolute inset-0 ring-2 ring-indigo-500 rounded-[inherit] pointer-events-none z-40"
@@ -138,10 +118,7 @@
             [ngStyle]="gridConfigStyles(section.config)"
             [class]="'grid-section-' + section.uuid"
           >
-            <!-- ================================================= -->
-            <!-- ROWS -->
-            <!-- ================================================= -->
-
+            
             <div
               class="rows"
               cdkDropList
@@ -149,10 +126,7 @@
               (cdkDropListDropped)="drop($event, section.rows)"
             >
               @for (row of section.rows; track row.uuid; let rowIndex = $index) {
-                <!-- ============================================= -->
-                <!-- ROW EDITOR WRAPPER -->
-                <!-- ============================================= -->
-
+               
                 <div
                   class="relative row-editor my-2"
                   cdkDrag
@@ -163,22 +137,17 @@
                   }"
                 >
                   @if (!preview()) {
-                    <!-- Row badge -->
                     <div
                       class="row-badge absolute -top-2.5 left-3 bg-amber-500 text-white text-[10px] font-semibold px-2 py-0.5 rounded-full hidden items-center gap-1 shadow-sm z-50"
                     >
                       <i cdkDragHandle class="fa-solid fa-grip-vertical cursor-grab"></i>
-
                       <span> Fila {{ rowIndex + 1 }} </span>
-
                       <span class="text-[9px] opacity-75"> ({{ row.uuid }}) </span>
-
                       <span class="text-[9px] opacity-75">
                         columnas: {{ row.columns.length }}
                       </span>
                     </div>
 
-                    <!-- Row toolbar -->
                     <div
                       class="row-toolbar absolute -top-3.5 right-4 hidden items-center bg-white border border-slate-200 rounded-md shadow-sm divide-x divide-slate-100 text-slate-600 text-xs z-50"
                     >
@@ -202,10 +171,6 @@
                     </div>
                   }
 
-                  <!-- =========================================== -->
-                  <!-- ROW REAL -->
-                  <!-- =========================================== -->
-
                   @if (!preview() && selectedItemsInGrid()?.row?.uuid === row.uuid) {
                     <div
                       class="absolute inset-0 ring-2 ring-amber-500 rounded-[inherit] pointer-events-none z-40"
@@ -213,10 +178,7 @@
                   }
 
                   <div>
-                    <!-- ========================================= -->
-                    <!-- COLUMNS CONTAINER -->
-                    <!-- ========================================= -->
-
+                  
                     <div
                       cdkDropList
                       cdkDropListOrientation="horizontal"
@@ -226,10 +188,7 @@
                       [class]="'grid-row-' + row.uuid"
                     >
                       @for (column of row.columns; track column.uuid; let columnIndex = $index) {
-                        <!-- ======================================= -->
-                        <!-- COLUMN EDITOR WRAPPER -->
-                        <!-- ======================================= -->
-
+                       
                         <div
                           class="relative column-editor"
                           cdkDrag
@@ -242,7 +201,6 @@
                           [class]="'grid-column-' + column.uuid"
                         >
                           @if (!preview()) {
-                            <!-- Column badge -->
                             <div
                               class="column-badge absolute -top-3 left-3 bg-slate-700 text-white text-[10px] px-2 py-0.5 rounded-full hidden items-center gap-1 z-50"
                             >
@@ -251,7 +209,6 @@
                               <span> Columna {{ columnIndex + 1 }} ({{ column.uuid }}) </span>
                             </div>
 
-                            <!-- Column toolbar -->
                             <div
                               class="column-toolbar absolute -top-3.5 right-4 hidden items-center bg-white border border-slate-200 rounded-md shadow-sm divide-x divide-slate-100 text-slate-600 text-xs z-50"
                             >
@@ -265,10 +222,6 @@
                             </div>
                           }
 
-                          <!-- ===================================== -->
-                          <!-- COLUMN REAL -->
-                          <!-- ===================================== -->
-
                           @if (!preview() && selectedItemsInGrid()?.column?.uuid === column.uuid) {
                             <div
                               class="absolute inset-0 ring-2 ring-slate-500 rounded-[inherit] pointer-events-none z-40"
@@ -276,10 +229,9 @@
                           }
 
                           <div [ngStyle]="gridConfigStyles(column.config)" [class.p-3]="!preview()">
-                            <!-- EMPTY COLUMN -->
 
                             @if (column.element == null) {
-                              @if (!preview()) {
+                              @if (!preview() && editDesign()) {
                                 <div
                                   (click)="openElementsManagerPanel(column)"
                                   class="text-center py-6 text-slate-400 hover:text-indigo-600 cursor-pointer flex flex-col items-center gap-1 w-full m-auto relative z-20"
@@ -294,8 +246,6 @@
                                 </div>
                               }
                             } @else {
-                              <!-- ELEMENT -->
-
                               <div
                                 [ngClass]="{
                                   'border border-dashed border-emerald-300 rounded-lg p-2 bg-white/40':
@@ -304,7 +254,6 @@
                                 class="relative element-editor"
                               >
                                 @if (!preview()) {
-                                  <!-- Element badge -->
                                   <div
                                     class="element-badge absolute -top-3 left-3 bg-emerald-700 text-white text-[10px] px-2 py-0.5 rounded-full hidden items-center gap-1 z-50"
                                   >
@@ -312,7 +261,6 @@
                                       cdkDragHandle
                                       class="fa-solid fa-grip-vertical cursor-grab"
                                     ></i>
-
                                     <span>
                                       Elemento
                                       {{ column.element.name }}
@@ -320,7 +268,6 @@
                                     </span>
                                   </div>
 
-                                  <!-- Element toolbar -->
                                   <div
                                     class="element-toolbar absolute -top-3.5 right-4 hidden items-center bg-white border border-slate-200 rounded-md shadow-sm z-50"
                                   >
