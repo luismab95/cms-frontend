@@ -8,48 +8,49 @@ import {
   output,
   signal,
 } from '@angular/core';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { NgClass } from '@angular/common';
-import {
-  FormControl,
-  ReactiveFormsModule,
-  UntypedFormBuilder,
-  UntypedFormGroup,
-  Validators,
-} from '@angular/forms';
+import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
+import { form, FormField, maxLength, required, submit } from '@angular/forms/signals';
 import { ToastrService } from '@iqx-limited/ngx-toastr';
 import { FileI, FilePaginationResquestI, FileUploadI } from '@core/interfaces';
 import { FileManagerService, ParameterService, FileService } from '@core/services';
 import { ResponseI } from '@shared/interfaces';
-import { CmsValidators, findParameter } from '@shared/utils';
-import { debounceTime, of, switchMap } from 'rxjs';
+import { findParameter, hasErrorFormField } from '@shared/utils';
+import { debounceTime, firstValueFrom, of, switchMap } from 'rxjs';
 
 @Component({
   selector: 'files-manager',
   templateUrl: './files-manager.html',
-  imports: [ReactiveFormsModule, NgClass],
+  imports: [FormField, NgClass],
 })
 export class ImagesManagerComponent {
   mimeType = input<string | null>(null);
   onSelectedFileEvent = output<string | null>();
 
-  urlStatics = signal<string>('');
   limit = signal<number>(999999999);
   selectedFile = signal<FileI | null>(null);
   loadFile = signal<File | null>(null);
+  fileModel = signal<{ name: string; description: string; search: string }>({
+    name: '',
+    description: '',
+    search: '',
+  });
 
-  searchInputControl: FormControl = new FormControl();
-  fileForm!: UntypedFormGroup;
-  validateFormControl = CmsValidators.validateFormControl;
-  getErrorMessage = CmsValidators.getErrorMessage;
+  fileForm = form(this.fileModel, (schemaPath) => {
+    required(schemaPath.name, { message: 'Nombre es obligatorio.' });
+    required(schemaPath.description, { message: 'Descripción es obligatorio.' });
+    maxLength(schemaPath.description, 255, {
+      message: 'Descripción no puede superar los 255 caracteres.',
+    });
+  });
 
-  private readonly _destroyRef = inject(DestroyRef);
   private readonly _fileManagerService = inject(FileManagerService);
   private readonly _parameterService = inject(ParameterService);
-  private readonly _toastrService = inject(ToastrService);
   private readonly _fileService = inject(FileService);
-  private readonly _formBuilder = inject(UntypedFormBuilder);
+  private readonly _toastrService = inject(ToastrService);
+  private readonly _destroyRef = inject(DestroyRef);
 
+  readonly hasError = hasErrorFormField;
   readonly parameters = this._parameterService.publicParameters;
   readonly files = this._fileManagerService.files;
 
@@ -60,28 +61,18 @@ export class ImagesManagerComponent {
     const file = this.loadFile();
     return file ? URL.createObjectURL(file) : null;
   });
+  readonly urlStatics = computed(() => findParameter('APP_STATICS_URL', this.parameters())?.value!);
 
   /**
    * Constructor
    */
   constructor() {
-    this.urlStatics.set(findParameter('APP_STATICS_URL', this.parameters())?.value!);
     effect(() => {
       const mimeType = this.mimeType();
       this.getAll(1, null, true, mimeType!);
     });
 
-    this.fileForm = this._formBuilder.group({
-      name: ['', [Validators.required]],
-      description: ['', [Validators.required, Validators.maxLength(255)]],
-    });
-  }
-
-  /**
-   * On init
-   */
-  ngOnInit(): void {
-    this.searchInputControl.valueChanges
+    toObservable(this.fileForm.search().value)
       .pipe(debounceTime(700), takeUntilDestroyed(this._destroyRef))
       .subscribe((search: string) => {
         if (search) this.getAll(1, search === '' ? null : search, null, this.mimeType()!);
@@ -120,8 +111,7 @@ export class ImagesManagerComponent {
    * @param file
    */
   selectFile(file: FileI) {
-    this.fileForm.get('name')?.setValue(file.name);
-    this.fileForm.get('description')?.setValue(file.description);
+    this.fileModel.update((prev) => ({ ...prev, name: file.name, description: file.description }));
     this.selectedFile.set(file);
   }
 
@@ -136,7 +126,7 @@ export class ImagesManagerComponent {
    * Clear input search
    */
   clearSearch() {
-    this.searchInputControl.reset();
+    this.fileModel.update((prev) => ({ ...prev, search: '' }));
     this.getAll(1, null, null, this.mimeType()!);
   }
 
@@ -208,10 +198,11 @@ export class ImagesManagerComponent {
 
   /**
    * Select file
+   * @param event
    */
-  onSelectFile() {
+  async onSelectFile(event: SubmitEvent): Promise<void> {
     if (this.selectedFile()?.id === null) {
-      this.new();
+      await this.new(event);
     } else {
       this.onSelectedFileEvent.emit(this.selectedFile()?.path!);
     }
@@ -219,49 +210,51 @@ export class ImagesManagerComponent {
 
   /**
    * Add file
+   * @param event
    */
-  new() {
-    if (this.selectedFile()?.id !== null) return;
+  async new(event: SubmitEvent): Promise<void> {
+    try {
+      event.preventDefault();
+      if (this.selectedFile()?.id !== null) return;
 
-    const file = this.loadFile();
-    const upload$ =
-      file !== null
-        ? this._fileService.uploadFile(file, false)
-        : of<ResponseI<FileUploadI> | null>(null);
+      await submit(this.fileForm, async (field) => {
+        const file = this.loadFile();
+        const upload$ =
+          file !== null
+            ? this._fileService.uploadFile(file, false)
+            : of<ResponseI<FileUploadI> | null>(null);
 
-    upload$
-      .pipe(
-        switchMap((response) => {
-          if (response?.message?.path) {
-            const selectedFile = this.selectedFile();
-            const fileForm = this.fileForm.value;
-            if (selectedFile) {
-              this.selectedFile.set({
-                ...selectedFile,
-                path: response.message.path,
-                name: fileForm.name,
-                description: fileForm.description,
-                filename: response.message.filename,
-                mimeType: response.message.mimetype,
-                size: response.message.size,
-              });
-            }
-          }
-          return this._fileManagerService.create(this.selectedFile()!);
-        }),
-        takeUntilDestroyed(this._destroyRef),
-      )
-      .subscribe({
-        next: () => {
-          this.onSelectedFileEvent.emit(this.selectedFile()?.path!);
-        },
-        error: (response) => {
-          this._toastrService.error(
-            response.error?.message || 'No fue posible cargar el archivo.',
-            'Error al cargar',
-          );
-        },
+        await firstValueFrom(
+          upload$.pipe(
+            switchMap((response) => {
+              if (response?.message?.path) {
+                const selectedFile = this.selectedFile();
+                const { name, description } = this.fileModel();
+                if (selectedFile) {
+                  this.selectedFile.set({
+                    ...selectedFile,
+                    path: response.message.path,
+                    name,
+                    description,
+                    filename: response.message.filename,
+                    mimeType: response.message.mimetype,
+                    size: response.message.size,
+                  });
+                }
+              }
+              return this._fileManagerService.create(this.selectedFile()!);
+            }),
+            takeUntilDestroyed(this._destroyRef),
+          ),
+        );
+        this.onSelectedFileEvent.emit(this.selectedFile()?.path!);
       });
+    } catch (err: any) {
+      this._toastrService.error(
+        err.error?.message || 'No fue posible cargar el archivo.',
+        'Error al cargar',
+      );
+    }
   }
 
   /**

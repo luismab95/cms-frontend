@@ -56,12 +56,12 @@
           class="fa-solid fa-magnifying-glass pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-sm text-gray-400"
         ></i>
         <input
-          [formControl]="searchInputControl"
+          [formField]="fileForm.search"
           class="w-full rounded-lg bg-gray-100 py-2 pl-9 pr-14 text-sm text-gray-900 outline-none transition-all placeholder:text-gray-400 focus:bg-white focus:ring-2 focus:ring-indigo-500/30"
           placeholder="Buscar por archivo..."
           type="text"
         />
-        @if (searchInputControl.value && searchInputControl.value !== '') {
+        @if (fileModel().search !== '') {
           <button
             type="button"
             (click)="clearSearch()"
@@ -108,8 +108,8 @@
             <h3 class="text-sm font-bold text-slate-800 mb-1.5">No se encontraron archivos</h3>
             <p class="text-xs text-slate-500 leading-relaxed max-w-65 mb-4">
               No encontramos archivos que coincidan con
-              <span class="font-semibold text-slate-700">"{{ searchInputControl.value }}"</span>.
-              Prueba con otros términos.
+              <span class="font-semibold text-slate-700">"{{ fileModel().search }}"</span>. Prueba
+              con otros términos.
             </p>
             <button
               (click)="clearSearch()"
@@ -276,7 +276,7 @@
                 </div>
               }
             </div>
-            <form [formGroup]="fileForm">
+            <form (submit)="onSelectFile($event)">
               <div class="rounded-xl bg-gray-50 p-3.5">
                 @if (selectedFile()?.id !== null) {
                   <span
@@ -290,7 +290,7 @@
                 } @else {
                   <div>
                     <label
-                      [class.text-red-500!]="validateFormControl(fileForm, 'name')"
+                      [class.text-red-500!]="hasError(fileForm.name)"
                       class="block text-xs font-semibold uppercase tracking-wider text-slate-700 mb-1.5"
                       for="name"
                     >
@@ -302,28 +302,25 @@
                       >
                         <i
                           class="fa-solid fa-heading"
-                          [class.text-red-500!]="validateFormControl(fileForm, 'name')"
+                          [class.text-red-500!]="hasError(fileForm.name)"
                         ></i>
                       </div>
                       <input
-                        formControlName="name"
+                        [formField]="fileForm.name"
                         class="block w-full pl-10 pr-3.5 py-2.5 sm:py-3 text-sm text-slate-900 placeholder-slate-400 bg-slate-50/50 border border-slate-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-slate-600 focus:border-slate-600 focus:bg-white transition-colors"
-                        [class.border-red-500!.text-red-500!]="
-                          validateFormControl(fileForm, 'name')
-                        "
-                        [class.text-red-500!]="validateFormControl(fileForm, 'name')"
-                        [class.placeholder:text-red-500!]="validateFormControl(fileForm, 'name')"
+                        [ngClass]="{
+                          'border-red-500! text-red-500! placeholder:text-red-500! focus:ring-red-500!':
+                            hasError(fileForm.name),
+                        }"
                         id="name"
-                        name="name"
                         placeholder="nombre archivo"
-                        required=""
                         type="text"
                       />
                     </div>
-                    @if (getErrorMessage(fileForm, 'name') !== '') {
+                    @if (hasError(fileForm.name)) {
                       <p class="mt-1.5 flex items-center gap-1 text-sm text-red-600">
                         <i class="fa-solid fa-circle-exclamation"></i>
-                        <span>{{ getErrorMessage(fileForm, 'name') }}</span>
+                        {{ fileForm.name().errors()[0].message }}
                       </p>
                     }
                   </div>
@@ -337,11 +334,17 @@
                   } @else {
                     <div>
                       <label
-                        [class.text-red-500!]="validateFormControl(fileForm, 'description')"
-                        class="block text-xs font-semibold uppercase tracking-wider text-slate-700 mb-1.5"
+                        [class.text-red-500!]="hasError(fileForm.description)"
+                        class="text-xs font-semibold uppercase tracking-wider text-slate-700 mb-1.5 flex flex-row justify-between items-center"
                         for="description"
                       >
-                        Descripción <span class="text-red-500 font-bold">*</span>
+                        <span>
+                          Descripción
+                          <span class="text-rose-500 font-bold">*</span>
+                        </span>
+                        <span class="font-normal">
+                          {{ this.fileModel().description.length }}/255
+                        </span>
                       </label>
                       <div class="relative rounded-lg shadow-sm">
                         <div
@@ -349,33 +352,26 @@
                         >
                           <i
                             class="fa-solid fa-align-justify"
-                            [class.text-red-500!]="validateFormControl(fileForm, 'description')"
+                            [class.text-red-500!]="hasError(fileForm.description)"
                           ></i>
                         </div>
                         <textarea
-                          formControlName="description"
+                          [formField]="fileForm.description"
                           class="block w-full pl-10 pr-3.5 py-2.5 sm:py-3 text-sm text-slate-900 placeholder-slate-400 bg-slate-50/50 border border-slate-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-slate-600 focus:border-slate-600 focus:bg-white transition-colors"
-                          [class.border-red-500!.text-red-500!]="
-                            validateFormControl(fileForm, 'description')
-                          "
-                          [class.text-red-500!]="validateFormControl(fileForm, 'description')"
-                          [class.placeholder:text-red-500!]="
-                            validateFormControl(fileForm, 'description')
-                          "
+                          [ngClass]="{
+                            'border-red-500! text-red-500! placeholder:text-red-500! focus:ring-red-500!':
+                              hasError(fileForm.description),
+                          }"
                           id="description"
-                          name="description"
                           placeholder="descripción"
-                          required=""
                           rows="5"
                         >
                         </textarea>
                       </div>
-
-                      <!-- Errores -->
-                      @if (getErrorMessage(fileForm, 'description') !== '') {
+                      @if (hasError(fileForm.description)) {
                         <p class="mt-1.5 flex items-center gap-1 text-sm text-red-600">
                           <i class="fa-solid fa-circle-exclamation"></i>
-                          <span>{{ getErrorMessage(fileForm, 'description') }}</span>
+                          {{ fileForm.description().errors()[0].message }}
                         </p>
                       }
                     </div>
@@ -430,12 +426,18 @@
           Cancelar
         </button>
         <button
-          (click)="onSelectFile()"
-          [disabled]="fileForm.invalid"
-          class="flex cursor-pointer items-center gap-2 rounded-lg bg-indigo-600 px-5 py-2 text-sm font-medium text-white shadow-md transition-all hover:bg-indigo-700 hover:shadow-lg disabled:cursor-not-allowed disabled:opacity-45"
+          class="cursor-pointer h-10 w-full md:w-auto flex justify-center items-center py-3 px-4 border border-transparent rounded-lg text-sm font-semibold text-white bg-indigo-500 hover:bg-indigo-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 active:transform active:scale-[0.99] transition duration-150 ease-in-out disabled:cursor-not-allowed disabled:bg-indigo-300"
+          type="submit"
+          [disabled]="fileForm().invalid() || fileForm().submitting()"
         >
-          <span>Insertar en la página</span>
-          <i class="fa-solid fa-arrow-right text-sm"></i>
+          <span class="flex items-center justify-center gap-2">
+            @if (fileForm().submitting()) {
+              <i class="fa-solid fa-spinner fa-spin text-white"></i>
+            } @else {
+              <i class="fa-solid fa-arrow-right"></i>
+            }
+            <span>Insertar en la página</span>
+          </span>
         </button>
       </div>
     </footer>

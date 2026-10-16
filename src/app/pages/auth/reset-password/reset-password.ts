@@ -5,7 +5,13 @@ import { RouterLink, Router, ActivatedRoute } from '@angular/router';
 import { ToastrService } from '@iqx-limited/ngx-toastr';
 import { NgClass } from '@angular/common';
 import { ParameterService, AuthService } from '@core/services';
-import { CmsValidators, AuthUtils, getLogo, findParameter, hasErrorFormField } from '@shared/utils';
+import {
+  AuthUtils,
+  getLogo,
+  findParameter,
+  hasErrorFormField,
+  evaluatePasswordSecurity,
+} from '@shared/utils';
 import { AuthComponent } from '@shared/components';
 import { firstValueFrom } from 'rxjs';
 
@@ -62,7 +68,7 @@ export class AuthResetPassword {
   private readonly _activatedRoute = inject(ActivatedRoute);
   private readonly _destroyRef = inject(DestroyRef);
 
-  readonly evaluatePasswordSecurity = CmsValidators.evaluatePasswordSecurity;
+  readonly evaluatePasswordSecurity = evaluatePasswordSecurity;
   readonly hasError = hasErrorFormField;
   readonly parameters = this._parameterService.publicParameters;
 

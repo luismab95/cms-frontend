@@ -14,7 +14,7 @@ import {
 import { ToastrService } from '@iqx-limited/ngx-toastr';
 import { UserI } from '@core/interfaces';
 import { UserService, ParameterService } from '@core/services';
-import { CmsValidators, findParameter, hasErrorFormField } from '@shared/utils';
+import { evaluatePasswordSecurity, findParameter, hasErrorFormField } from '@shared/utils';
 import { firstValueFrom } from 'rxjs';
 
 @Component({
@@ -80,7 +80,7 @@ export class SettingsSecurityComponent {
   private _toastrService = inject(ToastrService);
   private readonly _destroyRef = inject(DestroyRef);
 
-  readonly evaluatePasswordSecurity = CmsValidators.evaluatePasswordSecurity;
+  readonly evaluatePasswordSecurity = evaluatePasswordSecurity;
   readonly hasError = hasErrorFormField;
   readonly parameters = this._parameterService.publicParameters;
 
