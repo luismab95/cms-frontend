@@ -1,0 +1,380 @@
+<form (submit)="save($event)">
+  <div class="flex flex-col gap-8 lg:p-4 p-0" data-aos="fade-left" data-aos-duration="1000">
+    <section class="rounded-2xl border border-slate-200/80 bg-white shadow-sm overflow-hidden">
+      <div class="border-b border-slate-100 bg-white px-6 py-5">
+        <div class="flex items-center justify-between">
+          <div>
+            <h2 class="text-xl font-bold text-slate-900">Cambia tu contraseña</h2>
+            <p class="text-xs text-slate-500 mt-0.5">
+              Ingresa una nueva contraseña segura para proteger tu cuenta.
+            </p>
+          </div>
+        </div>
+      </div>
+      <div class="p-6 space-y-6">
+        <div>
+          <div class="flex items-center justify-between mb-1.5">
+            <label
+              [class.text-red-500!]="hasError(securityForm.password!)"
+              class="block text-xs font-semibold uppercase tracking-wider text-slate-700"
+              for="password"
+            >
+              Nueva Contraseña
+            </label>
+          </div>
+          <div class="relative rounded-lg">
+            <div
+              class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400"
+            >
+              <i
+                class="fa-regular fa-keyboard"
+                [class.text-red-500!]="hasError(securityForm.password!)"
+              ></i>
+            </div>
+            <input
+              [formField]="securityForm.password!"
+              class="h-10 block w-full pl-10 pr-3.5 py-2.5 sm:py-3 text-sm text-slate-900 placeholder-slate-400 bg-slate-50/50 border border-slate-300 rounded-lg focus:outline-none focus:ring-0.5 focus:ring-indigo-600 focus:border-indigo-600 focus:bg-white transition-colors"
+              [ngClass]="{
+                'border-red-500! text-red-500! placeholder:text-red-500! focus:ring-red-500!':
+                  hasError(securityForm.password!),
+              }"
+              id="password"
+              placeholder="••••••••••••"
+              [type]="passwordVisible() ? 'text' : 'password'"
+            />
+            <button
+              class="cursor-pointer absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-400 hover:text-slate-600 focus:outline-none focus:text-slate-800"
+              id="togglePassword"
+              type="button"
+              (click)="togglePasswordVisibility()"
+            >
+              <i
+                [ngClass]="{
+                  'text-red-500!': hasError(securityForm.password!),
+                  'fa-eye-slash': passwordVisible(),
+                  'fa-eye': !passwordVisible(),
+                }"
+                class="fa-regular"
+              ></i>
+            </button>
+          </div>
+          @if (hasError(securityForm.password!)) {
+            <p class="mt-1.5 flex items-center gap-1 text-sm text-red-600">
+              <i class="fa-solid fa-circle-exclamation"></i>
+              {{ securityForm.password!().errors()[0].message }}
+            </p>
+          }
+
+          <div class="mt-2.5" data-purpose="strength-meter">
+            <div class="flex items-center justify-between text-xs font-semibold mb-1.5">
+              <span class="text-slate-500 font-medium">Nivel de seguridad:</span>
+              <span
+                class="font-bold flex items-center gap-1"
+                [ngClass]="{
+                  'text-red-500': evaluatePasswordSecurityResult().score <= 2,
+                  'text-orange-500': evaluatePasswordSecurityResult().score === 3,
+                  'text-yellow-500':
+                    evaluatePasswordSecurityResult().score >= 4 &&
+                    evaluatePasswordSecurityResult().score <= 5,
+                  'text-emerald-600': evaluatePasswordSecurityResult().score >= 6,
+                }"
+              >
+                <span
+                  class="w-1.5 h-1.5 rounded-full"
+                  [ngClass]="{
+                    'bg-red-500': evaluatePasswordSecurityResult().score <= 2,
+                    'bg-orange-500': evaluatePasswordSecurityResult().score === 3,
+                    'bg-yellow-500':
+                      evaluatePasswordSecurityResult().score >= 4 &&
+                      evaluatePasswordSecurityResult().score <= 5,
+                    'bg-emerald-500': evaluatePasswordSecurityResult().score >= 6,
+                  }"
+                ></span>
+
+                {{ evaluatePasswordSecurityResult().strength }}
+              </span>
+            </div>
+            <div class="grid grid-cols-4 gap-1.5 h-1.5 w-full">
+              <div
+                [ngClass]="{
+                  'bg-red-500 border-none': evaluatePasswordSecurityResult().score >= 1,
+                }"
+                class="border border-slate-400 rounded-full"
+              ></div>
+
+              <div
+                [ngClass]="{
+                  'bg-orange-500 border-none': evaluatePasswordSecurityResult().score >= 3,
+                }"
+                class="border border-slate-400 rounded-full"
+              ></div>
+
+              <div
+                [ngClass]="{
+                  'bg-yellow-500 border-none': evaluatePasswordSecurityResult().score >= 4,
+                }"
+                class="border border-slate-400 rounded-full"
+              ></div>
+
+              <div
+                [ngClass]="{
+                  'bg-emerald-500 border-none': evaluatePasswordSecurityResult().score >= 6,
+                }"
+                class="border border-slate-400 rounded-full"
+              ></div>
+            </div>
+          </div>
+
+          <ul class="mt-3.5 space-y-1.5 text-xs text-slate-600" data-purpose="password-rules-list">
+            @let longPwdRegexResult = validateRegex(securityModel().password!, longPwdRegex);
+            <li class="flex items-center gap-2">
+              <span
+                [ngClass]="{
+                  'bg-emerald-100 text-emerald-600': longPwdRegexResult,
+                  'bg-red-100 text-red-600': !longPwdRegexResult,
+                }"
+                class="w-4 h-4 rounded-full flex items-center justify-center shrink-0"
+              >
+                <i
+                  [ngClass]="{
+                    ' fa-check ': longPwdRegexResult,
+                    ' fa-x ': !longPwdRegexResult,
+                  }"
+                  class="fa-solid fa-2xs"
+                ></i>
+              </span>
+              <span>Mínimo {{ longPwd() }} caracteres</span>
+            </li>
+            @if (mayusPwd()) {
+              @let mayusPwdRegexResult = validateRegex(securityModel().password!, mayusPwdRegex);
+              <li class="flex items-center gap-2">
+                <span
+                  [ngClass]="{
+                    'bg-emerald-100 text-emerald-600': mayusPwdRegexResult,
+                    'bg-red-100 text-red-600': !mayusPwdRegexResult,
+                  }"
+                  class="w-4 h-4 rounded-full flex items-center justify-center shrink-0"
+                >
+                  <i
+                    [ngClass]="{
+                      ' fa-check ': mayusPwdRegexResult,
+                      ' fa-x ': !mayusPwdRegexResult,
+                    }"
+                    class="fa-solid fa-2xs"
+                  ></i>
+                </span>
+                <span>Al menos una letra mayúscula</span>
+              </li>
+            }
+            @if (numberPwd()) {
+              @let numberPwdRegexResult = validateRegex(securityModel().password!, numberPwdRegex);
+              <li class="flex items-center gap-2">
+                <span
+                  [ngClass]="{
+                    'bg-emerald-100 text-emerald-600': numberPwdRegexResult,
+                    'bg-red-100 text-red-600': !numberPwdRegexResult,
+                  }"
+                  class="w-4 h-4 rounded-full flex items-center justify-center shrink-0"
+                >
+                  <i
+                    [ngClass]="{
+                      ' fa-check': numberPwdRegexResult,
+                      ' fa-x': !numberPwdRegexResult,
+                    }"
+                    class="fa-solid fa-2xs"
+                  ></i>
+                </span>
+                <span>Al menos un número</span>
+              </li>
+            }
+            @if (specialPwd()) {
+              @let specialPwdRegexResult =
+                validateRegex(securityModel().password!, specialPwdRegex);
+              <li class="flex items-center gap-2">
+                <span
+                  [ngClass]="{
+                    'bg-emerald-100 text-emerald-600': specialPwdRegexResult,
+                    'bg-red-100 text-red-600': !specialPwdRegexResult,
+                  }"
+                  class="w-4 h-4 rounded-full flex items-center justify-center shrink-0"
+                >
+                  <i
+                    [ngClass]="{
+                      ' fa-check': specialPwdRegexResult,
+                      ' fa-x': !specialPwdRegexResult,
+                    }"
+                    class="fa-solid fa-2xs"
+                  ></i>
+                </span>
+                <span>Al menos un carácter especial</span>
+              </li>
+            }
+          </ul>
+        </div>
+
+        <div>
+          <div class="flex items-center justify-between mb-1.5">
+            <label
+              [class.text-red-500!]="hasError(securityForm.passwordConfirm!)"
+              class="block text-xs font-semibold uppercase tracking-wider text-slate-700"
+              for="password"
+            >
+              Confirmar nueva contraseña
+            </label>
+          </div>
+          <div class="relative rounded-lg">
+            <div
+              class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400"
+            >
+              <i
+                class="fa-regular fa-keyboard"
+                [class.text-red-500!]="hasError(securityForm.passwordConfirm!)"
+              ></i>
+            </div>
+            <input
+              [formField]="securityForm.passwordConfirm!"
+              class="h-10 block w-full pl-10 pr-3.5 py-2.5 sm:py-3 text-sm text-slate-900 placeholder-slate-400 bg-slate-50/50 border border-slate-300 rounded-lg focus:outline-none focus:ring-0.5 focus:ring-indigo-600 focus:border-indigo-600 focus:bg-white transition-colors"
+              [ngClass]="{
+                'border-red-500! text-red-500! placeholder:text-red-500! focus:ring-red-500!':
+                  hasError(securityForm.passwordConfirm!),
+              }"
+              id="password"
+              placeholder="••••••••••••"
+              [type]="passwordConfirmedVisible() ? 'text' : 'password'"
+            />
+            <button
+              class="cursor-pointer absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-400 hover:text-slate-600 focus:outline-none focus:text-slate-800"
+              id="togglePassword"
+              type="button"
+              (click)="togglePasswordConfirmedVisibility()"
+            >
+              <i
+                [ngClass]="{
+                  'text-red-500!': hasError(securityForm.passwordConfirm!),
+                  'fa-eye-slash': passwordConfirmedVisible(),
+                  'fa-eye': !passwordConfirmedVisible(),
+                }"
+                class="fa-regular"
+              ></i>
+            </button>
+          </div>
+          @if (hasError(securityForm.passwordConfirm!)) {
+            <p class="mt-1.5 flex items-center gap-1 text-sm text-red-600">
+              <i class="fa-solid fa-circle-exclamation"></i>
+              {{ securityForm.passwordConfirm!().errors()[0].message }}
+            </p>
+          }
+        </div>
+      </div>
+    </section>
+
+    <section class="rounded-2xl border border-slate-200/80 bg-white shadow-sm overflow-hidden">
+      <div class="border-b border-slate-100 bg-white px-6 py-5">
+        <div class="flex items-center justify-between">
+          <div>
+            <h2 class="text-xl font-bold text-slate-p00">Preferencias de seguridad</h2>
+            <p class="text-xs text-slate-500 mt-0.5">
+              Mantenga su cuenta más segura con las siguientes preferencias.
+            </p>
+          </div>
+        </div>
+      </div>
+      <div class="p-6 space-y-6">
+        <div class="px-2 lg:px-6 transition hover:bg-slate-50/60">
+          @let status = securityModel().twoFactorAuth;
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div class="space-y-1.5 max-w-xl">
+              <div class="flex items-center gap-2.5 flex-wrap">
+                <h3 class="text-sm font-bold text-slate-900">
+                  Activar/Inactivar la autenticación de 2 pasos {{status}} {{user().twoFactorAuth}}
+                </h3>
+                <span
+                  [ngClass]="{
+                    'bg-slate-100 text-slate-600 ring-slate-200': !status,
+                    'bg-emerald-100 text-emerald-600 ring-emerald-200': status,
+                  }"
+                  class="inline-flex items-center rounded-md bg-slate-100 px-2 py-0.5 text-[11px] font-semibold ring-1 ring-inset"
+                >
+                  <span
+                    [class.bg-slate-400]="!status"
+                    [class.bg-emerald-400]="status"
+                    class="h-1.5 w-1.5 rounded-full mr-1.5"
+                  ></span>
+                  @if (!status) {
+                    Inactivo
+                  } @else {
+                    Activo
+                  }
+                </span>
+              </div>
+              <p class="text-xs text-slate-500 leading-relaxed">
+                Activa o desactiva la autenticación de dos pasos para añadir una capa adicional de
+                seguridad a tu cuenta.
+              </p>
+              <div
+                class="flex items-center gap-1.5 text-[11px] text-amber-700 bg-amber-50 px-2.5 py-1 rounded-md w-fit ring-1 ring-inset ring-amber-600/20"
+              >
+                <i class="fa-solid fa-triangle-exclamation text-amber-600"></i>
+                <span
+                  >Activar este switch le protege contra el robo de contraseñas solicitando una
+                  código de autenticación vía correo electrónico en cada inicio de sesión.</span
+                >
+              </div>
+            </div>
+            <button
+              (click)="securityModel.update((prev) => ({ ...prev, twoFactorAuth: !status }))"
+              [class.bg-indigo-600]="status"
+              [class.bg-slate-200]="!status"
+              [disabled]="!edit()"
+              class="relative inline-flex h-7 w-14 shrink-0 cursor-pointer rounded-full border-2 border-transparent p-0.5 transition-colors duration-200 ease-in-out focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:ring-offset-2 self-start sm:self-center"
+              role="switch"
+              type="button"
+            >
+              <span
+                [class.translate-x-7]="status"
+                [class.translate-x-0]="!status"
+                class="pointer-events-none inline-flex h-6 w-6 transform items-center justify-center rounded-full bg-white shadow-md ring-0 transition duration-200 ease-in-out"
+              >
+                @if (!status) {
+                  <i class="fa-solid fa-xmark text-slate-400 fa-2xs"></i>
+                } @else {
+                  <i class="fa-solid fa-check text-indigo-400 fa-2xs"></i>
+                }
+              </span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    @if (edit()) {
+      <div class="flex items-center justify-between flex-col md:flex-row w-full">
+        <div class="flex items-center justify-start w-full"></div>
+        <div class="flex items-center justify-end gap-3 pt-2 flex-col md:flex-row w-full">
+          <button
+            (click)="cancel()"
+            class="cursor-pointer w-full md:w-auto flex justify-center items-center py-3 px-4 border border-slate-300 rounded-lg shadow-sm text-sm font-semibold text-slate-700 bg-white hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-50 active:transform active:scale-[0.99] transition duration-150 ease-in-out"
+            type="button"
+          >
+            Descartar
+          </button>
+
+          <button
+            class="cursor-pointer w-full md:w-auto flex justify-center items-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-semibold text-white bg-indigo-500 hover:bg-indigo-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 active:transform active:scale-[0.99] transition duration-150 ease-in-out disabled:cursor-not-allowed disabled:bg-indigo-300"
+            type="submit"
+            [disabled]="securityForm().invalid() || securityForm().submitting()"
+          >
+            <span class="flex items-center justify-center gap-2">
+              @if (securityForm().submitting()) {
+                <i class="fa-solid fa-spinner fa-spin text-white"></i>
+              } @else {
+                <i class="fa-solid fa-floppy-disk"></i>
+              }
+              <span>Guardar</span>
+            </span>
+          </button>
+        </div>
+      </div>
+    }
+  </div>
+</form>

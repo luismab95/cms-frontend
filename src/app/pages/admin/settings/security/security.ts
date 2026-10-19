@@ -1,0 +1,197 @@
+import { NgClass } from '@angular/common';
+import { Component, DestroyRef, effect, inject, input, signal } from '@angular/core';
+import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
+import {
+  disabled,
+  email,
+  form,
+  FormField,
+  pattern,
+  required,
+  submit,
+  validate,
+} from '@angular/forms/signals';
+import { ToastrService } from '@iqx-limited/ngx-toastr';
+import { UserI } from '@core/interfaces';
+import { UserService, ParameterService } from '@core/services';
+import { evaluatePasswordSecurity, findParameter, hasErrorFormField } from '@shared/utils';
+import { firstValueFrom } from 'rxjs';
+
+@Component({
+  selector: 'settings-security',
+  templateUrl: './security.html',
+  imports: [FormField, NgClass],
+})
+export class SettingsSecurityComponent {
+  user = input.required<UserI>();
+  edit = input.required<boolean>();
+
+  longPwd = signal<number>(6);
+  mayusPwd = signal<boolean>(false);
+  specialPwd = signal<boolean>(false);
+  numberPwd = signal<boolean>(false);
+  passwordVisible = signal<boolean>(false);
+  evaluatePasswordSecurityResult = signal<{ score: number; strength: string }>({
+    score: 0,
+    strength: '',
+  });
+  passwordConfirmedVisible = signal<boolean>(false);
+  securityModel = signal<UserI>({
+    email: '',
+    firstname: '',
+    lastname: '',
+    roleId: 0,
+    password: '',
+    passwordConfirm: '',
+    twoFactorAuth: false,
+  });
+
+  securityForm = form(this.securityModel, (schemaPath) => {
+    required(schemaPath.email, { message: 'Dirección de correo electrónico es obligatorio.' });
+    email(schemaPath.email, { message: 'Dirección de correo electrónico no válido.' });
+    required(schemaPath.firstname, { message: 'Nombres es obligatorio.' });
+    required(schemaPath.lastname, { message: 'Apellidos es obligatorio.' });
+    pattern(schemaPath.password!, () => this.validatePassword(), {
+      message: 'La nueva contraseña no cumple con los requisitos de seguridad.',
+    });
+    validate(schemaPath.passwordConfirm!, (ctx) => {
+      const password = ctx.valueOf(schemaPath.password!);
+      const confirmation = ctx.value();
+      if (password !== confirmation) {
+        return {
+          kind: 'mismatch',
+          message: 'Las contraseñas no coinciden.',
+        };
+      }
+      return null;
+    });
+    disabled(schemaPath, {
+      when: () => !this.edit(),
+    });
+  });
+
+  mayusPwdRegex: RegExp = new RegExp('(?=.*[A-Z])');
+  specialPwdRegex: RegExp = new RegExp('(?=.*[@#$%^&+=])');
+  numberPwdRegex: RegExp = new RegExp('(?=.*\\d)');
+  longPwdRegex: RegExp = new RegExp('.{' + this.longPwd() + ',}$');
+
+  private _userService = inject(UserService);
+  private _parameterService = inject(ParameterService);
+  private _toastrService = inject(ToastrService);
+  private readonly _destroyRef = inject(DestroyRef);
+
+  readonly evaluatePasswordSecurity = evaluatePasswordSecurity;
+  readonly hasError = hasErrorFormField;
+  readonly parameters = this._parameterService.publicParameters;
+
+  /**
+   * Constructor
+   */
+  constructor() {
+    effect(() => {
+      const user = this.user();
+      if (!user) return;
+
+      this.securityModel.set({ ...user, password: '', passwordConfirm: '' });
+    });
+
+    effect(() => {
+      this.parameters();
+      this.getParameters();
+      this.longPwdRegex = new RegExp('.{' + this.longPwd() + ',}$');
+    });
+
+    toObservable(this.securityModel)
+      .pipe(takeUntilDestroyed(this._destroyRef))
+      .subscribe((res) => {
+        this.evaluatePasswordSecurityResult.set(this.evaluatePasswordSecurity(res.password!));
+      });
+  }
+
+  /**
+   * Change value of visibility of password
+   */
+  togglePasswordVisibility(): void {
+    this.passwordVisible.set(!this.passwordVisible());
+  }
+
+  /**
+   * Change value of visibility of password confirmed
+   */
+  togglePasswordConfirmedVisibility(): void {
+    this.passwordConfirmedVisible.set(!this.passwordConfirmedVisible());
+  }
+
+  /**
+   * Get value of parameters PWD
+   */
+  getParameters() {
+    this.longPwd.set(Number(findParameter('APP_PWD_LONG', this.parameters())?.value));
+    this.mayusPwd.set(findParameter('APP_PWD_MAYUS', this.parameters())?.value === 'true');
+    this.specialPwd.set(findParameter('APP_PWD_SPECIAL', this.parameters())?.value === 'true');
+    this.numberPwd.set(findParameter('APP_PWD_NUMBER', this.parameters())?.value === 'true');
+  }
+
+  /**
+   * Build pattern to PWD
+   * @returns
+   */
+  validatePassword(): RegExp {
+    let regex = '^';
+    if (this.mayusPwd()) regex += '(?=.*[A-Z])';
+    if (this.specialPwd()) regex += '(?=.*[@#$%^&+=])';
+    if (this.numberPwd()) regex += '(?=.*\\d)';
+    regex += '.{' + this.longPwd() + ',}$';
+    return new RegExp(regex);
+  }
+
+  /**
+   * Update security profile
+   * @param event
+   */
+  async save(event: SubmitEvent): Promise<void> {
+    try {
+      event.preventDefault();
+      await submit(this.securityForm, async (field) => {
+        const value = { ...field().value() };
+        if (value.password == '') delete value.password;
+        delete value.passwordConfirm;
+
+        await firstValueFrom(
+          this._userService
+            .update(this.securityModel().id!, value)
+            .pipe(takeUntilDestroyed(this._destroyRef)),
+        );
+        this._userService.getSession().subscribe();
+        this._toastrService.success(
+          'La configuración de seguridad se actualizó correctamente.',
+          'Configuración de seguridad actualizada',
+        );
+      });
+    } catch (err: any) {
+      this._toastrService.error(
+        err.error?.message || 'No fue posible actualizar la configuración de seguridad.',
+        'Error al actualizar',
+      );
+    }
+  }
+
+  /**
+   * Cancel action
+   */
+  cancel() {
+    const user = this.user();
+    if (!user) return;
+    this.securityModel.set({ ...user, password: '', passwordConfirm: '' });
+  }
+
+  /**
+   * Validate RegExp
+   * @param value
+   * @param regex
+   * @returns
+   */
+  validateRegex(value: string, regex: RegExp) {
+    return regex.test(value);
+  }
+}

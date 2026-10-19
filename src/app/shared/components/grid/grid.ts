@@ -1,0 +1,427 @@
+import {
+  CdkDrag,
+  CdkDragDrop,
+  CdkDragHandle,
+  CdkDropList,
+  moveItemInArray,
+} from '@angular/cdk/drag-drop';
+import { NgClass, NgStyle } from '@angular/common';
+import { Component, computed, effect, inject, input, OnDestroy, output } from '@angular/core';
+import { CanvasT } from '@core/interfaces';
+import {
+  PageService,
+  CanvasService,
+  DynamicStyleService,
+  ParameterService,
+  TemplateService,
+} from '@core/services';
+import { TooltipDirective } from '@shared/directives';
+import {
+  PageElementsConfigI,
+  SectionI,
+  RowI,
+  ElementCMSI,
+  ColumnI,
+  ElementI,
+  SelectedItemsInGridI,
+  HistoryCMSI,
+} from '@shared/interfaces';
+import {
+  findParameter,
+  filterPath,
+  createSection,
+  createRow,
+  createColumn,
+  createElement,
+  updateColumn,
+} from '@shared/utils';
+import { ElementsComponent } from '../element/elements';
+
+@Component({
+  selector: 'grid',
+  templateUrl: './grid.html',
+  imports: [
+    NgClass,
+    NgStyle,
+    CdkDropList,
+    CdkDrag,
+    CdkDragHandle,
+    ElementsComponent,
+    TooltipDirective,
+  ],
+})
+export class GridComponent implements OnDestroy {
+  gridType = input.required<CanvasT>();
+  gridStyles = input<any>({});
+  pageElementsConfig = input.required<PageElementsConfigI>();
+  render = input<boolean>(false);
+  preview = input<boolean>(false);
+  editContent = input<boolean>(false);
+  editDesign = input<boolean>(false);
+  languageId = input<number>();
+  previewType = input<string>('none');
+  openElementsPanel = output<void>();
+
+  private readonly _pageService = inject(PageService);
+  private readonly _canvasService = inject(CanvasService);
+  private readonly _dynamicStyleService = inject(DynamicStyleService);
+  private readonly _parameterService = inject(ParameterService);
+  private readonly _templateService = inject(TemplateService);
+
+  readonly page = this._pageService.page;
+  readonly template = this._templateService.template;
+  readonly parameters = this._parameterService.publicParameters;
+
+  readonly selectedItemsInGrid = this._canvasService.selectedItemsInGrid;
+
+  readonly urlStatics = computed(
+    () => findParameter('APP_STATICS_URL', this.parameters())?.value ?? '',
+  );
+  readonly sectionsInCanvas = computed(() => {
+    return this._canvasService.sectionsByType[this.gridType()].get();
+  });
+  readonly gridConfigStyles = (config: { [key: string]: any }) => {
+    const backgroundImage = config['backgroundImage'];
+    if (!backgroundImage || backgroundImage === '' || backgroundImage === 'null') return {};
+    return {
+      'background-image': `url('${this.urlStatics()}/${filterPath(backgroundImage)}')`,
+    };
+  };
+
+  /**
+   * Constructor
+   */
+  constructor() {
+    effect(() => {
+      const page = this.page();
+      if (!page || !page.data || this.gridType() !== 'page') return;
+      this.loadStylesPages('body-dynamicStyles', page.data.body.css);
+    });
+
+    effect(() => {
+      const template = this.template();
+      if (!template || !template.data || this.gridType() === 'page') return;
+      if (this.gridType() === 'header')
+        this.loadStylesPages('header-dynamicStyles', template.data.header.css);
+      if (this.gridType() === 'footer')
+        this.loadStylesPages('footer-dynamicStyles', template.data.footer.css);
+    });
+  }
+
+  /**
+   * OnDestroy
+   */
+  ngOnDestroy(): void {
+    this._dynamicStyleService.remove(
+      `${this.gridType() === 'page' ? 'body' : this.gridType()}-dynamicStyles`,
+    );
+  }
+
+  /**
+   * Load styles
+   * @param styleId
+   * @param cssContainer
+   */
+  loadStylesPages(styleId: string, cssContainer: string): void {
+    this._dynamicStyleService.remove(styleId);
+    const css: string[] = [];
+    css.push(cssContainer);
+    for (const section of this.sectionsInCanvas()) {
+      css.push(section.css);
+      for (const row of section.rows) {
+        css.push(row.css);
+        for (const column of row.columns) {
+          css.push(column.css);
+          if (column.element) {
+            css.push(column.element.css);
+          }
+        }
+      }
+    }
+    let uniqueCss = css.join('\n');
+    if (this.render()) {
+      uniqueCss = uniqueCss.replaceAll('@container', '@media');
+    }
+    this._dynamicStyleService.set(styleId, uniqueCss);
+  }
+
+  /**
+   * Drag and drop event
+   * @param event
+   * @param item
+   */
+  drop<T>(event: CdkDragDrop<string[]>, items: T[]): void {
+    const previous = structuredClone(this.sectionsInCanvas());
+    moveItemInArray(items, event.previousIndex, event.currentIndex);
+    this._canvasService.sectionsByType[this.gridType()].set(this.sectionsInCanvas());
+    const next = structuredClone(this._canvasService.sectionsByType[this.gridType()].get());
+    this._canvasService.updateChangesInCanvas(this.gridType(), previous, next);
+  }
+
+  /**
+   * Add section to grid
+   */
+  addSection() {
+    const newSection = createSection();
+    const previous = structuredClone(this.sectionsInCanvas());
+    this.currentSections = structuredClone([...this.sectionsInCanvas(), newSection]);
+    this.updateSelectionItem({
+      page: null,
+      section: newSection,
+      row: null,
+      column: null,
+      element: null,
+      canvas: this.gridType(),
+    });
+    const next = structuredClone(this._canvasService.sectionsByType[this.gridType()].get());
+    this._canvasService.updateChangesInCanvas(this.gridType(), previous, next);
+  }
+
+  /**
+   * Add row to sections
+   * @param section
+   */
+  addRow(section: SectionI) {
+    const previous = structuredClone(this.sectionsInCanvas());
+    const row = createRow();
+    section.rows.push(row);
+    this.currentSections = structuredClone(this.sectionsInCanvas());
+    this.updateSelectionItem({
+      page: null,
+      section: null,
+      row,
+      column: null,
+      element: null,
+      canvas: this.gridType(),
+    });
+
+    const next = structuredClone(this._canvasService.sectionsByType[this.gridType()].get());
+    this._canvasService.updateChangesInCanvas(this.gridType(), previous, next);
+  }
+
+  /**
+   * Add column to rows
+   * @param row
+   */
+  addColumn(row: RowI) {
+    const previous = structuredClone(this.sectionsInCanvas());
+    const column = createColumn();
+    row.columns.push(column);
+    this.currentSections = structuredClone(this.sectionsInCanvas());
+    this.updateSelectionItem({
+      page: null,
+      section: null,
+      row: null,
+      column,
+      element: null,
+      canvas: this.gridType(),
+    });
+
+    const next = structuredClone(this._canvasService.sectionsByType[this.gridType()].get());
+    this._canvasService.updateChangesInCanvas(this.gridType(), previous, next);
+  }
+
+  /**
+   * add element in column
+   * @param element
+   * @returns
+   */
+  addElement(element: ElementCMSI) {
+    const selectedItemsInGrid = this.selectedItemsInGrid();
+    if (!selectedItemsInGrid) return;
+
+    const gridType = selectedItemsInGrid.canvas;
+    const previous = structuredClone(this.sectionsInCanvas());
+    const column = selectedItemsInGrid.column;
+    if (!column) return;
+
+    const newElement = createElement(element);
+    const newColumn: ColumnI = { ...column, element: newElement };
+
+    const newSections = updateColumn(previous, column.uuid, newColumn);
+    this.currentSections = structuredClone(newSections);
+    const next = structuredClone(this._canvasService.sectionsByType[gridType].get());
+    this._canvasService.updateChangesInCanvas(gridType, previous, next);
+
+    this.updateSelectionItem({
+      page: null,
+      section: null,
+      row: null,
+      column: null,
+      element: newElement,
+      canvas: gridType,
+    });
+  }
+
+  /**
+   * Open element panel
+   * @param column
+   */
+  openElementsManagerPanel(column: ColumnI): void {
+    this.selectColumn(column);
+    this.openElementsPanel.emit();
+  }
+
+  /**
+   * Select page config and reset the nested selections.
+   */
+  selectPageConfig() {
+    this.updateSelectionItem({
+      page: this.pageElementsConfig(),
+      section: null,
+      row: null,
+      column: null,
+      element: null,
+      canvas: this.gridType(),
+    });
+  }
+
+  /**
+   * Select a section and reset the nested selections.
+   * @param section
+   */
+  selectSection(section: SectionI): void {
+    this.updateSelectionItem({
+      page: null,
+      section,
+      row: null,
+      column: null,
+      element: null,
+      canvas: this.gridType(),
+    });
+  }
+
+  /**
+   * Select a row and reset the lower-level selections.
+   * @param row
+   */
+  selectRow(row: RowI): void {
+    this.updateSelectionItem({
+      page: null,
+      section: null,
+      row,
+      column: null,
+      element: null,
+      canvas: this.gridType(),
+    });
+  }
+
+  /**
+   * Select a column and clear the element selection.
+   * @param column
+   */
+  selectColumn(column: ColumnI): void {
+    this.updateSelectionItem({
+      page: null,
+      section: null,
+      row: null,
+      column,
+      element: null,
+      canvas: this.gridType(),
+    });
+  }
+
+  /**
+   * Select an element.
+   * @param element
+   */
+  selectElement(element: ElementI): void {
+    this.updateSelectionItem({
+      page: null,
+      section: null,
+      row: null,
+      column: null,
+      element,
+      canvas: this.gridType(),
+    });
+  }
+
+  /**
+   * Selected items
+   * @param selectedItemsInGrid
+   */
+  updateSelectionItem(selectedItemsInGrid: SelectedItemsInGridI) {
+    this._canvasService.selectedItemsInGrid.set(null);
+    setTimeout(() => {
+      this._canvasService.selectedItemsInGrid.set(selectedItemsInGrid);
+    });
+  }
+
+  /**
+   * Undo Changes
+   */
+  undo() {
+    const state = this._canvasService.undo();
+    if (state) {
+      this.restoreState(state);
+    }
+  }
+  /**
+   * Redo changes
+   */
+  redo() {
+    const state = this._canvasService.redo();
+    if (state) {
+      this.restoreState(state);
+    }
+  }
+
+  /**
+   * Restore state
+   * @param state
+   * @returns
+   */
+  restoreState(state: HistoryCMSI) {
+    if (this.gridType() === 'page') {
+      const page = this.page();
+      if (!page) return;
+      this._pageService.page.set({
+        ...page,
+        data: {
+          ...page.data,
+          body: {
+            ...state.body!,
+          },
+        },
+      });
+    } else {
+      const template = this.template();
+      if (!template) return;
+      this._templateService.template.set({
+        ...template,
+        data: {
+          ...template.data,
+          header: {
+            ...state.header!,
+          },
+          footer: {
+            ...state.footer!,
+          },
+        },
+      });
+    }
+    this.updateSelectionItem({
+      page: null,
+      section: null,
+      row: null,
+      column: null,
+      element: null,
+      canvas: this.gridType(),
+    });
+  }
+
+  /**
+   *  Current sections
+   */
+  private get currentSections(): SectionI[] {
+    return this._canvasService.sectionsByType[this.gridType()].get();
+  }
+
+  /**
+   * Update data sections
+   * @param value
+   */
+  private set currentSections(value: SectionI[]) {
+    this._canvasService.sectionsByType[this.gridType()].set(value);
+  }
+}

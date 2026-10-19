@@ -1,0 +1,107 @@
+@let page = this.page()!;
+@let preview = this.preview();
+@if (page !== null) {
+  <div
+    #canvas
+    id="canvas"
+    data-aos="fade-left"
+    data-aos-duration="1000"
+    class="w-full h-full min-h-0 flex-col overflow-hidden gap-4 lg:px-2 p-0 flex"
+  >
+    <section
+      [class.hidden!]="!enabledCanvas()"
+      class="shrink-0 rounded-2xl border border-slate-200/80 bg-white shadow-sm overflow-hidden"
+    >
+      <toolbar-canvas-component
+        [urlStatics]="urlStatics()"
+        [name]="page.name"
+        [saveAction]="saveAction()"
+        [previewMode]="previewMode()"
+        [autosave]="autosave()"
+        [preview]="preview"
+        [editContent]="validPermission(permission.editContentPage)"
+        [editDesign]="validPermission(permission.editDesignPage)"
+        [canUndo]="canUndo()"
+        [canRedo]="canRedo()"
+        (goBackEvent)="goToBack()"
+        (togglePreviewModeEvent)="togglePreviewMode()"
+        (setPreviewModeEvent)="setPreviewMode($event)"
+        (redoEvent)="redo()"
+        (undoEvent)="undo()"
+        (setLanguageIdEvent)="setLanguageId($event)"
+        (updateDraftEvent)="updateDraft()"
+        (cancelEvent)="cancel()"
+        (confirmUpdatePageEvent)="confirmUpdatePage()"
+      />
+    </section>
+
+    @if (
+      validPermission(permission.editContentPage) || validPermission(permission.editDesignPage)
+    ) {
+      <section
+        [class.hidden!]="!enabledCanvas()"
+        class="flex-1 min-h-0 rounded-2xl border border-slate-200/80 bg-white shadow-sm overflow-hidden"
+      >
+        <div class="flex flex-row h-full min-h-0 overflow-hidden transition-all">
+          <layer-component
+            #layer
+            [class.hidden]="previewMode()"
+            [gridType]="'page'"
+            (elementSelected)="addElement($event)"
+          />
+          <div
+            class="flex-1 min-w-0 min-h-0 h-full overflow-y-auto overflow-x-auto bg-slate-200/75 relative p-3 flex flex-col items-center justify-start bg-dot-grid"
+          >
+            <div
+              [ngClass]="{
+                'w-full': preview === 'none' || preview === 'desktop',
+                'w-208.5': preview === 'tablet',
+                'w-97.5': preview === 'mobile',
+                'px-1': !previewMode(),
+              }"
+              class="page-preview shrink-0 rounded-xl overflow-hidden border border-slate-300/80 transition-all duration-300 relative flex flex-col bg-white"
+            >
+              <div
+                class="cursor-not-allowed h-40 shrink-0 px-8 border-b border-slate-100 flex items-center justify-between text-xs text-slate-400 bg-white/60"
+              >
+                <span class="-rotate-45 text-xl text-center w-full"> ENCABEZADO </span>
+              </div>
+
+              <div class="p-6 relative">
+                <grid
+                  #grid
+                  [editContent]="validPermission(permission.editContentPage)"
+                  [editDesign]="validPermission(permission.editDesignPage)"
+                  [pageElementsConfig]="pageElementsConfig()"
+                  [gridType]="'page'"
+                  [gridStyles]="bodyStyles()"
+                  [languageId]="languageId()"
+                  [previewType]="preview"
+                  [preview]="previewMode()"
+                  (openElementsPanel)="openElementsPanel()"
+                />
+              </div>
+
+              <div
+                class="cursor-not-allowed h-40 shrink-0 px-8 border-t border-slate-100 flex items-center justify-between text-xs text-slate-400 bg-white/60"
+              >
+                <span class="-rotate-45 text-xl text-center w-full"> PIE DE PÁGINA </span>
+              </div>
+            </div>
+          </div>
+
+          <inspector-component [class.hidden]="previewMode()" [gridType]="'page'" />
+        </div>
+      </section>
+    } @else {
+      <permission-component />
+    }
+
+    <section
+      [class.flex!]="!enabledCanvas()"
+      class="w-full h-full min-h-0 hidden flex-col overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-sm"
+    >
+      <disabled-canvas-component (goBackEvent)="goToBack()" />
+    </section>
+  </div>
+}

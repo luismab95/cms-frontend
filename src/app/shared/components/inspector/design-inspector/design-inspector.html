@@ -1,0 +1,304 @@
+<div class="w-full flex flex-col">
+  <!-- Selector Superior de Breakpoints con estrategia Mobile-First -->
+  <div class="p-2.5 bg-slate-50 border-b border-slate-200 shrink-0">
+    <div class="flex items-center justify-between mb-1.5">
+      <div class="w-full flex flex-row gap-3">
+        <span
+          class="text-[10px] font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1"
+        >
+          <i class="w-3 h-3 text-slate-400 fa-solid fa-mobile-screen-button"></i>
+          Breakpoint Activo
+        </span>
+        <span
+          class="text-[9px] font-semibold text-indigo-700 bg-indigo-50 border border-indigo-200 px-1.5 py-0.2 rounded"
+          >{{ designBreakpoint() === 'mobile' ? 'Mobile-First' : (designBreakpoint() | titlecase) }}
+        </span>
+      </div>
+      @if (designMode() == 'UI') {
+        <button
+          (click)="toggleDesignMode('CODE')"
+          appTooltip="Ver código CSS"
+          class="cursor-pointer hover:text-indigo-800 text-indigo-600 text-xs font-semibold px-1.5 py-0.5"
+        >
+          <i class="fa-solid fa-code"></i>
+        </button>
+      } @else {
+        <button
+          (click)="toggleDesignMode('UI')"
+          appTooltip="Cambiar a UI"
+          class="cursor-pointer hover:text-indigo-800 text-indigo-600 text-xs font-semibold px-1.5 py-0.5"
+        >
+          <i class="fa-solid fa-palette"></i>
+        </button>
+      }
+    </div>
+
+    @if (designMode() == 'UI') {
+      <div class="grid grid-cols-3 gap-1 bg-slate-200/70 p-1 rounded-lg text-xs">
+        <!-- Móvil (Base 390px) [Activo / Base primario] -->
+        <button
+          [ngClass]="{
+            'bg-white! text-indigo-700! font-bold! shadow-xs! border border-indigo-200':
+              designBreakpoint() === 'mobile',
+          }"
+          (click)="toggleDesignBreakpoint('mobile')"
+          class="cursor-pointer flex items-center justify-center gap-2 py-1 px-1.5 rounded-md text-slate-600 hover:text-slate-900 hover:bg-white/60 transition-all text-[11px]"
+          type="button"
+        >
+          <i
+            [ngClass]="{ 'text-indigo-600!': designBreakpoint() === 'mobile' }"
+            class="w-3 h-3 text-slate-400 fa-solid fa-mobile-screen-button"
+          ></i>
+          <span
+            >Móvil <br />
+            (390)</span
+          >
+        </button>
+        <!-- Tablet (≥834px) -->
+        <button
+          (click)="toggleDesignBreakpoint('tablet')"
+          [ngClass]="{
+            'bg-white! text-indigo-700! font-bold! shadow-xs! border border-indigo-200':
+              designBreakpoint() === 'tablet',
+          }"
+          class="cursor-pointer flex items-center justify-center gap-2 py-1 px-1.5 rounded-md text-slate-600 hover:text-slate-900 hover:bg-white/60 transition-all text-[11px]"
+          type="button"
+        >
+          <i
+            [ngClass]="{ 'text-indigo-600!': designBreakpoint() === 'tablet' }"
+            class="w-3 h-3 text-slate-400 fa-solid fa-tablet-screen-button"
+          ></i>
+          <span
+            >Tablet <br />
+            (≥834)</span
+          >
+        </button>
+        <!-- Escritorio (≥1440px) -->
+        <button
+          (click)="toggleDesignBreakpoint('desktop')"
+          [ngClass]="{
+            'bg-white! text-indigo-700! font-bold! shadow-xs! border border-indigo-200':
+              designBreakpoint() === 'desktop',
+          }"
+          class="cursor-pointer flex items-center justify-center gap-2 py-1 px-1.5 rounded-md text-slate-600 hover:text-slate-900 hover:bg-white/60 transition-all text-[11px]"
+          type="button"
+        >
+          <i
+            [ngClass]="{ 'text-indigo-600!': designBreakpoint() === 'desktop' }"
+            class="w-3 h-3 text-slate-400 fa-solid fa-desktop"
+          ></i>
+          <span
+            >Desktop <br />
+            (≥1440)</span
+          >
+        </button>
+      </div>
+      <!-- Micro-tooltip informativo Mobile-First -->
+      <div
+        class="mt-1.5 flex items-start gap-1.5 px-2 py-1 rounded bg-blue-50/60 border border-blue-100 text-[10px] text-slate-600 leading-tight"
+      >
+        <i class="w-3 h-3 text-indigo-600 shrink-0 mt-0.5 fa-solid fa-circle-info"></i>
+        <span
+          >Estrategia <strong>Mobile-First</strong>: los estilos base se definen aquí y se propagan
+          en cascada hacia pantallas mayores salvo sobreescritura.</span
+        >
+      </div>
+    }
+  </div>
+
+  @if (designMode() == 'UI') {
+    <!-- Selector de Pseudo-estados e Interacción (Element States) -->
+    <div class="px-3 py-2 border-b border-slate-200 bg-white shrink-0">
+      <div class="flex items-center justify-between mb-1.5">
+        <span
+          class="text-[10px] font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1"
+        >
+          <i class="w-3 h-3 text-indigo-600 fa-solid fa-wand-magic-sparkles"></i>
+          Estado del Elemento
+        </span>
+        <span
+          class="inline-flex items-center gap-1 text-[10px] text-indigo-700 bg-indigo-50 px-1.5 py-0.2 rounded border border-indigo-200"
+        >
+          <span class="w-1.5 h-1.5 rounded-full bg-indigo-600"></span>
+          {{ stateElement() }}
+        </span>
+      </div>
+      <div class="flex items-center gap-1.5 my-2.5">
+        <div class="relative flex-1">
+          <select
+            #statesAddSelect
+            aria-label="Seleccionar pseudo-estado para añadir"
+            class="w-full text-[11px] bg-slate-50 border border-slate-200 text-slate-700 rounded-md py-1 px-0.5 focus:ring-0 focus:shadow-xs focus:outline-none"
+          >
+            <option disabled="" selected="" value="">+ Añadir pseudo-estado...</option>
+            @for (state of states(); track state) {
+              <option [value]="state">
+                {{ state }}
+                @switch (state) {
+                  @case (':hover') {
+                    (Al pasar el ratón)
+                  }
+                  @case (':focus') {
+                    (Al presionar)
+                  }
+                  @case (':active') {
+                    (Al enfocar)
+                  }
+                  @case (':disabled') {
+                    (Deshabilitado)
+                  }
+                  @case (':visited') {
+                    (Visitado)
+                  }
+                }
+              </option>
+            }
+          </select>
+        </div>
+        <button
+          (click)="addState(statesAddSelect.value); statesAddSelect.value = ''"
+          class="cursor-pointer px-2.5 py-1 bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white font-medium text-[11px] rounded-md transition-colors shadow-xs flex items-center gap-1"
+          type="button"
+        >
+          <span>Agregar</span>
+        </button>
+      </div>
+      <div class="flex flex-col gap-1">
+        <span class="text-[9.5px] font-semibold text-slate-400 tracking-wide"
+          >ESTADOS CONFIGURADOS</span
+        >
+        <div class="flex flex-wrap gap-2">
+          @for (state of currentStates(); track state) {
+            @if (state === 'normal') {
+              <button
+                (click)="toggleDesignSate(state)"
+                [class.font-bold!]="stateElement() === state"
+                [class.text-white!]="stateElement() === state"
+                [class.bg-indigo-600!]="stateElement() === state"
+                [class.shadow-xs!]="stateElement() === state"
+                class="cursor-pointer flex items-center gap-1 px-2 py-1 rounded-md text-[11px] bg-slate-100 text-slate-700 hover:bg-slate-200"
+                type="button"
+              >
+                <span
+                  [class.bg-white!]="stateElement() === state"
+                  class="w-1.5 h-1.5 rounded-full bg-indigo-500"
+                ></span>
+                <span>{{ state }}</span>
+              </button>
+            } @else {
+              <div
+                [class.font-bold!]="stateElement() === state"
+                [class.text-white!]="stateElement() === state"
+                [class.bg-indigo-600!]="stateElement() === state"
+                [class.shadow-xs!]="stateElement() === state"
+                (click)="toggleDesignSate(state)"
+                class="flex items-center gap-1 px-2 py-1 rounded-md text-[11px] bg-slate-100 hover:bg-slate-200 text-slate-700 cursor-pointer border border-slate-200/80 transition-all"
+              >
+                <span
+                  [class.bg-white!]="stateElement() === state"
+                  class="w-1.5 h-1.5 rounded-full bg-emerald-500"
+                ></span>
+                <span>{{ state }}</span>
+                <button
+                  (click)="$event.stopPropagation(); removeState(state)"
+                  class="cursor-pointer text-slate-400 hover:text-red-500 ml-1 p-0.5 rounded transition-colors leading-none flex items-center"
+                  appTooltip="Eliminar estado {{ state }}"
+                  type="button"
+                >
+                  <i class="fa-solid fa-xmark fa-2xs"></i>
+                </button>
+              </div>
+            }
+          }
+        </div>
+      </div>
+    </div>
+
+    <!-- SECCIONES DE CONFIGURACIÓN CSS EXHAUSTIVAS (SCROLLABLE ACCORDION) -->
+    <div class="flex-1 overflow-y-auto divide-y divide-slate-100 text-xs">
+      @if (initialized()) {
+        <!-- SECTION 1: LAYOUT (Disposición & Flexbox) -->
+        @if (permissionsByItem().layout) {
+          <design-layout-component
+            [value]="layoutValue()"
+            (updateValues)="updateStyleConfig($event, 'layout')"
+          />
+        }
+
+        <!-- SECTION 2: SPACING (Espaciado & Box Model) -->
+        @if (permissionsByItem().spacing) {
+          <design-spacing-component
+            [value]="spacingValue()"
+            (updateValues)="updateStyleConfig($event, 'spacing')"
+          />
+        }
+
+        <!-- SECTION 3: TYPOGRAPHY (Tipografía) -->
+        @if (permissionsByItem().typography) {
+          <design-typography-component
+            [value]="typographyValue()"
+            (updateValues)="updateStyleConfig($event, 'typography')"
+          />
+        }
+
+        <!-- SECTION 4: BACKGROUND (Fondo) -->
+        @if (permissionsByItem().background) {
+          <design-background-component
+            [value]="backgroundValue()"
+            (updateValues)="updateStyleConfig($event, 'background')"
+          />
+        }
+
+        <!-- SECTION 5: BORDER (Bordes & Radios) -->
+        @if (permissionsByItem().border) {
+          <design-border-component
+            [value]="borderValue()"
+            (updateValues)="updateStyleConfig($event, 'border')"
+          />
+        }
+
+        <!-- SECTION 6: POSITION (Posicionamiento) -->
+        @if (permissionsByItem().position) {
+          <design-position-component
+            [value]="positionValue()"
+            (updateValues)="updateStyleConfig($event, 'position')"
+          />
+        }
+
+        <!-- SECTION 7: EFFECTS (Efectos & Transiciones) -->
+        @if (permissionsByItem().effects) {
+          <design-effect-component
+            [value]="effectValue()"
+            (updateValues)="updateStyleConfig($event, 'effect')"
+          />
+        }
+
+        <!-- SECTION 8: OVERFLOW (Desbordamiento) -->
+        @if (permissionsByItem().overflow) {
+          <design-overflow-component
+            [value]="overflowValue()"
+            (updateValues)="updateStyleConfig($event, 'overflow')"
+          />
+        }
+
+        <!-- SECTION 9: INTERACTION (Interacción) -->
+        @if (permissionsByItem().interaction) {
+          <design-interaction-component
+            [value]="interactionValue()"
+            (updateValues)="updateStyleConfig($event, 'interaction')"
+          />
+        }
+      }
+    </div>
+  }
+
+  @if (designMode() == 'CODE') {
+    <div class="flex items-center justify-between h-120 w-full">
+      <ngx-monaco-editor
+        style="height: 100%; width: 100%"
+        [options]="editorOptions"
+        [formControl]="cssControl"
+      ></ngx-monaco-editor>
+    </div>
+  }
+</div>

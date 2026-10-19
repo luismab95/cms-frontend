@@ -1,3 +1,445 @@
-import { Routes } from '@angular/router';
+import { Router, Routes } from '@angular/router';
+import { inject } from '@angular/core';
+import { NoAuthGuard, AuthGuard, MenuGuard } from '@core/guards';
+import {
+  HomeService,
+  SitieService,
+  TemplateService,
+  MicrosityService,
+  PageService,
+  ElementService,
+  FileManagerService,
+  ParameterService,
+  UserService,
+} from '@core/services';
+import { Layout } from '@layout/layout';
+import { LanguageService, RoleService } from '@shared/services';
+import { initialDataResolver } from './app.resolvers';
 
-export const routes: Routes = [];
+export const routes: Routes = [
+  { path: '', pathMatch: 'full', redirectTo: 'es' },
+  {
+    path: 'signed-in-redirect',
+    pathMatch: 'full',
+    redirectTo: 'admin/dashboards/home',
+  },
+  // Auth routes for guests
+  {
+    path: 'auth',
+    canActivate: [NoAuthGuard],
+    canActivateChild: [NoAuthGuard],
+    component: Layout,
+    data: {
+      layout: 'empty',
+    },
+    children: [
+      {
+        path: 'confirmation-required',
+        loadComponent: () =>
+          import('./pages/auth/confirmation-required/confirmation-required').then(
+            (m) => m.AuthConfirmationRequired,
+          ),
+      },
+      {
+        path: 'forgot-password',
+        loadComponent: () =>
+          import('./pages/auth/forgot-password/forgot-password').then((m) => m.AuthForgotPassword),
+      },
+      {
+        path: 'reset-password',
+        loadComponent: () =>
+          import('./pages/auth/reset-password/reset-password').then((m) => m.AuthResetPassword),
+      },
+      {
+        path: 'sign-in',
+        loadComponent: () => import('./pages/auth/sign-in/sign-in').then((m) => m.AuthSignIn),
+        resolve: {
+          languages: () => inject(LanguageService).getAllPublic(),
+        },
+      },
+      {
+        path: 'sign-out',
+        loadComponent: () => import('./pages/auth/sign-out/sign-out').then((m) => m.AuthSignOut),
+      },
+      {
+        path: 'unlock-session',
+        loadComponent: () =>
+          import('./pages/auth/unlock-session/unlock-session').then((m) => m.AuthUnlockSession),
+      },
+      {
+        path: '**',
+        redirectTo: 'sign-in',
+      },
+    ],
+  },
+  // Admin routes
+  {
+    path: 'admin',
+    canActivate: [AuthGuard, MenuGuard],
+    canActivateChild: [AuthGuard, MenuGuard],
+    data: {
+      layout: 'panel',
+    },
+    component: Layout,
+    resolve: {
+      initialData: initialDataResolver,
+    },
+    children: [
+      // Dashboards
+      {
+        path: 'dashboards',
+        children: [
+          {
+            path: 'home',
+            loadComponent: () => import('./pages/admin/home/home').then((m) => m.Home),
+            resolve: {
+              countElements: () => inject(HomeService).getCountElements(),
+              top10Pages: () => inject(HomeService).getTop10Pages(),
+              visitVsPages: () => inject(HomeService).getVisitVsPages(),
+              weekVisit: () => inject(HomeService).getWeekVisit(),
+              yearVisit: () => inject(HomeService).getYearVisit(),
+              sitie: () => inject(SitieService).find(),
+            },
+          },
+        ],
+      },
+      // Content
+      {
+        path: 'content',
+        children: [
+          {
+            path: 'sitie',
+            loadComponent: () => import('./pages/admin/sitie/sitie').then((m) => m.Sitie),
+            resolve: {
+              sitie: () => inject(SitieService).find(),
+              languages: () =>
+                inject(LanguageService).getAll({
+                  page: 1,
+                  limit: 10,
+                  search: null,
+                  status: null,
+                }),
+              templates: () =>
+                inject(TemplateService).getAll({
+                  page: 1,
+                  limit: 99999,
+                  search: null,
+                  status: true,
+                }),
+              roles: () => inject(RoleService).getAll(),
+            },
+          },
+          {
+            path: 'microsities',
+            children: [
+              {
+                path: '',
+                loadComponent: () =>
+                  import('app/pages/admin/micrositie/list').then((m) => m.MicrositieList),
+                resolve: {
+                  microsities: () =>
+                    inject(MicrosityService).getAll({
+                      page: 1,
+                      limit: 10,
+                      search: null,
+                      status: null,
+                    }),
+                },
+              },
+              {
+                path: 'detail',
+                loadComponent: () =>
+                  import('app/pages/admin/micrositie/detail/detail').then(
+                    (m) => m.MicrositiesDetail,
+                  ),
+                resolve: {
+                  micrositie: () =>
+                    inject(MicrosityService).find(
+                      inject(Router).currentNavigation()?.extras?.state!['micrositieId'],
+                    ),
+                  roles: () => inject(RoleService).getAll(),
+                  sitie: () => inject(SitieService).find(),
+                  templates: () =>
+                    inject(TemplateService).getAll({
+                      page: 1,
+                      limit: 99999,
+                      search: null,
+                      status: true,
+                    }),
+                  pages: () =>
+                    inject(PageService).getAll({
+                      limit: 10,
+                      page: 1,
+                      search: null,
+                      status: null,
+                      micrositieId:
+                        inject(Router).currentNavigation()?.extras?.state!['micrositieId'],
+                    }),
+                },
+              },
+            ],
+          },
+          {
+            path: 'pages',
+            children: [
+              {
+                path: '',
+                loadComponent: () => import('app/pages/admin/pages/list').then((m) => m.PagesList),
+                resolve: {
+                  pages: () =>
+                    inject(PageService).getAll({
+                      limit: 10,
+                      page: 1,
+                      search: null,
+                      status: null,
+                      micrositieId: null,
+                    }),
+                  microsities: () => inject(MicrosityService).find(0),
+                },
+              },
+              {
+                path: 'detail',
+                runGuardsAndResolvers: 'always',
+                loadComponent: () =>
+                  import('app/pages/admin/pages/detail/detail').then((m) => m.PagesDetail),
+                resolve: {
+                  page: () =>
+                    inject(PageService).find(
+                      inject(Router)!.currentNavigation()?.extras?.state!['id'],
+                    ),
+                  micrositie: () =>
+                    inject(MicrosityService).find(
+                      inject(Router).currentNavigation()?.extras?.state!['micrositieId'],
+                    ),
+                  sitie: () => inject(SitieService).find(),
+                  languages: () =>
+                    inject(LanguageService).getAll({
+                      limit: 99999,
+                      page: 1,
+                      search: null,
+                      status: true,
+                    }),
+                },
+              },
+              {
+                path: 'canvas',
+                loadComponent: () =>
+                  import('app/pages/admin/pages/detail/canvas/canvas').then((m) => m.PagesCanvas),
+                resolve: {
+                  page: () =>
+                    inject(PageService).find(
+                      inject(Router)!.currentNavigation()?.extras?.state!['id'],
+                    ),
+                  micrositie: () =>
+                    inject(MicrosityService).find(
+                      inject(Router).currentNavigation()?.extras?.state!['micrositieId'],
+                    ),
+                  sitie: () => inject(SitieService).find(),
+                  languages: () =>
+                    inject(LanguageService).getAll({
+                      limit: 99999,
+                      page: 1,
+                      search: null,
+                      status: null,
+                    }),
+                  elements: () =>
+                    inject(ElementService).getAll({
+                      limit: 99999,
+                      page: 1,
+                      search: null,
+                      status: null,
+                    }),
+                },
+              },
+            ],
+          },
+          {
+            path: 'templates',
+            children: [
+              {
+                path: '',
+                loadComponent: () =>
+                  import('app/pages/admin/templates/list').then((m) => m.TemplatesList),
+                resolve: {
+                  templates: () =>
+                    inject(TemplateService).getAll({
+                      page: 1,
+                      limit: 10,
+                      search: null,
+                      status: null,
+                    }),
+                },
+              },
+              {
+                path: 'detail',
+                loadComponent: () =>
+                  import('app/pages/admin/templates/detail/detail').then((m) => m.TemplatesDetail),
+                resolve: {
+                  template: () =>
+                    inject(TemplateService).find(
+                      inject(Router).currentNavigation()?.extras?.state?.['id'],
+                    ),
+                  sitie: () => inject(SitieService).find(),
+                },
+              },
+              {
+                path: 'canvas',
+                loadComponent: () =>
+                  import('app/pages/admin/templates/detail/canvas/canvas').then(
+                    (m) => m.TemplatesCanvas,
+                  ),
+                resolve: {
+                  template: () =>
+                    inject(TemplateService).find(
+                      inject(Router).currentNavigation()?.extras?.state?.['id'],
+                    ),
+                  languages: () =>
+                    inject(LanguageService).getAll({
+                      limit: 99999,
+                      page: 1,
+                      search: null,
+                      status: null,
+                    }),
+                  elements: () =>
+                    inject(ElementService).getAll({
+                      limit: 99999,
+                      page: 1,
+                      search: null,
+                      status: null,
+                    }),
+                },
+              },
+            ],
+          },
+          {
+            path: 'file-manager',
+            loadComponent: () =>
+              import('./pages/admin/file-manager/list').then((m) => m.FileManagerList),
+            resolve: {
+              files: () =>
+                inject(FileManagerService).getFiles({
+                  page: 1,
+                  limit: 10,
+                  search: null,
+                  status: null,
+                  mimeType: null,
+                }),
+              parameters: () => inject(ParameterService).getAll(),
+            },
+          },
+          // {
+          //     path: 'review-pages',
+          //     loadChildren: () =>
+          //         import(
+          //             'app/modules/admin/review/review.routes'
+          //         ),
+          // },
+        ],
+      },
+      {
+        path: 'security',
+        children: [
+          {
+            path: 'users',
+            loadComponent: () => import('./pages/admin/users/list').then((m) => m.UsersList),
+            resolve: {
+              users: () =>
+                inject(UserService).getAll({
+                  limit: 10,
+                  page: 1,
+                  search: null,
+                  status: null,
+                }),
+              roles: () => inject(RoleService).getAll(),
+            },
+          },
+          {
+            path: 'parameters',
+            loadComponent: () =>
+              import('./pages/admin/parameters/parameters').then((m) => m.Parameters),
+            resolve: {
+              parameters: () => inject(ParameterService).getAll(),
+            },
+          },
+          {
+            path: 'settings',
+            loadComponent: () => import('./pages/admin/settings/settings').then((m) => m.Settings),
+          },
+        ],
+      },
+      //Default
+      {
+        path: '**',
+        redirectTo: 'dashboards/home',
+      },
+    ],
+  },
+  {
+    path: 'error',
+    data: {
+      layout: 'empty',
+    },
+    component: Layout,
+    children: [
+      {
+        path: 'maintenance',
+        loadComponent: () =>
+          import('app/pages/error/maintenance/maintenance').then((m) => m.Maintenance),
+      },
+      {
+        path: '404',
+        pathMatch: 'full',
+        loadComponent: () => import('app/pages/error/error-404/error-404').then((m) => m.Error404),
+      },
+      {
+        path: '500',
+        pathMatch: 'full',
+        loadComponent: () => import('app/pages/error/error-500/error-500').then((m) => m.Error500),
+      },
+    ],
+  },
+  // Landing routes
+  {
+    path: ':lang',
+    component: Layout,
+    data: {
+      layout: 'empty',
+    },
+    resolve: {
+      parameters: () => inject(ParameterService).getPublic(),
+    },
+    children: [
+      {
+        path: '',
+        loadComponent: () =>
+          import('./pages/landing/router/router').then((m) => m.LandingRouterComponent),
+      },
+      {
+        path: 'preview',
+        loadComponent: () =>
+          import('./pages/landing/router/router').then((m) => m.LandingRouterComponent),
+      },
+      {
+        path: 'preview/:page',
+        loadComponent: () =>
+          import('./pages/landing/router/router').then((m) => m.LandingRouterComponent),
+      },
+      {
+        path: 'preview/:micrositie/:page',
+        loadComponent: () =>
+          import('./pages/landing/router/router').then((m) => m.LandingRouterComponent),
+      },
+      {
+        path: ':page',
+        loadComponent: () =>
+          import('./pages/landing/router/router').then((m) => m.LandingRouterComponent),
+      },
+      {
+        path: ':micrositie/:page',
+        loadComponent: () =>
+          import('./pages/landing/router/router').then((m) => m.LandingRouterComponent),
+      },
+    ],
+  },
+  { path: '**', redirectTo: '404-not-found' },
+];

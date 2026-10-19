@@ -1,0 +1,26 @@
+<div>
+  <div class="flex items-center gap-3">
+    <div
+      class="w-16 h-10 lg:w-10 rounded-xl bg-indigo-600 text-white flex items-center justify-center shadow-sm shadow-blue-500/20"
+    >
+      <i [class]="navigation()?.icon"></i>
+    </div>
+    <div>
+      <h1
+        class="text-xl sm:text-2xl font-bold tracking-tight text-slate-900 flex items-center gap-2.5"
+      >
+        {{ navigation()?.title }}
+        @if (total() !== null) {
+          <span
+            class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-bold bg-indigo-50 text-indigo-700 border border-indigo-200"
+          >
+            {{ total() }} {{ info() }}
+          </span>
+        }
+      </h1>
+      <p class="text-xs sm:text-sm text-slate-500 font-normal">
+        {{ navigation()?.subtitle }}
+      </p>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,66 @@
+@if (!lastChangeReject()) {
+  <div
+    class="mx-auto max-w-4xl bg-amber-50/95 backdrop-blur-sm border border-amber-300/80 rounded-xl shadow-md shadow-amber-900/5 p-4 sm:p-5 transition-all w-full"
+  >
+    <div class="flex items-start gap-3.5">
+      <div class="flex-none mt-0.5">
+        <div
+          class="h-10 w-10 rounded-xl bg-amber-100 border border-amber-300/80 flex items-center justify-center text-amber-700 shadow-xs"
+        >
+          <i class="fa-solid fa-lock"></i>
+        </div>
+      </div>
+      <!-- Banner Content -->
+      <div class="flex-1 min-w-0">
+        <div class="flex flex-wrap items-center justify-between gap-2">
+          <h2 class="text-sm sm:text-base font-bold text-amber-950">
+            Edición no disponible — La página se encuentra en Modo de Revisión
+          </h2>
+        </div>
+        <p class="mt-1 text-xs sm:text-sm text-amber-900/90 leading-relaxed">
+          No puedes editar directamente el contenido ni la estructura de esta página porque el ciclo
+          de gobernanza está activo. El documento está asignado actualmente al equipo de
+          <strong class="font-semibold text-amber-950">Revisión</strong>.
+        </p>
+      </div>
+    </div>
+  </div>
+} @else {
+  <div class="my-3 w-full rounded-xl border border-red-200 bg-red-50 p-4 text-red-900">
+    <div class="flex items-start gap-3">
+      <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-red-100">
+        <i class="fa-solid fa-circle-exclamation text-red-600"></i>
+      </div>
+      <div class="min-w-0 flex-1">
+        <span fuseAlertTitle class="block text-sm font-semibold text-red-900">
+          Cambios rechazados
+        </span>
+        <p class="mt-1 text-sm leading-6 text-red-800">
+          Los últimos cambios realizados en la página fueron rechazados por un revisor. Revisa las
+          observaciones y vuelve a enviar los cambios.
+        </p>
+        <div class="mt-4 rounded-lg border border-red-200/80 bg-white/70 p-3">
+          <div class="mb-1 flex items-center gap-2">
+            <i class="fa-solid fa-comment-dots text-xs text-red-500"></i>
+            <span fuseAlertTitle class="text-xs font-semibold uppercase tracking-wide text-red-700">
+              Observación del revisor
+            </span>
+          </div>
+          <p class="max-h-40 w-full overflow-y-auto text-sm leading-6 text-gray-700">
+            {{ comment() }}
+          </p>
+        </div>
+        <div class="mt-4 flex justify-end">
+          <button
+            type="button"
+            (click)="deleteChanges()"
+            class="inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm transition-all hover:border-gray-400 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+          >
+            <i class="fa-solid fa-trash-can text-xs"></i>
+            <span>Descartar cambios</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+}

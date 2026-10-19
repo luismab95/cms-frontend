@@ -1,0 +1,320 @@
+<div
+  [ngClass]="{
+    'border-0! p-0! rounded-none!': preview(),
+  }"
+  class="page-preview relative border-2 border-dashed border-gray-300 hover:border-gray-400 rounded-xl p-2 transition-all container-editor"
+>
+  @if (!preview()) {
+    <div
+      class="container-title absolute -top-3 left-4 bg-gray-700 text-white hidden text-[10px] font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wider items-center gap-1.5 shadow-sm z-50"
+    >
+      <i class="fa-solid fa-boxes-stacked"></i>
+
+      <span>
+        Contenedor:
+        {{
+          gridType() === 'page'
+            ? 'Contenido Principal'
+            : gridType() === 'header'
+              ? 'Encabezado'
+              : 'Pie de página'
+        }}
+      </span>
+    </div>
+
+    <div
+      class="container-toolbar absolute -top-3.5 right-4 hidden items-center bg-white border border-slate-200 rounded-md shadow-sm divide-x divide-slate-100 text-slate-600 text-xs z-50"
+    >
+      @if (editDesign()) {
+        <button
+          (click)="addSection()"
+          class="cursor-pointer px-2 py-1 hover:text-slate-600 hover:bg-slate-50 flex items-center gap-1"
+          appTooltip="Agregar Sección"
+        >
+          <i class="fa-solid fa-object-group text-indigo-600"></i>
+        </button>
+      }
+      <button
+        (click)="selectPageConfig()"
+        class="cursor-pointer px-2 py-1 hover:text-slate-600 hover:bg-slate-50 flex items-center gap-1"
+        appTooltip="Configurar"
+      >
+        <i class="fa-solid fa-sliders text-slate-600"></i>
+      </button>
+    </div>
+  }
+
+  @if (!preview() && selectedItemsInGrid()?.page && selectedItemsInGrid()?.canvas === gridType()) {
+    <div
+      class="absolute inset-0 ring-2 ring-gray-500 rounded-[inherit] pointer-events-none z-40"
+    ></div>
+  }
+
+  <div
+    [ngStyle]="gridStyles()"
+    [class.body]="gridType() === 'page'"
+    [class.header]="gridType() === 'header'"
+    [class.footer]="gridType() === 'footer'"
+    [class.max-h-full!]="!preview()"
+    class="grid"
+  >
+  
+    <div
+      class="sections"
+      cdkDropList
+      cdkDropListOrientation="vertical"
+      (cdkDropListDropped)="drop($event, sectionsInCanvas())"
+    >
+      @for (section of sectionsInCanvas(); track section.uuid; let i = $index) {
+       
+        <div
+          class="relative section-editor my-2"
+          cdkDrag
+          cdkDragBoundary=".sections"
+          [cdkDragDisabled]="preview()"
+          [ngClass]="{
+            'border border-dashed border-indigo-500 rounded-xl p-2': !preview(),
+          }"
+        >
+          @if (!preview()) {
+            <div
+              class="section-badge absolute -top-3.5 left-4 hidden items-center gap-1.5 bg-indigo-600 text-white text-xs font-semibold px-2.5 py-0.5 rounded shadow-sm z-50"
+            >
+              <i cdkDragHandle class="fa-solid fa-grip-vertical text-indigo-200 cursor-grab"></i>
+              <span> Sección {{ i + 1 }} </span>
+              <span class="text-[10px] font-normal opacity-80"> ({{ section.uuid }}) </span>
+            </div>
+
+            <div
+              class="section-toolbar absolute -top-3.5 right-4 hidden items-center bg-white border border-slate-200 rounded-md shadow-sm divide-x divide-slate-100 text-slate-600 text-xs z-50"
+            >
+              @if (editDesign()) {
+                <button
+                  (click)="addRow(section)"
+                  class="cursor-pointer px-2 py-1 hover:bg-slate-50 flex items-center gap-1"
+                  appTooltip="Agregar Fila"
+                >
+                  <i class="fa-solid fa-table-list text-amber-600"></i>
+                </button>
+              }
+
+              <button
+                (click)="selectSection(section)"
+                class="cursor-pointer px-2 py-1 hover:bg-slate-50 flex items-center gap-1"
+                appTooltip="Configurar Sección"
+              >
+                <i class="fa-solid fa-sliders text-slate-600"></i>
+              </button>
+            </div>
+          }
+
+          @if (!preview() && selectedItemsInGrid()?.section?.uuid === section.uuid) {
+            <div
+              class="absolute inset-0 ring-2 ring-indigo-500 rounded-[inherit] pointer-events-none z-40"
+            ></div>
+          }
+
+          <section
+            [ngStyle]="gridConfigStyles(section.config)"
+            [class]="'grid-section-' + section.uuid"
+          >
+            
+            <div
+              class="rows"
+              cdkDropList
+              cdkDropListOrientation="vertical"
+              (cdkDropListDropped)="drop($event, section.rows)"
+            >
+              @for (row of section.rows; track row.uuid; let rowIndex = $index) {
+               
+                <div
+                  class="relative row-editor my-2"
+                  cdkDrag
+                  cdkDragBoundary=".rows"
+                  [cdkDragDisabled]="preview()"
+                  [ngClass]="{
+                    'border border-dashed border-amber-300 rounded-lg p-2': !preview(),
+                  }"
+                >
+                  @if (!preview()) {
+                    <div
+                      class="row-badge absolute -top-2.5 left-3 bg-amber-500 text-white text-[10px] font-semibold px-2 py-0.5 rounded-full hidden items-center gap-1 shadow-sm z-50"
+                    >
+                      <i cdkDragHandle class="fa-solid fa-grip-vertical cursor-grab"></i>
+                      <span> Fila {{ rowIndex + 1 }} </span>
+                      <span class="text-[9px] opacity-75"> ({{ row.uuid }}) </span>
+                      <span class="text-[9px] opacity-75">
+                        columnas: {{ row.columns.length }}
+                      </span>
+                    </div>
+
+                    <div
+                      class="row-toolbar absolute -top-3.5 right-4 hidden items-center bg-white border border-slate-200 rounded-md shadow-sm divide-x divide-slate-100 text-slate-600 text-xs z-50"
+                    >
+                      @if (editDesign()) {
+                        <button
+                          (click)="addColumn(row)"
+                          class="cursor-pointer px-2 py-1 hover:bg-slate-50 flex items-center gap-1"
+                          appTooltip="Agregar Columna"
+                        >
+                          <i class="fa-solid fa-table-columns text-slate-600"></i>
+                        </button>
+                      }
+
+                      <button
+                        (click)="selectRow(row)"
+                        class="cursor-pointer px-2 py-1 hover:bg-slate-50 flex items-center gap-1"
+                        appTooltip="Configurar Fila"
+                      >
+                        <i class="fa-solid fa-sliders text-slate-600"></i>
+                      </button>
+                    </div>
+                  }
+
+                  @if (!preview() && selectedItemsInGrid()?.row?.uuid === row.uuid) {
+                    <div
+                      class="absolute inset-0 ring-2 ring-amber-500 rounded-[inherit] pointer-events-none z-40"
+                    ></div>
+                  }
+
+                  <div>
+                  
+                    <div
+                      cdkDropList
+                      cdkDropListOrientation="horizontal"
+                      (cdkDropListDropped)="drop($event, row.columns)"
+                      class="columns"
+                      [ngStyle]="gridConfigStyles(row.config)"
+                      [class]="'grid-row-' + row.uuid"
+                    >
+                      @for (column of row.columns; track column.uuid; let columnIndex = $index) {
+                       
+                        <div
+                          class="relative column-editor"
+                          cdkDrag
+                          cdkDragBoundary=".columns"
+                          [cdkDragDisabled]="preview()"
+                          [ngClass]="{
+                            'border border-dashed border-slate-300 rounded-lg p-2 bg-white/40':
+                              !preview(),
+                          }"
+                          [class]="'grid-column-' + column.uuid"
+                        >
+                          @if (!preview()) {
+                            <div
+                              class="column-badge absolute -top-3 left-3 bg-slate-700 text-white text-[10px] px-2 py-0.5 rounded-full hidden items-center gap-1 z-50"
+                            >
+                              <i cdkDragHandle class="fa-solid fa-grip-vertical cursor-grab"></i>
+
+                              <span> Columna {{ columnIndex + 1 }} ({{ column.uuid }}) </span>
+                            </div>
+
+                            <div
+                              class="column-toolbar absolute -top-3.5 right-4 hidden items-center bg-white border border-slate-200 rounded-md shadow-sm divide-x divide-slate-100 text-slate-600 text-xs z-50"
+                            >
+                              <button
+                                (click)="selectColumn(column)"
+                                class="cursor-pointer px-2 py-1 hover:bg-slate-50 flex items-center gap-1"
+                                appTooltip="Configurar Columna"
+                              >
+                                <i class="fa-solid fa-sliders text-slate-600"></i>
+                              </button>
+                            </div>
+                          }
+
+                          @if (!preview() && selectedItemsInGrid()?.column?.uuid === column.uuid) {
+                            <div
+                              class="absolute inset-0 ring-2 ring-slate-500 rounded-[inherit] pointer-events-none z-40"
+                            ></div>
+                          }
+
+                          <div [ngStyle]="gridConfigStyles(column.config)" [class.p-3]="!preview()">
+
+                            @if (column.element == null) {
+                              @if (!preview() && editDesign()) {
+                                <div
+                                  (click)="openElementsManagerPanel(column)"
+                                  class="text-center py-6 text-slate-400 hover:text-indigo-600 cursor-pointer flex flex-col items-center gap-1 w-full m-auto relative z-20"
+                                >
+                                  <div
+                                    class="w-7 h-7 rounded-full border border-dashed border-slate-300 flex items-center justify-center"
+                                  >
+                                    <i class="fa-solid fa-plus"></i>
+                                  </div>
+
+                                  <span class="text-[10px]"> Espacio vacío para contenido </span>
+                                </div>
+                              }
+                            } @else {
+                              <div
+                                [ngClass]="{
+                                  'border border-dashed border-emerald-300 rounded-lg p-2 bg-white/40':
+                                    !preview(),
+                                }"
+                                class="relative element-editor"
+                              >
+                                @if (!preview()) {
+                                  <div
+                                    class="element-badge absolute -top-3 left-3 bg-emerald-700 text-white text-[10px] px-2 py-0.5 rounded-full hidden items-center gap-1 z-50"
+                                  >
+                                    <i
+                                      cdkDragHandle
+                                      class="fa-solid fa-grip-vertical cursor-grab"
+                                    ></i>
+                                    <span>
+                                      Elemento
+                                      {{ column.element.name }}
+                                      ({{ column.element.uuid }})
+                                    </span>
+                                  </div>
+
+                                  <div
+                                    class="element-toolbar absolute -top-3.5 right-4 hidden items-center bg-white border border-slate-200 rounded-md shadow-sm z-50"
+                                  >
+                                    <button
+                                      (click)="selectElement(column.element)"
+                                      class="cursor-pointer bg-white text-slate-800 text-[11px] font-semibold px-2.5 py-1 rounded shadow-md hover:bg-slate-50 flex items-center gap-1"
+                                      appTooltip="Configurar Elemento"
+                                    >
+                                      <i class="fa-solid fa-sliders text-slate-600"></i>
+                                    </button>
+                                  </div>
+                                }
+
+                                <div
+                                  [ngClass]="{
+                                    'pointer-events-auto!': preview(),
+                                  }"
+                                  class="relative pointer-events-none"
+                                >
+                                  <elements
+                                    class="w-full h-auto"
+                                    [languageId]="languageId()!"
+                                    [element]="column.element"
+                                  />
+
+                                  @if (
+                                    !preview() &&
+                                    selectedItemsInGrid()?.element?.uuid === column.element.uuid
+                                  ) {
+                                    <div
+                                      class="absolute inset-0 ring-2 ring-emerald-500 rounded-lg pointer-events-none z-40"
+                                    ></div>
+                                  }
+                                </div>
+                              </div>
+                            }
+                          </div>
+                        </div>
+                      }
+                    </div>
+                  </div>
+                </div>
+              }
+            </div>
+          </section>
+        </div>
+      }
+    </div>
+  </div>
+</div>

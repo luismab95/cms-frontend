@@ -1,0 +1,192 @@
+<div
+  [class.w-70]="!inspectorCollapsed()"
+  [class.w-14]="inspectorCollapsed()"
+  class="z-20 flex h-full min-h-0 shrink-0 select-none flex-col border-l border-slate-200 bg-white"
+>
+  <div
+    [class.px-2!]="inspectorCollapsed()"
+    class="flex items-center justify-between border-b border-slate-200 px-4 py-2.5"
+  >
+    @if (!inspectorCollapsed()) {
+      <div class="flex items-center gap-2">
+        <div
+          [ngClass]="itemIconBackgroundClass()"
+          class="flex size-10 items-center justify-center rounded-md shadow-sm"
+        >
+          <i [ngClass]="itemIconClass()" class="text-[11px] fa-lg"></i>
+        </div>
+        <div>
+          <h3 class="flex flex-col text-xs font-bold leading-tight text-slate-900">
+            @if (isEmpty()) {
+              Inspector de Propiedades
+
+              <span class="text-[10px] text-slate-400"> Sin selección activa </span>
+            } @else {
+              {{ itemTitle() }}
+              @if (itemUuid()) {
+                <span class="text-[10px] text-slate-400"> #{{ itemUuid() }} </span>
+              }
+            }
+          </h3>
+        </div>
+      </div>
+    }
+
+    <button
+      type="button"
+      (click)="toggleInspector()"
+      [appTooltip]="inspectorCollapsed() ? 'Expandir Panel' : 'Colapsar Panel'"
+      class="relative flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-lg text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-700"
+    >
+      <i
+        class="fa-solid text-sm"
+        [ngClass]="!inspectorCollapsed() ? 'fa-angles-right' : 'fa-angles-left text-indigo-500'"
+      ></i>
+    </button>
+  </div>
+
+  @if (!inspectorCollapsed()) {
+    @if (isEmpty()) {
+      <div class="flex flex-1 flex-col items-center justify-center bg-slate-50/50 p-5 text-center">
+        <div
+          class="mb-3 flex h-12 w-12 items-center justify-center rounded-xl border border-dashed border-slate-300 bg-white text-slate-400 shadow-sm"
+        >
+          <i class="fa-solid fa-arrow-pointer text-indigo-500"></i>
+        </div>
+        <h4 class="mb-1 text-xs font-bold text-slate-800">Ningún elemento seleccionado</h4>
+        <p class="max-w-60 text-[11px] leading-relaxed text-slate-500">
+          Haz clic en cualquier sección, fila, columna o componente de la página para personalizar
+          su diseño, configuración o traducciones.
+        </p>
+      </div>
+    } @else {
+      <div class="border-b border-slate-200 bg-white shadow-sm">
+        <nav aria-label="Inspector Tabs" class="grid grid-cols-3 text-center">
+          @for (tab of tabsComputed(); track tab.id) {
+            <button
+              type="button"
+              (click)="selectTab(tab.id)"
+              [appTooltip]="tab.description"
+              [class.border-b!]="tab.id === selectedTab()"
+              [class.border-indigo-600!]="tab.id === selectedTab()"
+              [class.font-bold!]="tab.id === selectedTab()"
+              [class.text-indigo-600!]="tab.id === selectedTab()"
+              class="group relative flex cursor-pointer flex-col items-center justify-center gap-1.5 border-b-2 border-transparent px-2 py-2.5 text-xs font-medium text-slate-500 transition-all hover:bg-slate-50 hover:text-slate-800 sm:flex-row"
+            >
+              <i
+                [ngClass]="tab.icon"
+                [class.text-indigo-600!]="tab.id === selectedTab()"
+                class="text-xs text-slate-400 transition-colors group-hover:text-slate-600"
+              ></i>
+              <span class="tracking-tight">
+                {{ tab.title }}
+              </span>
+              @if (tab.id === selectedTab()) {
+                <span class="absolute inset-x-0 bottom-0 h-0.5 bg-indigo-600"></span>
+              }
+              @if (tab.id === 2) {
+                <span
+                  class="rounded-full bg-emerald-100 px-1 py-0.5 text-[9px] font-semibold text-emerald-700"
+                >
+                  {{ languages().records.length }}
+                </span>
+              }
+            </button>
+          }
+        </nav>
+      </div>
+
+      <div class="flex-1 divide-y divide-slate-100 overflow-y-auto text-xs transition-all">
+        @switch (selectedTab()) {
+          @case (0) {
+            @if (canEditDesign()) {
+              <design-inspector-component [gridType]="gridType()" />
+            } @else {
+              <permission-component [style]="'minimal'" />
+            }
+          }
+          @case (1) {
+            @if (canEditContent()) {
+              <properties-inspector-component [gridType]="gridType()" />
+            } @else {
+              <permission-component [style]="'minimal'" />
+            }
+          }
+          @case (2) {
+            @if (canEditContent()) {
+              <languages-inspector-component
+                [gridType]="gridType()"
+                [tabs]="tabsLanguages()"
+                [languages]="languages().records"
+              />
+            } @else {
+              <permission-component [style]="'minimal'" />
+            }
+          }
+        }
+      </div>
+
+      <div
+        class="flex items-center justify-between border-t border-indigo-100 bg-indigo-50/70 px-3 py-2 text-[10px] text-indigo-950"
+      >
+        <div class="flex min-w-0 items-center gap-1.5">
+          <i
+            [ngClass]="tabs()[selectedTab()].icon"
+            class="shrink-0 text-[10px] text-indigo-600"
+          ></i>
+          <span class="truncate">
+            Modo Inspector:
+            <strong>
+              {{ tabs()[selectedTab()].title }}
+            </strong>
+          </span>
+        </div>
+        <div class="flex items-center gap-1 text-[9px] text-indigo-600">
+          <span>
+            Pestaña {{ tabsComputed()[selectedTab()].id + 1 }}/{{ tabsComputed().length }}
+          </span>
+        </div>
+      </div>
+
+      @if (typeItem() !== 'page' && canEditDesign()) {
+        <div class="flex items-center justify-end border-t border-slate-200 bg-slate-50 p-3">
+          <button
+            type="button"
+            (click)="deleteItem()"
+            class="flex cursor-pointer items-center gap-1 rounded-lg p-2 text-xs font-semibold text-rose-600 transition-colors hover:bg-rose-50 hover:text-rose-700"
+          >
+            <i class="fa-solid fa-trash-can text-xs"></i>
+
+            <span>
+              Eliminar
+              {{ deleteItemLabel() }}
+            </span>
+          </button>
+        </div>
+      }
+    }
+  }
+  @else {
+    <div class="flex min-h-0 flex-1 flex-col overflow-x-hidden overflow-y-auto p-1 text-xs">
+      <div
+        class="flex items-center justify-center p-2 text-[10px] font-bold uppercase tracking-wider text-slate-400"
+      >
+        <span>ITEM</span>
+      </div>
+
+      <button
+        type="button"
+        (click)="toggleInspector()"
+        class="flex cursor-pointer flex-col items-center justify-center gap-2 rounded-lg p-2 transition-colors hover:bg-slate-50"
+        [appTooltip]="itemTitle()"
+      >
+        <div
+          [ngClass]="itemIconBackgroundClass()"
+          class="flex size-9 items-center justify-center rounded-md"
+        >
+          <i [ngClass]="itemIconClass()" class="text-[11px] fa-lg"></i>
+        </div>
+      </button>
+    </div>
+  }
+</div>
