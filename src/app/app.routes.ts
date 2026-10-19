@@ -405,6 +405,9 @@ export const routes: Routes = [
     data: {
       layout: 'empty',
     },
+    resolve: {
+      parameters: () => inject(ParameterService).getPublic(),
+    },
     children: [
       {
         path: '',

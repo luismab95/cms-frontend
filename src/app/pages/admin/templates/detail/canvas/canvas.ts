@@ -157,7 +157,7 @@ export class TemplatesCanvas implements AfterViewInit, OnDestroy {
       this.initialized.set(true);
       if (this.originTemplate() === null) this.originTemplate.set(structuredClone(template));
 
-      if (template.draft !== null) {
+      if (template.draft) {
         this.confirmDraft();
         return;
       }

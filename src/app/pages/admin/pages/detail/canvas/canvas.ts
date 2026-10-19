@@ -135,7 +135,7 @@ export class PagesCanvas implements AfterViewInit, OnDestroy {
 
       if (page.review) this.previewMode.set(true);
 
-      if (page.draft !== null) this.confirmDraft();
+      if (page.draft) this.confirmDraft();
       return;
     });
   }
