@@ -241,7 +241,7 @@ export class FileManagerDetailsComponent {
       path: 'preview',
       filename: 'preview',
       size: 0,
-      mimeType: 'preview',
+      mimetype: 'preview',
     }));
   }
 
