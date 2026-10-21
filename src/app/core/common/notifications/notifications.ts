@@ -121,6 +121,7 @@ export class Notifications implements OnDestroy {
   private _createOverlay(): void {
     this._overlayRef = this._overlay.create({
       hasBackdrop: true,
+      backdropClass: 'bg-transparent',
       scrollStrategy: this._overlay.scrollStrategies.block(),
       positionStrategy: this._overlay
         .position()

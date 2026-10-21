@@ -116,6 +116,7 @@ export class Search implements OnDestroy {
     // Create the overlay
     this._overlayRef = this._overlay.create({
       hasBackdrop: true,
+      backdropClass: 'bg-transparent',
       scrollStrategy: this._overlay.scrollStrategies.block(),
       positionStrategy: this._overlay
         .position()
