@@ -1,5 +1,6 @@
 import { PageElementsI, PaginationResquestI } from '@shared/interfaces';
 import { TemplateI } from './template.interface';
+import { ReviewPageDataI } from './page-review.interface';
 
 export declare enum ModeEnum {
   EDIT = 'edit',
@@ -43,7 +44,6 @@ export interface PageI {
   micrositieId?: number | null;
   mode?: ModeEnum;
   status?: boolean;
-  dataReview?: PageDataMongoI;
   data?: PageDataMongoI;
   draft?: PageDataMongoI | null;
   details?: PageDetailReferenceI[];
@@ -51,9 +51,12 @@ export interface PageI {
   aliasRef?: string;
   descriptionRef?: string;
   seoKeywordsRef?: string;
-  review?: boolean;
-  lastChangeReject?: boolean;
-  commentReject?: string;
+  reviewPage?: ReviewPageI;
+}
+
+export interface ReviewPageI {
+  review: boolean;
+  data: ReviewPageDataI | null;
 }
 
 export interface PageRenderI extends PageI {

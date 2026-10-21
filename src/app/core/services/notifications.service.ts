@@ -43,10 +43,10 @@ export class NotificationsService {
 
   /**
    * Join a notification room
-   * @param roleId
+   * @param userId
    */
-  joinRoom(roleId: string) {
-    this.socket().emit('joinRoom', roleId);
+  joinRoom(userId: string) {
+    this.socket().emit('joinRoom', userId);
   }
 
   /**

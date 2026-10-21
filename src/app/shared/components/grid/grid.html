@@ -58,7 +58,6 @@
     [class.max-h-full!]="!preview()"
     class="grid"
   >
-  
     <div
       class="sections"
       cdkDropList
@@ -66,7 +65,6 @@
       (cdkDropListDropped)="drop($event, sectionsInCanvas())"
     >
       @for (section of sectionsInCanvas(); track section.uuid; let i = $index) {
-       
         <div
           class="relative section-editor my-2"
           cdkDrag
@@ -118,7 +116,6 @@
             [ngStyle]="gridConfigStyles(section.config)"
             [class]="'grid-section-' + section.uuid"
           >
-            
             <div
               class="rows"
               cdkDropList
@@ -126,7 +123,6 @@
               (cdkDropListDropped)="drop($event, section.rows)"
             >
               @for (row of section.rows; track row.uuid; let rowIndex = $index) {
-               
                 <div
                   class="relative row-editor my-2"
                   cdkDrag
@@ -178,7 +174,6 @@
                   }
 
                   <div>
-                  
                     <div
                       cdkDropList
                       cdkDropListOrientation="horizontal"
@@ -188,7 +183,6 @@
                       [class]="'grid-row-' + row.uuid"
                     >
                       @for (column of row.columns; track column.uuid; let columnIndex = $index) {
-                       
                         <div
                           class="relative column-editor"
                           cdkDrag
@@ -229,7 +223,6 @@
                           }
 
                           <div [ngStyle]="gridConfigStyles(column.config)" [class.p-3]="!preview()">
-
                             @if (column.element == null) {
                               @if (!preview() && editDesign()) {
                                 <div
@@ -284,6 +277,7 @@
                                 <div
                                   [ngClass]="{
                                     'pointer-events-auto!': preview(),
+                                    'pointer-events-none!': isInReviewMode(),
                                   }"
                                   class="relative pointer-events-none"
                                 >

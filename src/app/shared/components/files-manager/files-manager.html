@@ -89,194 +89,192 @@
         </button>
       </div>
     </div>
-    <div class="flex h-120 w-full flex-row overflow-hidden bg-gray-50">
-      <div class="flex-1 space-y-4 overflow-y-auto p-6">
-        @if (files().records.length === 0) {
-          <div class="flex flex-1 flex-col items-center justify-center text-center h-full p-4">
-            <div class="relative w-20 h-20 mb-4 flex items-center justify-center">
-              <div
-                class="w-16 h-16 rounded-2xl bg-indigo-50 border border-indigo-100 flex items-center justify-center shadow-inner"
-              >
-                <i class="fa-solid fa-magnifying-glass text-indigo-500 fa-2xl"></i>
-              </div>
-              <div
-                class="absolute -top-1 -right-1 w-6 h-6 rounded-full bg-amber-400 text-slate-950 font-black text-xs flex items-center justify-center shadow-sm"
-              >
-                ?
-              </div>
-            </div>
-            <h3 class="text-sm font-bold text-slate-800 mb-1.5">No se encontraron archivos</h3>
-            <p class="text-xs text-slate-500 leading-relaxed max-w-65 mb-4">
-              No encontramos archivos que coincidan con
-              <span class="font-semibold text-slate-700">"{{ fileModel().search }}"</span>. Prueba
-              con otros términos.
-            </p>
-            <button
-              (click)="clearSearch()"
-              class="w-auto cursor-pointer py-2 px-3 rounded-lg border border-indigo-600 text-indigo-600 hover:bg-indigo-50 font-semibold text-xs transition shadow-xs flex items-center justify-center gap-1.5"
-              type="button"
-            >
-              <i class="fa-solid fa-rotate"></i>
-              Limpiar búsqueda
-            </button>
-          </div>
-        } @else {
-          <div
-            [class.grid-cols-3!]="selectedFile() !== null"
-            class="grid grid-cols-2 gap-4 sm:grid-cols-3 xl:grid-cols-4"
-          >
-            @for (file of files().records; track file.id) {
-              <div
-                class="group relative flex cursor-pointer flex-col justify-between rounded-xl bg-white p-2.5 shadow-sm transition-all hover:shadow-md"
-                [class.ring-2]="file.id === selectedFile()?.id"
-                [class.ring-indigo-600]="file.id === selectedFile()?.id"
-                (click)="selectFile(file)"
-              >
-                @if (file.id === selectedFile()?.id) {
-                  <div
-                    class="absolute right-2 top-2 z-10 flex h-6 w-6 items-center justify-center rounded-full bg-indigo-600 text-white shadow-md"
-                  >
-                    <i class="fa-solid fa-check text-xs"></i>
-                  </div>
-                }
+    <form (submit)="onSelectFile($event)">
+      <div class="flex h-120 w-full flex-row overflow-hidden bg-gray-50">
+        <div class="flex-1 space-y-4 overflow-y-auto p-6">
+          @if (files().records.length === 0) {
+            <div class="flex flex-1 flex-col items-center justify-center text-center h-full p-4">
+              <div class="relative w-20 h-20 mb-4 flex items-center justify-center">
                 <div
-                  class="relative flex h-32 w-full items-center justify-center overflow-hidden rounded-lg"
-                  [ngClass]="{
-                    'bg-gray-900': isImage(file),
-                    'bg-gray-100': isSvg(file),
-                    'bg-red-50': isPdf(file),
-                    'bg-gray-200': isAudio(file),
-                  }"
+                  class="w-16 h-16 rounded-2xl bg-indigo-50 border border-indigo-100 flex items-center justify-center shadow-inner"
                 >
-                  @if (isImage(file)) {
-                    <img
-                      class="h-full w-full object-contain transition-transform duration-300 group-hover:scale-105"
-                      [src]="file.url"
-                      [alt]="file.description || file.name || file.filename"
-                      loading="lazy"
-                    />
-                  } @else if (isPdf(file)) {
+                  <i class="fa-solid fa-magnifying-glass text-indigo-500 fa-2xl"></i>
+                </div>
+                <div
+                  class="absolute -top-1 -right-1 w-6 h-6 rounded-full bg-amber-400 text-slate-950 font-black text-xs flex items-center justify-center shadow-sm"
+                >
+                  ?
+                </div>
+              </div>
+              <h3 class="text-sm font-bold text-slate-800 mb-1.5">No se encontraron archivos</h3>
+              <p class="text-xs text-slate-500 leading-relaxed max-w-65 mb-4">
+                No encontramos archivos que coincidan con
+                <span class="font-semibold text-slate-700">"{{ fileModel().search }}"</span>. Prueba
+                con otros términos.
+              </p>
+              <button
+                (click)="clearSearch()"
+                class="w-auto cursor-pointer py-2 px-3 rounded-lg border border-indigo-600 text-indigo-600 hover:bg-indigo-50 font-semibold text-xs transition shadow-xs flex items-center justify-center gap-1.5"
+                type="button"
+              >
+                <i class="fa-solid fa-rotate"></i>
+                Limpiar búsqueda
+              </button>
+            </div>
+          } @else {
+            <div
+              [class.grid-cols-3!]="selectedFile() !== null"
+              class="grid grid-cols-2 gap-4 sm:grid-cols-3 xl:grid-cols-4"
+            >
+              @for (file of files().records; track file.id) {
+                <div
+                  class="group relative flex cursor-pointer flex-col justify-between rounded-xl bg-white p-2.5 shadow-sm transition-all hover:shadow-md"
+                  [class.ring-2]="file.id === selectedFile()?.id"
+                  [class.ring-indigo-600]="file.id === selectedFile()?.id"
+                  (click)="selectFile(file)"
+                >
+                  @if (file.id === selectedFile()?.id) {
                     <div
-                      class="relative flex h-16 w-12 flex-col items-center justify-center rounded bg-white shadow-sm"
+                      class="absolute right-2 top-2 z-10 flex h-6 w-6 items-center justify-center rounded-full bg-indigo-600 text-white shadow-md"
                     >
-                      <i class="fa-solid fa-file-pdf text-2xl text-red-600"></i>
-
-                      <span class="mt-0.5 text-[9px] font-bold text-red-600"> PDF </span>
+                      <i class="fa-solid fa-check text-xs"></i>
                     </div>
-                  } @else if (isAudio(file)) {
-                    <div class="flex flex-col items-center justify-center">
-                      <div class="mb-2 flex h-10 items-end gap-1">
-                        <span class="h-3 w-1 rounded-full bg-gray-500"></span>
-                        <span class="h-6 w-1 rounded-full bg-gray-500"></span>
-                        <span class="h-9 w-1 rounded-full bg-indigo-600"></span>
-                        <span class="h-5 w-1 rounded-full bg-indigo-600"></span>
-                        <span class="h-8 w-1 rounded-full bg-gray-500"></span>
-                        <span class="h-4 w-1 rounded-full bg-gray-500"></span>
-                      </div>
-                      <button
-                        type="button"
-                        class="flex h-7 w-7 items-center justify-center rounded-full bg-indigo-600 text-white shadow transition-transform hover:scale-105"
-                        (click)="$event.stopPropagation()"
+                  }
+                  <div
+                    class="relative flex h-32 w-full items-center justify-center overflow-hidden rounded-lg"
+                    [ngClass]="{
+                      'bg-gray-900': isImage(file),
+                      'bg-gray-100': isSvg(file),
+                      'bg-red-50': isPdf(file),
+                      'bg-gray-200': isAudio(file),
+                    }"
+                  >
+                    @if (isImage(file)) {
+                      <img
+                        class="h-full w-full object-contain transition-transform duration-300 group-hover:scale-105"
+                        [src]="file.url"
+                        [alt]="file.description || file.name || file.filename"
+                        loading="lazy"
+                      />
+                    } @else if (isPdf(file)) {
+                      <div
+                        class="relative flex h-16 w-12 flex-col items-center justify-center rounded bg-white shadow-sm"
                       >
-                        <i class="fa-solid fa-play text-xs"></i>
-                      </button>
-                    </div>
-                  } @else {
-                    <div class="flex flex-col items-center text-gray-400">
-                      <i class="fa-solid fa-file text-3xl"></i>
+                        <i class="fa-solid fa-file-pdf text-2xl text-red-600"></i>
 
-                      <span class="mt-1 text-xs font-medium">
+                        <span class="mt-0.5 text-[9px] font-bold text-red-600"> PDF </span>
+                      </div>
+                    } @else if (isAudio(file)) {
+                      <div class="flex flex-col items-center justify-center">
+                        <div class="mb-2 flex h-10 items-end gap-1">
+                          <span class="h-3 w-1 rounded-full bg-gray-500"></span>
+                          <span class="h-6 w-1 rounded-full bg-gray-500"></span>
+                          <span class="h-9 w-1 rounded-full bg-indigo-600"></span>
+                          <span class="h-5 w-1 rounded-full bg-indigo-600"></span>
+                          <span class="h-8 w-1 rounded-full bg-gray-500"></span>
+                          <span class="h-4 w-1 rounded-full bg-gray-500"></span>
+                        </div>
+                        <button
+                          type="button"
+                          class="flex h-7 w-7 items-center justify-center rounded-full bg-indigo-600 text-white shadow transition-transform hover:scale-105"
+                          (click)="$event.stopPropagation()"
+                        >
+                          <i class="fa-solid fa-play text-xs"></i>
+                        </button>
+                      </div>
+                    } @else {
+                      <div class="flex flex-col items-center text-gray-400">
+                        <i class="fa-solid fa-file text-3xl"></i>
+
+                        <span class="mt-1 text-xs font-medium">
+                          {{ getFileExtension(file) }}
+                        </span>
+                      </div>
+                    }
+                    @if (isImage(file)) {
+                      <span
+                        class="absolute bottom-1.5 left-1.5 rounded bg-black/70 px-1.5 py-0.5 text-xs text-white backdrop-blur-sm"
+                      >
                         {{ getFileExtension(file) }}
                       </span>
-                    </div>
-                  }
-                  @if (isImage(file)) {
-                    <span
-                      class="absolute bottom-1.5 left-1.5 rounded bg-black/70 px-1.5 py-0.5 text-xs text-white backdrop-blur-sm"
-                    >
-                      {{ getFileExtension(file) }}
-                    </span>
-                  } @else if (isPdf(file)) {
-                    <span
-                      class="absolute bottom-1.5 left-1.5 rounded bg-red-100 px-1.5 py-0.5 text-xs text-red-600"
-                    >
-                      PDF
-                    </span>
-                  } @else if (isAudio(file)) {
-                    <span
-                      class="absolute bottom-1.5 left-1.5 rounded bg-white px-1.5 py-0.5 text-xs text-gray-500"
-                    >
-                      {{ getFileExtension(file) }}
-                    </span>
-                  }
-                </div>
-                <div class="mt-2.5 px-1">
-                  <h3
-                    class="truncate text-sm font-medium text-gray-900"
-                    [title]="file.name || file.filename"
-                  >
-                    {{ file.name || file.filename }}
-                  </h3>
-                  <div class="mt-0.5 flex items-center justify-between text-xs text-gray-500">
-                    <span>
-                      {{ getFileExtension(file) }}
-                    </span>
-                    <span>
-                      {{ formatFileSize(file.size) }}
-                    </span>
+                    } @else if (isPdf(file)) {
+                      <span
+                        class="absolute bottom-1.5 left-1.5 rounded bg-red-100 px-1.5 py-0.5 text-xs text-red-600"
+                      >
+                        PDF
+                      </span>
+                    } @else if (isAudio(file)) {
+                      <span
+                        class="absolute bottom-1.5 left-1.5 rounded bg-white px-1.5 py-0.5 text-xs text-gray-500"
+                      >
+                        {{ getFileExtension(file) }}
+                      </span>
+                    }
                   </div>
-                </div>
-              </div>
-            }
-          </div>
-        }
-      </div>
-
-      <!-- INSPECTOR -->
-      @if (selectedFile()) {
-        {{ selectedFile()?.id }}
-        <div
-          class="flex w-full flex-col justify-between overflow-y-auto bg-white shadow-md lg:w-96"
-        >
-          <div class="space-y-5 p-6">
-            <div class="flex items-center justify-between">
-              <h2 class="text-lg font-semibold text-gray-900">Detalles del recurso</h2>
-              <span
-                [class.bg-emerald-50]="selectedFile()?.id !== null"
-                [class.text-emerald-600]="selectedFile()?.id !== null"
-                [class.bg-red-50]="selectedFile()?.id === null"
-                [class.text-red-600]="selectedFile()?.id === null"
-                class="rounded px-2 py-0.5 text-xs font-medium"
-              >
-                {{ selectedFile()?.id !== null ? 'Sincronizado' : 'Por sincronizar' }}
-              </span>
-            </div>
-            <div class="relative h-48 w-full overflow-hidden rounded-xl bg-gray-100">
-              @if (isImage(selectedFile()!)) {
-                <img
-                  class="h-full w-full object-contain"
-                  [src]="urlPreview()"
-                  [alt]="selectedFile()?.description"
-                />
-              } @else if (isPdf(selectedFile()!)) {
-                <div class="flex h-full items-center justify-center">
-                  <i class="fa-solid fa-file-pdf text-6xl text-red-600"></i>
-                </div>
-              } @else if (isVideo(selectedFile()!)) {
-                <div class="flex h-full items-center justify-center">
-                  <i class="fa-solid fa-video text-6xl text-gray-600"></i>
-                </div>
-              } @else if (isAudio(selectedFile()!)) {
-                <div class="flex h-full items-center justify-center">
-                  <i class="fa-solid fa-audio text-6xl text-blue-600"></i>
-                </div>
-              } @else {
-                <div class="flex h-full items-center justify-center">
-                  <i class="fa-solid fa-file text-6xl text-gray-600"></i>
+                  <div class="mt-2.5 px-1">
+                    <h3
+                      class="truncate text-sm font-medium text-gray-900"
+                      [title]="file.name || file.filename"
+                    >
+                      {{ file.name || file.filename }}
+                    </h3>
+                    <div class="mt-0.5 flex items-center justify-between text-xs text-gray-500">
+                      <span>
+                        {{ getFileExtension(file) }}
+                      </span>
+                      <span>
+                        {{ formatFileSize(file.size) }}
+                      </span>
+                    </div>
+                  </div>
                 </div>
               }
             </div>
-            <form (submit)="onSelectFile($event)">
+          }
+        </div>
+
+        @if (selectedFile()) {
+          <div
+            class="flex w-full flex-col justify-between overflow-y-auto bg-white shadow-md lg:w-96"
+          >
+            <div class="space-y-5 p-6">
+              <div class="flex items-center justify-between">
+                <h2 class="text-lg font-semibold text-gray-900">Detalles del recurso</h2>
+                <span
+                  [class.bg-emerald-50]="selectedFile()?.id !== null"
+                  [class.text-emerald-600]="selectedFile()?.id !== null"
+                  [class.bg-red-50]="selectedFile()?.id === null"
+                  [class.text-red-600]="selectedFile()?.id === null"
+                  class="rounded px-2 py-0.5 text-xs font-medium"
+                >
+                  {{ selectedFile()?.id !== null ? 'Sincronizado' : 'Por sincronizar' }}
+                </span>
+              </div>
+              <div class="relative h-48 w-full overflow-hidden rounded-xl bg-gray-100">
+                @if (isImage(selectedFile()!)) {
+                  <img
+                    class="h-full w-full object-contain"
+                    [src]="urlPreview()"
+                    [alt]="selectedFile()?.description"
+                  />
+                } @else if (isPdf(selectedFile()!)) {
+                  <div class="flex h-full items-center justify-center">
+                    <i class="fa-solid fa-file-pdf text-6xl text-red-600"></i>
+                  </div>
+                } @else if (isVideo(selectedFile()!)) {
+                  <div class="flex h-full items-center justify-center">
+                    <i class="fa-solid fa-video text-6xl text-gray-600"></i>
+                  </div>
+                } @else if (isAudio(selectedFile()!)) {
+                  <div class="flex h-full items-center justify-center">
+                    <i class="fa-solid fa-audio text-6xl text-blue-600"></i>
+                  </div>
+                } @else {
+                  <div class="flex h-full items-center justify-center">
+                    <i class="fa-solid fa-file text-6xl text-gray-600"></i>
+                  </div>
+                }
+              </div>
               <div class="rounded-xl bg-gray-50 p-3.5">
                 @if (selectedFile()?.id !== null) {
                   <span
@@ -392,54 +390,54 @@
                   </div>
                 </div>
               </div>
-            </form>
-          </div>
-        </div>
-      }
-    </div>
-
-    <footer
-      class="z-20 flex flex-wrap items-center justify-between gap-4 bg-white px-6 py-3.5 shadow-sm"
-    >
-      <div class="flex items-center gap-3">
-        @if (selectedFile() !== null) {
-          <div
-            class="flex h-8 w-8 items-center justify-center rounded-full bg-indigo-600/10 text-indigo-600"
-          >
-            <i class="fa-solid fa-circle-check"></i>
-          </div>
-          <div>
-            <p class="text-sm font-medium text-gray-900">
-              <strong>1 elemento listo</strong> para insertar
-            </p>
-            <p class="max-w-xs truncate text-xs text-gray-500">
-              {{ selectedFile()?.filename }}
-            </p>
+            </div>
           </div>
         }
       </div>
-      <div class="flex items-center gap-3">
-        <button
-          (click)="closeFileManager()"
-          class="cursor-pointer rounded-lg bg-gray-100 px-4 py-2 text-sm font-medium text-gray-900 transition-colors hover:bg-gray-200"
-        >
-          Cancelar
-        </button>
-        <button
-          class="cursor-pointer h-10 w-full md:w-auto flex justify-center items-center py-3 px-4 border border-transparent rounded-lg text-sm font-semibold text-white bg-indigo-500 hover:bg-indigo-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 active:transform active:scale-[0.99] transition duration-150 ease-in-out disabled:cursor-not-allowed disabled:bg-indigo-300"
-          type="submit"
-          [disabled]="fileForm().invalid() || fileForm().submitting()"
-        >
-          <span class="flex items-center justify-center gap-2">
-            @if (fileForm().submitting()) {
-              <i class="fa-solid fa-spinner fa-spin text-white"></i>
-            } @else {
-              <i class="fa-solid fa-arrow-right"></i>
-            }
-            <span>Insertar en la página</span>
-          </span>
-        </button>
+
+      <div
+        class="z-20 flex flex-wrap items-center justify-between gap-4 bg-white px-6 py-3.5 shadow-sm"
+      >
+        <div class="flex items-center gap-3">
+          @if (selectedFile() !== null) {
+            <div
+              class="flex h-8 w-8 items-center justify-center rounded-full bg-indigo-600/10 text-indigo-600"
+            >
+              <i class="fa-solid fa-circle-check"></i>
+            </div>
+            <div>
+              <p class="text-sm font-medium text-gray-900">
+                <strong>1 elemento listo</strong> para insertar
+              </p>
+              <p class="max-w-xs truncate text-xs text-gray-500">
+                {{ selectedFile()?.filename }}
+              </p>
+            </div>
+          }
+        </div>
+        <div class="flex items-center gap-3">
+          <button
+            (click)="closeFileManager()"
+            class="cursor-pointer rounded-lg bg-gray-100 px-4 py-2 text-sm font-medium text-gray-900 transition-colors hover:bg-gray-200"
+          >
+            Cancelar
+          </button>
+          <button
+            class="cursor-pointer h-10 w-full md:w-auto flex justify-center items-center py-3 px-4 border border-transparent rounded-lg text-sm font-semibold text-white bg-indigo-500 hover:bg-indigo-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 active:transform active:scale-[0.99] transition duration-150 ease-in-out disabled:cursor-not-allowed disabled:bg-indigo-300"
+            type="submit"
+            [disabled]="fileForm().invalid() || fileForm().submitting()"
+          >
+            <span class="flex items-center justify-center gap-2">
+              @if (fileForm().submitting()) {
+                <i class="fa-solid fa-spinner fa-spin text-white"></i>
+              } @else {
+                <i class="fa-solid fa-arrow-right"></i>
+              }
+              <span>Insertar en la página</span>
+            </span>
+          </button>
+        </div>
       </div>
-    </footer>
+    </form>
   </div>
 </div>

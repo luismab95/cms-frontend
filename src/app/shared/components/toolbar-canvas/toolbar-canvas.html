@@ -37,6 +37,7 @@
     <div class="h-4 w-px bg-slate-200"></div>
     @if (!previewMode()) {
       <button
+        [class.hidden]="isInReviewMode()"
         [disabled]="!editContent() && !editDesign()"
         class="cursor-pointer h-10 flex items-center gap-2 px-3 py-1.5 text-xs font-medium text-slate-700 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors border border-slate-200 disabled:cursor-not-allowed"
         appTooltip="Abrir vista previa interactiva"
@@ -47,8 +48,9 @@
       </button>
     } @else {
       <button
+        [class.hidden]="isInReviewMode()"
         class="cursor-pointer h-10 flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-slate-700 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors border border-slate-200"
-        title="Abrir vista previa interactiva"
+        appTooltip="Abrir vista previa interactiva"
         (click)="togglePreviewMode()"
       >
         <i class="text-slate-500 fa-solid fa-wand-magic-sparkles"></i>
@@ -109,7 +111,7 @@
     </div>
   </div>
   @if ((editContent() || editDesign()) && !autosave()) {
-    <div class="flex items-center text-slate-500 gap-1">
+    <div [class.hidden]="isInReviewMode()" class="flex items-center text-slate-500 gap-1">
       <button
         (click)="undo()"
         [disabled]="!canUndo()"
@@ -224,6 +226,7 @@
 
   @if ((editContent() || editDesign()) && !autosave()) {
     <div
+      [class.hidden!]="isInReviewMode()"
       [class.border-emerald-200]="!previewMode()"
       [class.border-rose-200]="previewMode()"
       [class.bg-emerald-50/70]="!previewMode()"
@@ -259,6 +262,7 @@
   <div class="flex items-center gap-3">
     @if (editContent() || editDesign()) {
       <button
+        [class.hidden]="isInReviewMode()"
         (click)="cancel()"
         class="cursor-pointer h-10 px-3 py-1.5 text-xs font-medium text-slate-600 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors disabled:cursor-not-allowed"
       >
@@ -266,7 +270,7 @@
       </button>
       <div class="inline-flex rounded-lg shadow-sm">
         <button
-          [disabled]="saveAction()"
+          [disabled]="saveAction() || isInReviewMode()"
           (click)="confirmUpdatePage()"
           class="cursor-pointer h-10 inline-flex items-center gap-x-2 gap-y-1 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold px-3.5 py-1.5 rounded-lg transition-colors focus:ring-2 focus:ring-indigo-500/20 disabled:cursor-not-allowed disabled:bg-indigo-300"
           type="button"

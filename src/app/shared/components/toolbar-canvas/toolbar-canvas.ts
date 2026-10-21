@@ -35,6 +35,7 @@ import { LanguageService } from '@shared/services';
 export class ToolbarCanvasComponent {
   private readonly languageSelect = viewChild.required<NgSelectComponent>('languageSelect');
 
+  isInReviewMode = input.required<boolean>();
   urlStatics = input.required<string>();
   name = input.required<string>();
   saveAction = input.required<boolean>();
