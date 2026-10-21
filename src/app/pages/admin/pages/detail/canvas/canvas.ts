@@ -30,6 +30,7 @@ import {
   InspectorComponent,
   ToolbarCanvasComponent,
   DisabledCanvasComponent,
+  ReviewModeComponent,
 } from '@shared/components';
 import { SelectedItemsInGridI, ElementCMSI } from '@shared/interfaces';
 import { PermissionCode, findParameter, filterPath, validGrid, validAction } from '@shared/utils';
@@ -46,6 +47,7 @@ import { filter, interval, take } from 'rxjs';
     InspectorComponent,
     ToolbarCanvasComponent,
     DisabledCanvasComponent,
+    ReviewModeComponent,
   ],
 })
 export class PagesCanvas implements AfterViewInit, OnDestroy {
@@ -90,7 +92,7 @@ export class PagesCanvas implements AfterViewInit, OnDestroy {
     if (!page) {
       return {};
     }
-    const pageData = this.reviewChanges() ? page.dataReview : page.data;
+    const pageData = this.reviewChanges() ? page.reviewPage?.data?.dataReview : page.data;
     const backgroundImage = pageData?.body.config?.['backgroundImage'];
     if (!backgroundImage || backgroundImage === '' || backgroundImage === 'null') {
       return {};
@@ -131,9 +133,10 @@ export class PagesCanvas implements AfterViewInit, OnDestroy {
       this.initialized.set(true);
       if (this.originPage() === null) this.originPage.set(structuredClone(page));
 
-      this.reviewChanges.set(!!page.lastChangeReject);
-
-      if (page.review) this.previewMode.set(true);
+      if (page.reviewPage?.review) {
+        this.reviewChanges.set(true);
+        this.previewMode.set(true);
+      }
 
       if (page.draft) this.confirmDraft();
       return;
@@ -190,7 +193,7 @@ export class PagesCanvas implements AfterViewInit, OnDestroy {
       return;
 
     const page = this.page();
-    if (!page || page.review) {
+    if (!page || this.reviewChanges()) {
       return;
     }
 
@@ -271,7 +274,7 @@ export class PagesCanvas implements AfterViewInit, OnDestroy {
     const page = this.page();
     if (page == null) return;
 
-    const pageData = this.reviewChanges() ? page.dataReview : page.data;
+    const pageData = this.reviewChanges() ? page.reviewPage?.data?.dataReview : page.data;
 
     this._pageService
       .update(page.id!, {

@@ -106,7 +106,7 @@ export class PagesList {
   }
 
   /**
-   * Open modal laguanges detail
+   * Open page detail
    * @param data
    */
   openDetailsModal(page: PageI | null): void {

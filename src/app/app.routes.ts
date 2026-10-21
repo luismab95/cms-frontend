@@ -11,10 +11,12 @@ import {
   FileManagerService,
   ParameterService,
   UserService,
+  PageReviewService,
 } from '@core/services';
 import { Layout } from '@layout/layout';
 import { LanguageService, RoleService } from '@shared/services';
 import { initialDataResolver } from './app.resolvers';
+import { ReviewPage } from './pages/admin/page-review/review/review';
 
 export const routes: Routes = [
   {
@@ -331,13 +333,43 @@ export const routes: Routes = [
               parameters: () => inject(ParameterService).getAll(),
             },
           },
-          // {
-          //     path: 'review-pages',
-          //     loadChildren: () =>
-          //         import(
-          //             'app/modules/admin/review/review.routes'
-          //         ),
-          // },
+          {
+            path: 'review-pages',
+            children: [
+              {
+                path: '',
+                loadComponent: () =>
+                  import('./pages/admin/page-review/list').then((m) => m.PageReviewList),
+                resolve: {
+                  pages: () =>
+                    inject(PageReviewService).getAll({
+                      limit: 10,
+                      page: 1,
+                      search: null,
+                      status: true,
+                      statusReview: null,
+                    }),
+                },
+              },
+              {
+                path: 'review',
+                component: ReviewPage,
+                resolve: {
+                  page: () =>
+                    inject(PageReviewService).find(
+                      inject(Router).currentNavigation()?.extras?.state?.['id'],
+                    ),
+                  languages: () =>
+                    inject(LanguageService).getAll({
+                      limit: 99999,
+                      page: 1,
+                      search: null,
+                      status: true,
+                    }),
+                },
+              },
+            ],
+          },
         ],
       },
       {

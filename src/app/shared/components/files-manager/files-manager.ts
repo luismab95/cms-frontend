@@ -204,6 +204,7 @@ export class ImagesManagerComponent {
     if (this.selectedFile()?.id === null) {
       await this.new(event);
     } else {
+      event.preventDefault();
       this.onSelectedFileEvent.emit(this.selectedFile()?.path!);
     }
   }

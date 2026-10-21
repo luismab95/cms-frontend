@@ -51,6 +51,7 @@ import { ElementsComponent } from '../element/elements';
   ],
 })
 export class GridComponent implements OnDestroy {
+  isInReviewMode = input<boolean>(false);
   gridType = input.required<CanvasT>();
   gridStyles = input<any>({});
   pageElementsConfig = input.required<PageElementsConfigI>();
@@ -95,6 +96,9 @@ export class GridComponent implements OnDestroy {
     effect(() => {
       const page = this.page();
       if (!page || !page.data || this.gridType() !== 'page') return;
+      const css = this.isInReviewMode()
+        ? page.reviewPage?.data?.dataReview!.body.css
+        : page.data.body.css;
       this.loadStylesPages('body-dynamicStyles', page.data.body.css);
     });
 

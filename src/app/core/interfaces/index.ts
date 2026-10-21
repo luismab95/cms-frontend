@@ -10,3 +10,4 @@ export * from './sitie.interface';
 export * from './template.interface';
 export * from './user.interface';
 export * from './initializate.interface';
+export * from './page-review.interface';

@@ -1,4 +1,5 @@
 import { Component, input, output } from '@angular/core';
+import { ReviewPageI } from '@core/interfaces';
 
 @Component({
   selector: 'review-mode',
@@ -6,8 +7,7 @@ import { Component, input, output } from '@angular/core';
   imports: [],
 })
 export class ReviewModeComponent {
-  lastChangeReject = input(false);
-  comment = input('false');
+  reviewPage = input.required<ReviewPageI>();
   deleteChangeEvent = output<boolean>();
 
   /**

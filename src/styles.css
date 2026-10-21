@@ -699,3 +699,10 @@ ngx-otp-input {
 .language-select .ng-option-marked {
   background: #f8fafc !important;
 }
+
+
+.watermark-pattern {
+  user-select: none;
+  pointer-events: none;
+  z-index: 9999;
+}

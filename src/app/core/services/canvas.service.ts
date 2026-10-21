@@ -29,7 +29,14 @@ export class CanvasService {
 
   readonly sectionsByType = {
     page: {
-      get: () => this.page()?.data!.body.data ?? [],
+      get: () => {
+        const page = this.page();
+        if (page?.reviewPage?.review) {
+          return this.page()?.reviewPage?.data?.dataReview!.body.data ?? [];
+        } else {
+          return this.page()?.data!.body.data ?? [];
+        }
+      },
       set: (sections: SectionI[]) => {
         const page = this.page();
         if (!page) return;

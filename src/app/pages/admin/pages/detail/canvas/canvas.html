@@ -1,5 +1,6 @@
 @let page = this.page()!;
 @let preview = this.preview();
+@let isInReviewMode = this.reviewChanges();
 @if (page !== null) {
   <div
     #canvas
@@ -18,6 +19,7 @@
         [saveAction]="saveAction()"
         [previewMode]="previewMode()"
         [autosave]="autosave()"
+        [isInReviewMode]="isInReviewMode"
         [preview]="preview"
         [editContent]="validPermission(permission.editContentPage)"
         [editDesign]="validPermission(permission.editDesignPage)"
@@ -45,13 +47,19 @@
         <div class="flex flex-row h-full min-h-0 overflow-hidden transition-all">
           <layer-component
             #layer
-            [class.hidden]="previewMode()"
+            [class.hidden]="previewMode() || isInReviewMode"
             [gridType]="'page'"
             (elementSelected)="addElement($event)"
           />
           <div
             class="flex-1 min-w-0 min-h-0 h-full overflow-y-auto overflow-x-auto bg-slate-200/75 relative p-3 flex flex-col items-center justify-start bg-dot-grid"
           >
+            @if (isInReviewMode) {
+              <div class="flex gap-2 items-center justify-center p-3">
+                <review-mode [reviewPage]="page.reviewPage!" />
+              </div>
+            }
+
             <div
               [ngClass]="{
                 'w-full': preview === 'none' || preview === 'desktop',
@@ -62,14 +70,25 @@
               class="page-preview shrink-0 rounded-xl overflow-hidden border border-slate-300/80 transition-all duration-300 relative flex flex-col bg-white"
             >
               <div
+                [class.hidden]="isInReviewMode"
                 class="cursor-not-allowed h-40 shrink-0 px-8 border-b border-slate-100 flex items-center justify-between text-xs text-slate-400 bg-white/60"
               >
                 <span class="-rotate-45 text-xl text-center w-full"> ENCABEZADO </span>
               </div>
 
               <div class="p-6 relative">
+                @if (isInReviewMode) {
+                  <div
+                    class="absolute inset-0 flex items-center justify-center opacity-[0.03] pointer-events-none watermark-pattern z-9999"
+                  >
+                    <span class="text-8xl font-black tracking-widest uppercase rotate-[-25deg]"
+                      >BORRADOR EN REVISIÓN</span
+                    >
+                  </div>
+                }
                 <grid
                   #grid
+                  [isInReviewMode]="isInReviewMode"
                   [editContent]="validPermission(permission.editContentPage)"
                   [editDesign]="validPermission(permission.editDesignPage)"
                   [pageElementsConfig]="pageElementsConfig()"
@@ -83,14 +102,17 @@
               </div>
 
               <div
+                [class.hidden]="isInReviewMode"
                 class="cursor-not-allowed h-40 shrink-0 px-8 border-t border-slate-100 flex items-center justify-between text-xs text-slate-400 bg-white/60"
               >
                 <span class="-rotate-45 text-xl text-center w-full"> PIE DE PÁGINA </span>
               </div>
             </div>
           </div>
-
-          <inspector-component [class.hidden]="previewMode()" [gridType]="'page'" />
+          <inspector-component
+            [class.hidden]="previewMode() || isInReviewMode"
+            [gridType]="'page'"
+          />
         </div>
       </section>
     } @else {

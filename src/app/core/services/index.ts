@@ -17,3 +17,4 @@ export * from './sitie.service';
 export * from './templates.service';
 export * from './user.service';
 export * from './initializate.service';
+export * from './page-review.service';
