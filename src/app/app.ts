@@ -1,6 +1,7 @@
-import { Component, HostListener } from '@angular/core';
+import { Component, computed, HostListener, inject } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
-import { LoadingBarComponent } from '@shared/components';
+import { InitializerService } from '@core/services';
+import { InitializerComponent, LoadingBarComponent } from '@shared/components';
 import { InactivityTimerService } from '@shared/services';
 import AOS from 'aos';
 
@@ -9,7 +10,7 @@ AOS.init({
 });
 
 @Component({
-  imports: [RouterOutlet, LoadingBarComponent],
+  imports: [RouterOutlet, LoadingBarComponent, InitializerComponent],
   selector: 'app-root',
   styleUrl: './app.css',
   templateUrl: './app.html',
@@ -20,9 +21,26 @@ export class App {
   onActivity(_event: MouseEvent | KeyboardEvent): void {
     this._inactivityTimerService.activityDetected();
   }
-  
+
+  private readonly _inactivityTimerService = inject(InactivityTimerService);
+  private readonly _initializerService = inject(InitializerService);
+
+  readonly initializer = this._initializerService.initializer;
+
+  readonly isInitializer = computed(() => {
+    const initializer = this.initializer();
+    if (initializer === undefined) return false;
+    return initializer.status;
+  });
+
+  readonly isInitializerPwd = computed(() => {
+    const isInitializer = this.isInitializer();
+    if (!isInitializer) return false;
+    return this.initializer()?.userPwd ?? false;
+  });
+
   /**
    * Constructor
    */
-  constructor(private _inactivityTimerService: InactivityTimerService) {}
+  constructor() {}
 }

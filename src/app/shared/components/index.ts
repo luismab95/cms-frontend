@@ -31,3 +31,4 @@ export * from './design/interaction/interaction';
 export * from './toolbar-canvas/toolbar-canvas';
 export * from './disabled-canvas/disabled-canvas';
 export * from './roles-permissions/roles-permissions';
+export * from './initializer/initializer';

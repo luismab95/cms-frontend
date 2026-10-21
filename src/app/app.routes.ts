@@ -17,7 +17,11 @@ import { LanguageService, RoleService } from '@shared/services';
 import { initialDataResolver } from './app.resolvers';
 
 export const routes: Routes = [
-  { path: '', pathMatch: 'full', redirectTo: 'es' },
+  {
+    path: '',
+    pathMatch: 'full',
+    redirectTo: 'es',
+  },
   {
     path: 'signed-in-redirect',
     pathMatch: 'full',
@@ -374,6 +378,7 @@ export const routes: Routes = [
       },
     ],
   },
+  //Error routes
   {
     path: 'error',
     data: {

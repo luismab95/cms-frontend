@@ -1,5 +1,11 @@
 <loading-bar-component />
-<router-outlet
-  (document:keypress)="onActivity($event)"
-  (document:mousemove)="onActivity($event)"
-></router-outlet>
+@let initializer = isInitializer();
+@let initializerPwd = isInitializerPwd();
+@if (initializer && initializerPwd) {
+  <router-outlet
+    (document:keypress)="onActivity($event)"
+    (document:mousemove)="onActivity($event)"
+  />
+} @else {
+  <initializer-component [initializerPwd]="initializerPwd" [initializer]="initializer" />
+}
