@@ -581,6 +581,7 @@ ngx-otp-input {
   display: flex;
 }
 
+
 .section-editor:hover>.section-badge,
 .section-editor:hover>.section-toolbar {
   display: flex;
@@ -599,6 +600,36 @@ ngx-otp-input {
 .element-editor:hover>.element-badge,
 .element-editor:hover>.element-toolbar {
   display: flex;
+}
+
+.container-editor.review:hover,
+.section-editor.review:hover,
+.row-editor.review:hover,
+.column-editor.review:hover,
+.element-editor.review:hover {
+  border: 2px solid var(--color-red-500) !important;
+}
+
+.container-editor:has(.element-editor:hover),
+.section-editor:has(.element-editor:hover),
+.row-editor:has(.element-editor:hover),
+.column-editor:has(.element-editor:hover) {
+  border-color: transparent !important;
+}
+
+.container-editor:has(.column-editor:hover),
+.section-editor:has(.column-editor:hover),
+.row-editor:has(.column-editor:hover) {
+  border-color: transparent !important;
+}
+
+.container-editor:has(.row-editor:hover),
+.section-editor:has(.row-editor:hover) {
+  border-color: transparent !important;
+}
+
+.container-editor:has(.section-editor:hover) {
+  border-color: transparent !important;
 }
 
 .container-editor:has(.element-editor:hover)>.container-title,
@@ -701,6 +732,7 @@ ngx-otp-input {
 }
 
 
+/* revision */
 .watermark-pattern {
   user-select: none;
   pointer-events: none;

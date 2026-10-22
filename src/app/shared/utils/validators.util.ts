@@ -11,8 +11,8 @@ export function hasErrorFormField<T>(field: FieldTree<T>): boolean {
 
 /**
  * Evaluate security password
- * @param password 
- * @returns 
+ * @param password
+ * @returns
  */
 export function evaluatePasswordSecurity(password: string) {
   if (!password)

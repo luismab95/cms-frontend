@@ -29,6 +29,8 @@ export * from './design/effect/effect';
 export * from './design/overflow/overflow';
 export * from './design/interaction/interaction';
 export * from './toolbar-canvas/toolbar-canvas';
+export * from './toolbar-review-pages/toolbar-review-pages';
 export * from './disabled-canvas/disabled-canvas';
 export * from './roles-permissions/roles-permissions';
 export * from './initializer/initializer';
+export * from './grid-review/grid-review';
