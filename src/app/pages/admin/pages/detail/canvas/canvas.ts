@@ -242,7 +242,7 @@ export class PagesCanvas implements AfterViewInit, OnDestroy {
     this._dialogService.setDialogData({
       type: 'warning',
       title: `Editar página`,
-      message: `¿Estas seguro/a que deseas editar la página? No podras volver a editar la página hasta que los cambios sean aprobados por un revisor.`,
+      message: `¿Estas seguro/a que deseas editar la página?. No podras volver a editar la página hasta que los cambios sean aprobados por un revisor.`,
       confirmButton: 'Si, Enviar',
       cancelButton: 'Cancelar',
     });

@@ -366,6 +366,13 @@ export const routes: Routes = [
                       search: null,
                       status: true,
                     }),
+                  elements: () =>
+                    inject(ElementService).getAll({
+                      limit: 99999,
+                      page: 1,
+                      search: null,
+                      status: null,
+                    }),
                 },
               },
             ],

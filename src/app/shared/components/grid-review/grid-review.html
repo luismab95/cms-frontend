@@ -1,0 +1,284 @@
+<div
+  [ngClass]="{
+    'border-0! p-0! rounded-none!': preview(),
+    review: isInReviewMode(),
+    'border-2 border-red-500 ': hasComment(gridType()),
+  }"
+  class="page-preview relative rounded-xl p-2 container-editor cursor-pointer"
+>
+  @if (isInReviewMode()) {
+    <div
+      [class.flex!]="hasComment(gridType())"
+      class="container-title absolute -top-3 left-4 bg-red-500 text-white hidden text-[10px] font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wider items-center gap-1.5 shadow-sm z-50"
+    >
+      <i class="fa-solid fa-boxes-stacked"></i>
+      <span>
+        Contenedor:
+        {{
+          gridType() === 'page'
+            ? 'Contenido Principal'
+            : gridType() === 'header'
+              ? 'Encabezado'
+              : 'Pie de página'
+        }}
+      </span>
+    </div>
+    <div
+      [class.flex!]="hasComment(gridType())"
+      class="container-toolbar absolute -top-3.5 right-4 hidden items-center bg-white rounded-md shadow-sm divide-x divide-slate-100 text-slate-600 text-xs z-50"
+    >
+      <button
+        [class.hidden]="hasComment(gridType())"
+        (click)="selectPageConfig()"
+        class="cursor-pointer px-2 py-1 hover:text-red-600 hover:bg-red-50 flex items-center gap-1"
+        [appTooltip]="
+          'Agregar comentario al ' +
+          (gridType() === 'page'
+            ? 'Contenido Principal'
+            : gridType() === 'header'
+              ? 'Encabezado'
+              : 'Pie de página')
+        "
+      >
+        <i class="fa-regular fa-comment text-red-600"></i>
+      </button>
+
+      <button
+        [class.hidden]="!hasComment(gridType())"
+        (click)="removeCommnet(gridType())"
+        class="cursor-pointer px-2 py-1 hover:text-red-600 hover:bg-red-50 flex items-center gap-1"
+        [appTooltip]="
+          'Remover comentario de ' +
+          (gridType() === 'page'
+            ? 'Contenido Principal'
+            : gridType() === 'header'
+              ? 'Encabezado'
+              : 'Pie de página')
+        "
+      >
+        <i class="fa-solid fa-eraser text-red-600"></i>
+      </button>
+    </div>
+  }
+  <div class="absolute inset-0 pointer-events-none z-9999"></div>
+
+  <div
+    [ngStyle]="gridStyles()"
+    [class.body]="gridType() === 'page'"
+    [class.header]="gridType() === 'header'"
+    [class.footer]="gridType() === 'footer'"
+    [class.max-h-full!]="!preview()"
+    class="grid"
+  >
+    <div class="sections">
+      @for (section of sectionsInCanvas(); track section.uuid; let i = $index) {
+        <div
+          class="relative section-editor my-2"
+          [ngClass]="{
+            'rounded-xl p-2': !preview(),
+            review: isInReviewMode(),
+            'border-2 border-red-500': hasComment(section.uuid),
+          }"
+        >
+          @if (isInReviewMode()) {
+            <div
+              [class.flex!]="hasComment(section.uuid)"
+              class="section-badge absolute -top-3.5 left-4 hidden items-center gap-1.5 bg-red-500 text-white text-xs font-semibold px-2.5 py-0.5 rounded shadow-sm z-50"
+            >
+              <span> Sección {{ i + 1 }} </span>
+              <span class="text-[10px] font-normal opacity-80"> ({{ section.uuid }}) </span>
+            </div>
+            <div
+              [class.flex!]="hasComment(section.uuid)"
+              class="section-toolbar absolute -top-3.5 right-4 hidden items-center bg-white border border-red-200 rounded-md shadow-sm divide-x divide-slate-100 text-slate-600 text-xs z-50"
+            >
+              <button
+                [class.hidden]="hasComment(section.uuid)"
+                (click)="selectSection(section)"
+                class="cursor-pointer px-2 py-1 hover:text-red-600 hover:bg-red-50 flex items-center gap-1"
+                appTooltip="Agregar comentario a la sección"
+              >
+                <i class="fa-regular fa-comment text-red-600"></i>
+              </button>
+
+              <button
+                [class.hidden]="!hasComment(section.uuid)"
+                (click)="removeCommnet(section.uuid)"
+                class="cursor-pointer px-2 py-1 hover:text-red-600 hover:bg-red-50 flex items-center gap-1"
+                appTooltip="Remover comentario de la sección"
+              >
+                <i class="fa-solid fa-eraser text-red-600"></i>
+              </button>
+            </div>
+          }
+          <div class="absolute inset-0 pointer-events-none z-9999"></div>
+
+          <section
+            [ngStyle]="gridConfigStyles(section.config)"
+            [class]="'grid-section-' + section.uuid"
+          >
+            <div class="rows">
+              @for (row of section.rows; track row.uuid; let rowIndex = $index) {
+                <div
+                  class="relative row-editor my-2"
+                  [ngClass]="{
+                    'rounded-lg p-2': !preview(),
+                    review: isInReviewMode(),
+                    'border-2 border-red-500': hasComment(row.uuid),
+                  }"
+                >
+                  @if (isInReviewMode()) {
+                    <div
+                      [class.flex!]="hasComment(row.uuid)"
+                      class="row-badge absolute -top-2.5 left-3 bg-red-500 text-white text-[10px] font-semibold px-2 py-0.5 rounded-full hidden items-center gap-1 shadow-sm z-50"
+                    >
+                      <span> Fila {{ rowIndex + 1 }} </span>
+                      <span class="text-[9px] opacity-75"> ({{ row.uuid }}) </span>
+                      <span class="text-[9px] opacity-75">
+                        columnas: {{ row.columns.length }}
+                      </span>
+                    </div>
+                    <div
+                      [class.flex!]="hasComment(row.uuid)"
+                      class="row-toolbar absolute -top-3.5 right-4 hidden items-center bg-white border border-red-200 rounded-md shadow-sm divide-x divide-slate-100 text-slate-600 text-xs z-50"
+                    >
+                      <button
+                        [class.hidden]="hasComment(row.uuid)"
+                        (click)="selectRow(row)"
+                        class="cursor-pointer px-2 py-1 hover:text-red-600 hover:bg-red-50 flex items-center gap-1"
+                        appTooltip="Agregar comentario a la fila"
+                      >
+                        <i class="fa-regular fa-comment text-red-600"></i>
+                      </button>
+                      <button
+                        [class.hidden]="!hasComment(row.uuid)"
+                        (click)="removeCommnet(row.uuid)"
+                        class="cursor-pointer px-2 py-1 hover:text-red-600 hover:bg-red-50 flex items-center gap-1"
+                        appTooltip="Remover comentario de la fila"
+                      >
+                        <i class="fa-solid fa-eraser text-red-600"></i>
+                      </button>
+                    </div>
+                  }
+                  <div class="absolute inset-0 pointer-events-none z-9999"></div>
+
+                  <div>
+                    <div
+                      class="columns"
+                      [ngStyle]="gridConfigStyles(row.config)"
+                      [class]="'grid-row-' + row.uuid"
+                    >
+                      @for (column of row.columns; track column.uuid; let columnIndex = $index) {
+                        <div
+                          class="relative column-editor"
+                          [ngClass]="{
+                            'rounded-lg p-2 bg-white/40': !preview(),
+                            review: isInReviewMode(),
+                            'border-2 border-red-500': hasComment(column.uuid),
+                          }"
+                          [class]="'grid-column-' + column.uuid"
+                        >
+                          @if (isInReviewMode()) {
+                            <div
+                              [class.flex!]="hasComment(column.uuid)"
+                              class="column-badge absolute -top-3 left-3 bg-red-500 text-white text-[10px] px-2 py-0.5 rounded-full hidden items-center gap-1 z-50"
+                            >
+                              <span> Columna {{ columnIndex + 1 }} ({{ column.uuid }}) </span>
+                            </div>
+                            <div
+                              [class.flex!]="hasComment(column.uuid)"
+                              class="column-toolbar absolute -top-3.5 right-4 hidden items-center bg-white border border-red-200 rounded-md shadow-sm divide-x divide-slate-100 text-slate-600 text-xs z-50"
+                            >
+                              <button
+                                [class.hidden]="hasComment(column.uuid)"
+                                (click)="selectColumn(column)"
+                                class="cursor-pointer px-2 py-1 hover:text-red-600 hover:bg-red-50 flex items-center gap-1"
+                                appTooltip="Agregar comentario a la columna"
+                              >
+                                <i class="fa-regular fa-comment text-red-600"></i>
+                              </button>
+                              <button
+                                [class.hidden]="!hasComment(column.uuid)"
+                                (click)="removeCommnet(column.uuid)"
+                                class="cursor-pointer px-2 py-1 hover:text-red-600 hover:bg-red-50 flex items-center gap-1"
+                                appTooltip="Remover comentario de la columna"
+                              >
+                                <i class="fa-solid fa-eraser text-red-600"></i>
+                              </button>
+                            </div>
+                          }
+                          <div class="absolute inset-0 pointer-events-none z-9999"></div>
+
+                          <div [ngStyle]="gridConfigStyles(column.config)" [class.p-3]="!preview()">
+                            @if (column.element !== null) {
+                              <div
+                                [ngClass]="{
+                                  'rounded-lg p-2 bg-white/40': !preview(),
+                                  review: isInReviewMode(),
+                                  'border-2 border-red-500': hasComment(column.element.uuid),
+                                }"
+                                class="relative element-editor"
+                              >
+                                @if (isInReviewMode()) {
+                                  <div
+                                    [class.flex!]="hasComment(column.element.uuid)"
+                                    class="element-badge absolute -top-3 left-3 bg-red-500 text-white text-[10px] px-2 py-0.5 rounded-full hidden items-center gap-1 z-50"
+                                  >
+                                    <span>
+                                      Elemento
+                                      {{ column.element.name }}
+                                      ({{ column.element.uuid }})
+                                    </span>
+                                  </div>
+                                  <div
+                                    [class.flex!]="hasComment(column.element.uuid)"
+                                    class="element-toolbar absolute -top-3.5 right-4 hidden items-center bg-white border border-red-200 rounded-md shadow-sm z-50"
+                                  >
+                                    <button
+                                      [class.hidden]="hasComment(column.element.uuid)"
+                                      (click)="selectElement(column.element)"
+                                      class="cursor-pointer px-2 py-1 hover:text-red-600 hover:bg-red-50 flex items-center gap-1"
+                                      appTooltip="Agregar comentario al elemento"
+                                    >
+                                      <i class="fa-regular fa-comment text-red-600"></i>
+                                    </button>
+                                    <button
+                                      [class.hidden]="!hasComment(column.element.uuid)"
+                                      (click)="removeCommnet(column.element.uuid)"
+                                      class="cursor-pointer px-2 py-1 hover:text-red-600 hover:bg-red-50 flex items-center gap-1"
+                                      appTooltip="Remover comentario del elemento"
+                                    >
+                                      <i class="fa-solid fa-eraser text-red-600"></i>
+                                    </button>
+                                  </div>
+                                }
+                                <div
+                                  [ngClass]="{
+                                    'pointer-events-auto!': preview(),
+                                  }"
+                                  class="relative pointer-events-none"
+                                >
+                                  <elements
+                                    class="w-full h-auto"
+                                    [languageId]="languageId()!"
+                                    [element]="column.element"
+                                  />
+
+                                  <div class="absolute inset-0 pointer-events-none z-9999"></div>
+                                </div>
+                              </div>
+                            }
+                          </div>
+                        </div>
+                      }
+                    </div>
+                  </div>
+                </div>
+              }
+            </div>
+          </section>
+        </div>
+      }
+    </div>
+  </div>
+</div>

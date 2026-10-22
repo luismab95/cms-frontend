@@ -24,3 +24,24 @@ export interface TablePageReviewSearchI {
   search: string;
   status: PageReviewStatus | null;
 }
+
+export interface ReviewCommentI {
+  type: TypeReviewItemT;
+  uuid: string;
+  comment: string;
+}
+
+export type TypeReviewItemT =
+  'section' | 'row' | 'column' | 'element' | 'body' | 'header' | 'footer';
+
+export interface ReviewModelI {
+  status: PageReviewStatus | null;
+  comment: string;
+  comments: ReviewCommentI[];
+}
+
+export interface ActionReviewI {
+  id: string;
+  value: string;
+  disabled: boolean;
+}
