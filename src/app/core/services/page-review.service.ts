@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { inject, Injectable, signal } from '@angular/core';
-import { PageI, PageReviewPaginationResquestI, ReviewPageDataI } from '@core/interfaces';
+import { PageI, PageReviewPaginationResquestI, ReviewModelI, ReviewPageDataI } from '@core/interfaces';
 import { PaginationResponseI, ResponseI } from '@shared/interfaces';
 import { buildQueryParams, DefaultPaginationParams } from '@shared/utils';
 import { environment } from 'environments/environment';
@@ -65,10 +65,10 @@ export class PageReviewService {
    */
   reviewPageContent(
     reviewPageId: number,
-    reviewPage: ReviewPageDataI,
+    reviewPage: ReviewModelI,
   ): Observable<ResponseI<string>> {
     return this._httpClient.patch<ResponseI<string>>(
-      `${this.url}/${this.prefix}/pages/review/${reviewPageId}`,
+      `${this.url}/${this.prefix}/reviews/page/${reviewPageId}`,
       { ...reviewPage },
     );
   }

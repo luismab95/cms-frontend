@@ -58,6 +58,7 @@ export class PagesCanvas implements AfterViewInit, OnDestroy {
   preview = signal<PreviewModeT>('desktop');
   previewMode = signal<boolean>(false);
   reviewChanges = signal<boolean>(false);
+  reviewRejectChanges = signal<boolean>(false);
   autosave = signal<boolean>(false);
   saveAction = signal<boolean>(false);
   enabledCanvas = signal<boolean>(true);
@@ -133,9 +134,13 @@ export class PagesCanvas implements AfterViewInit, OnDestroy {
       this.initialized.set(true);
       if (this.originPage() === null) this.originPage.set(structuredClone(page));
 
-      if (page.reviewPage?.review) {
+      if (page.reviewPage?.review && page.reviewPage?.data?.statusReview !== 'rejected') {
         this.reviewChanges.set(true);
         this.previewMode.set(true);
+      }
+
+      if (page.reviewPage?.review && page.reviewPage?.data?.statusReview === 'rejected') {
+        this.reviewRejectChanges.set(true);
       }
 
       if (page.draft) this.confirmDraft();
@@ -296,6 +301,8 @@ export class PagesCanvas implements AfterViewInit, OnDestroy {
             'El diseño de la página se actualizó correctamente.',
             'Cambios guardados',
           );
+          this.reviewChanges.set(true);
+          this.previewMode.set(true);
         },
         error: (response) => {
           this.saveAction.set(false);

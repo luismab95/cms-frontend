@@ -5,9 +5,9 @@ import {
   CdkDropList,
   moveItemInArray,
 } from '@angular/cdk/drag-drop';
-import { NgClass, NgStyle } from '@angular/common';
+import { NgClass, NgStyle, NgTemplateOutlet } from '@angular/common';
 import { Component, computed, effect, inject, input, OnDestroy, output } from '@angular/core';
-import { CanvasT } from '@core/interfaces';
+import { CanvasT, ReviewCommentI } from '@core/interfaces';
 import {
   PageService,
   CanvasService,
@@ -48,10 +48,12 @@ import { ElementsComponent } from '../element/elements';
     CdkDragHandle,
     ElementsComponent,
     TooltipDirective,
+    NgTemplateOutlet
   ],
 })
 export class GridComponent implements OnDestroy {
   isInReviewMode = input<boolean>(false);
+  comments = input<ReviewCommentI[]>([]);
   gridType = input.required<CanvasT>();
   gridStyles = input<any>({});
   pageElementsConfig = input.required<PageElementsConfigI>();
@@ -427,5 +429,29 @@ export class GridComponent implements OnDestroy {
    */
   private set currentSections(value: SectionI[]) {
     this._canvasService.sectionsByType[this.gridType()].set(value);
+  }
+
+  /**
+   * Find if item in canvas has comment
+   * @param uuid
+   * @returns
+   */
+  hasComment(uuid: string): boolean {
+    const comments = this.comments();
+    const hasComment = comments.find((c) => c.uuid === uuid);
+    if (!hasComment) return false;
+    return true;
+  }
+
+  /**
+   * Find if item in canvas has comment
+   * @param uuid
+   * @returns
+   */
+  findComment(uuid: string): string {
+    const comments = this.comments();
+    const comment = comments.find((c) => c.uuid === uuid);
+    if (!comment) return '';
+    return comment.comment;
   }
 }

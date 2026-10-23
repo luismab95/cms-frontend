@@ -1,10 +1,11 @@
 import { Component, input, output } from '@angular/core';
+import { NgClass } from '@angular/common';
 import { ReviewPageI } from '@core/interfaces';
 
 @Component({
   selector: 'review-mode',
   templateUrl: './review-mode.html',
-  imports: [],
+  imports: [NgClass],
 })
 export class ReviewModeComponent {
   reviewPage = input.required<ReviewPageI>();

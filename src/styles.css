@@ -602,12 +602,24 @@ ngx-otp-input {
   display: flex;
 }
 
-.container-editor.review:hover,
-.section-editor.review:hover,
-.row-editor.review:hover,
-.column-editor.review:hover,
+.container-editor.review:hover {
+  border: 2px dashed var(--color-gray-300) !important;
+}
+
+.section-editor.review:hover {
+  border: 2px dashed var(--color-indigo-500) !important;
+}
+
+.row-editor.review:hover {
+  border: 2px dashed var(--color-amber-500) !important;
+}
+
+.column-editor.review:hover {
+  border: 2px dashed var(--color-slate-500) !important;
+}
+
 .element-editor.review:hover {
-  border: 2px solid var(--color-red-500) !important;
+  border: 2px dashed var(--color-emerald-500) !important;
 }
 
 .container-editor:has(.element-editor:hover),

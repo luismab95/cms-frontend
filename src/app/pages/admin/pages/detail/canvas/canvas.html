@@ -54,9 +54,9 @@
           <div
             class="flex-1 min-w-0 min-h-0 h-full overflow-y-auto overflow-x-auto bg-slate-200/75 relative p-3 flex flex-col items-center justify-start bg-dot-grid"
           >
-            @if (isInReviewMode) {
-              <div class="flex gap-2 items-center justify-center p-3">
-                <review-mode [reviewPage]="page.reviewPage!" />
+            @if (isInReviewMode || reviewRejectChanges()) {
+              <div class="flex gap-2 items-center justify-center p-3 w-full">
+                <review-mode class="block w-full min-w-0" [reviewPage]="page.reviewPage!" />
               </div>
             }
 
@@ -90,6 +90,7 @@
                   #grid
                   [isInReviewMode]="isInReviewMode"
                   [editContent]="validPermission(permission.editContentPage)"
+                  [comments]="page.reviewPage?.data?.comments ?? []"
                   [editDesign]="validPermission(permission.editDesignPage)"
                   [pageElementsConfig]="pageElementsConfig()"
                   [gridType]="'page'"

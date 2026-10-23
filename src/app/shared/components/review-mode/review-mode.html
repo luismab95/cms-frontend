@@ -1,6 +1,6 @@
 @if (reviewPage().data?.statusReview !== 'rejected') {
   <div
-    class="max-w-6xl mx-auto bg-amber-50/95 backdrop-blur-sm border border-amber-300/80 rounded-xl shadow-md shadow-amber-900/5 p-4 sm:p-5 transition-all"
+    class="w-full min-w-0 bg-amber-50/95 backdrop-blur-sm border border-amber-300/80 rounded-xl shadow-md shadow-amber-900/5 p-4 sm:p-5 transition-all"
   >
     <div class="flex items-start gap-3.5">
       <div class="flex-none mt-0.5">
@@ -56,39 +56,127 @@
     </div>
   </div>
 } @else {
-  <div class="my-3 w-full rounded-xl border border-red-200 bg-red-50 p-4 text-red-900">
-    <div class="flex items-start gap-3">
-      <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-red-100">
-        <i class="fa-solid fa-circle-exclamation text-red-600"></i>
-      </div>
-      <div class="min-w-0 flex-1">
-        <span fuseAlertTitle class="block text-sm font-semibold text-red-900">
-          Cambios rechazados
-        </span>
-        <p class="mt-1 text-sm leading-6 text-red-800">
-          Los últimos cambios realizados en la página fueron rechazados por un revisor. Revisa las
-          observaciones y vuelve a enviar los cambios.
-        </p>
-        <div class="mt-4 rounded-lg border border-red-200/80 bg-white/70 p-3">
-          <div class="mb-1 flex items-center gap-2">
-            <i class="fa-solid fa-comment-dots text-xs text-red-500"></i>
-            <span fuseAlertTitle class="text-xs font-semibold uppercase tracking-wide text-red-700">
-              Observación del revisor
+  <div
+    class="w-full min-w-0 rounded-xl border border-rose-200 bg-linear-to-r from-rose-50/90 via-white to-rose-50/40 p-4 shadow-md shadow-amber-900/5 transition-all sm:p-5"
+  >
+    <div class="flex w-full min-w-0 flex-col gap-3.5">
+      <div class="flex w-full min-w-0 items-start gap-3.5">
+        <div
+          class="flex size-10 shrink-0 items-center justify-center rounded-xl border border-rose-200 bg-rose-100 text-rose-600 shadow-xs"
+        >
+          <i class="fa-solid fa-circle-exclamation text-xl"></i>
+        </div>
+        <div class="min-w-0 flex-1">
+          <div class="flex flex-wrap items-center gap-2.5">
+            <h1 class="text-base font-bold text-slate-900">Cambios rechazados por el revisor</h1>
+
+            <span
+              class="shrink-0 rounded-md border border-rose-200 bg-rose-100 px-2 py-0.5 text-[11px] font-semibold text-rose-800"
+            >
+              ID: REV-{{ reviewPage().data?.id }}
             </span>
           </div>
-          <p class="max-h-40 w-full overflow-y-auto text-sm leading-6 text-gray-700">
-            {{ reviewPage().data?.comment }}
+          <p class="mt-1 max-w-2xl text-xs leading-relaxed text-slate-600">
+            Los últimos cambios enviados en la página
+            <strong class="text-slate-800">
+              {{ reviewPage().data?.name }}
+            </strong>
+            no pasaron el control de calidad editorial. Por favor, atiende las observaciones
+            indicadas y vuelve a remitir a revisión.
           </p>
         </div>
-        <div class="mt-4 flex justify-end">
-          <button
-            type="button"
-            (click)="deleteChanges()"
-            class="inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm transition-all hover:border-gray-400 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
-          >
-            <i class="fa-solid fa-trash-can text-xs"></i>
-            <span>Descartar cambios</span>
-          </button>
+      </div>
+
+      <div
+        class="w-full min-w-0 rounded-xl border border-rose-200/90 bg-white/95 p-3 shadow-xs sm:p-4"
+      >
+        <div
+          class="mb-3 flex min-w-0 flex-wrap items-center justify-between gap-2 border-b border-slate-100 pb-2.5"
+        >
+          <div class="flex min-w-0 flex-wrap items-center gap-2">
+            <i class="fa-solid fa-comment-dots shrink-0 text-sm text-red-500"></i>
+
+            <span class="text-[11px] font-extrabold tracking-wider text-red-500 uppercase">
+              Observación del Revisor
+            </span>
+
+            <span class="text-slate-300">•</span>
+
+            <div class="flex min-w-0 items-center gap-1.5 text-xs font-medium text-slate-600">
+              <i class="fa-solid fa-user-check shrink-0"></i>
+              <span class="wrap-break-words">
+                {{ reviewPage().data?.userReview }}
+              </span>
+            </div>
+          </div>
+
+          <span class="text-[11px] font-medium text-slate-400">
+            Revisión detallada en viewport móvil &amp; desktop
+          </span>
+        </div>
+
+        <div
+          class="flex min-w-0 items-start gap-2 rounded-lg border border-rose-100/90 bg-rose-50/60 px-3.5 py-2.5 text-sm font-semibold text-rose-950"
+        >
+          <i class="fa-solid fa-quote-left mt-0.5 shrink-0 text-base text-red-500"></i>
+
+          <span class="min-w-0 flex-1 wrap-break-words">
+            {{ reviewPage().data?.comment }}
+          </span>
+        </div>
+
+        <div class="mt-3.5 max-h-60 w-full min-w-0 overflow-x-hidden overflow-y-auto">
+          <div class="grid w-full min-w-0 grid-cols-1 gap-2.5 sm:grid-cols-2 lg:grid-cols-3">
+            @for (item of reviewPage().data?.comments; track $index) {
+              <div class="min-w-0 rounded-lg border border-slate-200/80 bg-slate-50 p-3 text-xs">
+                <div class="mb-1 flex min-w-0 items-start gap-1.5 font-semibold text-slate-800">
+                  <span
+                    [ngClass]="{
+                      'bg-gray-400':
+                        item.type === 'header' || item.type === 'body' || item.type === 'footer',
+                      'bg-indigo-500': item.type === 'section',
+                      'bg-amber-500': item.type === 'row',
+                      'bg-slate-500': item.type === 'column',
+                      'bg-emerald-500': item.type === 'element',
+                    }"
+                    class="mt-1 size-2 shrink-0 rounded-full"
+                  ></span>
+
+                  <span class="min-w-0 flex-1 wrap-break-words">
+                    @switch (item.type) {
+                      @case ('header') {
+                        Encabezado
+                      }
+                      @case ('body') {
+                        Contenido principal
+                      }
+                      @case ('footer') {
+                        Pie de página
+                      }
+                      @case ('section') {
+                        Sección
+                      }
+                      @case ('row') {
+                        Fila
+                      }
+                      @case ('column') {
+                        Columna
+                      }
+                      @case ('element') {
+                        Elemento
+                      }
+                    }
+
+                    #{{ item.uuid }}
+                  </span>
+                </div>
+
+                <p class="line-clamp-3 wrap-break-words text-[11px] leading-snug text-slate-500">
+                  {{ item.comment }}
+                </p>
+              </div>
+            }
+          </div>
         </div>
       </div>
     </div>

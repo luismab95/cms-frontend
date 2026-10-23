@@ -5,6 +5,7 @@ export interface ReviewPageDataI extends Partial<Pick<PageI, 'name' | 'path' | '
   id: number;
   pageId: number;
   comment: string;
+  comments: ReviewCommentI[];
   mongoId: string;
   statusReview: PageReviewStatus;
   userChangesId: number;

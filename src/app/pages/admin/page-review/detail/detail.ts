@@ -63,7 +63,7 @@ export class ReviewDetailComponent {
   readonly hasError = hasErrorFormField;
 
   readonly sectionsInCanvas = computed(() => {
-    return this._canvasService.sectionsByType[this.gridType()].get();
+    return this._canvasService.sectionsByTypeReview[this.gridType()].get();
   });
   readonly actionsReview = computed(() => {
     return [
