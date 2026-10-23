@@ -29,14 +29,7 @@ export class CanvasService {
 
   readonly sectionsByType = {
     page: {
-      get: () => {
-        const page = this.page();
-        if (page?.reviewPage?.review) {
-          return this.page()?.reviewPage?.data?.dataReview!.body.data ?? [];
-        } else {
-          return this.page()?.data!.body.data ?? [];
-        }
-      },
+      get: () => this.page()?.data!.body.data ?? [],
       set: (sections: SectionI[]) => {
         const page = this.page();
         if (!page) return;
@@ -91,6 +84,29 @@ export class CanvasService {
     {
       get: () => SectionI[];
       set: (sections: SectionI[]) => void;
+    }
+  >;
+  readonly sectionsByTypeReview = {
+    page: {
+      get: () => {
+        const page = this.page();
+        if (page?.reviewPage?.review) {
+          return this.page()?.reviewPage?.data?.dataReview!.body.data ?? [];
+        } else {
+          return this.page()?.data!.body.data ?? [];
+        }
+      },
+    },
+    header: {
+      get: () => this.template()?.data!.header.data ?? [],
+    },
+    footer: {
+      get: () => this.template()?.data!.footer.data ?? [],
+    },
+  } satisfies Record<
+    CanvasT,
+    {
+      get: () => SectionI[];
     }
   >;
   readonly configByType = {

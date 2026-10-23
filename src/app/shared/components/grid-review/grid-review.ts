@@ -63,7 +63,7 @@ export class GridReviewComponent implements OnDestroy {
     () => findParameter('APP_STATICS_URL', this.parameters())?.value ?? '',
   );
   readonly sectionsInCanvas = computed(() => {
-    return this._canvasService.sectionsByType[this.gridType()].get();
+    return this._canvasService.sectionsByTypeReview[this.gridType()].get();
   });
   readonly gridConfigStyles = (config: { [key: string]: any }) => {
     const backgroundImage = config['backgroundImage'];
@@ -86,7 +86,7 @@ export class GridReviewComponent implements OnDestroy {
       const css = this.isInReviewMode()
         ? page.reviewPage?.data?.dataReview!.body.css
         : page.data.body.css;
-      this.loadStylesPages('body-dynamicStyles', page.data.body.css);
+      this.loadStylesPages('body-dynamicStyles', css!);
     });
 
     effect(() => {

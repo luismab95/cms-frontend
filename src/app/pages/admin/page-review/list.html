@@ -147,6 +147,7 @@
                       <td class="px-4 py-2.5 whitespace-nowrap">
                         <div class="inline-flex items-center gap-1">
                           <button
+                            [class.hidden]="page.statusReview === 'rejected' || page.statusReview === 'approved'"
                             (click)="openReviewPage(page)"
                             class="cursor-pointer p-1 rounded hover:bg-slate-200 text-slate-500 hover:text-slate-800 transition"
                             appTooltip="Revisar"

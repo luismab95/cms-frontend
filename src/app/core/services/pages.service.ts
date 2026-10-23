@@ -48,7 +48,11 @@ export class PageService {
       .get<ResponseI<PageI>>(`${this.url}/${this.prefix}/pages/${pageId}`)
       .pipe(
         tap((response) => {
-          this.page.set(response.message);
+          const page = response.message;
+          if (page.reviewPage?.review) {
+            page.data = page.reviewPage.data?.dataReview;
+          }
+          this.page.set(page);
         }),
       );
   }

@@ -84,7 +84,8 @@ export class ReviewPage implements AfterViewInit {
     if (!page) {
       return { css: '', config: {} };
     }
-    return { css: page.data!.body.css, config: page.data!.body.config };
+    const pageData = this.reviewChanges() ? page.reviewPage?.data?.dataReview : page.data;
+    return { css: pageData!.body.css, config: pageData!.body.config };
   });
 
   /**
@@ -162,7 +163,31 @@ export class ReviewPage implements AfterViewInit {
   /**
    * Review changes in the page
    */
-  onReviewPage() {}
+  onReviewPage() {
+    this.saveAction.set(true);
+    const reviewPage = this.reviewPage();
+    if (!reviewPage) return;
+    const value = this.reviewForm().reviewModel();
+    this._pageReviewService
+      .reviewPageContent(reviewPage.reviewPage?.data?.id!, value)
+      .pipe(takeUntilDestroyed(this._destroyRef))
+      .subscribe({
+        next: () => {
+          this._toastrService.success(
+            'La revisión de la página se realizó correctamente.',
+            'Página revisada',
+          );
+          this.goToBack();
+        },
+        error: (err) => {
+          this._toastrService.error(
+            err.error?.message || 'No fue posible guardar cambios de la revisión de la página.',
+            'Error al revisar página',
+          );
+          this.saveAction.set(false);
+        },
+      });
+  }
 
   /**
    *  Confirm review page
