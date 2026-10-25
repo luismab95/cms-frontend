@@ -8,6 +8,7 @@ import { ReviewPageI } from '@core/interfaces';
   imports: [NgClass],
 })
 export class ReviewModeComponent {
+  reviewRejectChanges = input.required<boolean>();
   reviewPage = input.required<ReviewPageI>();
   deleteChangeEvent = output<boolean>();
 

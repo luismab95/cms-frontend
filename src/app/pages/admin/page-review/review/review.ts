@@ -99,6 +99,11 @@ export class ReviewPage implements AfterViewInit {
         return;
       }
 
+      const statusReview = page.reviewPage?.data?.statusReview;
+      if (statusReview === 'approved' || statusReview === 'rejected') {
+        this.goToBack();
+      }
+
       this.initialized.set(true);
       if (this.originReviewPage() === null) this.originReviewPage.set(structuredClone(page));
 

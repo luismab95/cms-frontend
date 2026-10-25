@@ -175,7 +175,7 @@
                         <div
                           class="relative column-editor"
                           [ngClass]="{
-                            'rounded-lg p-2 bg-white/40': !preview(),
+                            'rounded-lg p-2': !preview(),
                             review: isInReviewMode(),
                             'border-2 border-red-500': hasComment(column.uuid),
                           }"
@@ -217,7 +217,7 @@
                             @if (column.element !== null) {
                               <div
                                 [ngClass]="{
-                                  'rounded-lg p-2 bg-white/40': !preview(),
+                                  'rounded-lg p-2': !preview(),
                                   review: isInReviewMode(),
                                   'border-2 border-red-500': hasComment(column.element.uuid),
                                 }"

@@ -121,7 +121,7 @@ export class Notifications implements OnDestroy {
     const statusReview = notification.metadata['statusReview'] as PageReviewStatus;
     const micrositieId = notification.metadata['micrositieId'] as number | null;
     const pageId = notification.metadata['pageId'] as number;
-    const pageIdReviewId = notification.metadata['pageIdReviewId'] as number;
+    const reviewId = notification.metadata['reviewId'] as number;
     let path = '/admin/content/pages/canvas';
     let state: any = {
       id: pageId,
@@ -131,7 +131,7 @@ export class Notifications implements OnDestroy {
     if (statusReview === 'pending') {
       path = '/admin/content/review-pages/review';
       state = {
-        id: pageIdReviewId,
+        id: reviewId,
       };
     }
 
