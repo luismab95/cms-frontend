@@ -131,6 +131,7 @@
                     class="rounded-xl sticky top-0 z-10 bg-slate-50/95 backdrop-blur-sm border-b border-slate-200 text-slate-600 font-semibold text-[11px] uppercase tracking-wider select-none"
                   >
                     <th class="px-4 py-3 text-left w-14">Acciones</th>
+                    <th class="px-4 py-3 w-14">ID</th>
                     <th class="px-3 py-3 w-32">Nombre</th>
                     <th class="px-3 py-3 w-32">Ruta</th>
                     <th class="px-3 py-3 w-32">Usuario Edición</th>
@@ -147,7 +148,9 @@
                       <td class="px-4 py-2.5 whitespace-nowrap">
                         <div class="inline-flex items-center gap-1">
                           <button
-                            [class.hidden]="page.statusReview === 'rejected' || page.statusReview === 'approved'"
+                            [class.hidden]="
+                              page.statusReview === 'rejected' || page.statusReview === 'approved'
+                            "
                             (click)="openReviewPage(page)"
                             class="cursor-pointer p-1 rounded hover:bg-slate-200 text-slate-500 hover:text-slate-800 transition"
                             appTooltip="Revisar"
@@ -155,6 +158,13 @@
                           >
                             <i class="fa-regular fa-comments"></i>
                           </button>
+                        </div>
+                      </td>
+                       <td class="px-4 py-2.5">
+                        <div class="flex flex-col">
+                          <span class="font-semibold text-slate-900 hover:text-slate-600">
+                            REV-{{ page.id }}
+                          </span>
                         </div>
                       </td>
                       <td class="px-4 py-2.5">
@@ -167,7 +177,7 @@
                       <td class="px-4 py-2.5">
                         <div class="flex flex-col">
                           <span class="font-normal text-slate-900 hover:text-slate-600">
-                            {{ page.path }}
+                            /{{ page.path }}
                           </span>
                         </div>
                       </td>

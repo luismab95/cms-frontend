@@ -22,6 +22,7 @@ import {
   TemplateService,
   PageService,
   CanvasService,
+  UserService,
 } from '@core/services';
 import {
   PermissionComponent,
@@ -70,6 +71,7 @@ export class PagesCanvas implements AfterViewInit, OnDestroy {
   private readonly _microsityService = inject(MicrosityService);
   private readonly _templateService = inject(TemplateService);
   private readonly _pageService = inject(PageService);
+  private readonly _userService = inject(UserService);
   private readonly _canvasService = inject(CanvasService);
   private readonly _dialogService = inject(DialogService);
   private readonly _toastrService = inject(ToastrService);
@@ -80,6 +82,7 @@ export class PagesCanvas implements AfterViewInit, OnDestroy {
   readonly page = this._pageService.page;
   readonly parameters = this._parameterService.publicParameters;
   readonly micrositie = this._microsityService.micrositie;
+  readonly userLogin = this._userService.userLogin;
 
   readonly selectedItemsInGrid = this._canvasService.selectedItemsInGrid;
 
@@ -134,13 +137,20 @@ export class PagesCanvas implements AfterViewInit, OnDestroy {
       this.initialized.set(true);
       if (this.originPage() === null) this.originPage.set(structuredClone(page));
 
-      if (page.reviewPage?.review && page.reviewPage?.data?.statusReview !== 'rejected') {
+      const review = page.reviewPage?.review;
+      const statusReview = page.reviewPage?.data?.statusReview;
+      if (review && statusReview !== 'rejected') {
         this.reviewChanges.set(true);
         this.previewMode.set(true);
       }
 
-      if (page.reviewPage?.review && page.reviewPage?.data?.statusReview === 'rejected') {
+      if (review && statusReview === 'rejected') {
         this.reviewRejectChanges.set(true);
+        if (page.reviewPage?.data?.userChangesId !== this.userLogin()?.id) {
+          this.reviewChanges.set(true);
+          this.previewMode.set(true);
+          this.reviewRejectChanges.set(false);
+        }
       }
 
       if (page.draft) this.confirmDraft();
@@ -301,8 +311,8 @@ export class PagesCanvas implements AfterViewInit, OnDestroy {
             'El diseño de la página se actualizó correctamente.',
             'Cambios guardados',
           );
-          this.reviewChanges.set(true);
-          this.previewMode.set(true);
+          this.initialized.set(false);
+          this._pageService.find(page.id!).pipe(takeUntilDestroyed(this._destroyRef)).subscribe();
         },
         error: (response) => {
           this.saveAction.set(false);

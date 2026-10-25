@@ -56,7 +56,7 @@
           >
             @if (isInReviewMode || reviewRejectChanges()) {
               <div class="flex gap-2 items-center justify-center p-3 w-full">
-                <review-mode class="block w-full min-w-0" [reviewPage]="page.reviewPage!" />
+                <review-mode class="block w-full min-w-0" [reviewPage]="page.reviewPage!" [reviewRejectChanges]="reviewRejectChanges()" />
               </div>
             }
 
