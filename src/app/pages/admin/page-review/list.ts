@@ -7,7 +7,7 @@ import { ToastrService } from '@iqx-limited/ngx-toastr';
 import { PageReviewService } from '@core/services';
 import {
   PageReviewPaginationResquestI,
-  PageReviewStatus,
+  PageReviewStatusT,
   ReviewPageDataI,
   TablePageReviewSearchI,
 } from '@core/interfaces';
@@ -74,7 +74,7 @@ export class PageReviewList {
    * @param search
    * @param status
    */
-  getAll(page: number, search: string | null = null, statusReview: PageReviewStatus | null = null) {
+  getAll(page: number, search: string | null = null, statusReview: PageReviewStatusT | null = null) {
     const params: PageReviewPaginationResquestI = {
       page,
       limit: this.limit(),
@@ -137,7 +137,7 @@ export class PageReviewList {
    * Change status
    * @param status
    */
-  onChangeStatus(status: PageReviewStatus | null) {
+  onChangeStatus(status: PageReviewStatusT | null) {
     this.tableSearchModel.update((prev) => ({ ...prev, status }));
   }
 

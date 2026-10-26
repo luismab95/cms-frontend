@@ -1,7 +1,13 @@
 import { HttpClient } from '@angular/common/http';
 import { inject, Injectable, signal } from '@angular/core';
 import { buildQueryParams, buildQueryParamsPage, DefaultPaginationParams } from '@shared/utils';
-import { PageI, PagePaginationResquestI, GetPageI, PageRenderI } from '@core/interfaces';
+import {
+  PageI,
+  PagePaginationResquestI,
+  GetPageI,
+  PageRenderI,
+  PageDataMongoI,
+} from '@core/interfaces';
 import { PaginationResponseI, ResponseI } from '@shared/interfaces';
 import { environment } from 'environments/environment';
 import { Observable, of, tap } from 'rxjs';
@@ -50,7 +56,7 @@ export class PageService {
         tap((response) => {
           const page = response.message;
           if (page.reviewPage?.review) {
-            page.data = page.reviewPage.data?.dataReview;
+            page.data = page.reviewPage.data?.dataReview as PageDataMongoI;
           }
           this.page.set(page);
         }),

@@ -2,7 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { inject, Injectable, signal } from '@angular/core';
 import { PaginationResponseI, PaginationResquestI, ResponseI } from '@shared/interfaces';
 import { buildQueryParams, DefaultPaginationParams } from '@shared/utils';
-import { TemplateI } from '@core/interfaces';
+import { TemplateDataMongoI, TemplateI } from '@core/interfaces';
 import { environment } from 'environments/environment';
 import { Observable, tap, of } from 'rxjs';
 
@@ -49,7 +49,11 @@ export class TemplateService {
       .get<ResponseI<TemplateI>>(`${this.url}/${this.prefix}/templates/${templateId}`)
       .pipe(
         tap((response) => {
-          this.template.set(response.message);
+          const template = response.message;
+          if (template.reviewTemplate?.review) {
+            template.data = template.reviewTemplate.data?.dataReview as TemplateDataMongoI;
+          }
+          this.template.set(template);
         }),
       );
   }

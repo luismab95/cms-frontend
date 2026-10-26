@@ -14,7 +14,7 @@ import { Router } from '@angular/router';
 import { NgClass } from '@angular/common';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ToastrService } from '@iqx-limited/ngx-toastr';
-import { PreviewModeT, PageI } from '@core/interfaces';
+import { PreviewModeT, PageI, PageDataMongoI } from '@core/interfaces';
 import {
   ParameterService,
   DialogService,
@@ -96,8 +96,10 @@ export class PagesCanvas implements AfterViewInit, OnDestroy {
     if (!page) {
       return {};
     }
-    const pageData = this.reviewChanges() ? page.reviewPage?.data?.dataReview : page.data;
-    const backgroundImage = pageData?.body.config?.['backgroundImage'];
+    const pageData = (
+      this.reviewChanges() ? page.reviewPage?.data?.dataReview : page.data
+    ) as PageDataMongoI;
+    const backgroundImage = pageData.body.config['backgroundImage'];
     if (!backgroundImage || backgroundImage === '' || backgroundImage === 'null') {
       return {};
     }
@@ -110,7 +112,10 @@ export class PagesCanvas implements AfterViewInit, OnDestroy {
     if (!page) {
       return { css: '', config: {} };
     }
-    return { css: page.data!.body.css, config: page.data!.body.config };
+    const pageData = (
+      this.reviewChanges() ? page.reviewPage?.data?.dataReview : page.data
+    ) as PageDataMongoI;
+    return { css: pageData.body.css, config: pageData.body.config };
   });
 
   /**
@@ -154,7 +159,6 @@ export class PagesCanvas implements AfterViewInit, OnDestroy {
       }
 
       if (page.draft) this.confirmDraft();
-      return;
     });
   }
 
@@ -289,8 +293,7 @@ export class PagesCanvas implements AfterViewInit, OnDestroy {
     const page = this.page();
     if (page == null) return;
 
-    const pageData = this.reviewChanges() ? page.reviewPage?.data?.dataReview : page.data;
-
+    const pageData = page.data;
     this._pageService
       .update(page.id!, {
         name: page.name,

@@ -1,6 +1,6 @@
 @let preview = this.preview();
-@let page = this.reviewPage()!;
-@if (page !== null) {
+@let reviewPage = this.reviewPage()!;
+@if (reviewPage !== null) {
   <div
     #canvas
     id="canvas"
@@ -14,7 +14,8 @@
     >
       <toolbar-review-pages-component
         [urlStatics]="urlStatics()"
-        [name]="page.name"
+        [name]="reviewPage.data.name"
+        [reviewType]="reviewPage.type"
         [saveAction]="saveAction()"
         [preview]="preview"
         (goBackEvent)="goToBack()"
@@ -43,23 +44,62 @@
               }"
               class="px-1 page-preview shrink-0 rounded-xl overflow-hidden border border-slate-300/80 transition-all duration-300 relative flex flex-col bg-white"
             >
-              <div class="p-6 relative">
-                <grid-review-component
-                  #grid
-                  [pageElementsConfig]="pageElementsConfig()"
-                  [comments]="comments()"
-                  [gridType]="'page'"
-                  [gridStyles]="bodyStyles()"
-                  [languageId]="languageId()"
-                  [previewType]="preview"
-                  [isInReviewMode]="reviewChanges()"
-                  (addCommentEvent)="addComment($event)"
-                  (removeCommentEvent)="removeComment($event)"
-                />
-              </div>
+              @if (reviewPage.type === 'template') {
+                <div class="p-6 relative">
+                  <grid-review-component
+                    [pageElementsConfig]="headerElementsConfig()"
+                    [comments]="comments()"
+                    [gridType]="'header'"
+                    [gridStyles]="headerStyles()"
+                    [languageId]="languageId()"
+                    [previewType]="preview"
+                    [isInReviewMode]="reviewChanges()"
+                    (addCommentEvent)="addComment($event)"
+                    (removeCommentEvent)="removeComment($event)"
+                  />
+                </div>
+              }
+
+              @if (reviewPage.type === 'page') {
+                <div class="p-6 relative">
+                  <grid-review-component
+                    [pageElementsConfig]="pageElementsConfig()"
+                    [comments]="comments()"
+                    [gridType]="'page'"
+                    [gridStyles]="bodyStyles()"
+                    [languageId]="languageId()"
+                    [previewType]="preview"
+                    [isInReviewMode]="reviewChanges()"
+                    (addCommentEvent)="addComment($event)"
+                    (removeCommentEvent)="removeComment($event)"
+                  />
+                </div>
+              } @else {
+                <div
+                  class="cursor-not-allowed h-60 shrink-0 px-8 border-t border-slate-100 flex items-center justify-between text-xs text-slate-400 bg-white/60"
+                >
+                  <span class="-rotate-45 text-xl text-center w-full"> CONTENIDO </span>
+                </div>
+              }
+
+              @if (reviewPage.type === 'template') {
+                <div class="p-6 relative">
+                  <grid-review-component
+                    [pageElementsConfig]="footerElementsConfig()"
+                    [comments]="comments()"
+                    [gridType]="'footer'"
+                    [gridStyles]="footerStyles()"
+                    [languageId]="languageId()"
+                    [previewType]="preview"
+                    [isInReviewMode]="reviewChanges()"
+                    (addCommentEvent)="addComment($event)"
+                    (removeCommentEvent)="removeComment($event)"
+                  />
+                </div>
+              }
             </div>
           </div>
-          <review-detail-component #reviewForm [gridType]="'page'" />
+          <review-detail-component #reviewForm />
         </div>
       </section>
     } @else {

@@ -32,7 +32,7 @@
               <input
                 [formField]="tableSearchForm.search"
                 class="w-full h-10 pl-10 pr-10 py-2 rounded-lg font-normal leading-4 bg-white border border-slate-200 text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-indigo-500"
-                placeholder="Buscar página..."
+                placeholder="Buscar revisión..."
                 type="text"
               />
 
@@ -131,6 +131,7 @@
                     class="rounded-xl sticky top-0 z-10 bg-slate-50/95 backdrop-blur-sm border-b border-slate-200 text-slate-600 font-semibold text-[11px] uppercase tracking-wider select-none"
                   >
                     <th class="px-4 py-3 text-left w-14">Acciones</th>
+                    <th class="px-4 py-3 w-16">Tipo</th>
                     <th class="px-4 py-3 w-14">ID</th>
                     <th class="px-3 py-3 w-32">Nombre</th>
                     <th class="px-3 py-3 w-32">Ruta</th>
@@ -141,57 +142,81 @@
                 </thead>
 
                 <tbody class="divide-y divide-slate-100 font-normal text-slate-700">
-                  @for (page of records; track $index) {
+                  @for (review of records; track $index) {
                     <tr
                       class="border-slate-200 border-b hover:bg-slate-50/80 transition hover:border-l-4 hover:border-l-indigo-600 cursor-pointer"
                     >
                       <td class="px-4 py-2.5 whitespace-nowrap">
                         <div class="inline-flex items-center gap-1">
                           <button
-                            [class.hidden]="
-                              page.statusReview === 'rejected' || page.statusReview === 'approved'
+                            #reviewActions
+                            [disabled]="
+                              review.statusReview === 'rejected' ||
+                              review.statusReview === 'approved'
                             "
-                            (click)="openReviewPage(page)"
-                            class="cursor-pointer p-1 rounded hover:bg-slate-200 text-slate-500 hover:text-slate-800 transition"
-                            appTooltip="Revisar"
+                            (click)="openReviewPage(review)"
+                            class="cursor-pointer p-1 rounded hover:bg-slate-200 text-slate-500 hover:text-slate-800 transition disabled:opacity-60 disabled:cursor-not-allowed"
+                            [appTooltip]="!reviewActions.disabled ? 'Revisar' : ''"
                             type="button"
                           >
                             <i class="fa-regular fa-comments"></i>
                           </button>
                         </div>
                       </td>
-                       <td class="px-4 py-2.5">
+                      <td class="px-3 py-2.5">
+                        <span
+                          [ngClass]="{
+                            'text-blue-700 bg-blue-50 border border-blue-200':
+                              review.type === 'page',
+                            'text-orange-700 bg-orange-50 border border-orange-200':
+                              review.type === 'template',
+                          }"
+                          class="inline-flex items-center gap-1 text-[11px] font-medium px-2 py-0.5 rounded-full border"
+                        >
+                          @switch (review.type) {
+                            @case ('template') {
+                              <span class="w-1.5 h-1.5 rounded-full bg-orange-500"></span>
+                              Plantilla
+                            }
+                            @case ('page') {
+                              <span class="w-1.5 h-1.5 rounded-full bg-blue-500"></span>
+                              Página
+                            }
+                          }
+                        </span>
+                      </td>
+                      <td class="px-4 py-2.5">
+                        <div class="flex flex-col">
+                          <span class="font-normal text-slate-900 hover:text-slate-600">
+                            REV-{{ review.id }}
+                          </span>
+                        </div>
+                      </td>
+                      <td class="px-4 py-2.5">
                         <div class="flex flex-col">
                           <span class="font-semibold text-slate-900 hover:text-slate-600">
-                            REV-{{ page.id }}
-                          </span>
-                        </div>
-                      </td>
-                      <td class="px-4 py-2.5">
-                        <div class="flex flex-col">
-                          <span class="font-semibold text-slate-900 hover:text-slate-600">
-                            {{ page.name }}
+                            {{ review.name }}
                           </span>
                         </div>
                       </td>
                       <td class="px-4 py-2.5">
                         <div class="flex flex-col">
                           <span class="font-normal text-slate-900 hover:text-slate-600">
-                            /{{ page.path }}
+                            {{ review.path === null ? 'Ninguna' : review.path }}
                           </span>
                         </div>
                       </td>
                       <td class="px-4 py-2.5">
                         <div class="flex flex-col">
                           <span class="font-normal text-slate-900 hover:text-slate-600">
-                            {{ page.userChanges }}
+                            {{ review.userChanges }}
                           </span>
                         </div>
                       </td>
                       <td class="px-4 py-2.5">
                         <div class="flex flex-col">
                           <span class="font-normal text-slate-900 hover:text-slate-600">
-                            {{ page.userReview === ' ' ? 'No asignando' : page.userReview }}
+                            {{ review.userReview === ' ' ? 'No asignando' : review.userReview }}
                           </span>
                         </div>
                       </td>
@@ -199,17 +224,17 @@
                         <span
                           [ngClass]="{
                             'text-amber-700 bg-amber-50 border border-amber-200':
-                              page.statusReview === 'pending',
+                              review.statusReview === 'pending',
                             'text-indigo-700 bg-indigo-50 border border-indigo-200':
-                              page.statusReview === 'assigned',
+                              review.statusReview === 'assigned',
                             'text-emerald-700 bg-emerald-50 border border-emerald-200':
-                              page.statusReview === 'approved',
+                              review.statusReview === 'approved',
                             'text-red-700 bg-red-50 border border-red-200':
-                              page.statusReview === 'rejected',
+                              review.statusReview === 'rejected',
                           }"
                           class="inline-flex items-center gap-1 text-[11px] font-medium px-2 py-0.5 rounded-full border"
                         >
-                          @switch (page.statusReview) {
+                          @switch (review.statusReview) {
                             @case ('pending') {
                               <span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
                               Pendiente
@@ -232,7 +257,7 @@
                     </tr>
                   } @empty {
                     <tr>
-                      <td colspan="6">
+                      <td colspan="8">
                         <div
                           class="px-24 py-12 text-center flex flex-col items-center justify-center gap-2"
                         >

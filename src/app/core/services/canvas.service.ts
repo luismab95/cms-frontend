@@ -1,5 +1,5 @@
 import { inject, Injectable, signal } from '@angular/core';
-import { CanvasT } from '@core/interfaces';
+import { CanvasT, PageDataMongoI, TemplateDataMongoI } from '@core/interfaces';
 import {
   HistoryChangeI,
   SelectedItemsInGridI,
@@ -91,17 +91,34 @@ export class CanvasService {
       get: () => {
         const page = this.page();
         if (page?.reviewPage?.review) {
-          return this.page()?.reviewPage?.data?.dataReview!.body.data ?? [];
+          const pageData = this.page()?.reviewPage?.data?.dataReview as PageDataMongoI;
+          return pageData.body.data ?? [];
         } else {
           return this.page()?.data!.body.data ?? [];
         }
       },
     },
     header: {
-      get: () => this.template()?.data!.header.data ?? [],
+      get: () => {
+        const template = this.template();
+        if (template?.reviewTemplate?.review) {
+          const pageData = this.template()?.reviewTemplate?.data?.dataReview as TemplateDataMongoI;
+          return pageData.header.data ?? [];
+        } else {
+          return this.template()?.data!.header.data ?? [];
+        }
+      },
     },
     footer: {
-      get: () => this.template()?.data!.footer.data ?? [],
+      get: () => {
+        const template = this.template();
+        if (template?.reviewTemplate?.review) {
+          const pageData = this.template()?.reviewTemplate?.data?.dataReview as TemplateDataMongoI;
+          return pageData.footer.data ?? [];
+        } else {
+          return this.template()?.data!.footer.data ?? [];
+        }
+      },
     },
   } satisfies Record<
     CanvasT,

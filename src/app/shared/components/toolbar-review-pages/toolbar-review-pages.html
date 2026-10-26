@@ -182,11 +182,11 @@
           class="relative inline-flex rounded-full h-2 w-2"
         ></span>
       </span>
-
+      @let entity = reviewType() === 'page' ? 'página' : 'plantilla';
       {{
         currentContentPage()
-          ? 'Visualizando el contenido actual de la página'
-          : 'Revisando los cambios de la página'
+          ? 'Visualizando el contenido actual de la ' + entity
+          : 'Revisando los cambios de la ' + entity
       }}
     </span>
   </div>
