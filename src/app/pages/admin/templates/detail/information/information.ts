@@ -163,11 +163,8 @@ export class TemplatesInformationComponent implements AfterViewInit {
         const template = this.template();
         if (!template) return;
 
-        const updateTemplate = {
-          ...field().value(),
-          data: template.data,
-        };
-
+        const { name, description, status } = field().value();
+        const updateTemplate = { name, description, status } as TemplateI;
         await firstValueFrom(
           this._templateService
             .update(template.id!, updateTemplate)

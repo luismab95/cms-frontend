@@ -90,8 +90,8 @@
                   #grid
                   [isInReviewMode]="isInReviewMode"
                   [editContent]="validPermission(permission.editContentPage)"
-                  [comments]="page.reviewPage?.data?.comments ?? []"
                   [editDesign]="validPermission(permission.editDesignPage)"
+                  [comments]="page.reviewPage?.data?.comments ?? []"
                   [pageElementsConfig]="pageElementsConfig()"
                   [gridType]="'page'"
                   [gridStyles]="bodyStyles()"

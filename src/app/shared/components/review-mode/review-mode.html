@@ -20,7 +20,8 @@
             </span>
           </div>
           <p class="mt-1 max-w-2xl text-xs leading-relaxed text-slate-600">
-            Los últimos cambios enviados en la página
+            Los últimos cambios enviados en la
+            {{ reviewPage().data?.type === 'page' ? 'página' : 'plantilla' }}
             <strong class="text-slate-800">
               {{ reviewPage().data?.name }}
             </strong>
@@ -137,7 +138,7 @@
       <div class="flex-1 min-w-0">
         <div class="flex flex-wrap items-center justify-between gap-2">
           <h2 class="text-sm sm:text-base font-bold text-amber-950">
-            Edición no disponible — La página se encuentra en Modo de Revisión
+            Edición no disponible — La  {{ reviewPage().data?.type === 'page' ? 'página' : 'plantilla' }} se encuentra en Modo de Revisión
           </h2>
           <span
             class="inline-flex items-center text-[11px] font-semibold text-amber-800 bg-amber-100/90 px-2 py-0.5 rounded border border-amber-300/50"
@@ -146,7 +147,7 @@
           </span>
         </div>
         <p class="mt-1 text-xs sm:text-sm text-amber-900/90 leading-relaxed">
-          No puedes editar directamente el contenido ni la estructura de esta página porque el ciclo
+          No puedes editar directamente el contenido ni la estructura de esta  {{ reviewPage().data?.type === 'page' ? 'página' : 'plantilla' }} porque el ciclo
           de gobernanza está activo. El documento está asignado actualmente al equipo de
           <strong class="font-semibold text-amber-950">Revisión </strong>.
         </p>

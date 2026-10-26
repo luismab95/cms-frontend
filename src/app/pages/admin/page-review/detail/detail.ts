@@ -1,5 +1,5 @@
 import { NgClass } from '@angular/common';
-import { Component, computed, effect, inject, input, signal } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import {
   applyEach,
   disabled,
@@ -10,7 +10,7 @@ import {
   required,
 } from '@angular/forms/signals';
 import { NgSelectComponent } from '@ng-select/ng-select';
-import { ActionReviewI, CanvasT, ReviewModelI, TypeReviewItemT } from '@core/interfaces';
+import { ActionReviewI, ReviewModelI, TypeReviewItemT } from '@core/interfaces';
 import { findElementByUuid, hasErrorFormField, PermissionCode, validAction } from '@shared/utils';
 import { TooltipDirective } from '@shared/directives';
 import { ElementI } from '@shared/interfaces';
@@ -22,8 +22,6 @@ import { CanvasService, ElementService } from '@core/services';
   imports: [NgClass, NgSelectComponent, FormField, TooltipDirective],
 })
 export class ReviewDetailComponent {
-  gridType = input.required<CanvasT>();
-
   reviewFormCollapsed = signal<boolean>(false);
   reviewModel = signal<ReviewModelI>({
     status: null,
@@ -63,7 +61,11 @@ export class ReviewDetailComponent {
   readonly hasError = hasErrorFormField;
 
   readonly sectionsInCanvas = computed(() => {
-    return this._canvasService.sectionsByTypeReview[this.gridType()].get();
+    const header = this._canvasService.sectionsByTypeReview['header'].get();
+    const page = this._canvasService.sectionsByTypeReview['page'].get();
+    const footer = this._canvasService.sectionsByTypeReview['footer'].get();
+
+    return [...header, ...page, ...footer];
   });
   readonly actionsReview = computed(() => {
     return [

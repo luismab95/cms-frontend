@@ -9,7 +9,13 @@ import {
   output,
   signal,
 } from '@angular/core';
-import { CanvasT, ReviewCommentI, TypeReviewItemT } from '@core/interfaces';
+import {
+  CanvasT,
+  PageDataMongoI,
+  ReviewCommentI,
+  TemplateDataMongoI,
+  TypeReviewItemT,
+} from '@core/interfaces';
 import {
   PageService,
   CanvasService,
@@ -83,19 +89,23 @@ export class GridReviewComponent implements OnDestroy {
     effect(() => {
       const page = this.page();
       if (!page || !page.data || this.gridType() !== 'page') return;
-      const css = this.isInReviewMode()
-        ? page.reviewPage?.data?.dataReview!.body.css
-        : page.data.body.css;
-      this.loadStylesPages('body-dynamicStyles', css!);
+      const pageData = (
+        this.isInReviewMode() ? page.reviewPage?.data?.dataReview : page.data
+      ) as PageDataMongoI;
+      const css = pageData.body.css;
+      this.loadStylesPages('body-dynamicStyles', css);
     });
 
     effect(() => {
       const template = this.template();
       if (!template || !template.data || this.gridType() === 'page') return;
+      const pageData = (
+        this.isInReviewMode() ? template.reviewTemplate?.data?.dataReview : template.data
+      ) as TemplateDataMongoI;
       if (this.gridType() === 'header')
-        this.loadStylesPages('header-dynamicStyles', template.data.header.css);
+        this.loadStylesPages('header-dynamicStyles', pageData.header.css);
       if (this.gridType() === 'footer')
-        this.loadStylesPages('footer-dynamicStyles', template.data.footer.css);
+        this.loadStylesPages('footer-dynamicStyles', pageData.footer.css);
     });
   }
 

@@ -15,7 +15,7 @@ import {
   NgOptionTemplateDirective,
   NgSelectComponent,
 } from '@ng-select/ng-select';
-import { PreviewModeT } from '@core/interfaces';
+import { PreviewModeT, TypeReviewT } from '@core/interfaces';
 import { TooltipDirective } from '@shared/directives';
 import { LanguageService } from '@shared/services';
 
@@ -38,6 +38,7 @@ export class ToolbarReviewPagesComponent {
   urlStatics = input.required<string>();
   name = input.required<string>();
   saveAction = input.required<boolean>();
+  reviewType = input.required<TypeReviewT>();
   preview = input.required<PreviewModeT>();
   goBackEvent = output<void>();
   togglePreviewModeEvent = output<PreviewModeT>();

@@ -70,22 +70,22 @@
     </div>
     <div class="divide-y divide-slate-100">
       @for (notification of notificationsFilter(); track notification.id) {
+        @let review = notification.metadata;
         <div class="p-4 hover:bg-slate-50 transition bg-slate-50/15 flex gap-3 group">
           <div class="shrink-0 pt-0.5">
             <span
               class="w-8 h-8 rounded-full flex items-center justify-center border shadow-sm"
               [ngClass]="{
-                'bg-rose-100 text-rose-600 border-rose-200':
-                  notification.metadata['statusReview'] === 'rejected',
+                'bg-rose-100 text-rose-600 border-rose-200': review['statusReview'] === 'rejected',
                 'bg-emerald-100 text-emerald-600 border-emerald-200':
-                  notification.metadata['statusReview'] === 'approved',
+                  review['statusReview'] === 'approved',
                 'bg-yellow-100 text-yellow-700 border-yellow-200':
-                  notification.metadata['statusReview'] === 'pending',
+                  review['statusReview'] === 'pending',
               }"
             >
-              @if (notification.metadata['statusReview'] === 'rejected') {
+              @if (review['statusReview'] === 'rejected') {
                 <i class="fa-solid fa-xmark"></i>
-              } @else if (notification.metadata['statusReview'] === 'approved') {
+              } @else if (review['statusReview'] === 'approved') {
                 <i class="fa-solid fa-check"></i>
               } @else {
                 <i class="fa-solid fa-exclamation"></i>
@@ -98,12 +98,12 @@
               <span
                 class="text-xs font-bold uppercase tracking-wide"
                 [ngClass]="{
-                  'text-rose-700': notification.metadata['statusReview'] === 'rejected',
-                  'text-emerald-700': notification.metadata['statusReview'] === 'approved',
-                  'text-yellow-700': notification.metadata['statusReview'] === 'pending',
+                  'text-rose-700': review['statusReview'] === 'rejected',
+                  'text-emerald-700': review['statusReview'] === 'approved',
+                  'text-yellow-700': review['statusReview'] === 'pending',
                 }"
               >
-                @switch (notification.metadata['statusReview']) {
+                @switch (review['statusReview']) {
                   @case ('rejected') {
                     Cambios Rechazados
                   }
@@ -114,7 +114,7 @@
                     Cambios por Revisar
                   }
                 }
-                (ID: {{ 'REV-' + notification.metadata['reviewId'] }})
+                (ID: {{ 'REV-' + review['reviewId'] }})
               </span>
 
               <span class="text-[11px] text-slate-400 font-medium whitespace-nowrap">
@@ -123,16 +123,22 @@
             </div>
 
             <p class="text-sm font-bold text-slate-900 mt-0.5 truncate">
-              {{
-                notification.metadata['micrositieId'] !== null ? 'Página de micrositio:' : 'Página:'
-              }}
+              @switch (review['type']) {
+                @case ('template') {
+                  Plantilla:
+                }
+                @case ('page') {
+                  {{ review['micrositieId'] !== null ? 'Página de micrositio:' : 'Página:' }}
+                }
+              }
+
               <span class="text-slate-800 font-normal">
-                {{ notification.metadata['entityName'] }}
+                {{ review['entityName'] }}
               </span>
             </p>
 
             <p class="text-xs text-slate-600 mt-1">
-              @switch (notification.metadata['statusReview']) {
+              @switch (review['statusReview']) {
                 @case ('rejected') {
                   Rechazado por
                 }
@@ -145,25 +151,22 @@
               }
 
               <strong class="text-slate-800 font-semibold">
-                @if (notification.metadata['statusReview'] === 'pending') {
-                  {{ notification.metadata['userChanges'] }}
+                @if (review['statusReview'] === 'pending') {
+                  {{ review['userChanges'] }}
                 } @else {
-                  {{ notification.metadata['userReview'] }}
+                  {{ review['userReview'] }}
                 }
               </strong>
             </p>
 
-            @if (
-              notification.metadata['statusReview'] === 'rejected' &&
-              notification.metadata['comment']
-            ) {
+            @if (review['statusReview'] === 'rejected' && review['comment']) {
               <div
                 class="mt-1.5 min-w-0 max-w-full overflow-hidden bg-white p-2 rounded-lg border border-rose-100 text-xs text-slate-600"
               >
                 <span class="font-semibold text-rose-600">Motivo:</span>
 
                 <p class="mt-0.5 line-clamp-3 wrap-break-words">
-                  {{ notification.metadata['comment'] }}
+                  {{ review['comment'] }}
                 </p>
               </div>
             }
@@ -172,18 +175,15 @@
               <button
                 class="cursor-pointer text-xs font-bold inline-flex items-center gap-1 transition"
                 [ngClass]="{
-                  'text-rose-600 hover:text-rose-800':
-                    notification.metadata['statusReview'] === 'rejected',
-                  'text-emerald-600 hover:text-emerald-800':
-                    notification.metadata['statusReview'] === 'approved',
+                  'text-rose-600 hover:text-rose-800': review['statusReview'] === 'rejected',
+                  'text-emerald-600 hover:text-emerald-800': review['statusReview'] === 'approved',
                   'text-yellow-600 hover:text-yellow-800':
-                    notification.metadata['statusReview'] !== 'rejected' &&
-                    notification.metadata['statusReview'] !== 'approved',
+                    review['statusReview'] !== 'rejected' && review['statusReview'] !== 'approved',
                 }"
                 type="button"
                 (click)="onNotificationAction(notification)"
               >
-                @switch (notification.metadata['statusReview']) {
+                @switch (review['statusReview']) {
                   @case ('rejected') {
                     <span>Editar cambios</span>
                     <i class="fa-regular fa-pen-to-square"></i>

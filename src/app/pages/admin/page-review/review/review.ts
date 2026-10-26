@@ -13,8 +13,24 @@ import {
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Router } from '@angular/router';
 import { ToastrService } from '@iqx-limited/ngx-toastr';
-import { PageI, PreviewModeT, ReviewCommentI, ReviewModelI } from '@core/interfaces';
-import { DialogService, PageReviewService, PageService, ParameterService } from '@core/services';
+import {
+  PageDataMongoI,
+  PageI,
+  PreviewModeT,
+  ReviewCommentI,
+  ReviewEntityI,
+  ReviewModelI,
+  TemplateDataMongoI,
+  TemplateI,
+} from '@core/interfaces';
+import {
+  CanvasService,
+  DialogService,
+  PageReviewService,
+  PageService,
+  ParameterService,
+  TemplateService,
+} from '@core/services';
 import {
   DisabledCanvasComponent,
   GridReviewComponent,
@@ -47,13 +63,15 @@ export class ReviewPage implements AfterViewInit {
   saveAction = signal<boolean>(false);
   reviewChanges = signal<boolean>(true);
   initialized = signal<boolean>(false);
-  originReviewPage = signal<PageI | null>(null);
+  originReview = signal<ReviewEntityI | null>(null);
 
   private readonly _pageReviewService = inject(PageReviewService);
   private readonly _parameterService = inject(ParameterService);
   private readonly _dialogService = inject(DialogService);
   private readonly _toastrService = inject(ToastrService);
   private readonly _pageService = inject(PageService);
+  private readonly _templateService = inject(TemplateService);
+  private readonly _canvasService = inject(CanvasService);
   private readonly _router = inject(Router);
   private readonly _destroyRef = inject(DestroyRef);
 
@@ -66,11 +84,14 @@ export class ReviewPage implements AfterViewInit {
   );
   readonly comments = computed(() => this.reviewForm().reviewModel().comments);
   readonly bodyStyles = computed(() => {
-    const page = this.reviewPage();
-    if (!page) {
+    const reviewPage = this.reviewPage();
+    if (!reviewPage) {
       return {};
     }
-    const pageData = this.reviewChanges() ? page.reviewPage?.data?.dataReview : page.data;
+    const page = reviewPage.data as PageI;
+    const pageData = (
+      this.reviewChanges() ? page.reviewPage?.data?.dataReview : page.data
+    ) as PageDataMongoI;
     const backgroundImage = pageData?.body.config?.['backgroundImage'];
     if (!backgroundImage || backgroundImage === '' || backgroundImage === 'null') {
       return {};
@@ -79,13 +100,72 @@ export class ReviewPage implements AfterViewInit {
       'background-image': `url('${this.urlStatics()}/${filterPath(backgroundImage)}')`,
     };
   });
+  readonly headerStyles = computed(() => {
+    const reviewPage = this.reviewPage();
+    if (!reviewPage) {
+      return {};
+    }
+    const template = reviewPage.data as TemplateI;
+    const pageData = (
+      this.reviewChanges() ? template.reviewTemplate?.data?.dataReview : template.data
+    ) as TemplateDataMongoI;
+    const backgroundImage = pageData?.header.config?.['backgroundImage'];
+    if (!backgroundImage || backgroundImage === '' || backgroundImage === 'null') {
+      return {};
+    }
+    return {
+      'background-image': `url('${this.urlStatics()}/${filterPath(backgroundImage)}')`,
+    };
+  });
+  readonly footerStyles = computed(() => {
+    const reviewPage = this.reviewPage();
+    if (!reviewPage) {
+      return {};
+    }
+    const template = reviewPage.data as TemplateI;
+    const pageData = (
+      this.reviewChanges() ? template.reviewTemplate?.data?.dataReview : template.data
+    ) as TemplateDataMongoI;
+    const backgroundImage = pageData?.footer.config?.['backgroundImage'];
+    if (!backgroundImage || backgroundImage === '' || backgroundImage === 'null') {
+      return {};
+    }
+    return {
+      'background-image': `url('${this.urlStatics()}/${filterPath(backgroundImage)}')`,
+    };
+  });
   readonly pageElementsConfig = computed(() => {
-    const page = this.reviewPage();
-    if (!page) {
+    const reviewPage = this.reviewPage();
+    if (!reviewPage) {
       return { css: '', config: {} };
     }
-    const pageData = this.reviewChanges() ? page.reviewPage?.data?.dataReview : page.data;
-    return { css: pageData!.body.css, config: pageData!.body.config };
+    const page = reviewPage.data as PageI;
+    const pageData = (
+      this.reviewChanges() ? page.reviewPage?.data?.dataReview : page.data
+    ) as PageDataMongoI;
+    return { css: pageData.body.css, config: pageData.body.config };
+  });
+  readonly headerElementsConfig = computed(() => {
+    const reviewPage = this.reviewPage();
+    if (!reviewPage) {
+      return { css: '', config: {} };
+    }
+    const template = reviewPage.data as TemplateI;
+    const pageData = (
+      this.reviewChanges() ? template.reviewTemplate?.data?.dataReview : template.data
+    ) as TemplateDataMongoI;
+    return { css: pageData.header.css, config: pageData.header.config };
+  });
+  readonly footerElementsConfig = computed(() => {
+    const reviewPage = this.reviewPage();
+    if (!reviewPage) {
+      return { css: '', config: {} };
+    }
+    const template = reviewPage.data as TemplateI;
+    const pageData = (
+      this.reviewChanges() ? template.reviewTemplate?.data?.dataReview : template.data
+    ) as TemplateDataMongoI;
+    return { css: pageData.footer.css, config: pageData.footer.config };
   });
 
   /**
@@ -93,24 +173,28 @@ export class ReviewPage implements AfterViewInit {
    */
   constructor() {
     effect(() => {
-      const page = this.reviewPage();
+      const reviewPage = this.reviewPage();
 
-      if (!page || this.initialized()) {
+      if (!reviewPage || this.initialized()) {
         return;
       }
 
-      const statusReview = page.reviewPage?.data?.statusReview;
+      const statusReview = reviewPage.status;
       if (statusReview === 'approved' || statusReview === 'rejected') {
         this.goToBack();
       }
 
       this.initialized.set(true);
-      if (this.originReviewPage() === null) this.originReviewPage.set(structuredClone(page));
+      if (this.originReview() === null) this.originReview.set(structuredClone(reviewPage));
 
       this.reviewChanges.set(true);
-      this._pageService.page.set(page);
-
-      return;
+      if (reviewPage.type === 'page') {
+        const page = reviewPage.data as PageI;
+        this._pageService.page.set(page);
+      } else {
+        const template = reviewPage.data as TemplateI;
+        this._templateService.template.set(template);
+      }
     });
   }
 
@@ -173,21 +257,22 @@ export class ReviewPage implements AfterViewInit {
     const reviewPage = this.reviewPage();
     if (!reviewPage) return;
     const value = this.reviewForm().reviewModel();
+    const entity = `${this.reviewPage()?.type === 'page' ? 'página' : 'plantilla'}`;
     this._pageReviewService
-      .reviewPageContent(reviewPage.reviewPage?.data?.id!, value)
+      .reviewPageContent(reviewPage.id, value)
       .pipe(takeUntilDestroyed(this._destroyRef))
       .subscribe({
         next: () => {
           this._toastrService.success(
-            'La revisión de la página se realizó correctamente.',
-            'Página revisada',
+            `La revisión de la ${entity} se realizó correctamente.`,
+            `Revisión Existosa`,
           );
           this.goToBack();
         },
         error: (err) => {
           this._toastrService.error(
-            err.error?.message || 'No fue posible guardar cambios de la revisión de la página.',
-            'Error al revisar página',
+            err.error?.message || `No fue posible guardar cambios de la revisión de la ${entity}.`,
+            'Error al revisar',
           );
           this.saveAction.set(false);
         },
@@ -208,11 +293,12 @@ export class ReviewPage implements AfterViewInit {
       return;
     }
 
+    const entity = `${this.reviewPage()?.type === 'page' ? 'página' : 'plantilla'}`;
     const action = this.reviewForm().reviewModel().status === 'approved' ? 'Aprobar' : 'Rechazar';
     this._dialogService.setDialogData({
       type: 'warning',
-      title: `Revisar página`,
-      message: `¿Estas seguro/a que deseas <span class='font-extrabold'> ${action} </span> los cambios de la página ${this.reviewPage()?.name}?. Esta acción no se puede deshacer.`,
+      title: `Revisar ${entity}`,
+      message: `¿Estas seguro/a que deseas <span class='font-extrabold'> ${action} </span> los cambios de la ${entity} ${this.reviewPage()?.data.name}?. Esta acción no se puede deshacer.`,
       confirmButton: `Si, ${action}`,
       cancelButton: 'Cancelar',
     });
@@ -241,11 +327,19 @@ export class ReviewPage implements AfterViewInit {
    */
   setReviewChanges(value: boolean) {
     this.reviewChanges.set(!value);
-    const page = this.reviewPage();
-    if (!page) return;
-    this._pageService.page.set(null);
-    page.reviewPage!.review! = !value;
-    this._pageService.page.set(page);
+    const reviewPage = this.reviewPage();
+    if (!reviewPage) return;
+    if (reviewPage.type === 'page') {
+      this._pageService.page.set(null);
+      const page = reviewPage.data as PageI;
+      page.reviewPage!.review! = !value;
+      this._pageService.page.set(page);
+    } else {
+      this._templateService.template.set(null);
+      const template = reviewPage.data as TemplateI;
+      template.reviewTemplate!.review! = !value;
+      this._templateService.template.set(template);
+    }
   }
 
   /**

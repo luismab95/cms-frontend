@@ -14,7 +14,7 @@ import { Router } from '@angular/router';
 import { NgClass } from '@angular/common';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ToastrService } from '@iqx-limited/ngx-toastr';
-import { PreviewModeT, TemplateI } from '@core/interfaces';
+import { PreviewModeT, TemplateDataMongoI, TemplateI } from '@core/interfaces';
 import {
   ParameterService,
   DialogService,
@@ -22,6 +22,7 @@ import {
   TemplateService,
   PageService,
   CanvasService,
+  UserService,
 } from '@core/services';
 import {
   PermissionComponent,
@@ -30,6 +31,7 @@ import {
   InspectorComponent,
   ToolbarCanvasComponent,
   DisabledCanvasComponent,
+  ReviewModeComponent,
 } from '@shared/components';
 import { SelectedItemsInGridI, ElementCMSI } from '@shared/interfaces';
 import { PermissionCode, findParameter, filterPath, validGrid, validAction } from '@shared/utils';
@@ -46,6 +48,7 @@ import { filter, interval, take } from 'rxjs';
     InspectorComponent,
     ToolbarCanvasComponent,
     DisabledCanvasComponent,
+    ReviewModeComponent,
   ],
 })
 export class TemplatesCanvas implements AfterViewInit, OnDestroy {
@@ -62,11 +65,14 @@ export class TemplatesCanvas implements AfterViewInit, OnDestroy {
   languageId = signal<number>(0);
   originTemplate = signal<TemplateI | null>(null);
   initialized = signal<boolean>(false);
+  reviewChanges = signal<boolean>(false);
+  reviewRejectChanges = signal<boolean>(false);
 
   private readonly _parameterService = inject(ParameterService);
   private readonly _microsityService = inject(MicrosityService);
   private readonly _templateService = inject(TemplateService);
   private readonly _pageService = inject(PageService);
+  private readonly _userService = inject(UserService);
   private readonly _canvasService = inject(CanvasService);
   private readonly _dialogService = inject(DialogService);
   private readonly _toastrService = inject(ToastrService);
@@ -78,6 +84,7 @@ export class TemplatesCanvas implements AfterViewInit, OnDestroy {
   readonly parameters = this._parameterService.publicParameters;
   readonly micrositie = this._microsityService.micrositie;
   readonly selectedItemsInGrid = this._canvasService.selectedItemsInGrid;
+  readonly userLogin = this._userService.userLogin;
 
   readonly canRedo = computed(() => this._canvasService.canRedo());
   readonly canUndo = computed(() => this._canvasService.canUndo());
@@ -89,8 +96,10 @@ export class TemplatesCanvas implements AfterViewInit, OnDestroy {
     if (!template) {
       return {};
     }
-    const pageData = template.data;
-    const backgroundImage = pageData?.header.config?.['backgroundImage'];
+    const pageData = (
+      this.reviewChanges() ? template.reviewTemplate?.data?.dataReview : template.data
+    ) as TemplateDataMongoI;
+    const backgroundImage = pageData.header.config['backgroundImage'];
     if (!backgroundImage || backgroundImage === '' || backgroundImage === 'null') {
       return {};
     }
@@ -103,8 +112,10 @@ export class TemplatesCanvas implements AfterViewInit, OnDestroy {
     if (!template) {
       return {};
     }
-    const pageData = template.data;
-    const backgroundImage = pageData?.footer.config?.['backgroundImage'];
+    const pageData = (
+      this.reviewChanges() ? template.reviewTemplate?.data?.dataReview : template.data
+    ) as TemplateDataMongoI;
+    const backgroundImage = pageData.footer.config['backgroundImage'];
     if (!backgroundImage || backgroundImage === '' || backgroundImage === 'null') {
       return {};
     }
@@ -117,14 +128,20 @@ export class TemplatesCanvas implements AfterViewInit, OnDestroy {
     if (!template) {
       return { css: '', config: {} };
     }
-    return { css: template.data!.header.css, config: template.data!.header.config };
+    const pageData = (
+      this.reviewChanges() ? template.reviewTemplate?.data?.dataReview : template.data
+    ) as TemplateDataMongoI;
+    return { css: pageData.header.css, config: pageData.header.config };
   });
   readonly footerElementsConfig = computed(() => {
     const template = this.template();
     if (!template) {
       return { css: '', config: {} };
     }
-    return { css: template.data!.footer.css, config: template.data!.footer.config };
+    const pageData = (
+      this.reviewChanges() ? template.reviewTemplate?.data?.dataReview : template.data
+    ) as TemplateDataMongoI;
+    return { css: pageData.footer.css, config: pageData.footer.config };
   });
 
   /**
@@ -157,10 +174,23 @@ export class TemplatesCanvas implements AfterViewInit, OnDestroy {
       this.initialized.set(true);
       if (this.originTemplate() === null) this.originTemplate.set(structuredClone(template));
 
-      if (template.draft) {
-        this.confirmDraft();
-        return;
+      const review = template.reviewTemplate?.review;
+      const statusReview = template.reviewTemplate?.data?.statusReview;
+      if (review && statusReview !== 'rejected') {
+        this.reviewChanges.set(true);
+        this.previewMode.set(true);
       }
+
+      if (review && statusReview === 'rejected') {
+        this.reviewRejectChanges.set(true);
+        if (template.reviewTemplate?.data?.userChangesId !== this.userLogin()?.id) {
+          this.reviewChanges.set(true);
+          this.previewMode.set(true);
+          this.reviewRejectChanges.set(false);
+        }
+      }
+
+      if (template.draft) this.confirmDraft();
     });
   }
   /**
@@ -320,6 +350,7 @@ export class TemplatesCanvas implements AfterViewInit, OnDestroy {
       .update(template.id!, {
         name: template.name,
         description: template.description,
+        status: template.status,
         data,
       })
       .pipe(takeUntilDestroyed(this._destroyRef))
@@ -330,6 +361,11 @@ export class TemplatesCanvas implements AfterViewInit, OnDestroy {
             'El diseño de la plantilla se actualizó correctamente.',
             'Cambios guardados',
           );
+          this.initialized.set(false);
+          this._templateService
+            .find(template.id!)
+            .pipe(takeUntilDestroyed(this._destroyRef))
+            .subscribe();
         },
         error: (response) => {
           this.saveAction.set(false);

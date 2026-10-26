@@ -1,4 +1,5 @@
 import { PageElementsI } from '@shared/interfaces';
+import { ReviewPageI } from './page.interface';
 
 export interface TemplateI {
   id?: number;
@@ -8,6 +9,7 @@ export interface TemplateI {
   status?: boolean;
   data?: TemplateDataMongoI;
   draft?: TemplateDataMongoI | null;
+  reviewTemplate?: ReviewPageI;
 }
 
 export interface TemplateDataMongoI {

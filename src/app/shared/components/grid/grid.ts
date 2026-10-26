@@ -7,7 +7,7 @@ import {
 } from '@angular/cdk/drag-drop';
 import { NgClass, NgStyle, NgTemplateOutlet } from '@angular/common';
 import { Component, computed, effect, inject, input, OnDestroy, output } from '@angular/core';
-import { CanvasT, ReviewCommentI } from '@core/interfaces';
+import { CanvasT, PageDataMongoI, ReviewCommentI, TemplateDataMongoI } from '@core/interfaces';
 import {
   PageService,
   CanvasService,
@@ -48,7 +48,7 @@ import { ElementsComponent } from '../element/elements';
     CdkDragHandle,
     ElementsComponent,
     TooltipDirective,
-    NgTemplateOutlet
+    NgTemplateOutlet,
   ],
 })
 export class GridComponent implements OnDestroy {
@@ -98,19 +98,23 @@ export class GridComponent implements OnDestroy {
     effect(() => {
       const page = this.page();
       if (!page || !page.data || this.gridType() !== 'page') return;
-      const css = this.isInReviewMode()
-        ? page.reviewPage?.data?.dataReview!.body.css
-        : page.data.body.css;
-      this.loadStylesPages('body-dynamicStyles', page.data.body.css);
+      const pageData = (
+        this.isInReviewMode() ? page.reviewPage?.data?.dataReview : page.data
+      ) as PageDataMongoI;
+      const css = pageData.body.css;
+      this.loadStylesPages('body-dynamicStyles', css);
     });
 
     effect(() => {
       const template = this.template();
       if (!template || !template.data || this.gridType() === 'page') return;
+      const pageData = (
+        this.isInReviewMode() ? template.reviewTemplate?.data?.dataReview : template.data
+      ) as TemplateDataMongoI;
       if (this.gridType() === 'header')
-        this.loadStylesPages('header-dynamicStyles', template.data.header.css);
+        this.loadStylesPages('header-dynamicStyles', pageData.header.css);
       if (this.gridType() === 'footer')
-        this.loadStylesPages('footer-dynamicStyles', template.data.footer.css);
+        this.loadStylesPages('footer-dynamicStyles', pageData.footer.css);
     });
   }
 

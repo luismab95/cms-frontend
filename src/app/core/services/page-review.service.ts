@@ -1,6 +1,12 @@
 import { HttpClient } from '@angular/common/http';
 import { inject, Injectable, signal } from '@angular/core';
-import { PageI, PageReviewPaginationResquestI, ReviewModelI, ReviewPageDataI } from '@core/interfaces';
+import {
+  PageI,
+  PageReviewPaginationResquestI,
+  ReviewEntityI,
+  ReviewModelI,
+  ReviewPageDataI,
+} from '@core/interfaces';
 import { PaginationResponseI, ResponseI } from '@shared/interfaces';
 import { buildQueryParams, DefaultPaginationParams } from '@shared/utils';
 import { environment } from 'environments/environment';
@@ -10,7 +16,7 @@ import { Observable, of, tap } from 'rxjs';
 export class PageReviewService {
   reviewPages =
     signal<PaginationResponseI<ReviewPageDataI[]>>(DefaultPaginationParams<ReviewPageDataI[]>());
-  reviewPage = signal<PageI | null>(null);
+  reviewPage = signal<ReviewEntityI | null>(null);
 
   private readonly prefix = 'ms-cms';
   private readonly url = environment.apiUrl;
@@ -43,13 +49,13 @@ export class PageReviewService {
    * @param pageId
    * @returns
    */
-  find(pageReviewId: number): Observable<ResponseI<PageI> | null> {
+  find(pageReviewId: number): Observable<ResponseI<ReviewEntityI> | null> {
     if (pageReviewId === 0) {
       this.reviewPage.set(null);
       return of(null);
     }
     return this._httpClient
-      .get<ResponseI<PageI>>(`${this.url}/${this.prefix}/reviews/page/${pageReviewId}`)
+      .get<ResponseI<ReviewEntityI>>(`${this.url}/${this.prefix}/reviews/page/${pageReviewId}`)
       .pipe(
         tap((response) => {
           this.reviewPage.set(response.message);
@@ -63,10 +69,7 @@ export class PageReviewService {
    * @param reviewPage
    * @returns
    */
-  reviewPageContent(
-    reviewPageId: number,
-    reviewPage: ReviewModelI,
-  ): Observable<ResponseI<string>> {
+  reviewPageContent(reviewPageId: number, reviewPage: ReviewModelI): Observable<ResponseI<string>> {
     return this._httpClient.patch<ResponseI<string>>(
       `${this.url}/${this.prefix}/reviews/page/${reviewPageId}`,
       { ...reviewPage },

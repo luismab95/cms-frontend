@@ -16,7 +16,7 @@ import {
 } from '@angular/core';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { Router } from '@angular/router';
-import { NotifyI, PageReviewStatus } from '@core/interfaces';
+import { NotifyI, PageReviewStatusT } from '@core/interfaces';
 import { NotificationsService, UserService } from '@core/services';
 import { lastValueFrom } from 'rxjs';
 
@@ -31,7 +31,7 @@ export class Notifications implements OnDestroy {
   private readonly notificationsPanel = viewChild.required<TemplateRef<any>>('notificationsPanel');
 
   unreadCount = signal<number>(0);
-  filterStatus = signal<PageReviewStatus | null>(null);
+  filterStatus = signal<PageReviewStatusT | null>(null);
 
   private _overlayRef!: OverlayRef;
 
@@ -118,7 +118,7 @@ export class Notifications implements OnDestroy {
     await lastValueFrom(this._notificationsService.update(notification.id));
     this.closePanel();
 
-    const statusReview = notification.metadata['statusReview'] as PageReviewStatus;
+    const statusReview = notification.metadata['statusReview'] as PageReviewStatusT;
     const micrositieId = notification.metadata['micrositieId'] as number | null;
     const pageId = notification.metadata['pageId'] as number;
     const reviewId = notification.metadata['reviewId'] as number;
@@ -197,7 +197,7 @@ export class Notifications implements OnDestroy {
    * Filter per status review
    * @param status 
    */
-  toggleStatusReview(status:PageReviewStatus | null){
+  toggleStatusReview(status:PageReviewStatusT | null){
     this.filterStatus.set(status);
 
   }
