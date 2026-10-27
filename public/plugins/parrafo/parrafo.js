@@ -3,21 +3,29 @@ function parrafoPluginEvent(idPlugin) {
 }
 
 function loadParrafoPlugin(idPlugin) {
-    const parrafoPlugin = document.getElementById(`div-${idPlugin}`);
-    const data = JSON.parse(parrafoPlugin.getAttribute('data-properties'));
+    const plugin = document.getElementById(`div-${idPlugin}`);
+    if (!plugin) return;
 
-    const parrafo = parrafoPlugin
-        ? parrafoPlugin.querySelector('#paragraphContent')
-        : null;
+    const paragraph = plugin.querySelector('#paragraphContent');
+    if (!paragraph) return;
 
-    if (data.properties !== undefined) {
-        // Load data
-        parrafo.innerText = data.properties.text.parrafo;
+    let data;
+    try {
+        data = JSON.parse(plugin.getAttribute('data-properties') || '{}');
+    } catch (error) {
+        console.error('Configuración inválida del plugin Párrafo:', error);
+        return;
+    }
 
-        // Load class
-        parrafo.classList.add(data.properties.class);
+    const properties = data?.properties;
+    if (!properties) return;
 
-        // Load events
+    paragraph.textContent = String(properties.text?.parrafo ?? '');
+    paragraph.className = '';
 
+    if (typeof properties.class === 'string') {
+        properties.class.split(/\s+/).filter(Boolean).forEach(name => {
+            if (/^[a-zA-Z_][\w-]*$/.test(name)) paragraph.classList.add(name);
+        });
     }
 }

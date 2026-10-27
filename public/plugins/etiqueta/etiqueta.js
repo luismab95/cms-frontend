@@ -3,21 +3,29 @@ function etiquetaPluginEvent(idPlugin) {
 }
 
 function loadEtiquetaPlugin(idPlugin) {
-    const etiquetaPlugin = document.getElementById(`div-${idPlugin}`);
-    const data = JSON.parse(etiquetaPlugin.getAttribute('data-properties'));
+    const plugin = document.getElementById(`div-${idPlugin}`);
+    if (!plugin) return;
 
-    const etiqueta = etiquetaPlugin
-        ? etiquetaPlugin.querySelector('#labelContent')
-        : null;
+    const label = plugin.querySelector('#labelContent');
+    if (!label) return;
 
-    if (data.properties !== undefined) {
-        // Load data
-        etiqueta.innerText = data.properties.text.etiqueta;
+    let data;
+    try {
+        data = JSON.parse(plugin.getAttribute('data-properties') || '{}');
+    } catch (error) {
+        console.error('Configuración inválida del plugin Etiqueta:', error);
+        return;
+    }
 
-        // Load class
-        etiqueta.classList.add(data.properties.class);
+    const properties = data?.properties;
+    if (!properties) return;
 
-        // Load events
+    label.textContent = String(properties.text?.etiqueta ?? '');
+    label.className = '';
 
+    if (typeof properties.class === 'string') {
+        properties.class.split(/\s+/).filter(Boolean).forEach(name => {
+            if (/^[a-zA-Z_][\w-]*$/.test(name)) label.classList.add(name);
+        });
     }
 }
