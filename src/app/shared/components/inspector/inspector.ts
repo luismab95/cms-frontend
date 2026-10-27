@@ -37,7 +37,7 @@ import { PropertiesInspectorComponent } from './properties-inspector/properties-
   ],
 })
 export class InspectorComponent {
-  gridType = input<CanvasT>('page');
+  gridType = input.required<CanvasT>();
 
   tabsLanguages = signal<TabI[]>([]);
   tabs = signal<TabI[]>([
@@ -63,7 +63,6 @@ export class InspectorComponent {
       type: 'icon',
     },
   ]);
-  sectionsInCanvas = signal<SectionI[]>([]);
   selectedTab = signal<number>(0);
   selectedLanguage = signal<number>(0);
   inspectorCollapsed = signal<boolean>(false);
@@ -124,6 +123,7 @@ export class InspectorComponent {
     }
     return tabs;
   });
+  readonly sectionsInCanvas = computed(() => this.currentSections);
 
   /**
    * Constructor
@@ -134,7 +134,6 @@ export class InspectorComponent {
       if (selectedItemsInGrid) return;
 
       this.selectedTab.set(this.tabs()[0].id);
-      this.sectionsInCanvas.set(this.currentSections);
     });
 
     effect(() => {
@@ -417,7 +416,7 @@ export class InspectorComponent {
 
   /**
    * mutate grid
-   * @param next
+   * @param newSections
    */
   private updateCanvas(newSections: SectionI[]) {
     const previous = structuredClone(this.sectionsInCanvas());
@@ -435,6 +434,7 @@ export class InspectorComponent {
 
   /**
    * currentSections
+   * @param sections
    */
   private set currentSections(sections: SectionI[]) {
     this._canvasService.sectionsByType[this.gridType()].set(sections);
