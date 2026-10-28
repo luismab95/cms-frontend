@@ -18,7 +18,7 @@
     </div>
   }
 
-  @if (error()) {
+  @if (hasError()) {
     <div
       class="flex min-h-24 w-full flex-col items-center justify-center gap-3 rounded-xl px-4 py-6 text-center"
     >
@@ -27,10 +27,68 @@
       </div>
       <div class="space-y-1">
         <p class="text-sm font-semibold text-gray-800">Error al cargar</p>
-        <p class="text-xs text-gray-500">{{ error() }}</p>
+        <p class="text-xs text-gray-500">{{ errorMessage() }}</p>
       </div>
     </div>
   }
 
-  <div #pluginContainer class="h-auto w-full" [class.hidden]="loading() || error()"></div>
+  @if (!loading() && !hasError()) {
+    @switch (element().name) {
+      @case ('Etiqueta') {
+        <etiqueta-plugin
+          [preview]="preview()"
+          [isInReviewMode]="isInReviewMode()"
+          [element]="elementRender()!"
+          (selectElementEvent)="selectElement($event)"
+        />
+      }
+      @case ('Parrafo') {
+        <parrafo-plugin
+          [preview]="preview()"
+          [isInReviewMode]="isInReviewMode()"
+          [element]="elementRender()!"
+          (selectElementEvent)="selectElement($event)"
+        />
+      }
+      @case ('Imagen') {
+        <imagen-plugin
+          [preview]="preview()"
+          [isInReviewMode]="isInReviewMode()"
+          [element]="elementRender()!"
+          (selectElementEvent)="selectElement($event)"
+        />
+      }
+      @case ('Boton') {
+        <boton-plugin
+          [element]="elementRender()!"
+          [preview]="preview()"
+          [isInReviewMode]="isInReviewMode()"
+          (selectElementEvent)="selectElement($event)"
+        />
+      }
+      @case ('Idiomas') {
+        <idiomas-plugin
+          [element]="elementRender()!"
+          [preview]="preview()"
+          [isInReviewMode]="isInReviewMode()"
+          (selectElementEvent)="selectElement($event)"
+        />
+      }
+      @default {
+        <div
+          class="flex min-h-24 w-full flex-col items-center justify-center gap-3 rounded-xl px-4 py-6 text-center"
+        >
+          <div
+            class="flex h-10 w-10 items-center justify-center rounded-xl bg-red-100 text-red-600"
+          >
+            <i class="fa-solid fa-plug-circle-exclamation fa-beat"></i>
+          </div>
+          <div class="space-y-1">
+            <p class="text-sm font-semibold text-gray-800">No se encontro el plugin</p>
+            <p class="text-xs text-gray-500">{{ elementRender()?.name }}</p>
+          </div>
+        </div>
+      }
+    }
+  }
 </div>

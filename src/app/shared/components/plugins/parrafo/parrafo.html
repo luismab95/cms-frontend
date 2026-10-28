@@ -1,0 +1,10 @@
+<element-wrapper-component
+  [preview]="preview()"
+  [isInReviewMode]="isInReviewMode()"
+  [element]="element()"
+  (selectElementEvent)="selectElement($event)"
+>
+  <p [id]="element().uuid" [class]="element().class">
+    {{ element().text['parrafo'] }}
+  </p>
+</element-wrapper-component>

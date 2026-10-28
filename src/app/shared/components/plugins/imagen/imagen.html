@@ -1,0 +1,14 @@
+<element-wrapper-component
+  [preview]="preview()"
+  [isInReviewMode]="isInReviewMode()"
+  [element]="element()"
+  (selectElementEvent)="selectElement($event)"
+>
+  <img
+    [id]="element().uuid"
+    [class]="element().class"
+    [alt]="alt()"
+    [src]="src()"
+    (error)="src.set(fallbackUrl())"
+  />
+</element-wrapper-component>

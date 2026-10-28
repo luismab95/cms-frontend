@@ -18,6 +18,7 @@ import {
   deleteRow,
   deleteColumn,
   deleteElement,
+  findElementByUuid,
 } from '@shared/utils';
 import { PermissionComponent } from '../permission/permission';
 import { DesignInspectorComponent } from './design-inspector/design-inspector';
@@ -400,6 +401,20 @@ export class InspectorComponent {
     return (
       this.validPermission(this.permission.editDesignTemplate) ||
       this.validPermission(this.permission.editDesignPage)
+    );
+  }
+
+  /**
+   * Can delete element
+   * @returns 
+   */
+  canDeleteElement() {
+    if (this.typeItem() !== 'element') return true;
+    return (
+      findElementByUuid(
+        this.sectionsInCanvas(),
+        this._canvasService.selectedItemsInGrid()?.element?.uuid!,
+      ) !== null
     );
   }
 

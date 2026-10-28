@@ -294,37 +294,40 @@ export class PagesCanvas implements AfterViewInit, OnDestroy {
     if (page == null) return;
 
     const pageData = page.data;
-    this._pageService
-      .update(page.id!, {
-        name: page.name,
-        path: page.path,
-        data: {
-          body: {
-            data: page.data?.body.data!,
-            css: pageData!.body.css,
-            config: pageData!.body.config,
-          },
-        },
-      })
-      .pipe(takeUntilDestroyed(this._destroyRef))
-      .subscribe({
-        next: () => {
-          this.saveAction.set(false);
-          this._toastrService.success(
-            'El diseño de la página se actualizó correctamente.',
-            'Cambios guardados',
-          );
-          this.initialized.set(false);
-          this._pageService.find(page.id!).pipe(takeUntilDestroyed(this._destroyRef)).subscribe();
-        },
-        error: (response) => {
-          this.saveAction.set(false);
-          this._toastrService.error(
-            response.error?.message || 'No fue posible guardar los cambios de diseño de la página.',
-            'Error al guardar',
-          );
-        },
-      });
+    console.log(pageData);
+    return;
+    
+    // this._pageService
+    //   .update(page.id!, {
+    //     name: page.name,
+    //     path: page.path,
+    //     data: {
+    //       body: {
+    //         data: page.data?.body.data!,
+    //         css: pageData!.body.css,
+    //         config: pageData!.body.config,
+    //       },
+    //     },
+    //   })
+    //   .pipe(takeUntilDestroyed(this._destroyRef))
+    //   .subscribe({
+    //     next: () => {
+    //       this.saveAction.set(false);
+    //       this._toastrService.success(
+    //         'El diseño de la página se actualizó correctamente.',
+    //         'Cambios guardados',
+    //       );
+    //       this.initialized.set(false);
+    //       this._pageService.find(page.id!).pipe(takeUntilDestroyed(this._destroyRef)).subscribe();
+    //     },
+    //     error: (response) => {
+    //       this.saveAction.set(false);
+    //       this._toastrService.error(
+    //         response.error?.message || 'No fue posible guardar los cambios de diseño de la página.',
+    //         'Error al guardar',
+    //       );
+    //     },
+    //   });
   }
 
   /**

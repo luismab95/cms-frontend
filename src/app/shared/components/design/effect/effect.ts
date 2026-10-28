@@ -176,6 +176,7 @@ export class DesignEffectsComponent {
       }));
 
       queueMicrotask(() => {
+        if (this._destroyRef.destroyed) return;
         this.isInitializing = false;
       });
     });
@@ -189,7 +190,7 @@ export class DesignEffectsComponent {
         takeUntilDestroyed(this._destroyRef),
       )
       .subscribe((value) => {
-        if (this.isInitializing) return;
+        if (this._destroyRef.destroyed || this.isInitializing) return;
         this.updateValues.emit(value);
       });
   }
