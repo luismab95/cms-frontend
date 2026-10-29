@@ -142,4 +142,15 @@ export class ReviewDetailComponent {
   onChangeStatus(data: ActionReviewI) {
     if (data.id === 'approved') this.reviewModel.update((prev) => ({ ...prev, comment: '' }));
   }
+
+  /**
+   * Find element
+   * @param uuid
+   * @returns
+   */
+  findElement(uuid: string) {
+    const element = findElementByUuid(this.sectionsInCanvas(), uuid);
+    if (element === null) return '';
+    return element.name;
+  }
 }

@@ -163,7 +163,7 @@ export interface PositionStylesI {
 export type BoxShadowT = 'none' | 'weak' | 'medium' | 'strong' | '';
 export interface EffectsStylesI {
   opacity?: string;
-  boxShadow?: BoxShadowT;
+  boxShadow?: string;
   transform?: string;
   transition?: string;
   filter?: string;

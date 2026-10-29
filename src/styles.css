@@ -622,10 +622,15 @@ ngx-otp-input {
   border: 2px dashed var(--color-emerald-500) !important;
 }
 
+.element-editor:has(.element-editor:hover),
 .container-editor:has(.element-editor:hover),
 .section-editor:has(.element-editor:hover),
 .row-editor:has(.element-editor:hover),
 .column-editor:has(.element-editor:hover) {
+  border-color: transparent !important;
+}
+
+.element-editor:has(.element-editor:hover) {
   border-color: transparent !important;
 }
 
@@ -643,6 +648,12 @@ ngx-otp-input {
 .container-editor:has(.section-editor:hover) {
   border-color: transparent !important;
 }
+
+.element-editor:has(.element-editor:hover)>.element-badge,
+.element-editor:has(.element-editor:hover)>.element-toolbar {
+  display: none;
+}
+
 
 .container-editor:has(.element-editor:hover)>.container-title,
 .container-editor:has(.element-editor:hover)>.container-toolbar {

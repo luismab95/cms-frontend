@@ -264,11 +264,14 @@
                                   class="relative pointer-events-none"
                                 >
                                   <elements
-                                    class="w-full h-auto"
+                                    class="w-full h-100"
                                     [languageId]="languageId()!"
                                     [element]="column.element"
+                                    [preview]="preview()"
+                                    [comments]="comments()"
+                                    [isInReviewMode]="isInReviewMode()!"
+                                    (selectElementEvent)="selectElement($event)"
                                   />
-
                                   <div class="absolute inset-0 pointer-events-none z-9999"></div>
                                 </div>
                               </div>

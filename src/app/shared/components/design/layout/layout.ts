@@ -423,7 +423,7 @@ export class DesignLayoutComponent {
   value = input.required<LayoutStylesI>();
   updateValues = output<Record<string, string>>();
 
-  readonly displays: DisplayT[] = ['block', 'inline', 'flex', 'grid'];
+  readonly displays: DisplayT[] = ['block', 'inline', 'flex', 'grid', 'none'];
   readonly flexDirections: FlexDirectionT[] = ['row', 'row-reverse', 'column', 'column-reverse'];
   readonly flexWraps: FlexWrapT[] = ['nowrap', 'wrap', 'wrap-reverse'];
   readonly justifyContents: JustifyContentT[] = [
@@ -485,6 +485,7 @@ export class DesignLayoutComponent {
       }));
 
       queueMicrotask(() => {
+        if (this._destroyRef.destroyed) return;
         this.isInitializing = false;
       });
     });
@@ -498,7 +499,7 @@ export class DesignLayoutComponent {
         takeUntilDestroyed(this._destroyRef),
       )
       .subscribe((value) => {
-        if (this.isInitializing) return;
+        if (this._destroyRef.destroyed || this.isInitializing) return;
         this.updateValues.emit(value);
       });
   }

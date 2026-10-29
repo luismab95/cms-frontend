@@ -143,6 +143,7 @@ export class DesignBorderComponent {
       this.border.update((current) => ({ ...current, ...value }));
 
       queueMicrotask(() => {
+        if (this._destroyRef.destroyed) return;
         this.isInitializing = false;
       });
     });
@@ -156,7 +157,7 @@ export class DesignBorderComponent {
         takeUntilDestroyed(this._destroyRef),
       )
       .subscribe((value) => {
-        if (this.isInitializing) return;
+        if (this._destroyRef.destroyed || this.isInitializing) return;
         this.updateValues.emit(value);
       });
   }

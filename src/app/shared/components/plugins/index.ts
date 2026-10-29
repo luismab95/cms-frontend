@@ -1,0 +1,6 @@
+export * from './etiqueta/etiqueta'
+export * from './parrafo/parrafo'
+export * from './imagen/imagen'
+export * from './boton/boton'
+export * from './idiomas/idiomas'
+export * from './tarjeta/tarjeta'

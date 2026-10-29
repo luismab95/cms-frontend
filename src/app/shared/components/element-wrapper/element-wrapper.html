@@ -1,0 +1,82 @@
+<div
+  [ngClass]="{
+    'border border-dashed border-emerald-300 rounded-lg p-2': !preview() && !isInReviewMode(),
+  }"
+  class="relative element-editor"
+>
+  @if (!preview()) {
+    <div
+      class="element-badge absolute -top-3 left-3 bg-emerald-700 text-white text-[10px] px-2 py-0.5 rounded-full hidden items-center gap-1 z-50"
+    >
+      <i class="fa-solid fa-grip-vertical"></i>
+      <span>
+        {{ element().name }}
+        ({{ element().uuid }})
+      </span>
+    </div>
+
+    <div
+      class="element-toolbar absolute -top-3.5 right-4 hidden items-center bg-white border border-slate-200 rounded-md shadow-sm z-50"
+    >
+      <button
+        (click)="selectElement()"
+        class="cursor-pointer bg-white text-slate-800 text-[11px] font-semibold px-2.5 py-1 rounded shadow-md hover:bg-slate-50 flex items-center gap-1"
+        appTooltip="Configurar Elemento {{ element().name }}"
+      >
+        <i class="fa-solid fa-sliders text-slate-600"></i>
+      </button>
+    </div>
+
+
+    @if (hasComment(element().uuid) && rejectedChanges()) {
+      <ng-container
+        *ngTemplateOutlet="
+          commentReview;
+          context: {
+            uuid: element().uuid,
+          }
+        "
+      />
+    }
+  }
+
+  <div
+    [ngClass]="{
+      'pointer-events-auto!': preview(),
+      'pointer-events-none!': isInReviewMode(),
+    }"
+    class="relative"
+  >
+    <ng-content />
+  </div>
+  @if (!preview() && selectedItemsInGrid()?.element?.uuid === element().uuid && !isInReviewMode()) {
+    <div class="absolute inset-0 ring-2 ring-emerald-500 rounded-lg pointer-events-none z-40"></div>
+  }
+</div>
+
+<ng-template #commentReview let-uuid="uuid">
+  <div class="w-full min-h-0 rounded-xl border border-rose-200/80 bg-white p-3 my-2">
+    <div class="mb-2 flex items-center justify-between gap-2">
+      <div class="flex min-w-0 items-center gap-2">
+        <div
+          class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-rose-100 text-rose-600"
+        >
+          <i class="fa-solid fa-clipboard-check text-sm"></i>
+        </div>
+        <div class="min-w-0">
+          <span class="block text-xs font-semibold text-rose-800"> Observación de revisión </span>
+          <span class="block text-[10px] text-rose-500"> Comentario del revisor </span>
+        </div>
+      </div>
+    </div>
+    <div class="mb-2 border-t border-indigo-100"></div>
+    <div
+      class="flex items-start gap-2 rounded-lg border border-rose-100/80 bg-rose-50/70 px-2.5 py-2 text-xs leading-relaxed text-slate-700"
+    >
+      <i class="fa-solid fa-comment-dots mt-0.5 shrink-0 text-rose-500"></i>
+      <p class="italic tracking-wide">
+        {{ findComment(uuid) }}
+      </p>
+    </div>
+  </div>
+</ng-template>

@@ -7,6 +7,7 @@ import {
   ElementI,
   PageElementsConfigI,
   ElementCMSI,
+  ElementChildrenSchemaI,
 } from '@shared/interfaces';
 import { generateRandomString } from './random.utils';
 
@@ -69,13 +70,26 @@ export function updateElement(
   elementUuid: string,
   updatedElement: ElementI,
 ): SectionI[] {
+  const updateChildren = (element: ElementI): ElementI => {
+    if (element.uuid === elementUuid) {
+      return {
+        ...updatedElement,
+      };
+    }
+
+    return {
+      ...element,
+      childrens: element.childrens?.map(updateChildren) ?? [],
+    };
+  };
+
   return sections.map((section) => ({
     ...section,
     rows: section.rows.map((row) => ({
       ...row,
       columns: row.columns.map((column) => ({
         ...column,
-        element: column.element?.uuid === elementUuid ? { ...updatedElement } : column.element,
+        element: column.element ? updateChildren(column.element) : column.element,
       })),
     })),
   }));
@@ -184,13 +198,36 @@ export const createPageConfig = (type: CanvasT): PageElementsConfigI => {
 
 export const createElement = (elementSelected: ElementCMSI): ElementI => {
   const elementUuid = generateRandomString(8);
+  const isComposite = elementSelected.kind === 'composite';
+  const childrenSchema: ElementChildrenSchemaI[] = [];
+  const childrens = isComposite
+    ? (elementSelected.childrens?.map((child) => {
+        const element = createElement(child);
+        const schema = elementSelected.childrenSchema?.find(
+          (schema) => schema.elementId === child.id,
+        );
+        if (schema) {
+          childrenSchema.push({
+            uuid: element.uuid,
+            slot: schema.slot,
+          });
+        }
+
+        return element;
+      }) ?? [])
+    : [];
+
   return {
     uuid: elementUuid,
-    css: `.${elementSelected.css}-${elementUuid}{\n display: block;\n  width: 100%;\n  height: auto;\n  min-height: 40px;\n  padding: 10px;\n  padding-top: 10px;\n  padding-right: 10px;\n  padding-bottom: 10px;\n  padding-left: 10px;\n}`,
+    code: elementSelected.code,
+    css: `.${elementSelected.css}-${elementUuid}${elementSelected.style}`,
     config: elementSelected.config,
     name: elementSelected.name,
     text: elementSelected.text,
     dataText: [],
+    childrens,
+    childrenSchema,
+    kind: elementSelected.kind,
   };
 };
 

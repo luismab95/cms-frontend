@@ -34,3 +34,5 @@ export * from './disabled-canvas/disabled-canvas';
 export * from './roles-permissions/roles-permissions';
 export * from './initializer/initializer';
 export * from './grid-review/grid-review';
+export * from './element-wrapper/element-wrapper';
+export * from './plugins';

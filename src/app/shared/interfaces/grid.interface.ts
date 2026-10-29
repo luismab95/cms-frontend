@@ -1,5 +1,5 @@
 import { CanvasT } from '@core/interfaces';
-import { ElementDataI } from './element.interface';
+import { ChildrenSchemaI, ElementCMSI, ElementDataI, ElementKindT } from './element.interface';
 
 export interface SelectedItemsInGridI {
   page: PageElementsConfigI | null;
@@ -20,13 +20,23 @@ export interface PageElementsI extends PageElementsConfigI {
   title?: string;
 }
 
+export interface ElementChildrenSchemaI {
+  slot: string;
+  uuid: string;
+}
+
+
 export interface ElementI {
   uuid: string;
+  code: string;
   name: string;
   css: string;
   config: { [key: string]: any };
   text: { [key: string]: any };
   dataText?: ElementDataI[];
+  kind: ElementKindT;
+  childrens: ElementI[];
+  childrenSchema: ElementChildrenSchemaI[];
 }
 
 export interface ColumnI {
@@ -60,4 +70,3 @@ export interface HistoryChangeI {
   previous: HistoryCMSI;
   next: HistoryCMSI;
 }
-

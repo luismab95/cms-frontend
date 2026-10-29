@@ -1,55 +1,70 @@
 import { HttpClient } from '@angular/common/http';
 import {
-  AfterViewInit,
   Component,
-  ElementRef,
   effect,
   inject,
   input,
-  OnDestroy,
   signal,
-  viewChild,
+  untracked,
+  computed,
+  OnDestroy,
+  output,
 } from '@angular/core';
-import { ParameterService, PluginLoaderService } from '@core/services';
-import { ElementI } from '@shared/interfaces';
-import { findParameter } from '@shared/utils';
+import { NgTemplateOutlet } from '@angular/common';
+import { DynamicStyleService, ParameterService, PluginLoaderService } from '@core/services';
+import { ElementI, PluginDataI, PluginPropertiesI } from '@shared/interfaces';
+import { ElementCode, findParameter } from '@shared/utils';
+import {
+  EtiquetaPlugin,
+  ParrafoPlugin,
+  ImagenPlugin,
+  BotonPlugin,
+  IdiomasPlugin,
+  TarjetaPlugin,
+} from '@shared/components/plugins';
 import { environment } from 'environments/environment';
 import { lastValueFrom } from 'rxjs';
-
-type PluginEvent = (uuid: string) => void;
-
-declare global {
-  interface Window {
-    [key: `${string}PluginEvent`]: PluginEvent;
-  }
-}
+import { ReviewCommentI } from '@core/interfaces';
 
 @Component({
   selector: 'elements',
-  standalone: true,
   templateUrl: './elements.html',
+  imports: [
+    EtiquetaPlugin,
+    ParrafoPlugin,
+    ImagenPlugin,
+    BotonPlugin,
+    IdiomasPlugin,
+    TarjetaPlugin,
+    NgTemplateOutlet,
+  ],
 })
-export class ElementsComponent implements AfterViewInit, OnDestroy {
-  private readonly pluginContainer =
-    viewChild.required<ElementRef<HTMLDivElement>>('pluginContainer');
-
+export class ElementsComponent implements OnDestroy {
   readonly element = input.required<ElementI>();
   readonly languageId = input.required<number>();
+  readonly preview = input.required<boolean>();
+  readonly isInReviewMode = input.required<boolean>();
+  readonly comments = input.required<ReviewCommentI[]>();
+  readonly selectElementEvent = output<ElementI>();
 
-  readonly loading = signal(true);
-  readonly error = signal<string | null>(null);
-  readonly urlStatics = signal('');
+  readonly loading = signal<boolean>(true);
+  readonly hasError = signal<boolean>(false);
+  readonly elementRender = signal<PluginPropertiesI | null>(null);
+  readonly errorMessage = signal<string>('');
 
-  private readonly http = inject(HttpClient);
-  private readonly parameterService = inject(ParameterService);
-  private readonly pluginLoader = inject(PluginLoaderService);
+  private readonly _parameterService = inject(ParameterService);
+  private readonly _dynamicStyleService = inject(DynamicStyleService);
+  private readonly _pluginLoaderService = inject(PluginLoaderService);
+  private readonly _httpClient = inject(HttpClient);
 
-  readonly parameters = this.parameterService.publicParameters;
+  readonly parameters = this._parameterService.publicParameters;
+  readonly cache = this._pluginLoaderService.cache;
+  readonly pendingRequests = this._pluginLoaderService.pendingRequests;
+  readonly elementsCode = ElementCode;
 
-  private destroyed = false;
-  private initialized = false;
-  private previousPluginState: string | null = null;
-  private pluginVersion = 0;
+  readonly urlStatics = computed(
+    () => findParameter('APP_STATICS_URL', this.parameters())?.value ?? '',
+  );
 
   /**
    * Constructor
@@ -58,42 +73,47 @@ export class ElementsComponent implements AfterViewInit, OnDestroy {
     effect(() => {
       const element = this.element();
       const languageId = this.languageId();
-      if (!this.initialized || this.destroyed) return;
-
-      const pluginState = JSON.stringify({
-        uuid: element.uuid,
-        name: element.name,
-        config: element.config,
-        text: element.text,
-        css: element.css,
-        dataText: element.dataText,
-        languageId,
-      });
-      if (pluginState === this.previousPluginState) return;
-
-      this.previousPluginState = pluginState;
       this.reloadPlugin(element, languageId);
+      untracked(() => {});
     });
-  }
-
-  /**
-   * AfterViewInit
-   */
-  async ngAfterViewInit(): Promise<void> {
-    this.initialized = true;
-    await this.reloadPlugin(this.element(), this.languageId());
   }
 
   /**
    * OnDestroy
    */
   ngOnDestroy(): void {
-    this.destroyed = true;
-    this.pluginVersion++;
-    this.destroyPluginStyles();
-    this.pluginContainer().nativeElement.replaceChildren();
+    this._dynamicStyleService.remove(`pluign-style-${this.element().uuid}`);
+    if (this.element().kind === 'composite') {
+      this.element().childrens.forEach((children) => {
+        this._dynamicStyleService.remove(`pluign-style-${children.uuid}`);
+      });
+    }
   }
 
+  /**
+   * Emit event to select
+   * @param uuid
+   */
+  selectElement(uuid: string): void {
+    const element = this.element();
+    if (element.uuid === uuid) {
+      this.selectElementEvent.emit(element);
+      return;
+    }
+
+    const findElement = (childrens: ElementI[]): ElementI | undefined => {
+      for (const child of childrens) {
+        if (child.uuid === uuid) return child;
+        const found = findElement(child.childrens ?? []);
+        if (found) return found;
+      }
+      return undefined;
+    };
+
+    const foundElement = findElement(element.childrens ?? []);
+    if (!foundElement) return;
+    this.selectElementEvent.emit(foundElement);
+  }
   /**
    * Reload plugin
    * @param element
@@ -101,86 +121,82 @@ export class ElementsComponent implements AfterViewInit, OnDestroy {
    * @returns
    */
   private async reloadPlugin(element: ElementI, languageId: number): Promise<void> {
-    const version = ++this.pluginVersion;
-    this.loading.set(true);
-    this.error.set(null);
-
     try {
-      const pluginName = element.name.toLowerCase();
-      const parameters = this.parameters();
-
-      this.urlStatics.set(findParameter('APP_STATICS_URL', parameters)?.value ?? '');
-      const componentText = this.getComponentText(element, languageId);
-
-      let dataService: unknown = null;
-      if ('service' in element.config)
-        dataService = await this.loadData(`${environment.apiUrl}${element.config['service']}`);
-
-      if (this.destroyed || version !== this.pluginVersion) return;
-
-      if ('custom-service' in element.config)
-        dataService = await this.loadData(element.config['custom-service']);
-
-      if (this.destroyed || version !== this.pluginVersion) return;
-
-      const html = await this.loadHTMLFile(`/plugins/${pluginName}/${pluginName}.html`);
-
-      if (!html || this.destroyed || version !== this.pluginVersion) return;
-
-      const div = document.createElement('div');
-      div.id = `div-${element.uuid}`;
-      div.style.width = '100%';
-      div.style.height = 'auto';
-
-      const properties = {
-        properties: {
-          config: element.config,
-          text: componentText,
-          uuid: element.uuid,
-          class: this.getClassName(element.css),
-          data: dataService,
-          lang:
-            window.location.pathname.split('/')[1].length == 2
-              ? window.location.pathname.split('/')[1]
-              : 'es',
-          urlStatics: this.urlStatics(),
-        },
-      };
-
-      div.setAttribute('data-properties', JSON.stringify(properties));
-      div.innerHTML = html;
-      if (this.destroyed || version !== this.pluginVersion) return;
-
-      this.pluginContainer().nativeElement.replaceChildren(div);
-
-      await this.pluginLoader.load(`/plugins/${pluginName}/${pluginName}.js`, pluginName);
-      if (this.destroyed || version !== this.pluginVersion) return;
-
-      this.handleScriptLoaded(pluginName, element.uuid);
-      if (this.destroyed || version !== this.pluginVersion) return;
-
+      const elementRender = await this.buildElementRender(element, languageId, element.name);
+      this.elementRender.set(elementRender);
+      this._dynamicStyleService.set(`pluign-style-${this.element().uuid}`, this.element().css);
+      this.hasError.set(false);
+      this.errorMessage.set('');
       this.loading.set(false);
     } catch (error) {
-      if (this.destroyed || version !== this.pluginVersion) return;
-      this.error.set('No se pudo cargar el plugin ' + element.name);
+      this.hasError.set(true);
+      this.errorMessage.set('No se pudo cargar el plugin ' + element.name);
       this.loading.set(false);
     }
   }
 
   /**
-   * Get component text
+   * Build properties of element render
    * @param element
    * @param languageId
    * @returns
    */
-  private getComponentText(element: ElementI, languageId: number): unknown {
-    if (!element.dataText?.length) return element.text;
+  async buildElementRender(
+    element: ElementI,
+    languageId: number,
+    slot: string,
+  ): Promise<PluginPropertiesI> {
+    const componentText = this.getComponentText(element, languageId);
 
-    const translation = element.dataText.find((item) => Number(item['languageId']) === languageId);
-    if (!translation) return element.text;
+    const dataServices: PluginDataI = {
+      service: null,
+      customService: null,
+    };
 
-    const { languageId: _languageId, ...rest } = translation;
-    return rest;
+    if ('service' in element.config) {
+      dataServices.service = await this.loadData(
+        `${environment.apiUrl}${element.config['service']}`,
+      );
+    }
+
+    if ('custom-service' in element.config) {
+      dataServices.customService = await this.loadData(element.config['custom-service']);
+    }
+
+    const children = await Promise.all(
+      (element.childrens ?? []).map((child) => {
+        const slotChildren = element.childrenSchema.find((schema) => schema.uuid === child.uuid);
+        return this.buildElementRender(child, languageId, slotChildren?.slot!);
+      }),
+    );
+    this.loadStyles(element);
+
+    return {
+      config: element.config,
+      text: componentText,
+      uuid: element.uuid,
+      name: element.name,
+      kind: element.kind,
+      dataServices,
+      class: this.getClassName(element.css),
+      styles: element.css,
+      lang:
+        window.location.pathname.split('/')[1]?.length === 2
+          ? window.location.pathname.split('/')[1]
+          : 'es',
+      urlStatics: this.urlStatics(),
+      slot,
+      children,
+    };
+  }
+
+  /**
+   * Load elements styles
+   * @param element
+   */
+  private loadStyles(element: ElementI) {
+    this._dynamicStyleService.remove(`pluign-style-${element.uuid}`);
+    this._dynamicStyleService.set(`pluign-style-${element.uuid}`, element.css);
   }
 
   /**
@@ -194,61 +210,43 @@ export class ElementsComponent implements AfterViewInit, OnDestroy {
   }
 
   /**
+   * Get component text
+   * @param element
+   * @param languageId
+   * @returns
+   */
+  private getComponentText(element: ElementI, languageId: number): { [key: string]: any } {
+    if (!element.dataText?.length) return element.text;
+
+    const translation = element.dataText.find((item) => Number(item['languageId']) === languageId);
+    if (!translation) return element.text;
+
+    const { languageId: _languageId, ...rest } = translation;
+    return rest;
+  }
+
+  /**
    * Load data
    * @param url
    * @returns
    */
-  private async loadData(url: string): Promise<unknown> {
+  private async loadData(url: string): Promise<any> {
+    if (this.cache.has(url)) return this.cache.get(url);
+
+    const pending = this.pendingRequests.get(url);
+    if (pending) return pending;
+
     try {
-      return await lastValueFrom(this.http.get(url));
+      const request = lastValueFrom(this._httpClient.get(url));
+      this.pendingRequests.set(url, request);
+      const data = await request;
+      this.cache.set(url, data);
+      return data;
     } catch (error) {
       console.error(`Error obteniendo datos desde ${url}`, error);
       return null;
+    } finally {
+      this.pendingRequests.delete(url);
     }
-  }
-
-  /**
-   * Load HTML File
-   * @param filePath
-   * @returns
-   */
-  private async loadHTMLFile(filePath: string): Promise<string | null> {
-    try {
-      return await lastValueFrom(
-        this.http.get(filePath, {
-          responseType: 'text',
-        }),
-      );
-    } catch (error) {
-      console.error(`Error cargando HTML: ${filePath}`, error);
-      return null;
-    }
-  }
-
-  /**
-   * Handle ScriptLoaded
-   * @param pluginName
-   * @param uuid
-   */
-  private handleScriptLoaded(pluginName: string, uuid: string): void {
-    const eventName = `${pluginName}PluginEvent` as `${string}PluginEvent`;
-    const event = window[eventName];
-
-    if (typeof event === 'function') {
-      event(uuid);
-    } else {
-      console.error(`No existe ${eventName}`);
-    }
-  }
-
-  /**
-   * Destroy plugin styles
-   * @returns
-   */
-  private destroyPluginStyles(): void {
-    const uuid = this.element()?.uuid;
-    if (!uuid) return;
-    const style = document.getElementById(`style-${uuid}`);
-    style?.remove();
   }
 }

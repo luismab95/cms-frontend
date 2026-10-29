@@ -1,0 +1,11 @@
+<element-wrapper-component
+  [preview]="preview()"
+  [isInReviewMode]="isInReviewMode()"
+  [element]="element()"
+  [comments]="comments()"
+  (selectElementEvent)="selectElement($event)"
+>
+  <label [id]="element().uuid" [class]="element().class">
+    {{ element().text['etiqueta'] }}
+  </label>
+</element-wrapper-component>

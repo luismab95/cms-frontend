@@ -179,6 +179,7 @@ export class TemplatesCanvas implements AfterViewInit, OnDestroy {
       if (review && statusReview !== 'rejected') {
         this.reviewChanges.set(true);
         this.previewMode.set(true);
+        this.reviewRejectChanges.set(false);
       }
 
       if (review && statusReview === 'rejected') {
@@ -347,25 +348,25 @@ export class TemplatesCanvas implements AfterViewInit, OnDestroy {
     };
 
     this._templateService
-      .update(template.id!, {
-        name: template.name,
-        description: template.description,
-        status: template.status,
-        data,
-      })
+      .update(
+        template.id!,
+        {
+          name: template.name,
+          description: template.description,
+          status: template.status,
+          data,
+        },
+        true,
+      )
       .pipe(takeUntilDestroyed(this._destroyRef))
       .subscribe({
         next: () => {
-          this.saveAction.set(false);
           this._toastrService.success(
             'El diseño de la plantilla se actualizó correctamente.',
             'Cambios guardados',
           );
           this.initialized.set(false);
-          this._templateService
-            .find(template.id!)
-            .pipe(takeUntilDestroyed(this._destroyRef))
-            .subscribe();
+          this.saveAction.set(false);
         },
         error: (response) => {
           this.saveAction.set(false);

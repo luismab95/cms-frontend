@@ -40,7 +40,7 @@ export class TemplateService {
    * @param templateId
    * @returns
    */
-  find(templateId: number): Observable<ResponseI<TemplateI> | null> {
+  find(templateId: number, replace: boolean = true): Observable<ResponseI<TemplateI> | null> {
     if (templateId === 0) {
       this.template.set(null);
       return of(null);
@@ -50,7 +50,7 @@ export class TemplateService {
       .pipe(
         tap((response) => {
           const template = response.message;
-          if (template.reviewTemplate?.review) {
+          if (template.reviewTemplate?.review && replace) {
             template.data = template.reviewTemplate.data?.dataReview as TemplateDataMongoI;
           }
           this.template.set(template);
@@ -108,7 +108,11 @@ export class TemplateService {
       .delete<ResponseI<TemplateI>>(`${this.url}/${this.prefix}/templates/draft/${templateId}`)
       .pipe(
         tap((response) => {
-          this.template.set(response.message);
+          const template = response.message;
+          if (template.reviewTemplate?.review) {
+            template.data = template.reviewTemplate.data?.dataReview as TemplateDataMongoI;
+          }
+          this.template.set(template);
         }),
       );
   }
@@ -119,14 +123,22 @@ export class TemplateService {
    * @param template
    * @returns
    */
-  update(templateId: number, template: TemplateI): Observable<ResponseI<TemplateI>> {
+  update(
+    templateId: number,
+    template: TemplateI,
+    replace: boolean,
+  ): Observable<ResponseI<TemplateI>> {
     return this._httpClient
       .patch<ResponseI<TemplateI>>(`${this.url}/${this.prefix}/templates/${templateId}`, {
         ...template,
       })
       .pipe(
         tap((response) => {
-          this.template.set(response.message);
+          const template = response.message;
+          if (template.reviewTemplate?.review && replace) {
+            template.data = template.reviewTemplate.data?.dataReview as TemplateDataMongoI;
+          }
+          this.template.set(template);
         }),
       );
   }

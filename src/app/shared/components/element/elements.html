@@ -18,19 +18,101 @@
     </div>
   }
 
-  @if (error()) {
-    <div
-      class="flex min-h-24 w-full flex-col items-center justify-center gap-3 rounded-xl px-4 py-6 text-center"
-    >
-      <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-red-100 text-red-600">
-        <i class="fa-solid fa-plug-circle-xmark fa-beat"></i>
-      </div>
-      <div class="space-y-1">
-        <p class="text-sm font-semibold text-gray-800">Error al cargar</p>
-        <p class="text-xs text-gray-500">{{ error() }}</p>
-      </div>
-    </div>
+  @if (hasError()) {
+    <ng-container
+      *ngTemplateOutlet="
+        errorPanel;
+        context: {
+          icon: 'fa-solid fa-plug-circle-xmark fa-beat',
+          name: errorMessage(),
+          message: 'Error al cargar',
+        }
+      "
+    />
   }
 
-  <div #pluginContainer class="h-auto w-full" [class.hidden]="loading() || error()"></div>
+  @if (!loading() && !hasError()) {
+    @switch (element().code) {
+      @case (elementsCode.label) {
+        <etiqueta-plugin
+          [preview]="preview()"
+          [isInReviewMode]="isInReviewMode()"
+          [element]="elementRender()!"
+          [comments]="comments()"
+          (selectElementEvent)="selectElement($event)"
+        />
+      }
+      @case (elementsCode.paragraph) {
+        <parrafo-plugin
+          [preview]="preview()"
+          [isInReviewMode]="isInReviewMode()"
+          [element]="elementRender()!"
+          [comments]="comments()"
+          (selectElementEvent)="selectElement($event)"
+        />
+      }
+      @case (elementsCode.image) {
+        <imagen-plugin
+          [preview]="preview()"
+          [isInReviewMode]="isInReviewMode()"
+          [element]="elementRender()!"
+          [comments]="comments()"
+          (selectElementEvent)="selectElement($event)"
+        />
+      }
+      @case (elementsCode.button) {
+        <boton-plugin
+          [element]="elementRender()!"
+          [preview]="preview()"
+          [comments]="comments()"
+          [isInReviewMode]="isInReviewMode()"
+          (selectElementEvent)="selectElement($event)"
+        />
+      }
+      @case (elementsCode.language) {
+        <idiomas-plugin
+          [element]="elementRender()!"
+          [preview]="preview()"
+          [comments]="comments()"
+          [isInReviewMode]="isInReviewMode()"
+          (selectElementEvent)="selectElement($event)"
+        />
+      }
+      @case (elementsCode.card) {
+        <tarjeta-plugin
+          [element]="elementRender()!"
+          [preview]="preview()"
+          [comments]="comments()"
+          [isInReviewMode]="isInReviewMode()"
+          (selectElementEvent)="selectElement($event)"
+        />
+      }
+      @default {
+        <ng-container
+          *ngTemplateOutlet="
+            errorPanel;
+            context: {
+              icon: 'fa-solid fa-plug-circle-exclamation fa-beat',
+              name: elementRender()?.name,
+              message: 'No se encontro el plugin',
+            }
+          "
+        />
+      }
+    }
+  }
 </div>
+
+<ng-template #errorPanel let-icon="icon" let-name="name" let-message="message">
+  <div
+    class="flex min-h-24 w-full flex-col items-center justify-center gap-3 rounded-xl px-4 py-6 text-center"
+  >
+    <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-red-100 text-red-600">
+      <i [class]="icon"></i>
+    </div>
+    <div class="space-y-1">
+      <p class="text-sm font-semibold text-gray-800">{{ message }}</p>
+      <p class="text-xs text-gray-500">{{ name }}</p>
+    </div>
+  </div>
+</ng-template>

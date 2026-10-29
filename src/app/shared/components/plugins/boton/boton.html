@@ -1,0 +1,28 @@
+<element-wrapper-component
+  [preview]="preview()"
+  [isInReviewMode]="isInReviewMode()"
+  [element]="element()"
+  [comments]="comments()"
+  (selectElementEvent)="selectElement($event)"
+>
+  <div
+    style="display: flex; align-items: center; justify-content: center; width: 100%; height: 100%"
+  >
+    <button (click)="actionEvent()" [id]="element().uuid" [class]="element().class" type="button">
+      <imagen-plugin
+        [element]="imageElement()!"
+        [preview]="preview()"
+        [isInReviewMode]="isInReviewMode()"
+        [comments]="comments()"
+        (selectElementEvent)="selectElement($event)"
+      />
+      <etiqueta-plugin
+        [element]="labelElement()!"
+        [preview]="preview()"
+        [isInReviewMode]="isInReviewMode()"
+        [comments]="comments()"
+        (selectElementEvent)="selectElement($event)"
+      />
+    </button>
+  </div>
+</element-wrapper-component>

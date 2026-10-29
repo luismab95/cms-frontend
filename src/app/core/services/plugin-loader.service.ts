@@ -1,48 +1,57 @@
-import { Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { inject, Injectable } from '@angular/core';
+import { lastValueFrom } from 'rxjs';
 
 @Injectable({
   providedIn: 'root',
 })
 export class PluginLoaderService {
-  private readonly scripts = new Map<string, Promise<void>>();
+  readonly cache = new Map<string, any>();
+  readonly pendingRequests = new Map<string, Promise<any>>();
+
+  private readonly _httpClient = inject(HttpClient);
 
   /**
-   * Load a plugin script dynamically
-   * @param src
-   * @param pluginName
+   * Load data with cache
+   * @param url
    * @returns
    */
-  load(src: string, pluginName: string): Promise<void> {
-    const existing = this.scripts.get(pluginName);
-
-    if (existing) return existing;
-
-    const scriptId = `js-${pluginName}`;
-    const existingScript = document.getElementById(scriptId);
-    if (existingScript) {
-      const promise = Promise.resolve();
-      this.scripts.set(pluginName, promise);
-      return promise;
+  private async loadData(url: string): Promise<any> {
+    if (this.cache.has(url)) {
+      return this.cache.get(url);
     }
 
-    const promise = new Promise<void>((resolve, reject) => {
-      const script = document.createElement('script');
-      script.id = scriptId;
-      script.src = src;
-      script.type = 'text/javascript';
-      script.async = true;
-      script.onload = () => {
-        resolve();
-      };
+    const pendingRequest = this.pendingRequests.get(url);
+    if (pendingRequest) return pendingRequest;
 
-      script.onerror = () => {
-        this.scripts.delete(pluginName);
-        reject(new Error(`Error al cargar el plugin: ${pluginName}`));
-      };
-      document.body.appendChild(script);
-    });
+    const request = lastValueFrom(this._httpClient.get(url))
+      .then((data) => {
+        this.cache.set(url, data);
+        return data;
+      })
+      .catch((error) => {
+        console.error(`Error obteniendo datos desde ${url}`, error);
+        return null;
+      })
+      .finally(() => {
+        this.pendingRequests.delete(url);
+      });
 
-    this.scripts.set(pluginName, promise);
-    return promise;
+    this.pendingRequests.set(url, request);
+
+    return request;
+  }
+
+  /**
+   * Clear cache
+   * @param url Opcional: URL específica
+   */
+  clearCache(url?: string): void {
+    if (url) {
+      this.cache.delete(url);
+      return;
+    }
+
+    this.cache.clear();
   }
 }
