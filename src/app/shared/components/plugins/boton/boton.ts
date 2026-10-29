@@ -4,6 +4,7 @@ import { ImagenPlugin } from '../imagen/imagen';
 import { CanvasService } from '@core/services';
 import { PluginPropertiesI } from '@shared/interfaces';
 import { ElementWrappeComponent } from '@shared/components/element-wrapper/element-wrapper';
+import { ReviewCommentI } from '@core/interfaces';
 
 @Component({
   selector: 'boton-plugin',
@@ -14,6 +15,7 @@ export class BotonPlugin {
   element = input.required<PluginPropertiesI>();
   preview = input.required<boolean>();
   isInReviewMode = input.required<boolean>();
+  comments = input.required<ReviewCommentI[]>();
   selectElementEvent = output<string>();
 
   private readonly _canvasService = inject(CanvasService);
@@ -48,7 +50,7 @@ export class BotonPlugin {
    * action event
    */
   actionEvent() {
-    if(!this.preview()) return;
+    if (!this.preview()) return;
     window.open(this.element().config['goTo'], this.element().config['target']);
   }
 }

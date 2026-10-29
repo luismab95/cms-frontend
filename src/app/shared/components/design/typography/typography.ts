@@ -67,7 +67,7 @@ import { debounceTime, distinctUntilChanged } from 'rxjs';
               [formField]="typographyForm.fontWeight"
               class="w-full border border-slate-200 rounded py-0.5 px-2 text-xs text-slate-700 bg-white focus:ring-0 focus:outline-none focus:shadow-xs"
             >
-              <option [value]="300">300 (NormaL)</option>
+              <option [value]="300">300 (Normal)</option>
               <option [value]="400">400 (Regular)</option>
               <option [value]="500">500 (Medium)</option>
               <option [value]="600">600 (Semibold)</option>

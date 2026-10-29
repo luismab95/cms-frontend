@@ -155,6 +155,5 @@ export class MicrositieList {
    */
   onChangeStatus(status: boolean | null) {
     this.tableSearchModel.update((prev) => ({ ...prev, status }));
-    this.onPageChange(1);
   }
 }

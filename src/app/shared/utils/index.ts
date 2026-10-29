@@ -9,3 +9,4 @@ export * from './random.utils';
 export * from './storage.util';
 export * from './validators.util';
 export * from './service.utils';
+export * from './element.utils';

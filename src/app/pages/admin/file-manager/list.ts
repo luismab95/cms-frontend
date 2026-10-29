@@ -9,7 +9,7 @@ import { PaginationComponent, PermissionComponent, TitleHeaderComponent } from '
 import { PermissionCode, validAction } from '@shared/utils';
 import { TableSearchI } from '@shared/interfaces';
 import { FileManagerDetailsComponent } from './details/details';
-import {  debounceTime } from 'rxjs';
+import { debounceTime } from 'rxjs';
 
 @Component({
   selector: 'files-list',
@@ -155,7 +155,6 @@ export class FileManagerList {
    */
   onChangeStatus(status: boolean | null) {
     this.tableSearchModel.update((prev) => ({ ...prev, status }));
-    this.onPageChange(1);
   }
 
   /**

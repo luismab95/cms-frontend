@@ -167,7 +167,7 @@ export class TemplatesInformationComponent implements AfterViewInit {
         const updateTemplate = { name, description, status } as TemplateI;
         await firstValueFrom(
           this._templateService
-            .update(template.id!, updateTemplate)
+            .update(template.id!, updateTemplate, false)
             .pipe(takeUntilDestroyed(this._destroyRef)),
         );
         this._toastrService.success(

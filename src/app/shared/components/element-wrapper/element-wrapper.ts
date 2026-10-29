@@ -1,8 +1,9 @@
-import { Component, inject, input, output } from '@angular/core';
+import { Component, computed, inject, input, output } from '@angular/core';
 import { NgClass, NgTemplateOutlet } from '@angular/common';
-import { CanvasService } from '@core/services';
+import { CanvasService, PageService, TemplateService } from '@core/services';
 import { PluginPropertiesI } from '@shared/interfaces';
 import { TooltipDirective } from '@shared/directives';
+import { ReviewCommentI } from '@core/interfaces';
 
 @Component({
   selector: 'element-wrapper-component',
@@ -13,23 +14,41 @@ export class ElementWrappeComponent {
   element = input.required<PluginPropertiesI>();
   preview = input.required<boolean>();
   isInReviewMode = input.required<boolean>();
+  comments = input.required<ReviewCommentI[]>();
   selectElementEvent = output<string>();
 
   private readonly _canvasService = inject(CanvasService);
+  private readonly _templateService = inject(TemplateService);
+  private readonly _pageService = inject(PageService);
+
   readonly selectedItemsInGrid = this._canvasService.selectedItemsInGrid;
 
-  /**
-   * Constructor
-   */
-  constructor() {}
+  readonly rejectedChanges = computed(() => {
+    const page = this._pageService.page;
+    const template = this._templateService.template;
+    if (!page() && !template()) return false;
+
+    if (page()) {
+      return page()?.reviewPage?.data?.statusReview === 'rejected';
+    }
+
+    if (template()) {
+      return template()?.reviewTemplate?.data?.statusReview === 'rejected';
+    }
+
+    return false;
+  });
 
   /**
-   * Has commnent
+   * Find if item in canvas has comment
    * @param uuid
    * @returns
    */
-  hasComment(uuid: string) {
-    return false;
+  hasComment(uuid: string): boolean {
+    const comments = this.comments();
+    const hasComment = comments.find((c) => c.uuid === uuid);
+    if (!hasComment) return false;
+    return true;
   }
 
   /**
@@ -38,7 +57,10 @@ export class ElementWrappeComponent {
    * @returns
    */
   findComment(uuid: string): string {
-    return '';
+    const comments = this.comments();
+    const comment = comments.find((c) => c.uuid === uuid);
+    if (!comment) return '';
+    return comment.comment;
   }
 
   /**

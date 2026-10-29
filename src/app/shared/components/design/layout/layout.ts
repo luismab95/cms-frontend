@@ -423,7 +423,7 @@ export class DesignLayoutComponent {
   value = input.required<LayoutStylesI>();
   updateValues = output<Record<string, string>>();
 
-  readonly displays: DisplayT[] = ['block', 'inline', 'flex', 'grid'];
+  readonly displays: DisplayT[] = ['block', 'inline', 'flex', 'grid', 'none'];
   readonly flexDirections: FlexDirectionT[] = ['row', 'row-reverse', 'column', 'column-reverse'];
   readonly flexWraps: FlexWrapT[] = ['nowrap', 'wrap', 'wrap-reverse'];
   readonly justifyContents: JustifyContentT[] = [

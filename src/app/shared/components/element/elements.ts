@@ -10,29 +10,41 @@ import {
   OnDestroy,
   output,
 } from '@angular/core';
-import { DynamicStyleService, ParameterService } from '@core/services';
+import { NgTemplateOutlet } from '@angular/common';
+import { DynamicStyleService, ParameterService, PluginLoaderService } from '@core/services';
 import { ElementI, PluginDataI, PluginPropertiesI } from '@shared/interfaces';
-import { findParameter } from '@shared/utils';
+import { ElementCode, findParameter } from '@shared/utils';
 import {
   EtiquetaPlugin,
   ParrafoPlugin,
   ImagenPlugin,
   BotonPlugin,
   IdiomasPlugin,
+  TarjetaPlugin,
 } from '@shared/components/plugins';
 import { environment } from 'environments/environment';
 import { lastValueFrom } from 'rxjs';
+import { ReviewCommentI } from '@core/interfaces';
 
 @Component({
   selector: 'elements',
   templateUrl: './elements.html',
-  imports: [EtiquetaPlugin, ParrafoPlugin, ImagenPlugin, BotonPlugin, IdiomasPlugin],
+  imports: [
+    EtiquetaPlugin,
+    ParrafoPlugin,
+    ImagenPlugin,
+    BotonPlugin,
+    IdiomasPlugin,
+    TarjetaPlugin,
+    NgTemplateOutlet,
+  ],
 })
 export class ElementsComponent implements OnDestroy {
   readonly element = input.required<ElementI>();
   readonly languageId = input.required<number>();
   readonly preview = input.required<boolean>();
   readonly isInReviewMode = input.required<boolean>();
+  readonly comments = input.required<ReviewCommentI[]>();
   readonly selectElementEvent = output<ElementI>();
 
   readonly loading = signal<boolean>(true);
@@ -42,9 +54,13 @@ export class ElementsComponent implements OnDestroy {
 
   private readonly _parameterService = inject(ParameterService);
   private readonly _dynamicStyleService = inject(DynamicStyleService);
+  private readonly _pluginLoaderService = inject(PluginLoaderService);
   private readonly _httpClient = inject(HttpClient);
 
   readonly parameters = this._parameterService.publicParameters;
+  readonly cache = this._pluginLoaderService.cache;
+  readonly pendingRequests = this._pluginLoaderService.pendingRequests;
+  readonly elementsCode = ElementCode;
 
   readonly urlStatics = computed(
     () => findParameter('APP_STATICS_URL', this.parameters())?.value ?? '',
@@ -78,16 +94,26 @@ export class ElementsComponent implements OnDestroy {
    * Emit event to select
    * @param uuid
    */
-  selectElement(uuid: string) {
-    if (this.element().uuid === uuid) {
-      this.selectElementEvent.emit(this.element());
-    } else {
-      const findChildrenElement = this.element().childrens.find((child) => child.uuid === uuid);
-      if (!findChildrenElement) return;
-      this.selectElementEvent.emit(findChildrenElement);
+  selectElement(uuid: string): void {
+    const element = this.element();
+    if (element.uuid === uuid) {
+      this.selectElementEvent.emit(element);
+      return;
     }
-  }
 
+    const findElement = (childrens: ElementI[]): ElementI | undefined => {
+      for (const child of childrens) {
+        if (child.uuid === uuid) return child;
+        const found = findElement(child.childrens ?? []);
+        if (found) return found;
+      }
+      return undefined;
+    };
+
+    const foundElement = findElement(element.childrens ?? []);
+    if (!foundElement) return;
+    this.selectElementEvent.emit(foundElement);
+  }
   /**
    * Reload plugin
    * @param element
@@ -205,11 +231,22 @@ export class ElementsComponent implements OnDestroy {
    * @returns
    */
   private async loadData(url: string): Promise<any> {
+    if (this.cache.has(url)) return this.cache.get(url);
+
+    const pending = this.pendingRequests.get(url);
+    if (pending) return pending;
+
     try {
-      return await lastValueFrom(this._httpClient.get(url));
+      const request = lastValueFrom(this._httpClient.get(url));
+      this.pendingRequests.set(url, request);
+      const data = await request;
+      this.cache.set(url, data);
+      return data;
     } catch (error) {
       console.error(`Error obteniendo datos desde ${url}`, error);
       return null;
+    } finally {
+      this.pendingRequests.delete(url);
     }
   }
 }

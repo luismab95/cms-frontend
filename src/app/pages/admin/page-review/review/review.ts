@@ -356,7 +356,7 @@ export class ReviewPage implements AfterViewInit {
   addComment(newComment: ReviewCommentI): void {
     this.reviewForm().reviewModel.update((prev) => ({
       ...prev,
-      comments: [...prev.comments, newComment],
+      comments: [newComment, ...prev.comments],
     }));
   }
 

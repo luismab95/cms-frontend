@@ -2,6 +2,7 @@
   [preview]="preview()"
   [isInReviewMode]="isInReviewMode()"
   [element]="element()"
+  [comments]="comments()"
   (selectElementEvent)="selectElement($event)"
 >
   <div
@@ -12,12 +13,14 @@
         [element]="imageElement()!"
         [preview]="preview()"
         [isInReviewMode]="isInReviewMode()"
+        [comments]="comments()"
         (selectElementEvent)="selectElement($event)"
       />
       <etiqueta-plugin
         [element]="labelElement()!"
         [preview]="preview()"
         [isInReviewMode]="isInReviewMode()"
+        [comments]="comments()"
         (selectElementEvent)="selectElement($event)"
       />
     </button>

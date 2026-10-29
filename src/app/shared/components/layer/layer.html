@@ -168,6 +168,52 @@
           #{{ column.element.uuid }}
         </span>
       </div>
+      @for (element of column.element.childrens; track $index) {
+        <ng-container
+          *ngTemplateOutlet="
+            elementCardChild;
+            context: {
+              element,
+            }
+          "
+        />
+      }
+    </div>
+  </ng-template>
+  <ng-template #elementCardChild let-element="element">
+    <div class="ml-3 border-l border-slate-100 pl-2">
+      <div
+        class="flex cursor-pointer items-center justify-between rounded px-2 py-1 text-[11px] hover:bg-slate-100"
+        [class.border]="isElementSelected(element.uuid)"
+        [class.border-emerald-200]="isElementSelected(element.uuid)"
+        [class.bg-emerald-50]="isElementSelected(element.uuid)"
+        (click)="selectElement(element)"
+      >
+        <span
+          class="flex min-w-0 items-center gap-1.5"
+          [class.font-medium]="isElementSelected(element.uuid)"
+          [class.text-emerald-900]="isElementSelected(element.uuid)"
+          [class.text-slate-500]="!isElementSelected(element.uuid)"
+        >
+          <i class="text-emerald-600 size-3" [ngClass]="getElementIcon(element)"></i>
+          <span [class.text-emerald-900]="isElementSelected(element.uuid)" class="truncate">
+            {{ element.name }}
+          </span>
+        </span>
+        <span class="shrink-0 rounded bg-emerald-100 px-1 text-[7px] text-emerald-600">
+          #{{ element.uuid }}
+        </span>
+      </div>
+      @for (child of element.childrens; track $index) {
+        <ng-container
+          *ngTemplateOutlet="
+            elementCardChild;
+            context: {
+              element: child,
+            }
+          "
+        />
+      }
     </div>
   </ng-template>
 

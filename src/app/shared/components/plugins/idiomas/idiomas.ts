@@ -1,4 +1,5 @@
 import { Component, effect, input, output, signal } from '@angular/core';
+import { ReviewCommentI } from '@core/interfaces';
 import { ElementWrappeComponent } from '@shared/components/element-wrapper/element-wrapper';
 import { LanguageI, PluginPropertiesI } from '@shared/interfaces';
 
@@ -11,6 +12,7 @@ export class IdiomasPlugin {
   element = input.required<PluginPropertiesI>();
   preview = input.required<boolean>();
   isInReviewMode = input.required<boolean>();
+  comments = input.required<ReviewCommentI[]>();
   selectElementEvent = output<string>();
 
   readonly isOpen = signal<boolean>(false);

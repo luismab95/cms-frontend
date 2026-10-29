@@ -2,6 +2,7 @@
   [preview]="preview()"
   [isInReviewMode]="isInReviewMode()"
   [element]="element()"
+  [comments]="comments()"
   (selectElementEvent)="selectElement($event)"
 >
   <label [id]="element().uuid" [class]="element().class">

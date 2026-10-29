@@ -202,7 +202,7 @@ export class DesignEffectsComponent {
   setBoxShadow(value: BoxShadowT): void {
     this.effect.update((current) => ({
       ...current,
-      boxShadow: value,
+      boxShadow: this.getBoxShadowCss(value),
     }));
   }
 

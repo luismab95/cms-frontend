@@ -1,7 +1,6 @@
 <div
   [ngClass]="{
-    'border border-dashed border-emerald-300 rounded-lg p-2 bg-white/40': !preview(),
-    'border-2! border-solid! border-red-500!': hasComment(element().uuid) && !preview(),
+    'border border-dashed border-emerald-300 rounded-lg p-2': !preview() && !isInReviewMode(),
   }"
   class="relative element-editor"
 >
@@ -9,9 +8,8 @@
     <div
       class="element-badge absolute -top-3 left-3 bg-emerald-700 text-white text-[10px] px-2 py-0.5 rounded-full hidden items-center gap-1 z-50"
     >
-      <i class="fa-solid fa-grip-vertical cursor-grab"></i>
+      <i class="fa-solid fa-grip-vertical"></i>
       <span>
-        Elemento
         {{ element().name }}
         ({{ element().uuid }})
       </span>
@@ -23,13 +21,14 @@
       <button
         (click)="selectElement()"
         class="cursor-pointer bg-white text-slate-800 text-[11px] font-semibold px-2.5 py-1 rounded shadow-md hover:bg-slate-50 flex items-center gap-1"
-        appTooltip="Configurar Elemento"
+        appTooltip="Configurar Elemento {{ element().name }}"
       >
         <i class="fa-solid fa-sliders text-slate-600"></i>
       </button>
     </div>
 
-    @if (hasComment(element().uuid)) {
+
+    @if (hasComment(element().uuid) && rejectedChanges()) {
       <ng-container
         *ngTemplateOutlet="
           commentReview;
@@ -50,7 +49,7 @@
   >
     <ng-content />
   </div>
-  @if (!preview() && selectedItemsInGrid()?.element?.uuid === element().uuid) {
+  @if (!preview() && selectedItemsInGrid()?.element?.uuid === element().uuid && !isInReviewMode()) {
     <div class="absolute inset-0 ring-2 ring-emerald-500 rounded-lg pointer-events-none z-40"></div>
   }
 </div>

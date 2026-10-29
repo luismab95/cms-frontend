@@ -142,15 +142,6 @@ export const routes: Routes = [
                 path: '',
                 loadComponent: () =>
                   import('app/pages/admin/micrositie/list').then((m) => m.MicrositieList),
-                resolve: {
-                  microsities: () =>
-                    inject(MicrosityService).getAll({
-                      page: 1,
-                      limit: 10,
-                      search: null,
-                      status: null,
-                    }),
-                },
               },
               {
                 path: 'detail',
@@ -192,14 +183,6 @@ export const routes: Routes = [
                 path: '',
                 loadComponent: () => import('app/pages/admin/pages/list').then((m) => m.PagesList),
                 resolve: {
-                  pages: () =>
-                    inject(PageService).getAll({
-                      limit: 10,
-                      page: 1,
-                      search: null,
-                      status: null,
-                      micrositieId: null,
-                    }),
                   microsities: () => inject(MicrosityService).find(0),
                 },
               },
@@ -266,15 +249,6 @@ export const routes: Routes = [
                 path: '',
                 loadComponent: () =>
                   import('app/pages/admin/templates/list').then((m) => m.TemplatesList),
-                resolve: {
-                  templates: () =>
-                    inject(TemplateService).getAll({
-                      page: 1,
-                      limit: 10,
-                      search: null,
-                      status: null,
-                    }),
-                },
               },
               {
                 path: 'detail',
@@ -284,6 +258,7 @@ export const routes: Routes = [
                   template: () =>
                     inject(TemplateService).find(
                       inject(Router).currentNavigation()?.extras?.state?.['id'],
+                      false,
                     ),
                   sitie: () => inject(SitieService).find(),
                 },
@@ -322,14 +297,6 @@ export const routes: Routes = [
             loadComponent: () =>
               import('./pages/admin/file-manager/list').then((m) => m.FileManagerList),
             resolve: {
-              files: () =>
-                inject(FileManagerService).getFiles({
-                  page: 1,
-                  limit: 10,
-                  search: null,
-                  status: null,
-                  mimeType: null,
-                }),
               parameters: () => inject(ParameterService).getAll(),
             },
           },
@@ -340,16 +307,6 @@ export const routes: Routes = [
                 path: '',
                 loadComponent: () =>
                   import('./pages/admin/page-review/list').then((m) => m.PageReviewList),
-                resolve: {
-                  pages: () =>
-                    inject(PageReviewService).getAll({
-                      limit: 10,
-                      page: 1,
-                      search: null,
-                      status: true,
-                      statusReview: null,
-                    }),
-                },
               },
               {
                 path: 'review',
@@ -386,13 +343,6 @@ export const routes: Routes = [
             path: 'users',
             loadComponent: () => import('./pages/admin/users/list').then((m) => m.UsersList),
             resolve: {
-              users: () =>
-                inject(UserService).getAll({
-                  limit: 10,
-                  page: 1,
-                  search: null,
-                  status: null,
-                }),
               roles: () => inject(RoleService).getAll(),
             },
           },

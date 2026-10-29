@@ -203,11 +203,9 @@ export const createElement = (elementSelected: ElementCMSI): ElementI => {
   const childrens = isComposite
     ? (elementSelected.childrens?.map((child) => {
         const element = createElement(child);
-
         const schema = elementSelected.childrenSchema?.find(
           (schema) => schema.elementId === child.id,
         );
-
         if (schema) {
           childrenSchema.push({
             uuid: element.uuid,
@@ -221,13 +219,8 @@ export const createElement = (elementSelected: ElementCMSI): ElementI => {
 
   return {
     uuid: elementUuid,
-    css: `.${elementSelected.css}-${elementUuid}{
-      display: block;
-      width: 100%;
-      height: auto;
-      min-height: 40px;
-      padding: 10px;
-    }`,
+    code: elementSelected.code,
+    css: `.${elementSelected.css}-${elementUuid}${elementSelected.style}`,
     config: elementSelected.config,
     name: elementSelected.name,
     text: elementSelected.text,

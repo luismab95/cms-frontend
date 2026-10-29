@@ -1,5 +1,4 @@
 import { RegisteredFieldTypes } from '@ng-forge/dynamic-forms';
-import { ElementI } from './grid.interface';
 
 export type ElementKindT = 'simple' | 'composite';
 export interface ChildrenSchemaI {
@@ -9,10 +8,12 @@ export interface ChildrenSchemaI {
 
 export interface ElementCMSI {
   id: number;
+  code: string;
   name: string;
   description: string;
   icon: string;
   css: string;
+  style: string;
   config: {
     [key: string]: any;
   };

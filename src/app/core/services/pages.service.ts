@@ -112,7 +112,11 @@ export class PageService {
       .delete<ResponseI<PageI>>(`${this.url}/${this.prefix}/pages/draft/${pageId}`)
       .pipe(
         tap((response) => {
-          this.page.set(response.message);
+          const page = response.message;
+          if (page.reviewPage?.review) {
+            page.data = page.reviewPage.data?.dataReview as PageDataMongoI;
+          }
+          this.page.set(page);
         }),
       );
   }
@@ -130,6 +134,11 @@ export class PageService {
       .pipe(
         tap((response) => {
           this.page.set(response.message);
+          const page = response.message;
+          if (page.reviewPage?.review) {
+            page.data = page.reviewPage.data?.dataReview as PageDataMongoI;
+          }
+          this.page.set(page);
         }),
       );
   }

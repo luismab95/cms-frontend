@@ -28,6 +28,7 @@ export interface ElementChildrenSchemaI {
 
 export interface ElementI {
   uuid: string;
+  code: string;
   name: string;
   css: string;
   config: { [key: string]: any };
