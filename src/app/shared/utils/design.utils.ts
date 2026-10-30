@@ -529,12 +529,12 @@ export function mergeStyleConfig(
 }
 
 export const defaultLayoutStyles: Required<LayoutStylesI> = {
-  display: 'block',
-  width: '100%',
-  height: '100%',
+  display: '',
+  width: '',
+  height: '',
   minWidth: '',
   maxWidth: '',
-  minHeight: '40px',
+  minHeight: '',
   maxHeight: '',
   boxSizing: '',
   flexDirection: '',
@@ -556,13 +556,13 @@ export const defaultSpacingStyles: Required<SpacingStylesI> = {
   marginRight: '',
   marginBottom: '',
   marginLeft: '',
-  paddingTop: '10px',
-  paddingRight: '10px',
-  paddingBottom: '10px',
-  paddingLeft: '10px',
+  paddingTop: '',
+  paddingRight: '',
+  paddingBottom: '',
+  paddingLeft: '',
 };
 export const defaultTypographyStyles: Required<TypographyStylesI> = {
-  fontFamily: 'Inter, sans-serif',
+  fontFamily: '',
   fontSize: '',
   fontWeight: '',
   lineHeight: '',
@@ -580,6 +580,7 @@ export const defaultBackgroundStyles: Required<BackgroundStylesI> = {
   backgroundColor: '',
   backgroundSize: '',
   backgroundPosition: '',
+  objectFit: '',
   backgroundRepeat: '',
   backgroundAttachment: '',
   backgroundClip: '',

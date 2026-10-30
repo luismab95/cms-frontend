@@ -36,6 +36,7 @@ import {
 import { SelectedItemsInGridI, ElementCMSI } from '@shared/interfaces';
 import { PermissionCode, findParameter, filterPath, validGrid, validAction } from '@shared/utils';
 import { filter, interval, take } from 'rxjs';
+import { LanguageService } from '@shared/services';
 
 @Component({
   selector: 'templates-canvas',
@@ -71,6 +72,7 @@ export class TemplatesCanvas implements AfterViewInit, OnDestroy {
   private readonly _parameterService = inject(ParameterService);
   private readonly _microsityService = inject(MicrosityService);
   private readonly _templateService = inject(TemplateService);
+  private readonly _languageService = inject(LanguageService);
   private readonly _pageService = inject(PageService);
   private readonly _userService = inject(UserService);
   private readonly _canvasService = inject(CanvasService);
@@ -80,6 +82,7 @@ export class TemplatesCanvas implements AfterViewInit, OnDestroy {
   private readonly _destroyRef = inject(DestroyRef);
 
   readonly permission = PermissionCode;
+  readonly totalLanguages = this._languageService.languages().total;
   readonly template = this._templateService.template;
   readonly parameters = this._parameterService.publicParameters;
   readonly micrositie = this._microsityService.micrositie;
@@ -314,7 +317,7 @@ export class TemplatesCanvas implements AfterViewInit, OnDestroy {
    * Update page
    */
   updateTemplate() {
-    if (!validGrid(this.template()?.data?.header.data!)) {
+    if (!validGrid(this.template()?.data?.header.data!, this.totalLanguages)) {
       this._toastrService.warning(
         'Hay elementos en el encabezado que aún no están configurados. Completa su configuración antes de continuar.',
         'Configuración pendiente',
@@ -322,7 +325,7 @@ export class TemplatesCanvas implements AfterViewInit, OnDestroy {
       return;
     }
 
-    if (!validGrid(this.template()?.data?.footer.data!)) {
+    if (!validGrid(this.template()?.data?.footer.data!, this.totalLanguages)) {
       this._toastrService.warning(
         'Hay elementos en el pie de página que aún no están configurados. Completa su configuración antes de continuar.',
         'Configuración pendiente',

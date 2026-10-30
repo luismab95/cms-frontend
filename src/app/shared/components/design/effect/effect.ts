@@ -155,9 +155,9 @@ export class DesignEffectsComponent {
 
   private readonly boxShadowValues: Record<BoxShadowT, string> = {
     none: 'none',
-    weak: '0 1px 3px rgba(0, 0, 0, 0.12)',
-    medium: '0 4px 10px rgba(0, 0, 0, 0.15)',
-    strong: '0 10px 25px rgba(0, 0, 0, 0.20)',
+    weak: '0 1px 3px rgba(0, 0, 0, 0.01)',
+    medium: '0 4px 12px rgba(0, 0, 0, 0.04)',
+    strong: '0 12px 28px rgba(0, 0, 0, 0.10)',
     '': '',
   };
 

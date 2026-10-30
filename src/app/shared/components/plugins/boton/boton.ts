@@ -29,16 +29,6 @@ export class BotonPlugin {
   );
 
   /**
-   * Constructor
-   */
-  constructor() {
-    effect(() => {
-      const element = this.element();
-      if (!element) return;
-    });
-  }
-
-  /**
    * Emit event to select
    * @param uuid
    */

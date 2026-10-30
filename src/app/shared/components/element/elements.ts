@@ -71,7 +71,7 @@ export class ElementsComponent implements OnDestroy {
    */
   constructor() {
     effect(() => {
-      const element = this.element();
+      const element = this.element();      
       const languageId = this.languageId();
       this.reloadPlugin(element, languageId);
       untracked(() => {});

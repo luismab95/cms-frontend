@@ -29,22 +29,15 @@ export class TarjetaPlugin {
   readonly titleElement = computed(() =>
     this.element().children.find((children) => children.slot === 'title'),
   );
+  readonly badgeElement = computed(() =>
+    this.element().children.find((children) => children.slot === 'badge'),
+  );
   readonly descriptionElement = computed(() =>
     this.element().children.find((children) => children.slot === 'description'),
   );
   readonly buttonElement = computed(() =>
     this.element().children.find((children) => children.slot === 'button'),
   );
-
-  /**
-   * Constructor
-   */
-  constructor() {
-    effect(() => {
-      const element = this.element();
-      if (!element) return;
-    });
-  }
 
   /**
    * Emit event to select

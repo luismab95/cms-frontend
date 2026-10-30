@@ -9,11 +9,12 @@ export interface ChildrenSchemaI {
 export interface ElementCMSI {
   id: number;
   code: string;
+  slot: string;
   name: string;
   description: string;
   icon: string;
   css: string;
-  style: string;
+  style: { [key: string]: string };
   config: {
     [key: string]: any;
   };

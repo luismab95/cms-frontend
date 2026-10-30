@@ -3,7 +3,7 @@ import { NgClass, NgTemplateOutlet } from '@angular/common';
 import { CanvasService, PageService, TemplateService } from '@core/services';
 import { PluginPropertiesI } from '@shared/interfaces';
 import { TooltipDirective } from '@shared/directives';
-import { ReviewCommentI } from '@core/interfaces';
+import { PageReviewStatusT, ReviewCommentI } from '@core/interfaces';
 
 @Component({
   selector: 'element-wrapper-component',
@@ -39,6 +39,22 @@ export class ElementWrappeComponent {
     return false;
   });
 
+  readonly reviewChanges = computed(() => {
+    const page = this._pageService.page;
+    const template = this._templateService.template;
+    if (!page() && !template()) return false;
+    const status: PageReviewStatusT[] = ['assigned', 'pending'];
+
+    if (page()) {
+      return status.includes(page()?.reviewPage?.data?.statusReview!);
+    }
+
+    if (template()) {
+      return status.includes(template()?.reviewTemplate?.data?.statusReview!);
+    }
+
+    return false;
+  });
   /**
    * Find if item in canvas has comment
    * @param uuid
