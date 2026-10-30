@@ -36,6 +36,7 @@ import {
 import { SelectedItemsInGridI, ElementCMSI } from '@shared/interfaces';
 import { PermissionCode, findParameter, filterPath, validGrid, validAction } from '@shared/utils';
 import { filter, interval, take } from 'rxjs';
+import { LanguageService } from '@shared/services';
 
 @Component({
   selector: 'pages-canvas',
@@ -70,6 +71,7 @@ export class PagesCanvas implements AfterViewInit, OnDestroy {
   private readonly _parameterService = inject(ParameterService);
   private readonly _microsityService = inject(MicrosityService);
   private readonly _templateService = inject(TemplateService);
+  private readonly _languageService = inject(LanguageService);
   private readonly _pageService = inject(PageService);
   private readonly _userService = inject(UserService);
   private readonly _canvasService = inject(CanvasService);
@@ -80,6 +82,7 @@ export class PagesCanvas implements AfterViewInit, OnDestroy {
 
   readonly permission = PermissionCode;
   readonly page = this._pageService.page;
+  readonly totalLanguages = this._languageService.languages().total;
   readonly parameters = this._parameterService.publicParameters;
   readonly micrositie = this._microsityService.micrositie;
   readonly userLogin = this._userService.userLogin;
@@ -281,7 +284,7 @@ export class PagesCanvas implements AfterViewInit, OnDestroy {
    * Update page
    */
   updatePage() {
-    if (!validGrid(this.page()?.data?.body.data!)) {
+    if (!validGrid(this.page()?.data?.body.data!, this.totalLanguages)) {
       this._toastrService.warning(
         'Hay elementos del contenido que aún no están configurados. Completa su configuración antes de continuar.',
         'Configuración pendiente',

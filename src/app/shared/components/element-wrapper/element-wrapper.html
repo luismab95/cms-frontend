@@ -1,8 +1,10 @@
 <div
   [ngClass]="{
-    'border border-dashed border-emerald-300 rounded-lg p-2': !preview() && !isInReviewMode(),
+    'border border-dashed border-emerald-300 rounded-lg p-2 relative':
+      !preview() && !isInReviewMode(),
+    'p-0! border-0! rounded-none!': reviewChanges(),
   }"
-  class="relative element-editor"
+  class="element-editor"
 >
   @if (!preview()) {
     <div
@@ -27,7 +29,6 @@
       </button>
     </div>
 
-
     @if (hasComment(element().uuid) && rejectedChanges()) {
       <ng-container
         *ngTemplateOutlet="
@@ -44,8 +45,8 @@
     [ngClass]="{
       'pointer-events-auto!': preview(),
       'pointer-events-none!': isInReviewMode(),
+      relative: !preview() && !isInReviewMode(),
     }"
-    class="relative"
   >
     <ng-content />
   </div>

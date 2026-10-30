@@ -11,23 +11,38 @@ import {
 } from '@shared/interfaces';
 import { generateRandomString } from './random.utils';
 
-export function validGrid(data: SectionI[]): boolean {
-  if (!data.length) {
-    return false;
-  }
+function validElement(element: ElementI, totalLanguages: number): boolean {
+  if (element.text && Object.keys(element.text).length > 0) {
+    const totalPropertiesText = Object.keys(element.text).length;
+    const totalDataText = totalLanguages * totalPropertiesText;
 
-  let hasElement = false;
-  for (const section of data) {
-    if (!section.rows.length) {
+    if (totalDataText !== (element.dataText?.length ?? 0)) {
       return false;
     }
+  }
+
+  if (element.childrens?.length) {
+    return element.childrens.every((child) => validElement(child, totalLanguages));
+  }
+
+  return true;
+}
+
+export function validGrid(data: SectionI[], totalLanguages: number): boolean {
+  if (!data.length) return false;
+
+  let hasElement = false;
+
+  for (const section of data) {
+    if (!section.rows.length) return false;
     for (const row of section.rows) {
-      if (!row.columns.length) {
-        return false;
-      }
+      if (!row.columns.length) return false;
       for (const column of row.columns) {
         if (column.element) {
           hasElement = true;
+          if (!validElement(column.element, totalLanguages)) {
+            return false;
+          }
         }
       }
     }
@@ -202,9 +217,9 @@ export const createElement = (elementSelected: ElementCMSI): ElementI => {
   const childrenSchema: ElementChildrenSchemaI[] = [];
   const childrens = isComposite
     ? (elementSelected.childrens?.map((child) => {
-        const element = createElement(child);
+        const element = createElement({ ...child, slot: child.slot });
         const schema = elementSelected.childrenSchema?.find(
-          (schema) => schema.elementId === child.id,
+          (schema) => schema.slot === element.slot,
         );
         if (schema) {
           childrenSchema.push({
@@ -217,10 +232,17 @@ export const createElement = (elementSelected: ElementCMSI): ElementI => {
       }) ?? [])
     : [];
 
+  const style = elementSelected.style;
+  let css = `.${elementSelected.css}-${elementUuid}${style['base']}`;
+  Object.entries(style).forEach(([key, value]) => {
+    css += `.${elementSelected.css}-${elementUuid}${key}${value}`;
+  });
+
   return {
     uuid: elementUuid,
     code: elementSelected.code,
-    css: `.${elementSelected.css}-${elementUuid}${elementSelected.style}`,
+    slot: elementSelected.slot,
+    css,
     config: elementSelected.config,
     name: elementSelected.name,
     text: elementSelected.text,

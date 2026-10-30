@@ -5,35 +5,39 @@
   [comments]="comments()"
   (selectElementEvent)="selectElement($event)"
 >
-  <div
-    style="display: flex; align-items: center; justify-content: center; width: 100%; height: auto"
-  >
-    <article [id]="element().uuid" [class]="element().class" type="button">
-      <div class="w-full flex flex-col gap-4">
-        <imagen-plugin
-          [element]="imageElement()!"
-          [preview]="preview()"
-          [isInReviewMode]="isInReviewMode()"
-          [comments]="comments()"
-          (selectElementEvent)="selectElement($event)"
-        />
+  <div [id]="element().uuid" [class]="element().class">
+    <div class="relative h-auto">
+      <imagen-plugin
+        [element]="imageElement()!"
+        [preview]="preview()"
+        [isInReviewMode]="isInReviewMode()"
+        [comments]="comments()"
+        (selectElementEvent)="selectElement($event)"
+      />
+      <etiqueta-plugin
+        [element]="badgeElement()!"
+        [preview]="preview()"
+        [isInReviewMode]="isInReviewMode()"
+        [comments]="comments()"
+        (selectElementEvent)="selectElement($event)"
+      />
+    </div>
 
-        <etiqueta-plugin
-          [element]="titleElement()!"
-          [preview]="preview()"
-          [isInReviewMode]="isInReviewMode()"
-          [comments]="comments()"
-          (selectElementEvent)="selectElement($event)"
-        />
-        <parrafo-plugin
-          [element]="descriptionElement()!"
-          [preview]="preview()"
-          [isInReviewMode]="isInReviewMode()"
-          [comments]="comments()"
-          (selectElementEvent)="selectElement($event)"
-        />
-      </div>
-
+    <div class="p-5">
+      <etiqueta-plugin
+        [element]="titleElement()!"
+        [preview]="preview()"
+        [isInReviewMode]="isInReviewMode()"
+        [comments]="comments()"
+        (selectElementEvent)="selectElement($event)"
+      />
+      <parrafo-plugin
+        [element]="descriptionElement()!"
+        [preview]="preview()"
+        [isInReviewMode]="isInReviewMode()"
+        [comments]="comments()"
+        (selectElementEvent)="selectElement($event)"
+      />
       <boton-plugin
         [element]="buttonElement()!"
         [preview]="preview()"
@@ -41,6 +45,6 @@
         [comments]="comments()"
         (selectElementEvent)="selectElement($event)"
       />
-    </article>
+    </div>
   </div>
 </element-wrapper-component>

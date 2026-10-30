@@ -9,6 +9,7 @@ import {
   BackgroundRepeatT,
   BackgroundAttachmentT,
   BackgroundClipT,
+  ObjectFitT,
 } from '@shared/interfaces';
 import { defaultBackgroundStyles } from '@shared/utils';
 import { debounceTime, distinctUntilChanged } from 'rxjs';
@@ -98,8 +99,8 @@ import { debounceTime, distinctUntilChanged } from 'rxjs';
             </select>
           </div>
         </div>
-        <!-- Size, Position & Attachment -->
-        <div class="grid grid-cols-3 gap-1.5 text-[10px]">
+        <!-- Size, object fit -->
+        <div class="grid grid-cols-2 gap-1.5 text-[10px]">
           <div>
             <label class="text-slate-500 block mb-0.5">size</label>
             <select
@@ -111,6 +112,21 @@ import { debounceTime, distinctUntilChanged } from 'rxjs';
               }
             </select>
           </div>
+          <div>
+            <label class="text-slate-500 block mb-0.5">object-fit</label>
+            <select
+              [formField]="backgroundForm.objectFit"
+              class="w-full border border-slate-200 rounded py-0.5 px-1.5 text-xs text-slate-700 bg-white focus:ring-0 focus:outline-none focus:shadow-xs"
+            >
+              @for (value of objectFits; track value) {
+                <option [value]="value">{{ value === '' ? 'Ninguno' : value }}</option>
+              }
+            </select>
+          </div>
+        </div>
+
+        <!--  Position & Attachment -->
+        <div class="grid grid-cols-2 gap-1.5 text-[10px]">
           <div>
             <label class="text-slate-500 block mb-0.5">position</label>
             <select
@@ -164,6 +180,7 @@ export class DesignBackgroundComponent {
   ];
   readonly backgroundAttachments: BackgroundAttachmentT[] = ['scroll', 'fixed', 'local', ''];
   readonly backgroundClips: BackgroundClipT[] = ['border-box', 'padding-box', 'content-box', ''];
+  readonly objectFits: ObjectFitT[] = ['contain', 'cover', 'fill', ''];
 
   private isInitializing = true;
 

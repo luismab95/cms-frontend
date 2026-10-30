@@ -99,12 +99,7 @@ export type FontStyleT = 'normal' | 'italic' | 'oblique' | '';
 export type WhiteSpaceT = 'normal' | 'nowrap' | 'pre' | 'pre-wrap' | 'pre-line' | '';
 export type WordBreakT = 'normal' | 'break-all' | 'break-word' | '';
 export type TextOverflowT = 'clip' | 'ellipsis' | '';
-export type FontFamilyCategoryT =
-  | 'sans-serif'
-  | 'serif'
-  | 'monospace'
-  | 'display'
-  | 'cursive';
+export type FontFamilyCategoryT = 'sans-serif' | 'serif' | 'monospace' | 'display' | 'cursive';
 export interface FontFamilyOptionI {
   label: string;
   value: string;
@@ -127,6 +122,7 @@ export interface TypographyStylesI {
 }
 
 export type BackgroundSizeT = 'auto' | 'cover' | 'contain' | '';
+export type ObjectFitT = 'cover' | 'contain' | 'fill' | '';
 export type BackgroundPositionT = 'left' | 'center' | 'right' | 'top' | 'bottom' | '';
 export type BackgroundRepeatT = 'repeat' | 'repeat-x' | 'repeat-y' | 'no-repeat' | '';
 export type BackgroundAttachmentT = 'scroll' | 'fixed' | 'local' | '';
@@ -134,6 +130,7 @@ export type BackgroundClipT = 'border-box' | 'padding-box' | 'content-box' | '';
 export interface BackgroundStylesI {
   backgroundColor?: string;
   backgroundSize?: BackgroundSizeT;
+  objectFit?: ObjectFitT;
   backgroundPosition?: BackgroundPositionT;
   backgroundRepeat?: BackgroundRepeatT;
   backgroundAttachment?: BackgroundAttachmentT;

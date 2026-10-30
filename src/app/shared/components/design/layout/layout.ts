@@ -51,7 +51,7 @@ import { defaultLayoutStyles } from '@shared/utils';
 
             <span class="text-[10px] text-indigo-600 font-bold"> '{{ layout().display }}' </span>
           </div>
-          <div class="grid grid-cols-4 gap-1 bg-slate-100 p-0.5 rounded-lg text-center text-[10px]">
+          <div class="grid grid-cols-5 gap-1 bg-slate-100 p-0.5 rounded-lg text-center text-[10px]">
             @for (display of displays; track display) {
               <button
                 type="button"
