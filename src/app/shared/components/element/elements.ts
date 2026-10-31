@@ -21,6 +21,7 @@ import {
   BotonPlugin,
   IdiomasPlugin,
   TarjetaPlugin,
+  VideoPlugin,
 } from '@shared/components/plugins';
 import { environment } from 'environments/environment';
 import { lastValueFrom } from 'rxjs';
@@ -36,6 +37,7 @@ import { ReviewCommentI } from '@core/interfaces';
     BotonPlugin,
     IdiomasPlugin,
     TarjetaPlugin,
+    VideoPlugin,
     NgTemplateOutlet,
   ],
 })
@@ -71,7 +73,7 @@ export class ElementsComponent implements OnDestroy {
    */
   constructor() {
     effect(() => {
-      const element = this.element();      
+      const element = this.element();
       const languageId = this.languageId();
       this.reloadPlugin(element, languageId);
       untracked(() => {});

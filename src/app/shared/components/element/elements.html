@@ -87,6 +87,15 @@
           (selectElementEvent)="selectElement($event)"
         />
       }
+      @case (elementsCode.video) {
+        <video-plugin
+          [element]="elementRender()!"
+          [preview]="preview()"
+          [comments]="comments()"
+          [isInReviewMode]="isInReviewMode()"
+          (selectElementEvent)="selectElement($event)"
+        />
+      }
       @default {
         <ng-container
           *ngTemplateOutlet="

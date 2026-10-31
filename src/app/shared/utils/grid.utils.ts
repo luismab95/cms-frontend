@@ -206,7 +206,7 @@ export function findElementByUuid(sections: SectionI[], uuid: string): ElementI 
 
 export const createPageConfig = (type: CanvasT): PageElementsConfigI => {
   return {
-    css: `.${type === 'page' ? 'body' : type}{\n display: block;\n  width: 100%;\n  height: auto;\n  min-height: ${type === 'page' ? '600' : '200'}px;\n  padding-top: 10px;\n  padding-right: 10px;\n  padding-bottom: 10px;\n  padding-left: 10px;\n}`,
+    css: `.${type === 'page' ? 'body' : type}{ display: block;  width: 100%;  height: auto;  min-height: ${type === 'page' ? '600' : '200'}px;  padding-top: 10px;  padding-right: 10px;  padding-bottom: 10px;  padding-left: 10px;}`,
     config: { backgroundImage: '' },
   };
 };
@@ -257,7 +257,7 @@ export const createColumn = (): ColumnI => {
   const columnUuid = generateRandomString(8);
   return {
     uuid: columnUuid,
-    css: `.grid-column-${columnUuid}{\n display: block;\n  width: 100%;\n height: auto;\n  min-height: 40px;\n  padding-top: 12px;\n  padding-right: 12px;\n  padding-bottom: 12px;\n  padding-left: 12px;\n}`,
+    css: `.grid-column-${columnUuid}{ display: block;  width: 100%; height: auto;  min-height: 40px;}`,
     config: { backgroundImage: '' },
     element: null,
   };
@@ -267,7 +267,7 @@ export const createRow = (): RowI => {
   const rowUuid = generateRandomString(8);
   return {
     uuid: rowUuid,
-    css: `.grid-row-${rowUuid}{\n display: flex;\n  width: 100%;\n  height: auto;\n  min-height: 100px;\n  flex-direction: column;\n justify-content: space-between;\n  align-items: center;\n  gap: 4px;\n padding-top: 12px;\n  padding-right: 12px;\n  padding-bottom: 12px;\n  padding-left: 12px;\n position: relative;\n }\n @container (min-width: 834px) {\n .grid-row-${rowUuid} {\n flex-direction: row;\n}\n}`,
+    css: `.grid-row-${rowUuid}{ display: flex;  width: 100%;  height: auto;  min-height: 100px;  flex-direction: column; justify-content: space-between;  align-items: center;  gap: 4px; } @container (min-width: 834px) { .grid-row-${rowUuid} { flex-direction: row;}}`,
     config: { backgroundImage: '' },
     columns: [
       {
@@ -281,7 +281,7 @@ export const createSection = (): SectionI => {
   const sectionUuid = generateRandomString(8);
   return {
     uuid: sectionUuid,
-    css: `.grid-section-${sectionUuid}{\n display: flex;\n  width: 100%;\n  height: auto;\n  min-height: 200px;\n  flex-direction: column;\n  gap: 4px;\n  padding-top: 12px;\n  padding-right: 12px;\n  padding-bottom: 12px;\n  padding-left: 12px;\n}`,
+    css: `.grid-section-${sectionUuid}{ display: flex;  width: 100%;  height: auto;  min-height: 200px;  flex-direction: column;  gap: 4px;}`,
     config: {
       backgroundImage: '',
     },

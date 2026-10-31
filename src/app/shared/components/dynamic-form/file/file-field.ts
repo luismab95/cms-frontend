@@ -46,13 +46,13 @@ interface FileFieldProps extends Record<string, unknown> {
                   <img class="h-full w-full object-contain" [src]="getImage()" alt="preview" />
                 } @else {
                   <i
-                    class="fa-lg"
+                    class="fa-lg fa-solid"
                     [ngClass]="{
-                      'fa-solid fa-file-pdf text-red-500': props()?.type === 'pdf',
-                      'fa-solid fa-file-audio text-blue-500': props()?.type === 'audio',
-                      'fa-solid fa-file-video text-green-500': props()?.type === 'video',
-                      'fa-solid fa-file-lines text-slate-500': props()?.type === 'text',
-                      'fa-solid fa-file text-slate-400': props()?.type === 'file',
+                      'fa-file-pdf text-red-500': props()?.type === 'pdf',
+                      'fa-audio text-blue-500': props()?.type === 'audio',
+                      'fa-video text-green-500': props()?.type === 'video',
+                      'fa-file-lines text-slate-500': props()?.type === 'text',
+                      'fa-file text-slate-400': props()?.type === 'file',
                     }"
                   ></i>
                 }

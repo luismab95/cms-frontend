@@ -5,4 +5,5 @@ export enum ElementCode {
   paragraph = 'paragraph',
   language = 'language',
   card = 'card',
+  video = 'video',
 }

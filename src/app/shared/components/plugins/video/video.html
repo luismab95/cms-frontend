@@ -1,0 +1,22 @@
+<element-wrapper-component
+  [preview]="preview()"
+  [isInReviewMode]="isInReviewMode()"
+  [element]="element()"
+  [comments]="comments()"
+  (selectElementEvent)="selectElement($event)"
+>
+  @if (!reload()) {
+    <video
+      [id]="element().uuid"
+      [class]="element().class"
+      [controls]="element().config['controls'] === 'si'"
+      [autoplay]="element().config['autoplay'] === 'si'"
+      [muted]="element().config['muted'] === 'si'"
+      [loop]="element().config['loop'] === 'si'"
+      [poster]="poster()"
+    >
+      <source [src]="src()" [type]="type()" />
+      {{ element().text['error'] }}
+    </video>
+  }
+</element-wrapper-component>

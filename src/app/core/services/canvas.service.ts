@@ -8,6 +8,7 @@ import {
   HistoryCMSI,
 } from '@shared/interfaces';
 import { PageService, TemplateService } from '@core/services';
+import isEqual from 'lodash/isEqual';
 
 @Injectable({
   providedIn: 'root',
@@ -281,13 +282,14 @@ export class CanvasService {
    * @param next
    */
   commit(previous: HistoryCMSI, next: HistoryCMSI): void {
-    const currentIndex = this.currentIndex();
     const previousState = structuredClone(previous);
     const nextState = structuredClone(next);
 
-    if (currentIndex < this.history().length - 1) {
+    if (isEqual(previousState, nextState)) return;
+    const currentIndex = this.currentIndex();
+
+    if (currentIndex < this.history().length - 1)
       this.history.update((items) => items.slice(0, currentIndex + 1));
-    }
 
     this.history.update((items) => [
       ...items,
