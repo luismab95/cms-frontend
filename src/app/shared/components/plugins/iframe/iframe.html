@@ -1,0 +1,26 @@
+<element-wrapper-component
+  [preview]="preview()"
+  [isInReviewMode]="isInReviewMode()"
+  [element]="element()"
+  [comments]="comments()"
+  (selectElementEvent)="selectElement($event)"
+>
+  @if (!reload()) {
+    <iframe
+      [id]="element().uuid"
+      [class]="element().class"
+      [src]="safeUrlIframe()"
+      allow="
+        accelerometer;
+        autoplay;
+        clipboard-write;
+        encrypted-media;
+        gyroscope;
+        picture-in-picture;
+        web-share;
+      "
+      referrerpolicy="strict-origin-when-cross-origin"
+      allowfullscreen
+    ></iframe>
+  }
+</element-wrapper-component>
