@@ -2,6 +2,7 @@ import { Component, input, signal, effect, output } from '@angular/core';
 import { ReviewCommentI } from '@core/interfaces';
 import { ElementWrappeComponent } from '@shared/components/element-wrapper/element-wrapper';
 import { PluginPropertiesI } from '@shared/interfaces';
+import { SafeUrl } from '@shared/utils';
 
 @Component({
   selector: 'imagen-plugin',
@@ -29,6 +30,8 @@ export class ImagenPlugin {
   alt = signal<string>('');
   src = signal<string>('');
 
+  readonly getSafeUrl = SafeUrl;
+
   /**
    * Constructor
    */
@@ -39,7 +42,7 @@ export class ImagenPlugin {
       const imagePath = String(element.config['image']);
       this.alt.set(String(element.text['alt']));
       const fallback = this.fallbackUrl();
-      const imageUrl = this.imagenSafeUrl(imagePath, element.urlStatics);
+      const imageUrl = this.getSafeUrl(imagePath, element.urlStatics);
       this.src.set(imageUrl ?? fallback);
     });
   }
@@ -50,25 +53,6 @@ export class ImagenPlugin {
    */
   fallbackUrl(): string {
     return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(this.imagenDefaultSvg())}`;
-  }
-
-  /**
-   * Get sage url image
-   * @param value
-   * @param baseUrl
-   * @returns
-   */
-  imagenSafeUrl(value: string, baseUrl: string) {
-    try {
-      const base = baseUrl
-        ? new URL(baseUrl, window.location.origin)
-        : new URL('/', window.location.origin);
-      const url = new URL(value.trim().replace(/\\/g, '/'), base);
-      if (!['http:', 'https:'].includes(url.protocol)) return null;
-      return url.href;
-    } catch {
-      return null;
-    }
   }
 
   /**

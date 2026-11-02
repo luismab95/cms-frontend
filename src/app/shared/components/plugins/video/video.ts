@@ -2,6 +2,7 @@ import { Component, input, signal, effect, output } from '@angular/core';
 import { ReviewCommentI } from '@core/interfaces';
 import { ElementWrappeComponent } from '@shared/components/element-wrapper/element-wrapper';
 import { PluginPropertiesI } from '@shared/interfaces';
+import { SafeUrl } from '@shared/utils';
 
 @Component({
   selector: 'video-plugin',
@@ -20,6 +21,8 @@ export class VideoPlugin {
   src = signal<string>('');
   poster = signal<string>('');
 
+  readonly getSafeUrl = SafeUrl;
+
   /**
    * Constructor
    */
@@ -28,7 +31,7 @@ export class VideoPlugin {
       const element = this.element();
       if (!element) return;
       const videoPath = String(element.config['video']);
-      const videoUrl = this.videoSafeUrl(videoPath, element.urlStatics);
+      const videoUrl = this.getSafeUrl(videoPath, element.urlStatics);
       if (videoUrl !== this.src()) this.reload.set(true);
       this.src.set(videoUrl ?? '');
 
@@ -36,32 +39,13 @@ export class VideoPlugin {
       this.type.set('video/' + ext);
 
       const posterPath = String(element.config['poster']);
-      const posterUrl = this.videoSafeUrl(posterPath, element.urlStatics);
+      const posterUrl = this.getSafeUrl(posterPath, element.urlStatics);
       this.poster.set(posterUrl ?? '');
 
       setTimeout(() => {
         this.reload.set(false);
       });
     });
-  }
-
-  /**
-   * Get sage url image
-   * @param value
-   * @param baseUrl
-   * @returns
-   */
-  videoSafeUrl(value: string, baseUrl: string) {
-    try {
-      const base = baseUrl
-        ? new URL(baseUrl, window.location.origin)
-        : new URL('/', window.location.origin);
-      const url = new URL(value.trim().replace(/\\/g, '/'), base);
-      if (!['http:', 'https:'].includes(url.protocol)) return '';
-      return url.href;
-    } catch {
-      return '';
-    }
   }
 
   /**

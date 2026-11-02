@@ -22,6 +22,8 @@ import {
   IdiomasPlugin,
   TarjetaPlugin,
   VideoPlugin,
+  IframePlugin,
+  HtmlPlugin,
 } from '@shared/components/plugins';
 import { environment } from 'environments/environment';
 import { lastValueFrom } from 'rxjs';
@@ -38,6 +40,8 @@ import { ReviewCommentI } from '@core/interfaces';
     IdiomasPlugin,
     TarjetaPlugin,
     VideoPlugin,
+    IframePlugin,
+    HtmlPlugin,
     NgTemplateOutlet,
   ],
 })

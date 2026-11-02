@@ -1,0 +1,9 @@
+<element-wrapper-component
+  [preview]="preview()"
+  [isInReviewMode]="isInReviewMode()"
+  [element]="element()"
+  [comments]="comments()"
+  (selectElementEvent)="selectElement($event)"
+>
+  <div [id]="element().uuid" [class]="element().class" [innerHTML]="safeUrlIframe()"></div>
+</element-wrapper-component>
