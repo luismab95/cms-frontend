@@ -30,7 +30,7 @@ export class ParameterService {
   }
 
   /**
-   * Get all public
+   * Get all parameters
    * @returns
    */
   getAll(): Observable<ResponseI<ParameterI[]>> {

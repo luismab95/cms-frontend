@@ -161,7 +161,7 @@ export class UsersList {
   closeModal(load: boolean) {
     this.selectedUser.set(null);
     this.showDetails.set(false);
-    if (load) this.onChangeStatus(null);
+    if (load) this.getAll(1, this.tableSearchModel().search, this.tableSearchModel().status);
   }
 
   /**

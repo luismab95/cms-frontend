@@ -34,8 +34,7 @@ import { firstValueFrom } from 'rxjs';
   imports: [PermissionComponent, GridComponent, TooltipDirective, FormField, NgClass],
 })
 export class SitieInformationComponent implements AfterViewInit {
-  private readonly previewContainer =
-    viewChild<ElementRef<HTMLElement>>('previewContainer');
+  private readonly previewContainer = viewChild<ElementRef<HTMLElement>>('previewContainer');
 
   previewScale = signal<number>(1);
   selectedTemplate = signal<number>(0);
@@ -100,7 +99,7 @@ export class SitieInformationComponent implements AfterViewInit {
    */
   ngAfterViewInit(): void {
     const element = this.previewContainer()?.nativeElement;
-    if(!element) return;
+    if (!element) return;
     const observer = new ResizeObserver(([entry]) => {
       const width = entry.contentRect.width;
       this.previewScale.set(width / 1440);
@@ -127,9 +126,10 @@ export class SitieInformationComponent implements AfterViewInit {
 
       event.preventDefault();
       await submit(this.sitieForm, async (field) => {
+        const { description, name, domain, status, templateId, maintenance } = field().value();
         await firstValueFrom(
           this._sitieService
-            .update(sitie.id!, field().value())
+            .update(sitie.id!, { description, name, domain, status, templateId, maintenance })
             .pipe(takeUntilDestroyed(this._destroyRef)),
         );
         this._toastrService.success('El sitio se actualizó correctamente.', 'Sitio actualizado');

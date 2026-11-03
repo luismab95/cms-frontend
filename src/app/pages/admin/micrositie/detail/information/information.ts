@@ -154,7 +154,7 @@ export class MicrositieInformationComponent implements AfterViewInit {
       await submit(this.micrositieForm, async (field) => {
         const sitie = this.sitie();
         if (!sitie) return;
-        const newMicrositie = { ...field().value(), sitieId: sitie.id! };
+        const newMicrositie = { ...field().value(), sitieId: sitie.id!, status: true };
         await firstValueFrom(
           this._microsityService.create(newMicrositie).pipe(takeUntilDestroyed(this._destroyRef)),
         );
@@ -181,14 +181,13 @@ export class MicrositieInformationComponent implements AfterViewInit {
         const micrositie = this.micrositie();
         if (!micrositie) return;
 
-        const updateMicrositie = { ...field().value() };
-        delete updateMicrositie.path;
-        (delete updateMicrositie.pathPage,
-          await firstValueFrom(
-            this._microsityService
-              .update(micrositie.id!, updateMicrositie)
-              .pipe(takeUntilDestroyed(this._destroyRef)),
-          ));
+        const { name, description, status, templateId, sitieId } = field().value();
+
+        await firstValueFrom(
+          this._microsityService
+            .update(micrositie.id!, { name, description, status, templateId, sitieId })
+            .pipe(takeUntilDestroyed(this._destroyRef)),
+        );
         this._toastrService.success(
           'La informacion del micrositio se actualizó correctamente.',
           'Micrositio actualizado',
