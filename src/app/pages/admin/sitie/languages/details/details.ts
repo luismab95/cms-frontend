@@ -13,7 +13,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { form, submit, FormField, required } from '@angular/forms/signals';
 import { ToastrService } from '@iqx-limited/ngx-toastr';
 import { FileUploadI } from '@core/interfaces';
-import { ParameterService, FileService, DialogService } from '@core/services';
+import { ParameterService, FileService, DialogService, SitieService } from '@core/services';
 import { PermissionComponent, ModalComponent } from '@shared/components';
 import { LanguageI, ResponseI } from '@shared/interfaces';
 import { LanguageService } from '@shared/services';
@@ -46,6 +46,7 @@ export class SitieLanguagesDetailsComponent {
   });
 
   private readonly _languageService = inject(LanguageService);
+  private readonly _sitieService = inject(SitieService);
   private readonly _fileService = inject(FileService);
   private readonly _parameterService = inject(ParameterService);
   private readonly _dialogService = inject(DialogService);
@@ -55,6 +56,7 @@ export class SitieLanguagesDetailsComponent {
   readonly hasError = hasErrorFormField;
   readonly permission = PermissionCode;
   readonly parameters = this._parameterService.publicParameters;
+  readonly sitie = this._sitieService.sitie;
 
   readonly imageUrl = computed(() => {
     const file = this.selectedFile();
@@ -105,7 +107,11 @@ export class SitieLanguagesDetailsComponent {
             timeout(10000),
             switchMap((response) => {
               if (response?.message?.path) {
-                this.languageModel.update((prev) => ({ ...prev, icon: response.message.path }));
+                this.languageModel.update((prev) => ({
+                  ...prev,
+                  icon: response.message.path,
+                  sitieId: this.sitie()?.id!,
+                }));
               }
               return this._languageService.create(field().value());
             }),

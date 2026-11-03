@@ -114,7 +114,13 @@ export class FileManagerDetailsComponent {
             switchMap((response) => {
               if (response?.message?.path) {
                 const { path, filename, size, mimetype } = response.message;
-                this.fileModel.update((prev) => ({ ...prev, path, filename, size, mimetype }));
+                this.fileModel.update((prev) => ({
+                  ...prev,
+                  path,
+                  filename,
+                  size,
+                  mimeType: mimetype,
+                }));
               }
               return this._fileManagerService.create(field().value());
             }),
@@ -140,9 +146,10 @@ export class FileManagerDetailsComponent {
     try {
       event.preventDefault();
       await submit(this.fileForm, async (field) => {
+        const { name, description } = field().value();
         await firstValueFrom(
           this._fileManagerService
-            .update(this.fileModel().id!, field().value())
+            .update(this.fileModel().id!, { name, description } as FileI)
             .pipe(takeUntilDestroyed(this._destroyRef)),
         );
         this._toastrService.success(
@@ -241,7 +248,7 @@ export class FileManagerDetailsComponent {
       path: 'preview',
       filename: 'preview',
       size: 0,
-      mimetype: 'preview',
+      mimeType: 'preview',
     }));
   }
 

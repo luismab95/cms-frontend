@@ -181,15 +181,15 @@ export class RolesPermissionsComponent {
             : this._microsityService.removeAssigUser(user.id);
         await firstValueFrom(observable.pipe(takeUntilDestroyed(this._destroyRef)));
         this._toastrService.success(
-          `El usuario se removio del ${this.type() === 'sitie' ? 'sitio' : 'micrositio'} correctamente.`,
-          'Usuario removido',
+          `Los permisos del usuario se removieron del ${this.type() === 'sitie' ? 'sitio' : 'micrositio'} correctamente.`,
+          'Permiso removido',
         );
         this.refreshData();
       });
     } catch (err: any) {
       this._toastrService.error(
         err.error?.message ||
-          `No fue posible remover el usuario del ${this.type() === 'sitie' ? 'sitio' : 'micrositio'}.`,
+          `No fue posible remover los permisos del usuario del ${this.type() === 'sitie' ? 'sitio' : 'micrositio'}.`,
         'Error al remover',
       );
     }
@@ -230,8 +230,8 @@ export class RolesPermissionsComponent {
             : this._microsityService.assignUser(this.id(), users);
         await firstValueFrom(observable.pipe(takeUntilDestroyed(this._destroyRef)));
         this._toastrService.success(
-          `Los usuarios se asignaron al ${this.type() === 'sitie' ? 'sitio' : 'micrositio'} correctamente.`,
-          'Usuarios asignados',
+          `Los permisos de los usuarios se asignaron al ${this.type() === 'sitie' ? 'sitio' : 'micrositio'} correctamente.`,
+          'Permisos asignados',
         );
         this.refreshData();
         this.clearSearch();
@@ -239,7 +239,7 @@ export class RolesPermissionsComponent {
     } catch (err: any) {
       this._toastrService.error(
         err.error?.message ||
-          `No fue posible asignar usuarios al ${this.type() === 'sitie' ? 'sitio' : 'micrositio'}.`,
+          `No fue posible asignar permisos al ${this.type() === 'sitie' ? 'sitio' : 'micrositio'}.`,
         'Error al asignar',
       );
     }

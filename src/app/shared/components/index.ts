@@ -35,4 +35,5 @@ export * from './roles-permissions/roles-permissions';
 export * from './initializer/initializer';
 export * from './grid-review/grid-review';
 export * from './element-wrapper/element-wrapper';
+export * from './error/error';
 export * from './plugins';
