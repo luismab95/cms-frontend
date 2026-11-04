@@ -435,5 +435,5 @@ export const routes: Routes = [
       },
     ],
   },
-  { path: '**', redirectTo: '404-not-found' },
+  { path: '**', redirectTo: '/error/404' },
 ];

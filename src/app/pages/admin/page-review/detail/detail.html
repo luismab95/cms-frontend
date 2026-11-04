@@ -150,11 +150,13 @@
         <div class="flex flex-col gap-4">
           @for (comment of reviewModel().comments; track comment.uuid; let index = $index) {
             @if (reviewForm.comments[index]; as commentField) {
-              <div
-                class="group flex flex-col gap-1.5 rounded-xl bg-white p-4 shadow-sm transition-shadow hover:shadow-md"
-              >
-                <div class="flex items-center justify-between gap-2">
-                  <div class="flex items-center gap-1.5">
+              <details class="group/sec" open>
+                <summary
+                  class="px-4 py-2.5 bg-slate-50/50 hover:bg-slate-50 flex items-center justify-between cursor-pointer select-none"
+                >
+                  <div
+                    class="flex items-center gap-2 font-bold text-slate-800 text-[10px] tracking-wide"
+                  >
                     <i
                       [class.text-red-500!]="hasError(commentField.comment)"
                       [ngClass]="itemIconClass(comment.type, comment.uuid)"
@@ -184,55 +186,56 @@
                           Columna
                         }
                         @case ('element') {
-                          Elemento {{findElement(comment.uuid)}}
+                          Elemento {{ findElement(comment.uuid) }}
                         }
                       }
                     </span>
-                  </div>
-                  <div class="flex items-center gap-1.5">
                     <span
                       [class.text-red-500!]="hasError(commentField.comment)"
-                      class="rounded bg-indigo-100 px-2 py-0.5 font-mono text-xs text-indigo-500"
+                      class="rounded bg-indigo-100 px-2 py-0.5 font-mono text-[8px] text-indigo-500"
                     >
                       #{{ comment.uuid }}
                     </span>
                   </div>
+                  <i
+                    class="w-3.5 h-3.5 text-slate-400 group-open/sec:rotate-180 transition-transform fa-solid fa-chevron-down"
+                  ></i>
+                </summary>
+                <div class="p-3 space-y-3 bg-white">
+                  <textarea
+                    [id]="'comment-' + index"
+                    [formField]="commentField.comment"
+                    [attr.aria-invalid]="hasError(commentField.comment)"
+                    [attr.aria-describedby]="'comment-error-' + index"
+                    [ngClass]="{
+                      'border-red-500! text-red-500! placeholder:text-red-500! focus:ring-red-500! border!':
+                        hasError(commentField.comment),
+                    }"
+                    rows="3"
+                    placeholder="Observación específica..."
+                    class="w-full rounded-lg bg-gray-50 p-2.5 text-sm text-gray-900 shadow-inner placeholder:text-gray-400 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                  ></textarea>
+                  @if (hasError(commentField.comment)) {
+                    <p
+                      [id]="'comment-error-' + index"
+                      class="flex items-center gap-1 text-[10px] text-red-600"
+                      role="alert"
+                    >
+                      <i class="fa-solid fa-circle-exclamation"></i>
+                      {{ commentField.comment().errors()[0].message }}
+                    </p>
+                  }
+                  <div class="flex items-center justify-between gap-2">
+                    <span class="text-xs text-gray-500">
+                      Breve descripción del motivo del rechazo.
+                    </span>
+
+                    <span class="px-2 py-0.5 text-xs text-gray-600">
+                      {{ commentField.comment().value().length }}/255
+                    </span>
+                  </div>
                 </div>
-                <textarea
-                  [id]="'comment-' + index"
-                  [formField]="commentField.comment"
-                  [attr.aria-invalid]="hasError(commentField.comment)"
-                  [attr.aria-describedby]="'comment-error-' + index"
-                  [ngClass]="{
-                    'border-red-500! text-red-500! placeholder:text-red-500! focus:ring-red-500! border!':
-                      hasError(commentField.comment),
-                  }"
-                  rows="3"
-                  placeholder="Observación específica..."
-                  class="w-full rounded-lg bg-gray-50 p-2.5 text-sm text-gray-900 shadow-inner placeholder:text-gray-400 focus:outline-none focus:ring-1 focus:ring-indigo-500"
-                ></textarea>
-
-                <div class="flex items-center justify-between gap-2">
-                  <span class="text-xs text-gray-500">
-                    Breve descripción del motivo del rechazo.
-                  </span>
-
-                  <span class="px-2 py-0.5 text-xs text-gray-600">
-                    {{ commentField.comment().value().length }}/255
-                  </span>
-                </div>
-
-                @if (hasError(commentField.comment)) {
-                  <p
-                    [id]="'comment-error-' + index"
-                    class="mt- flex items-center gap-1 text-sm text-red-600"
-                    role="alert"
-                  >
-                    <i class="fa-solid fa-circle-exclamation"></i>
-                    {{ commentField.comment().errors()[0].message }}
-                  </p>
-                }
-              </div>
+              </details>
             }
           } @empty {
             <div class="flex flex-1 flex-col items-center justify-center p-5 text-center mt-2">
